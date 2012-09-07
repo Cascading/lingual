@@ -1,0 +1,10 @@
+junitvm*.properties
+build.properties
+.DS_Store
+lib
+build
+dist
+javadoc
+*.iml
+*.iws
+*.ipr
