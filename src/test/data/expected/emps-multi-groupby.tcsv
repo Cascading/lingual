@@ -1,0 +1,6 @@
+DEPTNO:int,GENDER:string,EXPR$2:int,EXPR$3:int
+10,,25,25
+20,F,5,5
+20,M,80,80
+40,F,,
+40,M,,

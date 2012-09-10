@@ -1,0 +1,6 @@
+EMPNO:int,NAME:string
+100,"Fred"
+110,"Eric"
+110,"John"
+120,"Wilma"
+130,"Alice"

@@ -1,0 +1,4 @@
+EMPID:int,NAME:string
+100,"Bill"
+200,"Eric"
+150,"Sebastian"

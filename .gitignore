@@ -8,3 +8,6 @@ javadoc
 *.iml
 *.iws
 *.ipr
+.idea/
+.gradle/
+

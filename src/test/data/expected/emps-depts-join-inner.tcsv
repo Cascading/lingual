@@ -1,0 +1,4 @@
+EMPNO:int,NAME:string,DEPTNO:int,GENDER:string,CITY:string,EMPID:int,AGE:int,SLACKER:boolean,MANAGER:boolean,DEPTNO0:int,NAME0:string
+"100","Fred","10",,,"30","25","true","false","10","Sales"
+"110","Eric","20","M","San Francisco","3","80",,"false","20","Marketing"
+"120","Wilma","20","F",,"1","5",,"true","20","Marketing"
