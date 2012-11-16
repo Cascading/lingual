@@ -26,7 +26,6 @@ import java.util.Properties;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.lingual.catalog.LingualCatalog;
-import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.type.FileType;
 import cascading.util.Util;
@@ -83,16 +82,6 @@ public abstract class PlatformBroker<Config>
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
     return new LingualFlowFactory( this, createName(), branch );
-    }
-
-  private String createResultPath( String name )
-    {
-    String path = properties.getProperty( Driver.RESULT_PATH_PROP, System.getenv( "TEMPDIR" ) );
-
-    if( !path.endsWith( "/" ) )
-      path += "/";
-
-    return path + name;
     }
 
   private String createName()

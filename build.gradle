@@ -18,6 +18,10 @@
  * limitations under the License.
  */
 
+
+
+apply from: 'etc/properties.gradle'
+
 ext.cascadingVersion = '2.2.+'
 ext.hadoopVersion = '1.0.4'
 
@@ -31,6 +35,9 @@ subprojects {
   apply from: "${rootDir}/etc/providedCompile.gradle"
   apply from: "${rootDir}/etc/testing.gradle"
 
+  version = '1.0-wip-dev'
+  group = 'lingual'
+
   configurations {
     testArtifacts {
       extendsFrom testRuntime
@@ -41,7 +48,6 @@ subprojects {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
-//    mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
   }
 
   task sourcesJar( type: Jar, dependsOn: classes ) {

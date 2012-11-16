@@ -18,13 +18,16 @@
  * limitations under the License.
  */
 
+
+
 dependencies {
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
-  compile group: 'cascading', name: 'bind', version: '1.0-wip-dev', changing: true
+  compile group: 'cascading', name: 'cascading-bind', version: '1.0-wip-dev', changing: true
 
   compile( group: 'net.hydromatic', name: 'optiq', version: '0.1-SNAPSHOT', changing: true ) {
     exclude group: 'xerces'
     exclude group: 'xalan'
+    exclude group: 'org.apache.ant'
   }
 
   compile group: 'net.hydromatic', name: 'linq4j', version: '0.1-SNAPSHOT', changing: true

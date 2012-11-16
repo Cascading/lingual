@@ -18,6 +18,14 @@
  * limitations under the License.
  */
 
+
+
+configurations {
+  hadoopArtifacts {
+    extendsFrom runtime
+  }
+}
+
 dependencies {
 
   compile project( ':lingual-core' )
@@ -30,6 +38,8 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+
   // hadoop deps
   providedCompile( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
     exclude group: 'ant'
@@ -40,4 +50,37 @@ dependencies {
   testCompile group: 'commons-io', name: 'commons-io', version: '2.1'
 
   testRuntime 'javax.ws.rs:jsr311-api:1.1.1' // missed dep in hadoop, go figure
+}
+
+task hadoopJar( type: Jar, dependsOn: jar ) {
+  description = "Assembles a Hadoop ready jar file"
+
+  classifier = 'hadoop'
+
+  from sourceSets.main.output
+
+  doFirst {
+
+    def jobProps = "${buildDir}/tmp/hadoopManifest"
+    mkdir( jobProps )
+    new File( "${jobProps}/hadoop.job.properties" ).write( "hadoop.job.jar=true" );
+
+    into( 'lib' ) {
+      from( configurations.runtime )
+    }
+
+    metaInf() {
+      from( jobProps )
+    }
+  }
+
+  manifest {
+//    attributes( "Main-Class": "cascading/load/Main" )
+//    attributes( "Build-Date": "${timestamp}" )
+  }
+}
+
+artifacts {
+  archives hadoopJar
+  hadoopArtifacts hadoopJar
 }

@@ -21,6 +21,7 @@
 package cascading.lingual.platform.hadoop;
 
 import java.io.IOException;
+import java.net.URL;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
@@ -40,6 +41,8 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   {
+  private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( HadoopPlatformBroker.class );
+
   public HadoopPlatformBroker()
     {
     }
@@ -53,7 +56,32 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public JobConf getConfig()
     {
-    return HadoopUtil.createJobConf( getProperties(), new JobConf() );
+    JobConf jobConf = HadoopUtil.createJobConf( getProperties(), new JobConf() );
+
+    if( jobConf.getJar() != null )
+      return jobConf;
+
+    String appJar = findAppJar();
+
+    if( appJar != null )
+      jobConf.setJar( appJar );
+
+    return jobConf;
+    }
+
+  private String findAppJar()
+    {
+    URL url = Thread.currentThread().getContextClassLoader().getResource( "/META-INF/hadoop.job.properties" );
+
+    if( url == null || !url.toString().startsWith( "jar" ) )
+      return null;
+
+    String path = url.toString();
+    String jarPath = path.substring( 0, path.lastIndexOf( "!" ) + 1 );
+
+    LOG.info( "using hadoop job jar: {}", jarPath );
+
+    return jarPath;
     }
 
   @Override
@@ -85,5 +113,4 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     {
     return fileType.getChildIdentifiers( getConfig() );
     }
-
   }

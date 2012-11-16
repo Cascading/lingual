@@ -18,4 +18,11 @@
  * limitations under the License.
  */
 
-include 'lingual-core', 'lingual-examples', 'lingual-local', 'lingual-hadoop', 'lingual-platform'
+
+
+include 'lingual-core'
+include 'lingual-examples'
+include 'lingual-local'
+include 'lingual-hadoop'
+include 'lingual-platform'
+include 'lingual-shell'
