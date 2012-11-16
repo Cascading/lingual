@@ -18,28 +18,9 @@
  * limitations under the License.
  */
 
+dependencies {
 
+  compile project( ':lingual-local' )
 
-
-configurations {
-  providedCompile
+  compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 }
-
-sourceSets {
-  main.compileClasspath += configurations.providedCompile
-}
-
-task mappings {
-  conf2ScopeMappings.addMapping( 0, configurations.providedCompile, Conf2ScopeMappingContainer.PROVIDED )
-}
-
-idea {
-  module {
-    scopes.PROVIDED.plus += configurations.providedCompile
-  }
-}
-
-javadoc {
-  classpath += configurations.providedCompile
-}
-

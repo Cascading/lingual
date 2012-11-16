@@ -18,28 +18,13 @@
  * limitations under the License.
  */
 
+dependencies {
 
+  testCompile project( ':lingual-core' )
 
+  testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
+  testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
-configurations {
-  providedCompile
-}
-
-sourceSets {
-  main.compileClasspath += configurations.providedCompile
-}
-
-task mappings {
-  conf2ScopeMappings.addMapping( 0, configurations.providedCompile, Conf2ScopeMappingContainer.PROVIDED )
-}
-
-idea {
-  module {
-    scopes.PROVIDED.plus += configurations.providedCompile
-  }
-}
-
-javadoc {
-  classpath += configurations.providedCompile
+  testCompile group: 'com.google.guava', name: 'guava', version: '13.0.1'
 }
 

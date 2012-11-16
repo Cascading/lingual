@@ -18,28 +18,4 @@
  * limitations under the License.
  */
 
-
-
-
-configurations {
-  providedCompile
-}
-
-sourceSets {
-  main.compileClasspath += configurations.providedCompile
-}
-
-task mappings {
-  conf2ScopeMappings.addMapping( 0, configurations.providedCompile, Conf2ScopeMappingContainer.PROVIDED )
-}
-
-idea {
-  module {
-    scopes.PROVIDED.plus += configurations.providedCompile
-  }
-}
-
-javadoc {
-  classpath += configurations.providedCompile
-}
-
+include 'lingual-core', 'lingual-examples', 'lingual-local', 'lingual-hadoop', 'lingual-platform'
