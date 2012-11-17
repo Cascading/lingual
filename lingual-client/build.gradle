@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ *
+ * Project and contact information: http://www.cascading.org/
+ *
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+apply plugin: 'application'
+
+repositories {
+  mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
+}
+
+dependencies {
+
+  compile project( ':lingual-core' )
+
+  // make compile dep so get picked up by clientDist
+  compile project( ':lingual-local' )
+  compile project( path: ':lingual-hadoop', configuration: 'hadoopArtifacts' )
+
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+
+  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+  runtime group: 'log4j', name: 'log4j', version: '1.2.16'
+
+  compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3'
+  compile group: 'sqlline', name: 'sqlline', version: '1_0_2'
+
+  runtime group: 'jline', name: 'jline', version: '1.0'
+}
+
+task clientDist( dependsOn: jar ) << {
+  def distDir = new File( "${buildDir}/dist" )
+  distDir.delete();
+  distDir.mkdir();
+
+  copy {
+    from configurations.runtime
+    from jar.archivePath
+    into "$distDir/lib"
+  }
+
+  copy {
+    from( 'src/dist/etc/' ) {
+      filter( ReplaceTokens, tokens: [
+              'version': "${releaseVersion}".toString()
+      ] )
+    }
+    into "${distDir}/"
+  }
+
+  copy {
+    //      fileMode = 775 // is now extra broken
+    from( 'src/dist/bin/' ) {
+      rename '\\.sh', ''
+      filter( ReplaceTokens, tokens: [
+              'location': "${project.s3Bucket}".toString(),
+              'majorVersion': "${majorVersion}".toString()
+      ] )
+    }
+    into "${distDir}/bin/"
+  }
+}
+
+task clientPackage( type: Tar, dependsOn: clientDist ) {
+  description = "package current build, does not run tests"
+
+  def distDir = mkdir( "${buildDir}/dist" )
+
+  destinationDir = buildDir
+  baseName = "lingual-client"
+  compression = "GZIP"
+
+  into( baseName ) {
+    from distDir
+  }
+
+  s3Upload.dependsOn clientPackage
+  s3Upload.uploadFiles << archivePath
+}
+
+clientPackage << {
+
+  copy {
+    from( 'src/dist/util/install-lingual-client.sh' ) {
+      filter( ReplaceTokens, tokens: [ 'location': "${project.s3Bucket}".toString() ] ) //wtf^2
+    }
+    into buildDir
+  }
+
+  s3Upload.uploadFiles << "${buildDir}/install-lingual-client.sh"
+
+  latestPath = new File( buildDir, 'latest.txt' )
+  s3Upload.uploadFiles << latestPath
+  latestPath.write( "http://${s3Upload.s3Bucket}/${s3Upload.remotePath}${archiveName}" )
+}
+
+uploadArchives.enabled = false
+

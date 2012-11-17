@@ -29,7 +29,7 @@ import sqlline.SqlLine;
 /**
  *
  */
-public class Main
+public class Shell
   {
   private String[] args;
   private Options options;
@@ -37,18 +37,18 @@ public class Main
 
   public static void main( String[] args ) throws IOException
     {
-    Main main = new Main();
+    Shell shell = new Shell();
 
-    if( !main.parse( args ) )
+    if( !shell.parse( args ) )
       return;
 
-    if( main.printUsage() )
+    if( shell.printUsage() )
       return;
 
-    if( main.printVersion() )
+    if( shell.printVersion() )
       return;
 
-    main.launch();
+    shell.launch();
     }
 
   private boolean printUsage()

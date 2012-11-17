@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
+import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.LingualCatalog;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.type.FileType;
@@ -76,6 +77,11 @@ public abstract class PlatformBroker<Config>
   public abstract FileType getFileTypeFor( String identifier );
 
   public abstract String[] getChildIdentifiers( FileType<Config> fileType ) throws IOException;
+
+  public PlatformInfo getPlatformInfo()
+    {
+    return getFlowConnector().getPlatformInfo();
+    }
 
   public abstract FlowConnector getFlowConnector();
 

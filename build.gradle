@@ -20,7 +20,7 @@
 
 
 
-apply from: 'etc/properties.gradle'
+apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.2.+'
 ext.hadoopVersion = '1.0.4'
@@ -32,11 +32,10 @@ subprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
 
-  apply from: "${rootDir}/etc/providedCompile.gradle"
-  apply from: "${rootDir}/etc/testing.gradle"
+  apply from: "${rootDir}/etc/includes.gradle"
 
-  version = '1.0-wip-dev'
   group = 'lingual'
+  version = releaseVersion
 
   configurations {
     testArtifacts {

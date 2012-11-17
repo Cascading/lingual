@@ -20,9 +20,6 @@
 
 
 
-include 'lingual-core'
-include 'lingual-examples'
-include 'lingual-local'
-include 'lingual-hadoop'
-include 'lingual-platform'
-include 'lingual-client'
+apply from: "${rootDir}/etc/providedCompile.gradle"
+apply from: "${rootDir}/etc/testing.gradle"
+apply from: "${rootDir}/etc/s3Upload.gradle"

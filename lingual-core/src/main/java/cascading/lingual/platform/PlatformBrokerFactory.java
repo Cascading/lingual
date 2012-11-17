@@ -148,7 +148,7 @@ public class PlatformBrokerFactory
     Set<Class<? extends PlatformBroker>> classes = new HashSet<Class<? extends PlatformBroker>>();
     Properties properties = new Properties();
 
-    LOG.info( "classloader: {}", classLoader );
+    LOG.debug( "classloader: {}", classLoader );
 
     Enumeration<URL> urls;
 
