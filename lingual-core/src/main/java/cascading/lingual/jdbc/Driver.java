@@ -26,6 +26,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import cascading.lingual.util.Version;
+import net.hydromatic.optiq.jdbc.DriverVersion;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
 import org.eigenbase.util14.ConnectStringParser;
 
@@ -63,6 +65,22 @@ public class Driver extends UnregisteredDriver
     }
 
   @Override
+  protected DriverVersion createDriverVersion()
+    {
+    return new DriverVersion(
+      Version.getName(),
+      Version.getVersionString(),
+      Version.getProductName(),
+      Version.getProductVersion(),
+      true,
+      Version.getMajorVersion(),
+      Version.getMinorVersion(),
+      1,
+      0
+    );
+    }
+
+  @Override
   public Connection connect( String url, Properties info ) throws SQLException
     {
     Connection connection = super.connect( url, info );
@@ -91,7 +109,9 @@ public class Driver extends UnregisteredDriver
     if( !parts[ 0 ].contains( "=" ) )
       {
       info.put( PLATFORM_PROP, parts[ 0 ] );
-      urlSuffix = urlSuffix.substring( parts[ 0 ].length() + 1 );
+
+      if( urlSuffix.length() > parts[ 0 ].length() )
+        urlSuffix = urlSuffix.substring( parts[ 0 ].length() + 1 );
       }
 
     return urlSuffix;
