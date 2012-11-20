@@ -20,15 +20,11 @@
 
 package cascading.lingual.tap;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
+import cascading.lingual.catalog.SchemaDef;
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.LingualConnection;
-import cascading.lingual.optiq.TapTable;
 import cascading.lingual.platform.PlatformBroker;
-import cascading.lingual.util.Util;
 import net.hydromatic.linq4j.expressions.Expression;
-import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,33 +38,22 @@ public class TapSchema extends MapSchema
 
   private final PlatformBroker platformBroker;
   private final String name;
-  private final String rootPath;
+  private final String identifier;
 
-  public static TapSchema create( LingualConnection connection, String schemaIdentifier ) throws SQLException, IOException
+  public TapSchema( LingualConnection connection, SchemaDef schemaDef )
     {
-    MutableSchema rootSchema = connection.getRootSchema();
-    TapSchema schema = new TapSchema( connection, Util.createSchemaNameFrom( schemaIdentifier ), schemaIdentifier );
+    this( connection, schemaDef.getName(), schemaDef.getIdentifier() );
 
-    rootSchema.addSchema( schema.getName(), schema );
-
-    return schema;
+    for( TableDef tableDef : schemaDef.getChildTableDefs() )
+      addTableTapFor( tableDef );
     }
 
-  /**
-   * Creates a MapSchema.
-   *
-   * @param connection Query provider
-   * @param name
-   * @param rootPath
-   */
-  public TapSchema( LingualConnection connection, String name, String rootPath ) throws IOException
+  public TapSchema( LingualConnection connection, String name, String identifier )
     {
     super( connection.getParent(), connection.getTypeFactory(), makeExpression( connection, name ) );
     this.platformBroker = connection.getPlatformBroker();
     this.name = name;
-    this.rootPath = rootPath;
-
-    initialize();
+    this.identifier = identifier;
     }
 
   public String getName()
@@ -76,22 +61,22 @@ public class TapSchema extends MapSchema
     return name;
     }
 
+  public String getIdentifier()
+    {
+    return identifier;
+    }
+
   private static Expression makeExpression( LingualConnection connection, String name )
     {
     return connection.getRootSchema().getSubSchemaExpression( name, Object.class );
     }
 
-  protected void initialize() throws IOException
+  public void addTableTapFor( TableDef tableDef )
     {
-    String[] childIdentifiers = platformBroker.getChildIdentifiers( rootPath );
+    if( getTable( tableDef.getName() ) != null )
+      throw new IllegalArgumentException( "table with name: " + tableDef.getName() + " already exists" );
 
-    for( String identifier : childIdentifiers )
-      createTapTable( identifier );
-    }
-
-  private void createTapTable( String identifier )
-    {
-    TapTable table = new TapTable( platformBroker, getQueryProvider(), this, identifier );
+    TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef );
 
     LOG.info( "on schema: {}, adding table: {}, with fields: {}",
       new Object[]{getName(), table.getName(), table.getFields()} );

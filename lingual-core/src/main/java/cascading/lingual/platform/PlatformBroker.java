@@ -26,10 +26,13 @@ import java.util.Properties;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
-import cascading.lingual.catalog.LingualCatalog;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.type.FileType;
 import cascading.util.Util;
+
+import static cascading.lingual.jdbc.Driver.SCHEMA_PROP;
+import static cascading.lingual.jdbc.Driver.TABLE_PROP;
 
 /**
  *
@@ -37,7 +40,7 @@ import cascading.util.Util;
 public abstract class PlatformBroker<Config>
   {
   private Properties properties;
-  private LingualCatalog catalog;
+  private SchemaCatalog catalog;
 
   protected PlatformBroker()
     {
@@ -59,15 +62,58 @@ public abstract class PlatformBroker<Config>
 
   public abstract FlowProcess<Config> getFlowProcess();
 
-  public LingualCatalog getCatalog()
+  public SchemaCatalog getCatalog()
     {
     if( catalog == null )
-      catalog = createCatalog();
+      catalog = loadCatalog();
 
     return catalog;
     }
 
-  protected abstract LingualCatalog createCatalog();
+  private SchemaCatalog loadCatalog()
+    {
+    SchemaCatalog catalog = createCatalog();
+
+    if( properties.containsKey( SCHEMA_PROP ) )
+      loadSchemas( catalog );
+
+    if( properties.containsKey( TABLE_PROP ) )
+      loadTables( catalog );
+
+    return catalog;
+    }
+
+  private void loadSchemas( SchemaCatalog catalog )
+    {
+    try
+      {
+      String schemaProperty = getStringProperty( SCHEMA_PROP );
+      String[] schemaIdentifiers = schemaProperty.split( "," );
+
+      for( String schemaIdentifier : schemaIdentifiers )
+        catalog.addSchemaFor( schemaIdentifier );
+      }
+    catch( IOException exception )
+      {
+      exception.printStackTrace();
+      }
+    }
+
+  private void loadTables( SchemaCatalog catalog )
+    {
+    String tableProperty = getStringProperty( TABLE_PROP );
+    String[] tableIdentifiers = tableProperty.split( "," );
+
+    for( String tableIdentifier : tableIdentifiers )
+      catalog.addTableFor( tableIdentifier );
+    }
+
+  private String getStringProperty( String propertyName )
+    {
+    return properties.getProperty( propertyName );
+    }
+
+  protected abstract SchemaCatalog createCatalog();
 
   public String[] getChildIdentifiers( String identifier ) throws IOException
     {

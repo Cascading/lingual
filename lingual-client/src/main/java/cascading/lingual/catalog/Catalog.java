@@ -18,48 +18,49 @@
  * limitations under the License.
  */
 
-package cascading.lingual.shell;
+package cascading.lingual.catalog;
 
 import java.io.IOException;
 
 import cascading.lingual.common.Main;
-import cascading.lingual.jdbc.Driver;
-import sqlline.SqlLine;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.platform.PlatformBrokerFactory;
 
 /**
  *
  */
-public class Shell extends Main<ShellOptions>
+public class Catalog extends Main<CatalogOptions>
   {
   public static void main( String[] args ) throws IOException
     {
-    Shell shell = new Shell();
+    Catalog catalog = new Catalog();
 
-    if( !shell.parse( args ) )
+    if( !catalog.parse( args ) )
       return;
 
-    if( shell.printUsage() )
+    if( catalog.printUsage() )
       return;
 
-    if( shell.printVersion() )
+    if( catalog.printVersion() )
       return;
 
-    shell.handle();
+    catalog.handle();
     }
 
-  protected ShellOptions createOptions()
+  protected CatalogOptions createOptions()
     {
-    return new ShellOptions();
+    return new CatalogOptions();
     }
 
   @Override
   protected void handle() throws IOException
     {
-    String[] sqlLineArgs = new String[]{
-      "-d", Driver.class.getName(),
-      "-u", options.createJDBCUrl()
-    };
+    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform() );
+    SchemaCatalog schemaCatalog = platformBroker.getCatalog();
 
-    SqlLine.main( sqlLineArgs );
+//    if(getOptions().isListSchemas())
+//      print( lingualCatalog.getSchemaFor(  )
+
+
     }
   }

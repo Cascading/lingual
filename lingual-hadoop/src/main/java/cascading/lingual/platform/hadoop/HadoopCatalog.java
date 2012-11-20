@@ -20,11 +20,11 @@
 
 package cascading.lingual.platform.hadoop;
 
-import cascading.bind.catalog.DynamicSchema;
+import cascading.bind.catalog.DynamicStereotype;
 import cascading.bind.tap.TapResource;
 import cascading.lingual.catalog.Format;
-import cascading.lingual.catalog.LingualCatalog;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.LingualSchemeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.hadoop.TypedTextDelimited;
@@ -36,7 +36,7 @@ import cascading.tuple.Fields;
 /**
  *
  */
-public class HadoopCatalog extends LingualCatalog
+public class HadoopCatalog extends SchemaCatalog
   {
   public HadoopCatalog( PlatformBroker platformBroker )
     {
@@ -50,7 +50,7 @@ public class HadoopCatalog extends LingualCatalog
     }
 
   @Override
-  protected DynamicSchema.SchemeFactory getSchemeFactory()
+  protected DynamicStereotype.SchemeFactory getSchemeFactory()
     {
     return new HadoopSchemeFactory();
     }

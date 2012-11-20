@@ -37,7 +37,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
   private final String name;
   private final String identifier;
 
-  protected CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, PlatformBroker platformBroker, String name, String identifier )
+  public CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, PlatformBroker platformBroker, String name, String identifier )
     {
     super( cluster, cluster.getEmptyTraitSet().plus( CascadingCallingConvention.CASCADING ), table );
     this.platformBroker = platformBroker;

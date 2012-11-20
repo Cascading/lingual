@@ -18,11 +18,13 @@
  * limitations under the License.
  */
 
-package cascading.lingual.optiq;
+package cascading.lingual.tap;
 
 import java.lang.reflect.Type;
 
-import cascading.bind.catalog.Schema;
+import cascading.lingual.catalog.TableDef;
+import cascading.lingual.optiq.CascadingTableAccessRel;
+import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.BaseQueryable;
@@ -40,39 +42,38 @@ public class TapTable extends BaseQueryable implements TranslatableTable
   {
   private static FieldTypeFactory typeFactory = new FieldTypeFactory();
 
-  private final MutableSchema parentTableSchema;
   private final PlatformBroker platformBroker;
-  private final String identifier;
-  private final Schema tapSchema;
+  private final MutableSchema parentTableSchema;
+  private final TableDef tableDef;
 
-  public TapTable( PlatformBroker platformBroker, QueryProvider provider, MutableSchema parentTableSchema, String identifier )
+  public TapTable( PlatformBroker platformBroker, QueryProvider provider, TapSchema parentSchema, TableDef tableDef )
     {
     super( provider, null, null );
+
     this.platformBroker = platformBroker;
-    this.parentTableSchema = parentTableSchema;
-    this.identifier = identifier;
-    this.tapSchema = platformBroker.getCatalog().getSchemaFor( identifier );
+    this.parentTableSchema = parentSchema;
+    this.tableDef = tableDef;
     }
 
   @Override
   public Type getElementType()
     {
-    return typeFactory.createFieldsType( tapSchema.getFields() );
+    return typeFactory.createFieldsType( getFields() );
     }
 
   public String getName()
     {
-    return tapSchema.getName();
+    return tableDef.getName();
     }
 
   public String getIdentifier()
     {
-    return identifier;
+    return tableDef.getIdentifier();
     }
 
   public Fields getFields()
     {
-    return tapSchema.getFields();
+    return tableDef.getFields();
     }
 
   public DataContext getDataContext()
@@ -82,6 +83,6 @@ public class TapTable extends BaseQueryable implements TranslatableTable
 
   public RelNode toRel( RelOptTable.ToRelContext context, RelOptTable relOptTable )
     {
-    return new CascadingTableAccessRel( context.getCluster(), relOptTable, platformBroker, getName(), identifier );
+    return new CascadingTableAccessRel( context.getCluster(), relOptTable, platformBroker, getName(), getIdentifier() );
     }
   }

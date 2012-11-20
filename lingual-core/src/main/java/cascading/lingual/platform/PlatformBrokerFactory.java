@@ -58,6 +58,11 @@ public class PlatformBrokerFactory
     return factory;
     }
 
+  public static PlatformBroker createPlatformBroker( String platformName )
+    {
+    return createPlatformBroker( platformName, null );
+    }
+
   public static PlatformBroker createPlatformBroker( String platformName, Properties properties )
     {
     return instance().getPlatformBroker( platformName, properties );
@@ -75,6 +80,9 @@ public class PlatformBrokerFactory
 
     if( broker == null )
       throw new IllegalArgumentException( "platform broker not found for: " + platform );
+
+    if( properties == null )
+      properties = new Properties();
 
     broker.setProperties( properties );
 

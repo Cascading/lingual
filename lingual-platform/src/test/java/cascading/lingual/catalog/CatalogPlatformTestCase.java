@@ -18,48 +18,19 @@
  * limitations under the License.
  */
 
-package cascading.lingual.shell;
+package cascading.lingual.catalog;
 
-import java.io.IOException;
-
-import cascading.lingual.common.Main;
-import cascading.lingual.jdbc.Driver;
-import sqlline.SqlLine;
+import cascading.PlatformTestCase;
+import org.junit.Test;
 
 /**
  *
  */
-public class Shell extends Main<ShellOptions>
+public class CatalogPlatformTestCase extends PlatformTestCase
   {
-  public static void main( String[] args ) throws IOException
+  @Test
+  public void testCLI()
     {
-    Shell shell = new Shell();
 
-    if( !shell.parse( args ) )
-      return;
-
-    if( shell.printUsage() )
-      return;
-
-    if( shell.printVersion() )
-      return;
-
-    shell.handle();
-    }
-
-  protected ShellOptions createOptions()
-    {
-    return new ShellOptions();
-    }
-
-  @Override
-  protected void handle() throws IOException
-    {
-    String[] sqlLineArgs = new String[]{
-      "-d", Driver.class.getName(),
-      "-u", options.createJDBCUrl()
-    };
-
-    SqlLine.main( sqlLineArgs );
     }
   }

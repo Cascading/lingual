@@ -28,7 +28,7 @@ import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
-import cascading.lingual.catalog.LingualCatalog;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
@@ -97,7 +97,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
-  public LingualCatalog createCatalog()
+  public SchemaCatalog createCatalog()
     {
     return new HadoopCatalog( this );
     }

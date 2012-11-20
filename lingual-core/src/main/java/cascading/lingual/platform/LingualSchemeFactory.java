@@ -20,7 +20,7 @@
 
 package cascading.lingual.platform;
 
-import cascading.bind.catalog.DynamicSchema;
+import cascading.bind.catalog.DynamicStereotype;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.scheme.Scheme;
@@ -29,7 +29,7 @@ import cascading.tuple.Fields;
 /**
  *
  */
-public abstract class LingualSchemeFactory implements DynamicSchema.SchemeFactory<Protocol, Format>
+public abstract class LingualSchemeFactory implements DynamicStereotype.SchemeFactory<Protocol, Format>
   {
   @Override
   public Scheme createScheme( Protocol protocol, Format format, Fields fields )

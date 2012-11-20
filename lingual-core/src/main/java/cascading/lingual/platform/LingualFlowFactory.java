@@ -23,7 +23,7 @@ package cascading.lingual.platform;
 import cascading.bind.factory.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
-import cascading.lingual.catalog.LingualCatalog;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.Head;
 import cascading.pipe.Pipe;
@@ -37,7 +37,7 @@ public class LingualFlowFactory extends FlowFactory
   {
   PlatformBroker platformBroker;
   private Pipe tail;
-  private LingualCatalog catalog;
+  private SchemaCatalog catalog;
 
   public LingualFlowFactory( PlatformBroker platformBroker, String name, Branch branch )
     {
@@ -47,9 +47,9 @@ public class LingualFlowFactory extends FlowFactory
     this.tail = branch.current;
 
     for( Head head : branch.heads.keySet() )
-      setSourceSchema( head.name, catalog.getSchemaFor( head.identifier ) );
+      setSourceStereotype( head.name, catalog.getStereotypeFor( head.identifier ) );
 
-    setSinkSchema( this.tail.getName(), catalog.getSchemaFor( Fields.UNKNOWN ) );
+    setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
     }
 
   @Override

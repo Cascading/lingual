@@ -20,19 +20,29 @@
 
 package cascading.lingual.catalog;
 
-import cascading.bind.catalog.Schema;
+import cascading.bind.catalog.Stereotype;
 import cascading.tuple.Fields;
 
 /**
  *
  */
-public class LingualSchema extends Schema<Protocol, Format>
+public class TableDef extends Def
   {
-  private final LingualCatalog catalog;
+  private Stereotype stereotype;
 
-  public LingualSchema( LingualCatalog catalog, Protocol defaultProtocol, String name, Fields fields )
+  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype )
     {
-    super( defaultProtocol, name, fields );
-    this.catalog = catalog;
+    super( parentSchema, name, identifier );
+    this.stereotype = stereotype;
+    }
+
+  public Stereotype getStereotype()
+    {
+    return stereotype;
+    }
+
+  public Fields getFields()
+    {
+    return stereotype.getFields();
     }
   }

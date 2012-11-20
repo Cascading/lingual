@@ -27,7 +27,7 @@ import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.flow.local.LocalFlowProcess;
-import cascading.lingual.catalog.LingualCatalog;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.local.TextLine;
 import cascading.tap.SinkMode;
@@ -50,7 +50,7 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  public LingualCatalog createCatalog()
+  public SchemaCatalog createCatalog()
     {
     return new LocalCatalog( this );
     }

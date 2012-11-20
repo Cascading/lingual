@@ -18,48 +18,46 @@
  * limitations under the License.
  */
 
-package cascading.lingual.shell;
-
-import java.io.IOException;
-
-import cascading.lingual.common.Main;
-import cascading.lingual.jdbc.Driver;
-import sqlline.SqlLine;
+package cascading.lingual.catalog;
 
 /**
  *
  */
-public class Shell extends Main<ShellOptions>
+public class Def
   {
-  public static void main( String[] args ) throws IOException
+  protected SchemaDef parentSchema;
+  protected String name;
+  protected String identifier;
+
+  public Def()
     {
-    Shell shell = new Shell();
-
-    if( !shell.parse( args ) )
-      return;
-
-    if( shell.printUsage() )
-      return;
-
-    if( shell.printVersion() )
-      return;
-
-    shell.handle();
     }
 
-  protected ShellOptions createOptions()
+  public Def( SchemaDef parentSchema, String name )
     {
-    return new ShellOptions();
+    this.parentSchema = parentSchema;
+    this.name = name;
     }
 
-  @Override
-  protected void handle() throws IOException
+  public Def( SchemaDef parentSchema, String name, String identifier )
     {
-    String[] sqlLineArgs = new String[]{
-      "-d", Driver.class.getName(),
-      "-u", options.createJDBCUrl()
-    };
+    this.parentSchema = parentSchema;
+    this.name = name;
+    this.identifier = identifier;
+    }
 
-    SqlLine.main( sqlLineArgs );
+  public SchemaDef getParentSchema()
+    {
+    return parentSchema;
+    }
+
+  public String getName()
+    {
+    return name;
+    }
+
+  public String getIdentifier()
+    {
+    return identifier;
     }
   }

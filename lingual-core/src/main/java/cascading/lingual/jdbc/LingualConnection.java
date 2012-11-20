@@ -47,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.jdbc.Driver.PLATFORM_PROP;
-import static cascading.lingual.jdbc.Driver.SCHEMA_PROP;
 
 /**
  *
@@ -81,14 +80,7 @@ public class LingualConnection implements Connection
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
 
-    if( !properties.containsKey( SCHEMA_PROP ) )
-      return;
-
-    String schemaProperty = getStringProperty( SCHEMA_PROP );
-    String[] schemaIdentifiers = schemaProperty.split( "," );
-
-    for( String schemaIdentifier : schemaIdentifiers )
-      platformBroker.getCatalog().addSchemaFor( this, schemaIdentifier );
+    platformBroker.getCatalog().addSchemasTo( this );
     }
 
   public PlatformBroker getPlatformBroker()

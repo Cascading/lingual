@@ -36,8 +36,10 @@ public class Driver extends UnregisteredDriver
   {
   private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( Driver.class );
 
-  public static final String SCHEMA_PROP = "schemas";
   public static final String PLATFORM_PROP = "platform";
+  public static final String CATALOG_PROP = "catalog";
+  public static final String SCHEMA_PROP = "schemas";
+  public static final String TABLE_PROP = "tables";
   public static final String RESULT_PATH_PROP = "resultPath";
   public static final String DOT_PATH_PROP = "dotPath";
 
