@@ -228,7 +228,7 @@ public class Catalog extends Main<CatalogOptions>
 
   private void print( String string, String... args )
     {
-    getOutPrintStream().println( String.format( string, args ) );
+    getOutPrintStream().println( String.format( string, (Object[]) args ) );
     }
 
   private void print( String header, Collection<String> values )

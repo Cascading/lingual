@@ -61,5 +61,7 @@ public class Shell extends Main<ShellOptions>
     };
 
     SqlLine.main( sqlLineArgs );
+
+    return true;
     }
   }

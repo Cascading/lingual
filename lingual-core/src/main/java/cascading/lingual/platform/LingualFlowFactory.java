@@ -20,7 +20,7 @@
 
 package cascading.lingual.platform;
 
-import cascading.bind.factory.FlowFactory;
+import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.lingual.catalog.SchemaCatalog;
