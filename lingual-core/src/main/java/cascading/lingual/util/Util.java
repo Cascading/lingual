@@ -39,11 +39,13 @@ public class Util
     return result;
     }
 
+  // todo: make file separator agnostic
   public static String createSchemaNameFrom( String identifier )
     {
     return URI.create( identifier ).getPath().replaceAll( "^.*/([^/]+)/?$", "$1" ).toUpperCase();
     }
 
+  // todo: make file separator agnostic
   public static String createTableNameFrom( String identifier )
     {
     return URI.create( identifier ).getPath().replaceAll( "^.*/([^/.]+)\\..*$", "$1" ).toUpperCase();

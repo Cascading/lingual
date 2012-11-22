@@ -24,43 +24,86 @@ To add new table to an existing schema:
 
 # CLI Options Reference
 
-| switch            | action              | description
-| ----------------- | ------------------- | -----------
-| --platform        |                     | lists all known platforms
-| --platform [name] |                     | use the named platform
-| --uri [uri]       |                     | optional path to the catalog meta-data
-| --default         |                     | make the prior options the default environment
-|                   |                     |
-| --init            |                     | initializes a new catalog in the current directory if --path is not given
-| --schema          |                     | lists all current schemas
-| --schema [name]   |                     |
-|                   | --add [uri]         | add path as a new schema root
-|                   | --remove            |
-|                   | --rename [new name] |
-| --table           |                     | lists all tables for the current schema
-| --table [name]    |                     |
-|                   | --add [uri]         | add path as a new table root
-|                   | --remove            |
-|                   | --rename [new name] |
-|                   | --columns [names]*  |
-|                   | --types [types]*    |
-|                   | --format [name]     |
-|                   | --show              | display table details
-|                   |                     |
-| --format          |                     | list all registered formats
-| --format [name]   |                     |
-|                   | --add [class]       |
-|                   | --param [key=value]*| constructor parameters for class
-|                   | --show              |
+| context             | action                       | description
+| ------------------- | ---------------------        | -----------
+| --uri [uri]         |                              | optional path to the catalog meta-data, defaults to current directory
+|                     |                              |
+| --platform          |                              | lists all known platforms
+| --platform [name]   |                              | use the named platform (relative uri will be resolved for given platform)
+| --default           |                              | make the current relevant options the default environment
+|                     |                              |
+| --repo              |                              | list all maven repos
+| --repo [name]       |                              |
+|                     | --add [uri]                  | add maven repo
+|                     | --remove                     | remove maven repo
+|                     |                              |
+| --init              |                              | initializes a new catalog in the current directory if --uri is not given
+| --schema            |                              | lists all current schemas
+| --schema [name]     |                              |
+|                     | --add [uri]*                 | uri optional, add path as a new schema root
+|                     | --remove                     |
+|                     | --rename [new name]          |
+|                     |                              |
+| --table             |                              | lists all tables for the current schema
+| --table [name]      |                              |
+|                     | --remove                     | logically removes table, does not delete files
+|                     | --rename [new name]          | logically renames table, does not alter files
+|                     | --add [uri]                  | add path as a new table root, will attempt to resolve stereotype
+|                     | --stereotype [name]          | use existing stereotype for table definition
+|                     | --format [name]              | use format for identifier
+|                     | --protocol [name]            | optional, use protocol for identifier
+|                     | --show                       | display table details
+|                     |                              |
+| --stereotype        |                              | list all registered stereotype names
+| --stereotype [name] |                              |
+|                     | --remove                     |
+|                     | --rename [new name]          |
+|                     | --add [uri]*                 | uri optional, read uri for definition or use following values
+|                     | --update                     | update with given values (replaces values)
+|                     | --columns [names,.]          |
+|                     | --types [types,.]            |
+|                     | --providers [name,.]         |
+|                     | --show                       | display stereotype details
+|                     |                              |
+| --provider          |                              | list all registered protocol and format providers
+| --provider [name]   |                              | regsiter a new provider
+|                     | --remove                     |
+|                     | --rename [new name]          |
+|                     | --add                        | create a new provider with the following values
+|                     | --scheme [class]             | Scheme class name
+|                     | --scheme-param [key=value,.] | constructor parameters for class
+|                     | --tap [class]                | Tap class name
+|                     | --tap-param [key=value,.]    | constructor parameters for class
+|                     | --format [name]              | format, like CSV, TSV, Avro, or Thrift
+|                     | --protocol [name]            | optional, will use default for scheme
+|                     | --jar [uri]                  | jar path containing Tap/Scheme provider classes
+|                     | --dependency [spec]          | maven dependency, group:name:version
+|                     |                              |
+| --format            |                              | list all registered format names
+| --format [name]     |                              |
+|                     | --remove                     |
+|                     | --rename [new name]          |
+|                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
+|                     | --ext [.ext,.]               | file extension used to identify format (.csv, .tsv, etc)
+|                     |                              |
+| --protocol          |                              | list all registered protocol names
+| --protocol [name]   |                              |
+|                     | --remove                     |
+|                     | --rename [new name]          |
+|                     | --add                        | register a new protocol
+|                     | --scheme [uri,.]             | uri scheme to identify protocol (jdbc:, hdfs:, etc)
 
 
 # Catalog Structure
 
 Any directory can be the root namespace for a catalog
 
-| path     | description
-|----------|-----------------
-| .        | current directory
-| lingual  | all meta-data
-| results  | temporary storage for all SELECT query results sets
+| path         | description
+|------------- |-----------------
+| .            | current directory
+| ./.lingual/  | all meta-data (hidden directory)
+|   defaults   | default environment values
+|   catalog    | catalog data file
+|   jars/      | copies of scheme jar files
+| ./results    | local storage for all SELECT query results sets
 

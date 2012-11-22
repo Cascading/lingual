@@ -20,7 +20,10 @@
 
 package cascading.lingual.platform;
 
+import java.io.Serializable;
+
 import cascading.bind.catalog.DynamicStereotype;
+import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.scheme.Scheme;
@@ -29,15 +32,15 @@ import cascading.tuple.Fields;
 /**
  *
  */
-public abstract class LingualSchemeFactory implements DynamicStereotype.SchemeFactory<Protocol, Format>
+public abstract class LingualSchemeFactory implements DynamicStereotype.SchemeFactory<Protocol, Format>, Serializable
   {
   @Override
-  public Scheme createScheme( Protocol protocol, Format format, Fields fields )
+  public Scheme createScheme( Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
     switch( protocol )
       {
       case FILE:
-        return makeFileScheme( format, fields );
+        return makeFileScheme( format, stereotype.getFields() );
 
       default:
         return null;

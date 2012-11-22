@@ -21,6 +21,7 @@
 package cascading.lingual.catalog;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,62 +38,140 @@ import cascading.lingual.util.Util;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import net.hydromatic.optiq.MutableSchema;
 
 /**
  *
  */
-public abstract class SchemaCatalog
+@JsonIgnoreProperties(ignoreUnknown = true)
+public abstract class SchemaCatalog implements Serializable
   {
-  private final SchemaDef rootSchemaDef = new SchemaDef();
+  private transient PlatformBroker platformBroker;
 
-  private final PlatformBroker platformBroker;
-
+  @JsonProperty
   private Protocol defaultProtocol = Protocol.FILE;
+  @JsonProperty
+  private SchemaDef rootSchemaDef = new SchemaDef();
 
   private Map<String, Fields> nameFieldsMap = new HashMap<String, Fields>();
   private Map<String, Stereotype<Protocol, Format>> idStereotypeMap = new HashMap<String, Stereotype<Protocol, Format>>();
   private Map<String, Point<Protocol, Format>> idPointMap = new HashMap<String, Point<Protocol, Format>>();
 
-  protected SchemaCatalog( PlatformBroker platformBroker )
+  protected SchemaCatalog()
+    {
+    }
+
+  public void setPlatformBroker( PlatformBroker platformBroker )
     {
     this.platformBroker = platformBroker;
-
-    initialize();
     }
 
-  protected void initialize()
+  public void initialize()
     {
-    rootSchemaDef.addStereotype( createDynamicSchemaFor( Protocol.FILE, "dynamic", Fields.UNKNOWN ) );
+    if( !rootSchemaDef.hasStereotype( "dynamic" ) )
+      rootSchemaDef.addStereotype( createDynamicSchemaFor( Protocol.FILE, "dynamic", Fields.UNKNOWN ) );
     }
 
-  public void addSchemaFor( String schemaIdentifier ) throws IOException
+  public SchemaDef getRootSchemaDef()
+    {
+    return rootSchemaDef;
+    }
+
+  public Protocol getDefaultProtocol()
+    {
+    return defaultProtocol;
+    }
+
+  public void setDefaultProtocol( Protocol defaultProtocol )
+    {
+    this.defaultProtocol = defaultProtocol;
+    }
+
+  public Collection<String> getSchemaNames()
+    {
+    return rootSchemaDef.getChildSchemaNames();
+    }
+
+  public SchemaDef getSchemaDef( String name )
+    {
+    return rootSchemaDef.getSchema( name );
+    }
+
+  public void addSchemaDefNamed( String name )
+    {
+    rootSchemaDef.getOrAddSchema( name );
+    }
+
+  public boolean removeSchemaDef( String schemaName )
+    {
+    return rootSchemaDef.removeSchema( schemaName );
+    }
+
+  public boolean renameSchemaDef( String schemaName, String newName )
+    {
+    return rootSchemaDef.renameSchema( schemaName, newName );
+    }
+
+  public String createSchemaFor( String schemaIdentifier )
     {
     String schemaName = Util.createSchemaNameFrom( schemaIdentifier );
-    String[] childIdentifiers = platformBroker.getChildIdentifiers( schemaIdentifier );
+    String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
 
     for( String identifier : childIdentifiers )
-      addTableFor( schemaName, identifier );
+      createTableFor( schemaName, identifier );
+
+    return schemaName;
     }
 
-  protected void addTableFor( String schemaName, String identifier )
+  private String[] getChildIdentifiers( String schemaIdentifier )
+    {
+    try
+      {
+      return platformBroker.getChildIdentifiers( schemaIdentifier );
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to find children for: " + schemaIdentifier, exception );
+      }
+    }
+
+  public Collection<String> getTableNames( String schemaName )
+    {
+    return rootSchemaDef.getSchema( schemaName ).getChildTableNames();
+    }
+
+  public String createTableFor( String schemaName, String identifier )
     {
     SchemaDef schemaDef = rootSchemaDef.getOrAddSchema( schemaName );
 
-    addTableFor( schemaDef, identifier );
+    return createTableFor( schemaDef, identifier );
     }
 
-  public void addTableFor( String identifier )
+  public void createTableFor( String identifier )
     {
-    addTableFor( rootSchemaDef, identifier );
+    createTableFor( rootSchemaDef, identifier );
     }
 
-  protected void addTableFor( SchemaDef schema, String identifier )
+  public boolean removeTableDef( String schemaName, String tableName )
+    {
+    return rootSchemaDef.removeTable( schemaName, tableName );
+    }
+
+  public boolean renameTableDef( String schemaName, String tableName, String renameName )
+    {
+    return rootSchemaDef.renameTable( schemaName, tableName, renameName );
+    }
+
+  protected String createTableFor( SchemaDef schema, String identifier )
     {
     String tableName = Util.createTableNameFrom( identifier );
     Stereotype<Protocol, Format> stereotype = getStereotypeFor( identifier );
 
     schema.addTable( tableName, identifier, stereotype );
+
+    return tableName;
     }
 
   public void addSchemasTo( LingualConnection connection ) throws SQLException
@@ -114,6 +193,16 @@ public abstract class SchemaCatalog
 
       currentSchema.addSchema( childSchemaDef.getName(), childSchema );
       }
+    }
+
+  public Collection<String> getFormatNames( String schemaName )
+    {
+    return rootSchemaDef.getSchema( schemaName ).getFormatNames();
+    }
+
+  public Collection<String> getProtocolNames( String schemaName )
+    {
+    return rootSchemaDef.getSchema( schemaName ).getProtocolNames();
     }
 
   private DynamicStereotype<Protocol, Format> createDynamicSchemaFor( Protocol protocol, String name, Fields fields )

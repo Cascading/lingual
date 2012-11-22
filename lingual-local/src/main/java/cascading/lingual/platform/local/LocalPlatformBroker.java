@@ -20,7 +20,13 @@
 
 package cascading.lingual.platform.local;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
@@ -50,9 +56,9 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  public SchemaCatalog createCatalog()
+  public Class<? extends SchemaCatalog> getCatalogClass()
     {
-    return new LocalCatalog( this );
+    return LocalCatalog.class;
     }
 
   @Override
@@ -83,5 +89,70 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
   public Properties getConfig()
     {
     return getProperties();
+    }
+
+  @Override
+  public boolean pathExists( String path )
+    {
+    File file = new File( path );
+
+    return file.exists();
+    }
+
+  @Override
+  public boolean deletePath( String path )
+    {
+    File file = new File( path );
+
+    return file.delete();
+    }
+
+  @Override
+  protected InputStream getInputStream( String path )
+    {
+    if( path == null || path.isEmpty() )
+      return null;
+
+    File file = new File( path );
+
+    if( !file.exists() )
+      return null;
+
+    try
+      {
+      return new FileInputStream( file );
+      }
+    catch( FileNotFoundException exception )
+      {
+      throw new RuntimeException( "unable to find file: " + path, exception );
+      }
+    }
+
+  @Override
+  protected OutputStream getOutputStream( String path )
+    {
+    if( path == null || path.isEmpty() )
+      return null;
+
+    File file = new File( path );
+
+    if( file.exists() )
+      file.delete();
+    else
+      file.getParentFile().mkdirs();
+
+    try
+      {
+      return new FileOutputStream( file, false );
+      }
+    catch( FileNotFoundException exception )
+      {
+      throw new RuntimeException( "unable to find file: " + path, exception );
+      }
+    }
+
+  protected String getFileSeparator()
+    {
+    return File.separator;
     }
   }

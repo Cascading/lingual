@@ -102,6 +102,14 @@ public class PlatformBrokerFactory
       includes.add( include.trim().toLowerCase() );
     }
 
+  /** for testing */
+  public void reloadBrokers()
+    {
+    LOG.info( "reloading brokers" );
+    brokers.clear();
+    loadBrokers();
+    }
+
   private void loadBrokers()
     {
     Set<Class<? extends PlatformBroker>> classes = getPlatformClass( Thread.currentThread().getContextClassLoader() );

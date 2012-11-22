@@ -20,13 +20,21 @@
 
 package cascading.lingual.catalog;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  */
-public class Def
+public class Def implements Serializable
   {
+  @JsonIgnore
   protected SchemaDef parentSchema;
+  @JsonProperty
   protected String name;
+  @JsonProperty
   protected String identifier;
 
   public Def()

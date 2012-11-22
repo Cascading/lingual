@@ -20,17 +20,64 @@
 
 package cascading.lingual.catalog;
 
-import cascading.PlatformTestCase;
+import java.util.Properties;
+
+import cascading.lingual.LingualPlatformTestCase;
+import cascading.lingual.jdbc.Driver;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.platform.PlatformBrokerFactory;
 import org.junit.Test;
 
 /**
  *
  */
-public class CatalogPlatformTestCase extends PlatformTestCase
+public class CatalogPlatformTestCase extends LingualPlatformTestCase
   {
   @Test
-  public void testCLI()
+  public void testPlatformBroker()
     {
+    Properties properties = new Properties();
 
+    String brokerDataPath = getOutputPath( "broker" );
+
+    properties.setProperty( Driver.CATALOG_PROP, brokerDataPath );
+    properties.setProperty( PlatformBroker.META_DATA_PATH_PROP, "_lingual" );
+    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.ser" );
+
+    PlatformBroker broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
+
+    String catalogFilePath = PlatformBroker.makeFullCatalogFilePath( "/", brokerDataPath, "_lingual", "catalog.ser" );
+
+    if( broker.pathExists( catalogFilePath ) )
+      broker.deletePath( catalogFilePath );
+
+    SchemaCatalog catalog = broker.getCatalog();
+
+    catalog.addSchemaDefNamed( "test" );
+
+    catalog.createTableFor( "test", DEPTS_TABLE );
+
+    assertEquals( "SALES", catalog.createSchemaFor( SALES_SCHEMA ) );
+
+    broker.writeCatalog();
+
+    PlatformBrokerFactory.instance().reloadBrokers();
+
+    broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
+
+    catalog = broker.getCatalog();
+
+    assertTrue( catalog.getSchemaNames().contains( "SALES" ) );
+    assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "EMPS" ) );
+
+    assertTrue( catalog.getSchemaNames().contains( "test" ) );
+    assertTrue( catalog.getSchemaDef( "test" ).getChildTableNames().contains( "DEPTS" ) );
+
+    catalog.renameSchemaDef( "test", "newtest" );
+    assertFalse( catalog.getSchemaNames().contains( "test" ) );
+    assertTrue( catalog.getSchemaNames().contains( "newtest" ) );
+
+    catalog.removeSchemaDef( "newtest" );
+    assertFalse( catalog.getSchemaNames().contains( "newtest" ) );
     }
   }

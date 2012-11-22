@@ -18,38 +18,13 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.json;
 
-import cascading.bind.catalog.Stereotype;
-import cascading.tuple.Fields;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonSerializer;
 
 /**
  *
  */
-public class TableDef extends Def
+public abstract class LingualSerializer<T> extends JsonSerializer<T>
   {
-  @JsonProperty
-  private Stereotype stereotype;
-
-  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype )
-    {
-    super( parentSchema, name, identifier );
-    this.stereotype = stereotype;
-    }
-
-  public TableDef copyWith( String newName )
-    {
-    return new TableDef( parentSchema, newName, identifier, stereotype );
-    }
-
-  public Stereotype getStereotype()
-    {
-    return stereotype;
-    }
-
-  public Fields getFields()
-    {
-    return stereotype.getFields();
-    }
   }

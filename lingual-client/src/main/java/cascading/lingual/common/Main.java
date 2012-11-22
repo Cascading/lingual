@@ -72,7 +72,7 @@ public abstract class Main<O extends Options>
     return true;
     }
 
-  protected abstract void handle() throws IOException;
+  protected abstract boolean handle() throws IOException;
 
   public boolean parse( String... args ) throws IOException
     {

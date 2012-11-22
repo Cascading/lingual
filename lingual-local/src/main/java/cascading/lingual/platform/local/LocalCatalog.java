@@ -26,7 +26,6 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.LingualSchemeFactory;
-import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.local.TypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
@@ -38,9 +37,8 @@ import cascading.tuple.Fields;
  */
 public class LocalCatalog extends SchemaCatalog
   {
-  public LocalCatalog( PlatformBroker platformBroker )
+  public LocalCatalog()
     {
-    super( platformBroker );
     }
 
   @Override

@@ -40,6 +40,7 @@ public class Options
 
   protected OptionParser parser = new OptionParser();
   protected OptionSet optionSet;
+
   protected OptionSpecBuilder version;
   protected OptionSpecBuilder help;
   protected OptionSpec<String> platform;

@@ -20,17 +20,22 @@
 
 package cascading.lingual.catalog;
 
+import cascading.lingual.common.Options;
 import joptsimple.OptionSpec;
 
 /**
  *
  */
-public class CatalogOptions extends cascading.lingual.common.Options
+public class CatalogOptions extends Options
   {
+  private final OptionSpec<Void> init;
+
   private final OptionSpec<String> uri;
   private final OptionSpec<String> schema;
-  private final OptionSpec<String> table;
+  private final OptionSpec<String> format;
+  private final OptionSpec<String> protocol;
 
+  private final OptionSpec<String> table;
   private final OptionSpec<String> add;
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
@@ -39,6 +44,8 @@ public class CatalogOptions extends cascading.lingual.common.Options
     {
     super();
 
+    init = parser.accepts( "init", "initializes meta-data store" );
+
     uri = parser.accepts( "uri", "path to catalog location, defaults is current directory" )
       .withRequiredArg().defaultsTo( "./" );
 
@@ -46,6 +53,12 @@ public class CatalogOptions extends cascading.lingual.common.Options
       .withOptionalArg();
 
     table = parser.accepts( "table", "name of table to use" )
+      .withOptionalArg();
+
+    format = parser.accepts( "format", "name of format to use" )
+      .withOptionalArg();
+
+    protocol = parser.accepts( "protocol", "name of protocol to use" )
       .withOptionalArg();
 
     add = parser.accepts( "add", "uri path to schema or table" )
@@ -62,11 +75,14 @@ public class CatalogOptions extends cascading.lingual.common.Options
   protected void validate()
     {
     super.validate();
-
-
     }
 
   /////
+
+  public boolean isInit()
+    {
+    return optionSet.has( init );
+    }
 
   public String getURI()
     {
@@ -83,14 +99,44 @@ public class CatalogOptions extends cascading.lingual.common.Options
     return optionSet.valueOf( schema );
     }
 
+  public boolean isSchemaActions()
+    {
+    return getSchemaName() != null && !optionSet.has( table );
+    }
+
+  public boolean isTableActions()
+    {
+    return getSchemaName() != null && optionSet.has( table );
+    }
+
   public boolean isListTables()
     {
-    return isSetWithNoArg( table );
+    return !isListSchemas() && isSetWithNoArg( table );
     }
 
   public String getTableName()
     {
     return optionSet.valueOf( table );
+    }
+
+  public boolean isListFormats()
+    {
+    return isSetWithNoArg( format );
+    }
+
+  public String getFormatName()
+    {
+    return optionSet.valueOf( format );
+    }
+
+  public boolean isListProtocols()
+    {
+    return isSetWithNoArg( protocol );
+    }
+
+  public String getProtocolName()
+    {
+    return optionSet.valueOf( protocol );
     }
 
   /////
@@ -100,6 +146,13 @@ public class CatalogOptions extends cascading.lingual.common.Options
     return optionSet.valueOf( add );
     }
 
-  /////
+  public boolean isRemove()
+    {
+    return optionSet.has( remove );
+    }
 
+  public String getRenameName()
+    {
+    return optionSet.valueOf( rename );
+    }
   }

@@ -26,7 +26,6 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.LingualSchemeFactory;
-import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.hadoop.TypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
@@ -38,9 +37,8 @@ import cascading.tuple.Fields;
  */
 public class HadoopCatalog extends SchemaCatalog
   {
-  public HadoopCatalog( PlatformBroker platformBroker )
+  public HadoopCatalog()
     {
-    super( platformBroker );
     }
 
   @Override

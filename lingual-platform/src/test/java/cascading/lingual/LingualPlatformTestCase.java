@@ -18,38 +18,17 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual;
 
-import cascading.bind.catalog.Stereotype;
-import cascading.tuple.Fields;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import cascading.PlatformTestCase;
 
 /**
  *
  */
-public class TableDef extends Def
+public class LingualPlatformTestCase extends PlatformTestCase
   {
-  @JsonProperty
-  private Stereotype stereotype;
-
-  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype )
-    {
-    super( parentSchema, name, identifier );
-    this.stereotype = stereotype;
-    }
-
-  public TableDef copyWith( String newName )
-    {
-    return new TableDef( parentSchema, newName, identifier, stereotype );
-    }
-
-  public Stereotype getStereotype()
-    {
-    return stereotype;
-    }
-
-  public Fields getFields()
-    {
-    return stereotype.getFields();
-    }
+  public static final String DATA_PATH = System.getProperty( "test.data.path", "../lingual-platform/src/test/resources/data/" );
+  public static final String SALES_SCHEMA = DATA_PATH + "sales/";
+  public static final String DEPTS_TABLE = SALES_SCHEMA + "depts.tcsv";
+  public static final String EMPS_TABLE = SALES_SCHEMA + "emps.tcsv";
   }

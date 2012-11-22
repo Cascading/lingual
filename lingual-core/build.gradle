@@ -20,9 +20,18 @@
 
 
 
+def bindVersion = "wip-+"
+def bindChanging = false
+
+if( new String( project.buildNumber ).equals( "wip-dev" ) )
+{
+  bindVersion = "wip-dev"
+  bindChanging = true
+}
+
 dependencies {
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
-  compile group: 'cascading', name: 'cascading-bind', version: '1.0-wip-dev', changing: true
+  compile group: 'cascading', name: 'cascading-bind', version: "1.0.0-${bindVersion}", changing: bindChanging
 
   compile( group: 'net.hydromatic', name: 'optiq', version: '0.1-SNAPSHOT', changing: true ) {
     exclude group: 'xerces'
@@ -31,6 +40,8 @@ dependencies {
   }
 
   compile group: 'net.hydromatic', name: 'linq4j', version: '0.1-SNAPSHOT', changing: true
+  compile group: 'com.google.guava', name: 'guava', version: '13.0.1'
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.1.1'
 
   testCompile group: 'commons-io', name: 'commons-io', version: '2.1'
 

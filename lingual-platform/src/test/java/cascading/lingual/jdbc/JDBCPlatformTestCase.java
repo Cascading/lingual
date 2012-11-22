@@ -28,7 +28,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
-import cascading.PlatformTestCase;
+import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.tap.TypedFieldTypeResolver;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -44,13 +44,11 @@ import org.junit.rules.TestName;
 /**
  *
  */
-public class JDBCPlatformTestCase extends PlatformTestCase
+public class JDBCPlatformTestCase extends LingualPlatformTestCase
   {
   public static final String URI = "jdbc:lingual:";
   public static final String DRIVER_CLASSNAME = cascading.lingual.jdbc.Driver.class.getName();
 
-  public static final String DATA_PATH = System.getProperty( "test.data.path", "../lingual-platform/src/test/resources/data/" );
-  public static final String SALES_SCHEMA = DATA_PATH + "sales/";
   public static final String TEST_ROOT = DATA_PATH + "expected/";
 
   @Rule
