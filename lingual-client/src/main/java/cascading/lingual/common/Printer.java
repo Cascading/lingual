@@ -18,35 +18,41 @@
  * limitations under the License.
  */
 
-package cascading.lingual.platform.local;
+package cascading.lingual.common;
 
-import java.util.Collections;
-import java.util.List;
-
-import cascading.bind.catalog.handler.SchemeHandler;
-import cascading.bind.catalog.handler.TapHandler;
-import cascading.lingual.catalog.Format;
-import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.SchemaCatalog;
+import java.io.PrintStream;
+import java.util.Collection;
 
 /**
  *
  */
-public class LocalCatalog extends SchemaCatalog
+public class Printer
   {
-  public LocalCatalog()
+  private final PrintStream outPrintStream;
+
+  public Printer( PrintStream outPrintStream )
     {
+    this.outPrintStream = outPrintStream;
     }
 
-  @Override
-  protected List<TapHandler<Protocol, Format>> createTapHandlers()
+  public PrintStream getOutPrintStream()
     {
-    return Collections.<TapHandler<Protocol, Format>>singletonList( new LocalDefaultTapFactory() );
+    return outPrintStream;
     }
 
-  @Override
-  protected List<SchemeHandler<Protocol, Format>> createSchemeHandlers()
+  public void print( String string, String... args )
     {
-    return Collections.<SchemeHandler<Protocol, Format>>singletonList( new LocalDefaultSchemeFactory() );
+    getOutPrintStream().println( String.format( string, (Object[]) args ) );
     }
+
+  public void print( String header, Collection<String> values )
+    {
+    getOutPrintStream().println( header );
+
+    getOutPrintStream().println( "-----" );
+
+    for( String value : values )
+      getOutPrintStream().println( value );
+    }
+
   }

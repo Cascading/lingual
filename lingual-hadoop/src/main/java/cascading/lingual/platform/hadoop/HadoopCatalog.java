@@ -20,17 +20,14 @@
 
 package cascading.lingual.platform.hadoop;
 
-import cascading.bind.catalog.DynamicStereotype;
-import cascading.bind.tap.TapResource;
+import java.util.Collections;
+import java.util.List;
+
+import cascading.bind.catalog.handler.SchemeHandler;
+import cascading.bind.catalog.handler.TapHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.platform.LingualSchemeFactory;
-import cascading.lingual.tap.hadoop.TypedTextDelimited;
-import cascading.scheme.Scheme;
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.tap.SinkMode;
-import cascading.tuple.Fields;
 
 /**
  *
@@ -42,39 +39,14 @@ public class HadoopCatalog extends SchemaCatalog
     }
 
   @Override
-  public TapResource getResourceFor( String identifier, Protocol protocol, Format format, SinkMode mode )
+  protected List<TapHandler<Protocol, Format>> createTapHandlers()
     {
-    return new HadoopResource( identifier, protocol, format, mode );
+    return Collections.<TapHandler<Protocol, Format>>singletonList( new HadoopDefaultTapFactory() );
     }
 
   @Override
-  protected DynamicStereotype.SchemeFactory getSchemeFactory()
+  protected List<SchemeHandler<Protocol, Format>> createSchemeHandlers()
     {
-    return new HadoopSchemeFactory();
-    }
-
-  private static class HadoopSchemeFactory extends LingualSchemeFactory
-    {
-    @Override
-    protected Scheme makeFileScheme( Format format, Fields fields )
-      {
-      switch( format )
-        {
-        case CSV:
-          return new TextDelimited( fields, true, ",", "\"" );
-
-        case TSV:
-          return new TextDelimited( fields, true, "\t", "\"" );
-
-        case TCSV:
-          return new TypedTextDelimited( fields, ",", "\"" );
-
-        case TTSV:
-          return new TypedTextDelimited( fields, "\t", "\"" );
-
-        default:
-          return null;
-        }
-      }
+    return Collections.<SchemeHandler<Protocol, Format>>singletonList( new HadoopDefaultSchemeFactory() );
     }
   }

@@ -40,6 +40,7 @@ public class PlatformBrokerFactory
   {
   static PlatformBrokerFactory factory;
 
+  public static final String PLATFORM_NAME = "platform.name";
   public static final String PLATFORM_INCLUDES = "platform.includes";
   public static final String PLATFORM_RESOURCE = "cascading/lingual/platform.properties";
   public static final String PLATFORM_CLASSNAME = "platform.broker.classname";
@@ -76,6 +77,9 @@ public class PlatformBrokerFactory
 
   private PlatformBroker getPlatformBroker( String platform, Properties properties )
     {
+    // override platform from properties
+    platform = properties.getProperty( PLATFORM_NAME, platform );
+
     PlatformBroker broker = brokers.get( platform.toLowerCase() );
 
     if( broker == null )
@@ -204,6 +208,7 @@ public class PlatformBrokerFactory
       }
     catch( NoClassDefFoundError exception )
       {
+      LOG.error( "failed loading platform", exception );
       return null;
       }
     catch( InstantiationException exception )

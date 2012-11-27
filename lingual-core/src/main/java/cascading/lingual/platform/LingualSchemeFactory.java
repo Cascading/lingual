@@ -22,30 +22,51 @@ package cascading.lingual.platform;
 
 import java.io.Serializable;
 
-import cascading.bind.catalog.DynamicStereotype;
+import cascading.bind.catalog.Point;
 import cascading.bind.catalog.Stereotype;
+import cascading.bind.catalog.handler.SchemeHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.scheme.Scheme;
 import cascading.tuple.Fields;
+import com.google.common.base.Function;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 /**
  *
  */
-public abstract class LingualSchemeFactory implements DynamicStereotype.SchemeFactory<Protocol, Format>, Serializable
+public abstract class LingualSchemeFactory implements SchemeHandler<Protocol, Format>, Serializable
   {
+  protected transient Table<Protocol, Format, Function<Fields, Scheme>> table;
+
+  protected Table<Protocol, Format, Function<Fields, Scheme>> getTable()
+    {
+    if( table == null )
+      {
+      table = HashBasedTable.create();
+      initialize( table );
+      }
+
+    return table;
+    }
+
+  protected abstract void initialize( Table<Protocol, Format, Function<Fields, Scheme>> table );
+
+  @Override
+  public boolean handles( Point<Protocol, Format> point )
+    {
+    return getTable().containsRow( point.protocol ) && getTable().containsColumn( point.format );
+    }
+
   @Override
   public Scheme createScheme( Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
-    switch( protocol )
-      {
-      case FILE:
-        return makeFileScheme( format, stereotype.getFields() );
+    Function<Fields, Scheme> schemeFunction = getTable().get( protocol, format );
 
-      default:
-        return null;
-      }
+    if( schemeFunction == null )
+      throw new IllegalStateException( "no scheme found for protocol: " + protocol + ", and format: " + format );
+
+    return schemeFunction.apply( stereotype.getFields() );
     }
-
-  protected abstract Scheme makeFileScheme( Format format, Fields fields );
   }

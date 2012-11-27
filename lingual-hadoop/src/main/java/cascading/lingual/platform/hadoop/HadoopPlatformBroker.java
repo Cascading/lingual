@@ -124,6 +124,21 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
+  public boolean createPath( String path )
+    {
+    FileSystem fileSystem = getFileSystem( getConfig(), path );
+
+    try
+      {
+      return fileSystem.mkdirs( new Path( path ) );
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to make path: " + path, exception );
+      }
+    }
+
+  @Override
   public boolean deletePath( String path )
     {
     FileSystem fileSystem = getFileSystem( getConfig(), path );

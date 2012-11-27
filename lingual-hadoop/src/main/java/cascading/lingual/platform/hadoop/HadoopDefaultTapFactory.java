@@ -20,9 +20,10 @@
 
 package cascading.lingual.platform.hadoop;
 
-import cascading.bind.tap.TapResource;
+import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.platform.LingualTapHandler;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -31,18 +32,23 @@ import cascading.tap.hadoop.Hfs;
 /**
  *
  */
-public class HadoopResource extends TapResource<Protocol, Format>
+public class HadoopDefaultTapFactory extends LingualTapHandler
   {
-  public HadoopResource( String identifier, Protocol protocol, Format format, SinkMode mode )
+  public HadoopDefaultTapFactory()
     {
-    super( identifier, protocol, format, mode );
     }
 
   @Override
-  protected Tap createTapFor( Scheme scheme )
+  public boolean handles( Protocol protocol )
     {
-    if( getProtocol() == Protocol.FILE )
-      return new Hfs( scheme, getIdentifier(), getMode() );
+    return Protocol.FILE.equals( protocol );
+    }
+
+  @Override
+  protected Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme )
+    {
+    if( resource.getProtocol().equals( Protocol.FILE ) )
+      return new Hfs( scheme, resource.getIdentifier(), resource.getMode() );
 
     return null;
     }

@@ -21,7 +21,8 @@
 package cascading.lingual.catalog;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.io.PrintStream;
+import java.util.Properties;
 
 import cascading.lingual.common.Main;
 import cascading.lingual.platform.PlatformBroker;
@@ -32,20 +33,31 @@ import cascading.lingual.platform.PlatformBrokerFactory;
  */
 public class Catalog extends Main<CatalogOptions>
   {
+  Properties properties;
+
   public static void main( String[] args ) throws IOException
     {
-    Catalog catalog = new Catalog();
+    new Catalog().execute( args );
+    }
 
-    if( !catalog.parse( args ) )
-      return;
+  public Catalog( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
+    {
+    super( outPrintStream, errPrintStream );
+    this.properties = properties;
+    }
 
-    if( catalog.printUsage() )
-      return;
+  public Catalog( PrintStream outPrintStream, PrintStream errPrintStream )
+    {
+    super( outPrintStream, errPrintStream );
+    }
 
-    if( catalog.printVersion() )
-      return;
+  public Catalog( Properties properties )
+    {
+    this.properties = properties;
+    }
 
-    catalog.handle();
+  public Catalog()
+    {
     }
 
   protected CatalogOptions createOptions()
@@ -53,191 +65,76 @@ public class Catalog extends Main<CatalogOptions>
     return new CatalogOptions();
     }
 
+  public void execute( String[] args ) throws IOException
+    {
+    if( !parse( args ) )
+      return;
+
+    if( printUsage() )
+      return;
+
+    if( printVersion() )
+      return;
+
+    handle();
+    }
+
   @Override
   protected boolean handle() throws IOException
     {
-    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform() );
+    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), properties );
 
     if( getOptions().isInit() )
-      return initializeCatalog( platformBroker );
+      return metaDataPath( platformBroker );
 
-    if( getOptions().isListSchemas() )
-      return printSchemaNames( platformBroker );
-    else if( getOptions().isListTables() )
-      return printTableNames( platformBroker );
-    else if( getOptions().isListFormats() )
-      return printFormatNames( platformBroker );
-    else if( getOptions().isListProtocols() )
-      return printProtocolNames( platformBroker );
-
-
-    if( getOptions().isSchemaActions() )
-      return handleSchemaCRUD( platformBroker );
-    else if( getOptions().isTableActions() )
-      return handleTableCRUD( platformBroker );
-
-    return false;
-    }
-
-  private boolean handleSchemaCRUD( PlatformBroker platformBroker )
-    {
-    if( getOptions().getAddURI() != null )
-      return handleSchemaAdd( platformBroker );
-    else if( getOptions().isRemove() )
-      return handleSchemaRemove( platformBroker );
-    else if( getOptions().getRenameName() != null )
-      return handleSchemaRename( platformBroker );
-
-    return false;
-    }
-
-  private boolean handleTableCRUD( PlatformBroker platformBroker )
-    {
-    if( getOptions().getAddURI() != null )
-      return handleTableAdd( platformBroker );
-    else if( getOptions().isRemove() )
-      return handleTableRemove( platformBroker );
-    else if( getOptions().getRenameName() != null )
-      return handleTableRename( platformBroker );
-
-    return false;
-    }
-
-  private boolean handleSchemaRename( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    boolean result = catalog.renameSchemaDef( getOptions().getSchemaName(), getOptions().getRenameName() );
-
-    if( result )
-      print( "successfully renamed schema to: %s", getOptions().getRenameName() );
-    else
-      print( "failed to rename schema to: %s", getOptions().getRenameName() );
-
-    return result;
-    }
-
-  private boolean handleSchemaRemove( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    boolean result = catalog.removeSchemaDef( getOptions().getSchemaName() );
-
-    if( result )
-      print( "successfully removed schema: %s", getOptions().getSchemaName() );
-    else
-      print( "failed to remove schema: %s", getOptions().getSchemaName() );
-
-    return result;
-    }
-
-  private boolean handleSchemaAdd( PlatformBroker platformBroker )
-    {
-    String schemaName = platformBroker.getCatalog().createSchemaFor( getOptions().getAddURI() );
-
-    print( "added schema: %s", schemaName );
-
-    return true;
-    }
-
-  private boolean printSchemaNames( PlatformBroker platformBroker )
-    {
-    print( "schema", platformBroker.getCatalog().getSchemaNames() );
-
-    return true;
-    }
-
-  private boolean handleTableRename( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    boolean result = catalog.renameTableDef( getOptions().getSchemaName(), getOptions().getTableName(), getOptions().getRenameName() );
-    if( result )
-      print( "successfully renamed table to: %s", getOptions().getRenameName() );
-    else
-      print( "failed to rename table to: %s", getOptions().getRenameName() );
-
-    return result;
-    }
-
-  private boolean handleTableRemove( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    boolean result = catalog.removeTableDef( getOptions().getSchemaName(), getOptions().getTableName() );
-
-    if( result )
-      print( "successfully removed table: %s", getOptions().getTableName() );
-    else
-      print( "failed to remove table: %s", getOptions().getTableName() );
-
-    return result;
-    }
-
-  private boolean handleTableAdd( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    String tableName = catalog.createTableFor( getOptions().getSchemaName(), getOptions().getAddURI() );
-
-    print( "added table: %s", tableName );
-
-    return true;
-    }
-
-  private boolean printTableNames( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    print( "table", catalog.getTableNames( getOptions().getSchemaName() ) );
-
-    return true;
-    }
-
-  private boolean printFormatNames( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    print( "format", catalog.getFormatNames( getOptions().getSchemaName() ) );
-
-    return true;
-    }
-
-  private boolean printProtocolNames( PlatformBroker platformBroker )
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    print( "protocol", catalog.getProtocolNames( getOptions().getSchemaName() ) );
-
-    return true;
-    }
-
-  private boolean initializeCatalog( PlatformBroker platformBroker )
-    {
-    boolean result = platformBroker.hasBeenInitialized();
-
-    if( result )
+    try
       {
-      print( "path: %s has already been initialized", platformBroker.getFullCatalogPath() );
+      if( getOptions().isListSchemas() || getOptions().isSchemaActions() )
+        return handleSchema( platformBroker );
+      else if( getOptions().isListTables() || getOptions().isTableActions() )
+        return handleTable( platformBroker );
+      else if( getOptions().isListFormats() || getOptions().isFormatActions() )
+        return handleFormat( platformBroker );
+      else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
+        return handleProtocol( platformBroker );
+
+      throw new RuntimeException( "no command executed" );
       }
-    else
+    finally
       {
       platformBroker.writeCatalog();
-      print( "path: %s has been initialized", platformBroker.getFullCatalogPath() );
       }
+    }
+
+  private boolean handleSchema( PlatformBroker platformBroker )
+    {
+    return new SchemaHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  private boolean handleTable( PlatformBroker platformBroker )
+    {
+    return new TableHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  private boolean handleFormat( PlatformBroker platformBroker )
+    {
+    return new FormatHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  protected boolean handleProtocol( PlatformBroker platformBroker )
+    {
+    return new ProtocolHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  private boolean metaDataPath( PlatformBroker platformBroker )
+    {
+    boolean result = platformBroker.initializeMetaData();
+
+    if( result )
+      getPrinter().print( "path: %s has already been initialized", platformBroker.getFullMetadataPath() );
+    else
+      getPrinter().print( "path: %s has been initialized", platformBroker.getFullMetadataPath() );
 
     return !result;
-    }
-
-  private void print( String string, String... args )
-    {
-    getOutPrintStream().println( String.format( string, (Object[]) args ) );
-    }
-
-  private void print( String header, Collection<String> values )
-    {
-    getOutPrintStream().println( header );
-
-    getOutPrintStream().println( "-----" );
-
-    for( String value : values )
-      getOutPrintStream().println( value );
     }
   }

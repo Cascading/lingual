@@ -43,11 +43,13 @@ public class Options
 
   protected OptionSpecBuilder version;
   protected OptionSpecBuilder help;
+  protected OptionSpecBuilder debug;
   protected OptionSpec<String> platform;
 
   public Options()
     {
     help = parser.accepts( "help" );
+    debug = parser.accepts( "debug" );
     version = parser.accepts( "version" );
 
     platform = parser.accepts( "platform", "platform planner to use" )
@@ -85,6 +87,11 @@ public class Options
     return optionSet.has( help );
     }
 
+  public boolean isDebug()
+    {
+    return optionSet.has( debug );
+    }
+
   public boolean isListPlatforms()
     {
     return isSetWithNoArg( platform );
@@ -103,6 +110,12 @@ public class Options
     }
 
   ////////////////
+
+  public void printDebug( PrintStream printStream )
+    {
+    printStream.print( "classpath: " );
+    printStream.println( System.getProperty( "java.class.path" ) );
+    }
 
   public void printUsage( PrintStream printStream )
     {

@@ -100,6 +100,12 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
+  public boolean createPath( String path )
+    {
+    return new File( path ).mkdirs();
+    }
+
+  @Override
   public boolean deletePath( String path )
     {
     File file = new File( path );

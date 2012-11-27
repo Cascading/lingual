@@ -52,6 +52,11 @@ public abstract class Main<O extends Options>
     return options;
     }
 
+  public Printer getPrinter()
+    {
+    return new Printer( getOutPrintStream() );
+    }
+
   protected boolean printUsage()
     {
     if( !options.isHelp() )

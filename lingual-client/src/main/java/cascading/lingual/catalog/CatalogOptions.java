@@ -20,6 +20,10 @@
 
 package cascading.lingual.catalog;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import cascading.lingual.common.Options;
 import joptsimple.OptionSpec;
 
@@ -39,6 +43,10 @@ public class CatalogOptions extends Options
   private final OptionSpec<String> add;
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
+
+  private OptionSpec<String> scheme;
+  private OptionSpec<String> schemeProperties;
+  private OptionSpec<String> extensions;
 
   public CatalogOptions()
     {
@@ -69,6 +77,14 @@ public class CatalogOptions extends Options
     rename = parser.accepts( "rename", "rename the specified schema or table to given name" )
       .withRequiredArg();
 
+    extensions = parser.accepts( "exts", "file name extension to associate with format" )
+      .withRequiredArg().withValuesSeparatedBy( ',' );
+
+    scheme = parser.accepts( "scheme", "name of format to use" )
+      .withRequiredArg();
+
+    schemeProperties = parser.accepts( "scheme-properties", "name of format to use" )
+      .withRequiredArg();
     }
 
   @Override
@@ -124,6 +140,11 @@ public class CatalogOptions extends Options
     return isSetWithNoArg( format );
     }
 
+  public boolean isFormatActions()
+    {
+    return getFormatName() != null && optionSet.has( format );
+    }
+
   public String getFormatName()
     {
     return optionSet.valueOf( format );
@@ -139,7 +160,36 @@ public class CatalogOptions extends Options
     return optionSet.valueOf( protocol );
     }
 
+  public boolean isProtocolActions()
+    {
+    return getProtocolName() != null && optionSet.has( protocol );
+    }
+
+  public String getSchemeClassname()
+    {
+    return optionSet.valueOf( scheme );
+    }
+
+  public Map<String, String> getSchemeOptions()
+    {
+    Map<String, String> results = new HashMap<String, String>();
+    List<String> options = optionSet.valuesOf( schemeProperties );
+    for( String option : options )
+      {
+      String[] entry = option.split( "=" );
+
+      results.put( entry[ 0 ], entry.length == 1 ? null : entry[ 1 ] );
+      }
+
+    return results;
+    }
+
   /////
+
+  public boolean isAdd()
+    {
+    return optionSet.has( add );
+    }
 
   public String getAddURI()
     {
@@ -149,6 +199,11 @@ public class CatalogOptions extends Options
   public boolean isRemove()
     {
     return optionSet.has( remove );
+    }
+
+  public boolean isRename()
+    {
+    return optionSet.has( rename );
     }
 
   public String getRenameName()

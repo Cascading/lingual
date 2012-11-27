@@ -24,6 +24,13 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Interners;
+
 /**
  *
  */
@@ -49,5 +56,15 @@ public class Util
   public static String createTableNameFrom( String identifier )
     {
     return URI.create( identifier ).getPath().replaceAll( "^.*/([^/.]+)\\..*$", "$1" ).toUpperCase();
+    }
+
+  public static <Key, Value> LoadingCache<Key, Value> makeInternedCache( Function<Key, Value> factory )
+    {
+    Function<Key, Value> interner = Functions.compose(
+      Interners.asFunction( Interners.<Value>newStrongInterner() ),
+      factory
+    );
+
+    return CacheBuilder.newBuilder().build( CacheLoader.from( interner ) );
     }
   }

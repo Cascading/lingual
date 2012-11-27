@@ -23,6 +23,8 @@ package cascading.lingual.platform;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.Head;
@@ -33,7 +35,7 @@ import cascading.tuple.Fields;
 /**
  *
  */
-public class LingualFlowFactory extends FlowFactory
+public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   {
   PlatformBroker platformBroker;
   private Pipe tail;
@@ -41,7 +43,7 @@ public class LingualFlowFactory extends FlowFactory
 
   public LingualFlowFactory( PlatformBroker platformBroker, String name, Branch branch )
     {
-    super( platformBroker.getProperties(), name );
+    super( platformBroker.getProperties(), platformBroker.getCatalog().getTapHandlers(), name );
     this.platformBroker = platformBroker;
     this.catalog = platformBroker.getCatalog();
     this.tail = branch.current;

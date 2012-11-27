@@ -24,6 +24,9 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: 'application'
 
+evaluationDependsOn( ':lingual-local' )
+evaluationDependsOn( ':lingual-hadoop' )
+
 repositories {
   mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
 }
@@ -33,8 +36,8 @@ dependencies {
   compile project( ':lingual-core' )
 
   // make compile dep so get picked up by clientDist
-  compile project( ':lingual-local' )
-  compile project( path: ':lingual-hadoop', configuration: 'hadoopArtifacts' )
+//  providedCompile project( ':lingual-local' )
+//  providedCompile project( path: ':lingual-hadoop', configuration: 'hadoopArtifacts' )
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 
@@ -47,15 +50,26 @@ dependencies {
   runtime group: 'jline', name: 'jline', version: '1.0'
 }
 
-task clientDist( dependsOn: jar ) << {
+task clientDist( dependsOn: jar ) {
+  dependsOn << project( ":lingual-local" ).tasks[ "jar" ]
+  dependsOn << project( ":lingual-hadoop" ).tasks[ "hadoopJar" ]
+}
+
+clientDist << {
+
   def distDir = new File( "${buildDir}/dist" )
   distDir.delete();
   distDir.mkdir();
 
   copy {
+    into "$distDir/lib"
     from configurations.runtime
     from jar.archivePath
-    into "$distDir/lib"
+    from project( ":lingual-local" ).configurations.runtime
+    from project( ":lingual-local" ).jar
+    from project( ":lingual-hadoop" ).configurations.hadoopArtifacts
+    from project( ":lingual-hadoop" ).jar
+    from project( ":lingual-hadoop" ).hadoopJar
   }
 
   copy {

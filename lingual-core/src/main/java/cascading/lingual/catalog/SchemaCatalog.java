@@ -25,12 +25,16 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import cascading.bind.catalog.DynamicStereotype;
 import cascading.bind.catalog.Point;
+import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
-import cascading.bind.tap.TapResource;
+import cascading.bind.catalog.handler.SchemeHandler;
+import cascading.bind.catalog.handler.SchemeHandlers;
+import cascading.bind.catalog.handler.TapHandler;
+import cascading.bind.catalog.handler.TapHandlers;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
@@ -55,6 +59,9 @@ public abstract class SchemaCatalog implements Serializable
   @JsonProperty
   private SchemaDef rootSchemaDef = new SchemaDef();
 
+  private TapHandlers<Protocol, Format> tapHandlers;
+  private SchemeHandlers<Protocol, Format> schemeHandlers;
+
   private Map<String, Fields> nameFieldsMap = new HashMap<String, Fields>();
   private Map<String, Stereotype<Protocol, Format>> idStereotypeMap = new HashMap<String, Stereotype<Protocol, Format>>();
   private Map<String, Point<Protocol, Format>> idPointMap = new HashMap<String, Point<Protocol, Format>>();
@@ -71,7 +78,23 @@ public abstract class SchemaCatalog implements Serializable
   public void initialize()
     {
     if( !rootSchemaDef.hasStereotype( "dynamic" ) )
-      rootSchemaDef.addStereotype( createDynamicSchemaFor( Protocol.FILE, "dynamic", Fields.UNKNOWN ) );
+      rootSchemaDef.addStereotype( createStereotype( Protocol.FILE, "dynamic", Fields.UNKNOWN ) );
+    }
+
+  public TapHandlers<Protocol, Format> getTapHandlers()
+    {
+    if( tapHandlers == null )
+      tapHandlers = new TapHandlers<Protocol, Format>( createTapHandlers() );
+
+    return tapHandlers;
+    }
+
+  public SchemeHandlers<Protocol, Format> getSchemeHandlers()
+    {
+    if( schemeHandlers == null )
+      schemeHandlers = new SchemeHandlers<Protocol, Format>( createSchemeHandlers() );
+
+    return schemeHandlers;
     }
 
   public SchemaDef getRootSchemaDef()
@@ -205,16 +228,9 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getSchema( schemaName ).getProtocolNames();
     }
 
-  private DynamicStereotype<Protocol, Format> createDynamicSchemaFor( Protocol protocol, String name, Fields fields )
+  private Stereotype<Protocol, Format> createStereotype( Protocol protocol, String name, Fields fields )
     {
-    DynamicStereotype<Protocol, Format> stereotype = new DynamicStereotype<Protocol, Format>( protocol, name, fields );
-
-    stereotype.addSchemeFactory( getSchemeFactory(), Protocol.FILE, Format.CSV );
-    stereotype.addSchemeFactory( getSchemeFactory(), Protocol.FILE, Format.TSV );
-    stereotype.addSchemeFactory( getSchemeFactory(), Protocol.FILE, Format.TCSV );
-    stereotype.addSchemeFactory( getSchemeFactory(), Protocol.FILE, Format.TTSV );
-
-    return stereotype;
+    return new Stereotype<Protocol, Format>( getSchemeHandlers(), protocol, name, fields );
     }
 
   public void addIdentifier( String identifier, Protocol protocol, Format format )
@@ -287,7 +303,7 @@ public abstract class SchemaCatalog implements Serializable
       {
       addIdentifier( identifier, null, null );
       String name = Util.createTableNameFrom( identifier );
-      stereotype = createDynamicSchemaFor( getProtocolFor( identifier ), name, fields );
+      stereotype = createStereotype( getProtocolFor( identifier ), name, fields );
 
       rootSchemaDef.addStereotype( stereotype );
       }
@@ -302,8 +318,6 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getStereotypeFor( fields );
     }
 
-  protected abstract DynamicStereotype.SchemeFactory getSchemeFactory();
-
   public Fields getFieldsFor( String identifier )
     {
     String name = Util.createTableNameFrom( identifier );
@@ -314,7 +328,9 @@ public abstract class SchemaCatalog implements Serializable
     Protocol protocol = getDefaultProtocolFor( identifier );
     Format format = getDefaultFormatFor( identifier );
 
-    Tap tap = getResourceFor( identifier, protocol, format, SinkMode.KEEP ).createTapFor( rootSchemaDef.getStereotypeFor( Fields.UNKNOWN ) );
+    Resource<Protocol, Format, SinkMode> resource = getResourceFor( identifier, protocol, format, SinkMode.KEEP );
+
+    Tap tap = createTapFor( rootSchemaDef.getStereotypeFor( Fields.UNKNOWN ), resource );
     Fields fields = tap.retrieveSourceFields( platformBroker.getFlowProcess() );
 
     nameFieldsMap.put( name, fields );
@@ -322,12 +338,29 @@ public abstract class SchemaCatalog implements Serializable
     return fields;
     }
 
-  public TapResource getResourceFor( String identifier, SinkMode mode )
+  private Tap createTapFor( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )
+    {
+    TapHandler<Protocol, Format> tapHandler = getTapHandlers().findHandlerFor( resource.getProtocol() );
+
+    if( tapHandler != null )
+      return tapHandler.createTap( stereotype, resource );
+
+    return null;
+    }
+
+  public Resource<Protocol, Format, SinkMode> getResourceFor( String identifier, SinkMode mode )
     {
     Point<Protocol, Format> point = getPointFor( identifier, null, null );
 
     return getResourceFor( identifier, point.protocol, point.format, mode );
     }
 
-  public abstract TapResource getResourceFor( String identifier, Protocol protocol, Format format, SinkMode mode );
+  private Resource<Protocol, Format, SinkMode> getResourceFor( String identifier, Protocol protocol, Format format, SinkMode mode )
+    {
+    return new Resource<Protocol, Format, SinkMode>( identifier, protocol, format, mode );
+    }
+
+  protected abstract List<TapHandler<Protocol, Format>> createTapHandlers();
+
+  protected abstract List<SchemeHandler<Protocol, Format>> createSchemeHandlers();
   }

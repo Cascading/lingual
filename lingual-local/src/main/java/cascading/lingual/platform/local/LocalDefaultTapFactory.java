@@ -20,9 +20,10 @@
 
 package cascading.lingual.platform.local;
 
-import cascading.bind.tap.TapResource;
+import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.platform.LingualTapHandler;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -31,18 +32,23 @@ import cascading.tap.local.FileTap;
 /**
  *
  */
-public class LocalResource extends TapResource<Protocol, Format>
+public class LocalDefaultTapFactory extends LingualTapHandler
   {
-  public LocalResource( String identifier, Protocol protocol, Format format, SinkMode mode )
+  public LocalDefaultTapFactory()
     {
-    super( identifier, protocol, format, mode );
     }
 
   @Override
-  protected Tap createTapFor( Scheme scheme )
+  public boolean handles( Protocol protocol )
     {
-    if( getProtocol() == Protocol.FILE )
-      return new FileTap( scheme, getIdentifier(), getMode() );
+    return Protocol.FILE.equals( protocol );
+    }
+
+  @Override
+  protected Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme )
+    {
+    if( resource.getProtocol().equals( Protocol.FILE ) )
+      return new FileTap( scheme, resource.getIdentifier(), resource.getMode() );
 
     return null;
     }

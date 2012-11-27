@@ -46,7 +46,7 @@ public class CatalogPlatformTestCase extends LingualPlatformTestCase
 
     PlatformBroker broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
 
-    String catalogFilePath = PlatformBroker.makeFullCatalogFilePath( "/", brokerDataPath, "_lingual", "catalog.ser" );
+    String catalogFilePath = PlatformBroker.makePath( "/", brokerDataPath, "_lingual", "catalog.ser" );
 
     if( broker.pathExists( catalogFilePath ) )
       broker.deletePath( catalogFilePath );

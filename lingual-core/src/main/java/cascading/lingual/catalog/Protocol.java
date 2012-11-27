@@ -20,10 +20,71 @@
 
 package cascading.lingual.catalog;
 
+import java.io.Serializable;
+
+import cascading.lingual.util.Util;
+import com.google.common.base.Function;
+import com.google.common.cache.LoadingCache;
+
 /**
  *
  */
-public enum Protocol
+public class Protocol implements Serializable
   {
-    FILE
+  private static final Function<String, Protocol> factory = new Function<String, Protocol>()
+  {
+  @Override
+  public Protocol apply( String input )
+    {
+    return new Protocol( input.toLowerCase() );
+    }
+  };
+
+  private static final LoadingCache<String, Protocol> cache = Util.makeInternedCache( factory );
+
+  public static final Protocol FILE = getProtocol( "file" );
+
+  public static Protocol getProtocol( String name )
+    {
+    return cache.getUnchecked( name );
+    }
+
+  private final String name;
+
+  protected Protocol( String name )
+    {
+    this.name = name;
+    }
+
+  @Override
+  public String toString()
+    {
+    final StringBuilder sb = new StringBuilder();
+    sb.append( "Protocol" );
+    sb.append( "{name='" ).append( name ).append( '\'' );
+    sb.append( '}' );
+    return sb.toString();
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( object == null || getClass() != object.getClass() )
+      return false;
+
+    Protocol protocol = (Protocol) object;
+
+    if( name != null ? !name.equals( protocol.name ) : protocol.name != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    return name != null ? name.hashCode() : 0;
+    }
   }

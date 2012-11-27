@@ -18,9 +18,12 @@
  * limitations under the License.
  */
 
+
+
 dependencies {
 
   testCompile project( ':lingual-core' )
+  testCompile project( ':lingual-client' )
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true

@@ -20,30 +20,55 @@
 
 package cascading.lingual.catalog;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * $Author: $
- * $Date: $
- * $Revision: $
- */
-public enum Format
+import cascading.lingual.util.Util;
+import com.google.common.base.Function;
+import com.google.common.cache.LoadingCache;
+
+public class Format implements Serializable
   {
-    CSV( "csv" ),
-    TSV( "tsv" ),
-    TCSV( "tcsv" ),
-    TTSV( "ttsv" );
+  private static final Function<String, Format> factory = new Function<String, Format>()
+  {
+  @Override
+  public Format apply( String input )
+    {
+    return new Format( input.toLowerCase() );
+    }
+  };
+
+  private static final LoadingCache<String, Format> cache = Util.makeInternedCache( factory );
+
+  public static final Format CSV = addFormat( "csv", ".csv" );
+  public static final Format TSV = addFormat( "tsv", ".tsv" );
+  public static final Format TCSV = addFormat( "tcsv", ".tcsv" );
+  public static final Format TTSV = addFormat( "ttsv", ".ttsv" );
+
+  public static Format addFormat( String name, String... extensions )
+    {
+    Format format = cache.getUnchecked( name );
+
+    Collections.addAll( format.getExtensions(), extensions );
+
+    return format;
+    }
+
+  public static Format getFormat( String name )
+    {
+    return cache.getUnchecked( name );
+    }
 
   public static Format findFormatFor( String path )
     {
-    String extension = path.replaceAll( ".*\\.([^.]+)$", "$1" );
-
     if( path == null || path.isEmpty() )
       return null;
 
-    for( Format format : values() )
+    String extension = path.replaceAll( ".*\\.([^.]+)$", "$1" );
+
+    for( Format format : cache.asMap().values() )
       {
       if( format.extensions.contains( extension.toLowerCase() ) )
         return format;
@@ -52,10 +77,54 @@ public enum Format
     return null;
     }
 
-  Set<String> extensions = new HashSet<String>();
+  private final String name;
+  private final Set<String> extensions = new HashSet<String>();
 
-  private Format( String... extensions )
+  private Format( String name, String... extensions )
     {
+    this.name = name;
     Collections.addAll( this.extensions, extensions );
+    }
+
+  public String getName()
+    {
+    return name;
+    }
+
+  public Set<String> getExtensions()
+    {
+    return extensions;
+    }
+
+  @Override
+  public String toString()
+    {
+    final StringBuilder sb = new StringBuilder();
+    sb.append( "Format" );
+    sb.append( "{name='" ).append( name ).append( '\'' );
+    sb.append( '}' );
+    return sb.toString();
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( object == null || getClass() != object.getClass() )
+      return false;
+
+    Format format = (Format) object;
+
+    if( !name.equals( format.name ) )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    return name.hashCode();
     }
   }

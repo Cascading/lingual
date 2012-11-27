@@ -81,9 +81,17 @@ public abstract class PlatformBroker<Config>
     return catalog;
     }
 
-  public boolean hasBeenInitialized()
+  public boolean initializeMetaData()
     {
-    return pathExists( getFullCatalogPath() );
+    String path = getFullMetadataPath();
+
+    if( pathExists( path ) )
+      return true;
+
+    if( !createPath( path ) )
+      throw new RuntimeException( "unable to create catalog: " + path );
+
+    return false;
     }
 
   public void writeCatalog()
@@ -93,9 +101,16 @@ public abstract class PlatformBroker<Config>
     OutputStream outputStream = getOutputStream( catalogPath );
 
     if( true )
-      writeAsObject( catalogPath, outputStream );
+      writeAsObjectAndClose( catalogPath, outputStream );
     else
-      writeAsJson( catalogPath, outputStream );
+      writeAsJsonAndClose( catalogPath, outputStream );
+    }
+
+  public String getFullMetadataPath()
+    {
+    String catalogPath = getStringProperty( CATALOG_PROP );
+
+    return makeFullMetadataFilePath( catalogPath );
     }
 
   public String getFullCatalogPath()
@@ -105,13 +120,15 @@ public abstract class PlatformBroker<Config>
     return makeFullCatalogFilePath( catalogPath );
     }
 
-  private void writeAsObject( String catalogPath, OutputStream outputStream )
+  private void writeAsObjectAndClose( String catalogPath, OutputStream outputStream )
     {
     try
       {
       ObjectOutputStream objectOutputStream = new ObjectOutputStream( outputStream );
 
       objectOutputStream.writeObject( getCatalog() );
+
+      objectOutputStream.close();
       }
     catch( IOException exception )
       {
@@ -119,13 +136,15 @@ public abstract class PlatformBroker<Config>
       }
     }
 
-  private void writeAsJson( String catalogPath, OutputStream outputStream )
+  private void writeAsJsonAndClose( String catalogPath, OutputStream outputStream )
     {
     ObjectMapper mapper = getObjectMapper();
 
     try
       {
       mapper.writeValue( outputStream, getCatalog() );
+
+      outputStream.close();
       }
     catch( IOException exception )
       {
@@ -161,17 +180,21 @@ public abstract class PlatformBroker<Config>
       return null;
 
     if( true )
-      return readAsObject( catalogPath, inputStream );
+      return readAsObjectAndClose( catalogPath, inputStream );
     else
-      return readAsJson( catalogPath, inputStream );
+      return readAsJsonAndClose( catalogPath, inputStream );
     }
 
-  private SchemaCatalog readAsObject( String catalogPath, InputStream inputStream )
+  private SchemaCatalog readAsObjectAndClose( String catalogPath, InputStream inputStream )
     {
     try
       {
       ObjectInputStream objectInputStream = new ObjectInputStream( inputStream );
-      return (SchemaCatalog) objectInputStream.readObject();
+      SchemaCatalog schemaCatalog = (SchemaCatalog) objectInputStream.readObject();
+
+      objectInputStream.close();
+
+      return schemaCatalog;
       }
     catch( IOException exception )
       {
@@ -183,13 +206,15 @@ public abstract class PlatformBroker<Config>
       }
     }
 
-  private SchemaCatalog readAsJson( String catalogPath, InputStream inputStream )
+  private SchemaCatalog readAsJsonAndClose( String catalogPath, InputStream inputStream )
     {
     ObjectMapper mapper = getObjectMapper();
 
     try
       {
       SchemaCatalog schemaCatalog = mapper.readValue( inputStream, getCatalogClass() );
+
+      inputStream.close();
 
       schemaCatalog.setPlatformBroker( this );
 
@@ -206,23 +231,30 @@ public abstract class PlatformBroker<Config>
     return JsonFactory.getObjectMapper( this );
     }
 
+  private String makeFullMetadataFilePath( String catalogPath )
+    {
+    String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
+
+    return makePath( getFileSeparator(), catalogPath, metaDataPath );
+    }
+
   private String makeFullCatalogFilePath( String catalogPath )
     {
     String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
     String metaDataFile = properties.getProperty( CATALOG_FILE_PROP, CATALOG_FILE );
 
-    return makeFullCatalogFilePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile );
+    return makePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile );
     }
 
-  public static String makeFullCatalogFilePath( String fileSeparator, String catalogPath, String metaDataPath, String metaDataFile )
+  public static String makePath( String fileSeparator, String rootPath, String... elements )
     {
-    if( catalogPath == null )
-      catalogPath = ".";
+    if( rootPath == null )
+      rootPath = ".";
 
-    if( !catalogPath.endsWith( fileSeparator ) )
-      catalogPath += fileSeparator;
+    if( !rootPath.endsWith( fileSeparator ) )
+      rootPath += fileSeparator;
 
-    return catalogPath + metaDataPath + fileSeparator + metaDataFile;
+    return rootPath + Util.join( elements, fileSeparator );
     }
 
   protected abstract String getFileSeparator();
@@ -230,6 +262,8 @@ public abstract class PlatformBroker<Config>
   public abstract boolean pathExists( String path );
 
   public abstract boolean deletePath( String path );
+
+  public abstract boolean createPath( String path );
 
   protected abstract InputStream getInputStream( String path );
 

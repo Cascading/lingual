@@ -62,7 +62,8 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --columns [names,.]          |
 |                     | --types [types,.]            |
-|                     | --providers [name,.]         |
+|                     | --formats [name,.]           |
+|                     | --protocols [name,.]         |
 |                     | --show                       | display stereotype details
 |                     |                              |
 | --provider          |                              | list all registered protocol and format providers
@@ -70,12 +71,6 @@ To add new table to an existing schema:
 |                     | --remove                     |
 |                     | --rename [new name]          |
 |                     | --add                        | create a new provider with the following values
-|                     | --scheme [class]             | Scheme class name
-|                     | --scheme-param [key=value,.] | constructor parameters for class
-|                     | --tap [class]                | Tap class name
-|                     | --tap-param [key=value,.]    | constructor parameters for class
-|                     | --format [name]              | format, like CSV, TSV, Avro, or Thrift
-|                     | --protocol [name]            | optional, will use default for scheme
 |                     | --jar [uri]                  | jar path containing Tap/Scheme provider classes
 |                     | --dependency [spec]          | maven dependency, group:name:version
 |                     |                              |
@@ -85,13 +80,19 @@ To add new table to an existing schema:
 |                     | --rename [new name]          |
 |                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
 |                     | --ext [.ext,.]               | file extension used to identify format (.csv, .tsv, etc)
+|                     | --scheme [class]             | Scheme class name
+|                     | --scheme-param [key=value,.] | constructor parameters for class
+|                     | --provider [name]            |
 |                     |                              |
 | --protocol          |                              | list all registered protocol names
 | --protocol [name]   |                              |
 |                     | --remove                     |
 |                     | --rename [new name]          |
 |                     | --add                        | register a new protocol
-|                     | --scheme [uri,.]             | uri scheme to identify protocol (jdbc:, hdfs:, etc)
+|                     | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
+|                     | --tap [class]                | Tap class name
+|                     | --tap-param [key=value,.]    | constructor parameters for class
+|                     | --provider [name]            |
 
 
 # Catalog Structure
