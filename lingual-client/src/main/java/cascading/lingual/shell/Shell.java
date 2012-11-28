@@ -57,7 +57,7 @@ public class Shell extends Main<ShellOptions>
     {
     String[] sqlLineArgs = new String[]{
       "-d", Driver.class.getName(),
-      "-u", options.createJDBCUrl()
+      "-u", getOptions().createJDBCUrl()
     };
 
     SqlLine.main( sqlLineArgs );

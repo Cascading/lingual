@@ -1,4 +1,4 @@
-EMPNO:int,NAME:string,DEPTNO:int,GENDER:string,CITY:string,EMPID:int,AGE:int,SLACKER:boolean,MANAGER:boolean
+EMPNO,NAME,DEPTNO,GENDER,CITY,EMPID,AGE,SLACKER,MANAGER
 100,"Fred",10,,,30,25,true,false
 110,"Eric",20,"M","San Francisco",3,80,,false
 110,"John",40,"M","Vancouver",2,,false,true

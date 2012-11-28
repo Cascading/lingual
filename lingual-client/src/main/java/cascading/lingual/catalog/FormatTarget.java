@@ -20,50 +20,56 @@
 
 package cascading.lingual.catalog;
 
+import java.util.Collection;
+import java.util.List;
+
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
  *
  */
-public class ProtocolHandler extends Handler
+public class FormatTarget extends Target
   {
-  public ProtocolHandler( Printer printer, CatalogOptions options )
+  public FormatTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
 
   @Override
-  public boolean handle( PlatformBroker platformBroker )
+  protected boolean performRename( PlatformBroker platformBroker )
     {
     return false;
     }
 
   @Override
-  protected boolean handleRename( PlatformBroker platformBroker )
+  protected boolean performRemove( PlatformBroker platformBroker )
     {
     return false;
     }
 
   @Override
-  protected boolean handleRemove( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handleAdd( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handlePrint( PlatformBroker platformBroker )
+  protected String performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    getPrinter().print( "protocol", catalog.getProtocolNames( getOptions().getSchemaName() ) );
 
-    return true;
+    Format format = Format.getFormat( getOptions().getFormatName() );
+
+    if( format == null )
+      throw new IllegalArgumentException( "add action must have a format name value" );
+
+    String schemaName = getOptions().getSchemaName();
+    List<String> extensions = getOptions().getExtensions();
+
+    catalog.addFormat( schemaName, format, extensions );
+
+    return format.getName();
     }
 
+  @Override
+  protected Collection<String> performGetNames( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    return catalog.getFormatNames( getOptions().getSchemaName() );
+    }
   }

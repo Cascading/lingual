@@ -20,10 +20,13 @@
 
 package cascading.lingual.platform.hadoop;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.platform.LingualTapHandler;
+import cascading.lingual.platform.LingualProtocolHandler;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -32,22 +35,30 @@ import cascading.tap.hadoop.Hfs;
 /**
  *
  */
-public class HadoopDefaultTapFactory extends LingualTapHandler
+public class HadoopDefaultProtocolHandler extends LingualProtocolHandler
   {
-  public HadoopDefaultTapFactory()
+  public static final Protocol HDFS = Protocol.getProtocol( "hdfs" );
+
+  public HadoopDefaultProtocolHandler()
     {
     }
 
   @Override
   public boolean handles( Protocol protocol )
     {
-    return Protocol.FILE.equals( protocol );
+    return HDFS.equals( protocol );
+    }
+
+  @Override
+  public Collection<? extends Protocol> getProtocols()
+    {
+    return Collections.singleton( HDFS );
     }
 
   @Override
   protected Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme )
     {
-    if( resource.getProtocol().equals( Protocol.FILE ) )
+    if( resource.getProtocol().equals( HDFS ) )
       return new Hfs( scheme, resource.getIdentifier(), resource.getMode() );
 
     return null;

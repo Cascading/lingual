@@ -32,10 +32,22 @@ public class TableDef extends Def
   @JsonProperty
   private Stereotype stereotype;
 
+  private Protocol protocol;
+
+  private Format format;
+
   public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype )
     {
     super( parentSchema, name, identifier );
     this.stereotype = stereotype;
+    }
+
+  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype, Protocol protocol, Format format )
+    {
+    super( parentSchema, name, identifier );
+    this.stereotype = stereotype;
+    this.protocol = protocol;
+    this.format = format;
     }
 
   public TableDef copyWith( String newName )
@@ -51,5 +63,15 @@ public class TableDef extends Def
   public Fields getFields()
     {
     return stereotype.getFields();
+    }
+
+  public Protocol getProtocol()
+    {
+    return protocol;
+    }
+
+  public Format getFormat()
+    {
+    return format;
     }
   }

@@ -27,17 +27,25 @@ import java.util.Properties;
 import cascading.lingual.common.Main;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
+import com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class Catalog extends Main<CatalogOptions>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( Catalog.class );
+
   Properties properties;
 
   public static void main( String[] args ) throws IOException
     {
-    new Catalog().execute( args );
+    boolean result = new Catalog().execute( args );
+
+    if( !result )
+      System.exit( -1 );
     }
 
   public Catalog( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
@@ -65,18 +73,50 @@ public class Catalog extends Main<CatalogOptions>
     return new CatalogOptions();
     }
 
-  public void execute( String[] args ) throws IOException
+  public boolean execute( String[] args ) throws IOException
     {
     if( !parse( args ) )
-      return;
+      return true;
+
+    setVerbose();
 
     if( printUsage() )
-      return;
+      return true;
 
     if( printVersion() )
-      return;
+      return true;
 
-    handle();
+    try
+      {
+      return handle();
+      }
+    catch( IllegalArgumentException exception )
+      {
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), exception );
+      }
+    catch( Throwable throwable )
+      {
+      printFailure( getErrPrintStream(), throwable );
+      }
+
+    return false;
+    }
+
+  private void printFailure( PrintStream errPrintStream, Throwable throwable )
+    {
+    errPrintStream.println( "command failed with: " + throwable.getMessage() );
+
+    Throwable cause = Throwables.getRootCause( throwable );
+
+    if( cause != null )
+      {
+      errPrintStream.println( "with cause: " + cause.getClass() );
+
+      if( cause.getMessage() != null )
+        errPrintStream.println( "          : " + cause.getMessage() );
+
+      errPrintStream.println( Throwables.getStackTraceAsString( cause ) );
+      }
     }
 
   @Override
@@ -87,47 +127,67 @@ public class Catalog extends Main<CatalogOptions>
     if( getOptions().isInit() )
       return metaDataPath( platformBroker );
 
+    boolean doNotWrite = false;
+
     try
       {
       if( getOptions().isListSchemas() || getOptions().isSchemaActions() )
         return handleSchema( platformBroker );
       else if( getOptions().isListTables() || getOptions().isTableActions() )
         return handleTable( platformBroker );
+      else if( getOptions().isListStereotypes() || getOptions().isStereotypeActions() )
+        return handleStereotype( platformBroker );
       else if( getOptions().isListFormats() || getOptions().isFormatActions() )
         return handleFormat( platformBroker );
       else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
         return handleProtocol( platformBroker );
 
-      throw new RuntimeException( "no command executed" );
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove" );
+      }
+    catch( Throwable throwable )
+      {
+      doNotWrite = true;
+      Throwables.propagate( throwable );
+      return false;
       }
     finally
       {
-      platformBroker.writeCatalog();
+      if( !doNotWrite )
+        platformBroker.writeCatalog();
       }
+
+    return false;
     }
 
   private boolean handleSchema( PlatformBroker platformBroker )
     {
-    return new SchemaHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    return new SchemaTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   private boolean handleTable( PlatformBroker platformBroker )
     {
-    return new TableHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    return new TableTarget( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  private boolean handleStereotype( PlatformBroker platformBroker )
+    {
+    return new StereotypeTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   private boolean handleFormat( PlatformBroker platformBroker )
     {
-    return new FormatHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    return new FormatTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   protected boolean handleProtocol( PlatformBroker platformBroker )
     {
-    return new ProtocolHandler( getPrinter(), getOptions() ).handle( platformBroker );
+    return new ProtocolTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   private boolean metaDataPath( PlatformBroker platformBroker )
     {
+    LOG.debug( "catalog: init" );
+
     boolean result = platformBroker.initializeMetaData();
 
     if( result )

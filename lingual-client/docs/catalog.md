@@ -34,15 +34,16 @@ To add new table to an existing schema:
 |                     |                              |
 | --repo              |                              | list all maven repos
 | --repo [name]       |                              |
-|                     | --add [uri]                  | add maven repo
 |                     | --remove                     | remove maven repo
+|                     | --add [uri]                  | add maven repo
 |                     |                              |
 | --init              |                              | initializes a new catalog in the current directory if --uri is not given
+|                     |                              |
 | --schema            |                              | lists all current schemas
 | --schema [name]     |                              |
-|                     | --add [uri]*                 | uri optional, add path as a new schema root
 |                     | --remove                     |
 |                     | --rename [new name]          |
+|                     | --add [uri]*                 | uri optional, add path as a new schema root
 |                     |                              |
 | --table             |                              | lists all tables for the current schema
 | --table [name]      |                              |
@@ -50,8 +51,8 @@ To add new table to an existing schema:
 |                     | --rename [new name]          | logically renames table, does not alter files
 |                     | --add [uri]                  | add path as a new table root, will attempt to resolve stereotype
 |                     | --stereotype [name]          | use existing stereotype for table definition
-|                     | --format [name]              | use format for identifier
-|                     | --protocol [name]            | optional, use protocol for identifier
+|                     | --format [name]              | use format for uri identifier
+|                     | --protocol [name]            | optional, use protocol for uri identifier
 |                     | --show                       | display table details
 |                     |                              |
 | --stereotype        |                              | list all registered stereotype names
@@ -62,8 +63,6 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --columns [names,.]          |
 |                     | --types [types,.]            |
-|                     | --formats [name,.]           |
-|                     | --protocols [name,.]         |
 |                     | --show                       | display stereotype details
 |                     |                              |
 | --provider          |                              | list all registered protocol and format providers
@@ -74,25 +73,24 @@ To add new table to an existing schema:
 |                     | --jar [uri]                  | jar path containing Tap/Scheme provider classes
 |                     | --dependency [spec]          | maven dependency, group:name:version
 |                     |                              |
+|                     |                              |
 | --format            |                              | list all registered format names
 | --format [name]     |                              |
 |                     | --remove                     |
-|                     | --rename [new name]          |
 |                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
+|                     | --provider [name]            | use the given provider
+|                     | --update                     | update with given values (replaces values)
 |                     | --ext [.ext,.]               | file extension used to identify format (.csv, .tsv, etc)
-|                     | --scheme [class]             | Scheme class name
-|                     | --scheme-param [key=value,.] | constructor parameters for class
-|                     | --provider [name]            |
+|                     | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
 |                     |                              |
 | --protocol          |                              | list all registered protocol names
 | --protocol [name]   |                              |
 |                     | --remove                     |
-|                     | --rename [new name]          |
 |                     | --add                        | register a new protocol
+|                     | --provider [name]            | use the given provider
+|                     | --update                     | update with given values (replaces values)
 |                     | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
-|                     | --tap [class]                | Tap class name
-|                     | --tap-param [key=value,.]    | constructor parameters for class
-|                     | --provider [name]            |
+|                     | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
 
 
 # Catalog Structure

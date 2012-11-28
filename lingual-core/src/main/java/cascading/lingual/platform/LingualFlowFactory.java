@@ -43,13 +43,13 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
 
   public LingualFlowFactory( PlatformBroker platformBroker, String name, Branch branch )
     {
-    super( platformBroker.getProperties(), platformBroker.getCatalog().getTapHandlers(), name );
+    super( platformBroker.getProperties(), platformBroker.getCatalog().getProtocolHandlers(), name );
     this.platformBroker = platformBroker;
     this.catalog = platformBroker.getCatalog();
     this.tail = branch.current;
 
     for( Head head : branch.heads.keySet() )
-      setSourceStereotype( head.name, catalog.getStereotypeFor( head.identifier ) );
+      setSourceStereotype( head.name, catalog.findStereotypeFor( head.identifier ) );
 
     setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
     }

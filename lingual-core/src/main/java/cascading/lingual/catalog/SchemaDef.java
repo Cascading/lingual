@@ -22,10 +22,12 @@ package cascading.lingual.catalog;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cascading.bind.catalog.Catalog;
 import cascading.bind.catalog.Stereotype;
+import cascading.lingual.util.MultiProperties;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -47,6 +49,12 @@ public class SchemaDef extends Def
 
   @JsonProperty
   private Map<String, TableDef> tables = new HashMap<String, TableDef>();
+
+  @JsonProperty
+  private MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
+
+  @JsonProperty
+  private MultiProperties<Format> formatProperties = new MultiProperties<Format>();
 
   public SchemaDef()
     {
@@ -70,6 +78,71 @@ public class SchemaDef extends Def
   public boolean isRoot()
     {
     return getParentSchema() == null;
+    }
+
+
+  public void addProtocolProperties( Protocol protocol, Map<String, List<String>> properties )
+    {
+    protocolProperties.addProperties( protocol, properties );
+    }
+
+  public void addProtocolProperty( Protocol protocol, String property, String... values )
+    {
+    protocolProperties.addProperty( protocol, property, values );
+    }
+
+  public void addProtocolProperty( Protocol protocol, String property, List<String> values )
+    {
+    protocolProperties.addProperty( protocol, property, values );
+    }
+
+  public Map<Protocol, List<String>> getProtocolProperties( String property )
+    {
+    Map<Protocol, List<String>> values = new HashMap<Protocol, List<String>>();
+
+    populateProtocolProperty( values, property );
+
+    return values;
+    }
+
+  private void populateProtocolProperty( Map<Protocol, List<String>> values, String property )
+    {
+    if( !isRoot() )
+      getParentSchema().populateProtocolProperty( values, property );
+
+    values.putAll( protocolProperties.getKeyFor( property ) );
+    }
+
+  public void addFormatProperties( Format format, Map<String, List<String>> properties )
+    {
+    formatProperties.addProperties( format, properties );
+    }
+
+  public void addFormatProperty( Format format, String property, String... values )
+    {
+    formatProperties.addProperty( format, property, values );
+    }
+
+  public void addFormatProperty( Format format, String property, List<String> values )
+    {
+    formatProperties.addProperty( format, property, values );
+    }
+
+  public Map<Format, List<String>> getFormatProperties( String property )
+    {
+    Map<Format, List<String>> values = new HashMap<Format, List<String>>();
+
+    populateFormatProperty( values, property );
+
+    return values;
+    }
+
+  private void populateFormatProperty( Map<Format, List<String>> values, String property )
+    {
+    if( !isRoot() )
+      getParentSchema().populateFormatProperty( values, property );
+
+    values.putAll( formatProperties.getKeyFor( property ) );
     }
 
   public Collection<SchemaDef> getChildSchemaDefs()
@@ -183,17 +256,45 @@ public class SchemaDef extends Def
     return true;
     }
 
-  public void addTable( String name, String identifier, Stereotype<Protocol, Format> stereotype )
+  public void addTable( String name, String identifier, Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
     if( tables.containsKey( name ) )
       throw new IllegalArgumentException( "table named: " + name + " already exists" );
 
-    tables.put( name, new TableDef( this, name, identifier, stereotype ) );
+    tables.put( name, new TableDef( this, name, identifier, stereotype, protocol, format ) );
+    }
+
+  public TableDef findTableFor( String identifier )
+    {
+    for( TableDef tableDef : tables.values() )
+      {
+      if( tableDef.getIdentifier().equals( identifier ) )
+        return tableDef;
+      }
+
+    for( SchemaDef schemaDef : schemas.values() )
+      {
+      TableDef tableDef = schemaDef.findTableFor( identifier );
+      if( tableDef != null )
+        return tableDef;
+      }
+
+    return null;
     }
 
   public void addStereotype( Stereotype<Protocol, Format> stereotype )
     {
     stereotypes.addStereotype( stereotype );
+    }
+
+  public boolean removeStereotype( String name )
+    {
+    return stereotypes.removeStereotype( name );
+    }
+
+  public boolean renameStereotype( String name, String newName )
+    {
+    return stereotypes.renameStereotype( name, newName );
     }
 
   public Stereotype<Protocol, Format> getStereotypeFor( Fields fields )
@@ -231,5 +332,10 @@ public class SchemaDef extends Def
       return input.toString();
       }
     } );
+    }
+
+  public Collection<String> getStereotypeNames()
+    {
+    return stereotypes.getStereotypeNames();
     }
   }

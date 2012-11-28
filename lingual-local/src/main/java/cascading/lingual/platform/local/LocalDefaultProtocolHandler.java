@@ -20,10 +20,15 @@
 
 package cascading.lingual.platform.local;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.platform.LingualTapHandler;
+import cascading.lingual.platform.LingualProtocolHandler;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -32,22 +37,30 @@ import cascading.tap.local.FileTap;
 /**
  *
  */
-public class LocalDefaultTapFactory extends LingualTapHandler
+public class LocalDefaultProtocolHandler extends LingualProtocolHandler
   {
-  public LocalDefaultTapFactory()
+  public static final Protocol FILE = Protocol.getProtocol( "file" );
+
+  public LocalDefaultProtocolHandler()
     {
+    }
+
+  @Override
+  public Collection<? extends Protocol> getProtocols()
+    {
+    return Collections.singleton( FILE );
     }
 
   @Override
   public boolean handles( Protocol protocol )
     {
-    return Protocol.FILE.equals( protocol );
+    return FILE.equals( protocol );
     }
 
   @Override
   protected Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme )
     {
-    if( resource.getProtocol().equals( Protocol.FILE ) )
+    if( resource.getProtocol().equals( FILE ) )
       return new FileTap( scheme, resource.getIdentifier(), resource.getMode() );
 
     return null;

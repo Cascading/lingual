@@ -41,10 +41,11 @@ dependencies {
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 
+  compile group: 'log4j', name: 'log4j', version: '1.2.16' // for setting log level as a cli option
   runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
-  runtime group: 'log4j', name: 'log4j', version: '1.2.16'
 
-  compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3'
+//  compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3'
+  compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4-beta-2'
   compile group: 'sqlline', name: 'sqlline', version: '1_0_2'
 
   runtime group: 'jline', name: 'jline', version: '1.0'

@@ -21,6 +21,8 @@
 package cascading.lingual.catalog;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import cascading.lingual.util.Util;
 import com.google.common.base.Function;
@@ -42,11 +44,22 @@ public class Protocol implements Serializable
 
   private static final LoadingCache<String, Protocol> cache = Util.makeInternedCache( factory );
 
-  public static final Protocol FILE = getProtocol( "file" );
-
   public static Protocol getProtocol( String name )
     {
+    if( name == null || name.isEmpty() )
+      return null;
+
     return cache.getUnchecked( name );
+    }
+
+  public static List<Protocol> resolveProtocols( List<String> protocols )
+    {
+    List<Protocol> results = new ArrayList<Protocol>();
+
+    for( String protocol : protocols )
+      results.add( getProtocol( protocol ) );
+
+    return results;
     }
 
   private final String name;
@@ -54,6 +67,11 @@ public class Protocol implements Serializable
   protected Protocol( String name )
     {
     this.name = name;
+    }
+
+  public String getName()
+    {
+    return name;
     }
 
   @Override

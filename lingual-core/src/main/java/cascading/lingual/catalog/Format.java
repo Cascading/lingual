@@ -21,8 +21,10 @@
 package cascading.lingual.catalog;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import cascading.lingual.util.Util;
@@ -42,58 +44,34 @@ public class Format implements Serializable
 
   private static final LoadingCache<String, Format> cache = Util.makeInternedCache( factory );
 
-  public static final Format CSV = addFormat( "csv", ".csv" );
-  public static final Format TSV = addFormat( "tsv", ".tsv" );
-  public static final Format TCSV = addFormat( "tcsv", ".tcsv" );
-  public static final Format TTSV = addFormat( "ttsv", ".ttsv" );
-
-  public static Format addFormat( String name, String... extensions )
-    {
-    Format format = cache.getUnchecked( name );
-
-    Collections.addAll( format.getExtensions(), extensions );
-
-    return format;
-    }
-
   public static Format getFormat( String name )
     {
+    if( name == null || name.isEmpty() )
+      return null;
+
     return cache.getUnchecked( name );
     }
 
-  public static Format findFormatFor( String path )
+  public static List<Format> resolveFormats( List<String> formats )
     {
-    if( path == null || path.isEmpty() )
-      return null;
+    List<Format> results = new ArrayList<Format>();
 
-    String extension = path.replaceAll( ".*\\.([^.]+)$", "$1" );
+    for( String format : formats )
+      results.add( getFormat( format ) );
 
-    for( Format format : cache.asMap().values() )
-      {
-      if( format.extensions.contains( extension.toLowerCase() ) )
-        return format;
-      }
-
-    return null;
+    return results;
     }
 
   private final String name;
-  private final Set<String> extensions = new HashSet<String>();
 
-  private Format( String name, String... extensions )
+  private Format( String name )
     {
     this.name = name;
-    Collections.addAll( this.extensions, extensions );
     }
 
   public String getName()
     {
     return name;
-    }
-
-  public Set<String> getExtensions()
-    {
-    return extensions;
     }
 
   @Override

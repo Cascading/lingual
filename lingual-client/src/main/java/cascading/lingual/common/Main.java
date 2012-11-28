@@ -33,7 +33,7 @@ public abstract class Main<O extends Options>
 
   private String[] args;
 
-  protected O options;
+  private O options;
 
   protected Main()
     {
@@ -62,7 +62,7 @@ public abstract class Main<O extends Options>
     if( !options.isHelp() )
       return false;
 
-    options.printUsage( getErrPrintStream() );
+    options.printUsage( getOutPrintStream() );
 
     return true;
     }
@@ -72,7 +72,7 @@ public abstract class Main<O extends Options>
     if( !options.isVersion() )
       return false;
 
-    options.printVersion( getErrPrintStream() );
+    options.printVersion( getOutPrintStream() );
 
     return true;
     }
@@ -99,5 +99,18 @@ public abstract class Main<O extends Options>
   public PrintStream getErrPrintStream()
     {
     return errPrintStream;
+    }
+
+  protected void setVerbose()
+    {
+    if( getOptions().isVerbose() )
+      setLogLevel( getOptions().getVerbose() );
+    else
+      setLogLevel( "off" );
+    }
+
+  public static void setLogLevel( String level )
+    {
+    org.apache.log4j.Logger.getLogger( "cascading.lingual" ).setLevel( org.apache.log4j.Level.toLevel( level ) );
     }
   }

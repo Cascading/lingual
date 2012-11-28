@@ -20,65 +20,60 @@
 
 package cascading.lingual.tap;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import cascading.lingual.util.Util;
-import cascading.scheme.util.RegexFieldTypeResolver;
+import cascading.lingual.util.SimpleTypeMap;
+import cascading.lingual.util.TypeMap;
+import cascading.scheme.util.FieldTypeResolver;
 
 /**
  *
  */
-public class TypedFieldTypeResolver extends RegexFieldTypeResolver
+public class TypedFieldTypeResolver implements FieldTypeResolver
   {
-  static final Map<String, Class> fieldTypeMap;
-  static final Map<Class, String> typeFieldMap;
-
-  static
-    {
-    fieldTypeMap = new HashMap<String, Class>();
-
-    fieldTypeMap.put( ":string", String.class );
-
-    // primitives
-    fieldTypeMap.put( ":boolean", Boolean.TYPE );
-    fieldTypeMap.put( ":int", Integer.TYPE );
-    fieldTypeMap.put( ":short", Short.TYPE );
-    fieldTypeMap.put( ":long", Long.TYPE );
-    fieldTypeMap.put( ":float", Float.TYPE );
-    fieldTypeMap.put( ":byte", Byte.TYPE );
-
-    // objects
-    fieldTypeMap.put( ":Boolean", Boolean.class );
-    fieldTypeMap.put( ":Integer", Integer.class );
-    fieldTypeMap.put( ":Short", Short.class );
-    fieldTypeMap.put( ":Long", Long.class );
-    fieldTypeMap.put( ":Float", Float.class );
-    fieldTypeMap.put( ":Byte", Byte.class );
-
-    typeFieldMap = Util.invert( fieldTypeMap );
-    }
+  private final TypeMap typeMap;
+  private final Class defaultType;
 
   public TypedFieldTypeResolver()
     {
-    super( fieldTypeMap, String.class );
+    typeMap = new SimpleTypeMap();
+    defaultType = String.class;
+    }
+
+  public TypedFieldTypeResolver( TypeMap typeMap, Class defaultType )
+    {
+    this.typeMap = typeMap;
+    this.defaultType = defaultType;
     }
 
   @Override
+  public Class inferTypeFrom( int ordinal, String fieldName )
+    {
+    for( Map.Entry<String, Class> entry : typeMap.getNameToTypeMap().entrySet() )
+      {
+      String pattern = entry.getKey();
+
+      if( matches( pattern, fieldName ) )
+        return entry.getValue();
+      }
+
+    return defaultType;
+    }
+
   protected boolean matches( String pattern, String fieldName )
     {
-    return super.matches( ".*" + pattern + "$", fieldName );
+    return fieldName.matches( String.format( ".*:%s$", pattern ) );
     }
 
   @Override
   public String prepareField( int i, String fieldName, Class type )
     {
-    String pattern = typeFieldMap.get( type );
+    String pattern = typeMap.getNameFor( type );
 
     if( pattern == null )
       return fieldName;
 
-    return fieldName + pattern;
+    return String.format( "%s:%s", fieldName, pattern );
     }
 
   @Override

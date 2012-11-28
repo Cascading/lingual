@@ -21,12 +21,15 @@
 package cascading.lingual.platform;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
-import cascading.bind.catalog.handler.TapHandler;
+import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -34,8 +37,20 @@ import cascading.tap.Tap;
 /**
  *
  */
-public abstract class LingualTapHandler implements TapHandler<Protocol, Format>, Serializable
+public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol, Format>, Serializable
   {
+  private MultiProperties<Protocol> defaults = new MultiProperties<Protocol>();
+
+  public MultiProperties<Protocol> getDefaults()
+    {
+    return defaults;
+    }
+
+  @Override
+  public Map<String, List<String>> getDefaultProperties( Protocol protocol )
+    {
+    return getDefaults().getValueFor( protocol );
+    }
 
   @Override
   public Tap createTap( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )

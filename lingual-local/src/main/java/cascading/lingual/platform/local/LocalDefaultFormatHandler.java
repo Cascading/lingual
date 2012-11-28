@@ -20,29 +20,47 @@
 
 package cascading.lingual.platform.local;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.platform.LingualSchemeFactory;
+import cascading.lingual.platform.LingualFormatHandler;
 import cascading.lingual.tap.local.TypedTextDelimited;
+import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
 import cascading.tuple.Fields;
 import com.google.common.base.Function;
 import com.google.common.collect.Table;
 
+import static cascading.lingual.catalog.FormatProperties.EXTENSIONS;
+import static cascading.lingual.platform.local.LocalDefaultProtocolHandler.FILE;
+
 /**
  *
  */
-public class LocalDefaultSchemeFactory extends LingualSchemeFactory
+public class LocalDefaultFormatHandler extends LingualFormatHandler
   {
-  public LocalDefaultSchemeFactory()
+  public static final Format CSV = Format.getFormat( "csv" );
+  public static final Format TSV = Format.getFormat( "tsv" );
+  public static final Format TCSV = Format.getFormat( "tcsv" );
+  public static final Format TTSV = Format.getFormat( "ttsv" );
+
+  public LocalDefaultFormatHandler()
     {
+    getDefaults().addProperty( CSV, EXTENSIONS, ".csv" );
+    getDefaults().addProperty( TSV, EXTENSIONS, ".tsv" );
+    getDefaults().addProperty( TCSV, EXTENSIONS, ".tcsv" );
+    getDefaults().addProperty( TTSV, EXTENSIONS, ".ttsv" );
     }
 
   @Override
   protected void initialize( Table<Protocol, Format, Function<Fields, Scheme>> table )
     {
-    table.put( Protocol.FILE, Format.CSV, new Function<Fields, Scheme>()
+    table.put( FILE, CSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -51,7 +69,7 @@ public class LocalDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TSV, new Function<Fields, Scheme>()
+    table.put( FILE, TSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -60,7 +78,7 @@ public class LocalDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TCSV, new Function<Fields, Scheme>()
+    table.put( FILE, TCSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -69,7 +87,7 @@ public class LocalDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TTSV, new Function<Fields, Scheme>()
+    table.put( FILE, TTSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )

@@ -20,49 +20,46 @@
 
 package cascading.lingual.catalog;
 
+import java.util.Collection;
+
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
  *
  */
-public class FormatHandler extends Handler
+public class SchemaTarget extends Target
   {
-  public FormatHandler( Printer printer, CatalogOptions options )
+  public SchemaTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
 
   @Override
-  public boolean handle( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handleRename( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handleRemove( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handleAdd( PlatformBroker platformBroker )
-    {
-    return false;
-    }
-
-  @Override
-  protected boolean handlePrint( PlatformBroker platformBroker )
+  protected boolean performRename( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    getPrinter().print( "format", catalog.getFormatNames( getOptions().getSchemaName() ) );
 
-    return true;
+    return catalog.renameSchemaDef( getOptions().getSchemaName(), getOptions().getRenameName() );
+    }
+
+  @Override
+  protected boolean performRemove( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.removeSchemaDef( getOptions().getSchemaName() );
+    }
+
+  @Override
+  protected String performAdd( PlatformBroker platformBroker )
+    {
+    return platformBroker.getCatalog().createSchemaDefAndTableDefsFor( getOptions().getAddURI() );
+    }
+
+  @Override
+  protected Collection<String> performGetNames( PlatformBroker platformBroker )
+    {
+    return platformBroker.getCatalog().getSchemaNames();
     }
   }

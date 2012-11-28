@@ -22,7 +22,7 @@ package cascading.lingual.platform.hadoop;
 
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.platform.LingualSchemeFactory;
+import cascading.lingual.platform.LingualFormatHandler;
 import cascading.lingual.tap.hadoop.TypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
@@ -30,19 +30,31 @@ import cascading.tuple.Fields;
 import com.google.common.base.Function;
 import com.google.common.collect.Table;
 
+import static cascading.lingual.catalog.FormatProperties.EXTENSIONS;
+import static cascading.lingual.platform.hadoop.HadoopDefaultProtocolHandler.HDFS;
+
 /**
  *
  */
-public class HadoopDefaultSchemeFactory extends LingualSchemeFactory
+public class HadoopDefaultFormatHandler extends LingualFormatHandler
   {
-  HadoopDefaultSchemeFactory()
+  public static final Format CSV = Format.getFormat( "csv" );
+  public static final Format TSV = Format.getFormat( "tsv" );
+  public static final Format TCSV = Format.getFormat( "tcsv" );
+  public static final Format TTSV = Format.getFormat( "ttsv" );
+
+  HadoopDefaultFormatHandler()
     {
+    getDefaults().addProperty( CSV, EXTENSIONS, ".csv" );
+    getDefaults().addProperty( TSV, EXTENSIONS, ".tsv" );
+    getDefaults().addProperty( TCSV, EXTENSIONS, ".tcsv" );
+    getDefaults().addProperty( TTSV, EXTENSIONS, ".ttsv" );
     }
 
   @Override
   protected void initialize( Table<Protocol, Format, Function<Fields, Scheme>> table )
     {
-    table.put( Protocol.FILE, Format.CSV, new Function<Fields, Scheme>()
+    table.put( HDFS, CSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -51,7 +63,7 @@ public class HadoopDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TSV, new Function<Fields, Scheme>()
+    table.put( HDFS, TSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -60,7 +72,7 @@ public class HadoopDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TCSV, new Function<Fields, Scheme>()
+    table.put( HDFS, TCSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )
@@ -69,7 +81,7 @@ public class HadoopDefaultSchemeFactory extends LingualSchemeFactory
       }
     } );
 
-    table.put( Protocol.FILE, Format.TTSV, new Function<Fields, Scheme>()
+    table.put( HDFS, TTSV, new Function<Fields, Scheme>()
     {
     @Override
     public Scheme apply( Fields fields )

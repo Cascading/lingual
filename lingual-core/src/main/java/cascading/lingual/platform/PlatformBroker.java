@@ -159,8 +159,6 @@ public abstract class PlatformBroker<Config>
     if( catalog == null )
       catalog = newInstance();
 
-    catalog.initialize();
-
     if( properties.containsKey( SCHEMA_PROP ) )
       loadSchemas( catalog );
 
@@ -275,7 +273,7 @@ public abstract class PlatformBroker<Config>
     String[] schemaIdentifiers = schemaProperty.split( "," );
 
     for( String schemaIdentifier : schemaIdentifiers )
-      catalog.createSchemaFor( schemaIdentifier );
+      catalog.createSchemaDefAndTableDefsFor( schemaIdentifier );
     }
 
   private void loadTables( SchemaCatalog catalog )
@@ -284,7 +282,7 @@ public abstract class PlatformBroker<Config>
     String[] tableIdentifiers = tableProperty.split( "," );
 
     for( String tableIdentifier : tableIdentifiers )
-      catalog.createTableFor( tableIdentifier );
+      catalog.createTableDefFor( tableIdentifier );
     }
 
   private String getStringProperty( String propertyName )
@@ -327,6 +325,8 @@ public abstract class PlatformBroker<Config>
       SchemaCatalog schemaCatalog = getCatalogClass().getConstructor().newInstance();
 
       schemaCatalog.setPlatformBroker( this );
+
+      schemaCatalog.initializeNew(); // initialize defaults for a new catalog and root schema
 
       return schemaCatalog;
       }

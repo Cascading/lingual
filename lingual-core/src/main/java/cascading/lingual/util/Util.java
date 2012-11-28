@@ -23,6 +23,7 @@ package cascading.lingual.util;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;

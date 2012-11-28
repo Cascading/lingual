@@ -20,12 +20,12 @@
 
 package cascading.lingual.catalog;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import cascading.lingual.common.Options;
 import joptsimple.OptionSpec;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -36,17 +36,20 @@ public class CatalogOptions extends Options
 
   private final OptionSpec<String> uri;
   private final OptionSpec<String> schema;
+  private final OptionSpec<String> table;
+  private final OptionSpec<String> stereotype;
   private final OptionSpec<String> format;
   private final OptionSpec<String> protocol;
 
-  private final OptionSpec<String> table;
   private final OptionSpec<String> add;
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
 
-  private OptionSpec<String> scheme;
-  private OptionSpec<String> schemeProperties;
-  private OptionSpec<String> extensions;
+  private final OptionSpec<String> extensions;
+  private final OptionSpec<String> uris;
+
+  private final OptionSpec<String> columns;
+  private final OptionSpec<String> types;
 
   public CatalogOptions()
     {
@@ -63,6 +66,9 @@ public class CatalogOptions extends Options
     table = parser.accepts( "table", "name of table to use" )
       .withOptionalArg();
 
+    stereotype = parser.accepts( "stereotype", "name of stereotype to use" )
+      .withOptionalArg();
+
     format = parser.accepts( "format", "name of format to use" )
       .withOptionalArg();
 
@@ -70,21 +76,25 @@ public class CatalogOptions extends Options
       .withOptionalArg();
 
     add = parser.accepts( "add", "uri path to schema or table" )
-      .withRequiredArg();
+      .withOptionalArg();
 
     remove = parser.accepts( "remove", "remove the specified schema or table" );
 
     rename = parser.accepts( "rename", "rename the specified schema or table to given name" )
       .withRequiredArg();
 
-    extensions = parser.accepts( "exts", "file name extension to associate with format" )
+    extensions = parser.acceptsAll( asList( "exts", "extensions" ), "file name extension to associate with format, .csv, .tsv, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
-    scheme = parser.accepts( "scheme", "name of format to use" )
-      .withRequiredArg();
+    uris = parser.accepts( "uris", "uri schemes to associate with protocol, http:, jdbc:, ..." )
+      .withRequiredArg().withValuesSeparatedBy( ',' );
 
-    schemeProperties = parser.accepts( "scheme-properties", "name of format to use" )
-      .withRequiredArg();
+    columns = parser.accepts( "columns", "columns names of the stereotype" )
+      .withRequiredArg().withValuesSeparatedBy( ',' );
+
+    types = parser.accepts( "types", "types for each column" )
+      .withRequiredArg().withValuesSeparatedBy( ',' );
+
     }
 
   @Override
@@ -100,9 +110,19 @@ public class CatalogOptions extends Options
     return optionSet.has( init );
     }
 
+  public boolean isActions()
+    {
+    return optionSet.has( add ) || optionSet.has( remove ) || optionSet.has( rename );
+    }
+
   public String getURI()
     {
     return optionSet.valueOf( uri );
+    }
+
+  public boolean isList()
+    {
+    return isListSchemas() || isListFormats() || isListTables() || isListStereotypes() || isListFormats() || isListProtocols();
     }
 
   public boolean isListSchemas()
@@ -117,22 +137,41 @@ public class CatalogOptions extends Options
 
   public boolean isSchemaActions()
     {
-    return getSchemaName() != null && !optionSet.has( table );
+    return optionSet.hasArgument( schema ) && isActions()
+      && !isTableActions()
+      && !isStereotypeActions()
+      && !isProtocolActions()
+      && !isFormatActions();
     }
 
   public boolean isTableActions()
     {
-    return getSchemaName() != null && optionSet.has( table );
+    return optionSet.hasArgument( table ) && isActions();
     }
 
   public boolean isListTables()
     {
-    return !isListSchemas() && isSetWithNoArg( table );
+    return isSetWithNoArg( table );
     }
 
   public String getTableName()
     {
     return optionSet.valueOf( table );
+    }
+
+  public boolean isListStereotypes()
+    {
+    return isSetWithNoArg( stereotype );
+    }
+
+  public boolean isStereotypeActions()
+    {
+    return optionSet.hasArgument( stereotype ) && isActions() && !isTableActions();
+    }
+
+  public String getStereotypeName()
+    {
+    return optionSet.valueOf( stereotype );
     }
 
   public boolean isListFormats()
@@ -142,7 +181,7 @@ public class CatalogOptions extends Options
 
   public boolean isFormatActions()
     {
-    return getFormatName() != null && optionSet.has( format );
+    return optionSet.hasArgument( format ) && isActions() && !isTableActions();
     }
 
   public String getFormatName()
@@ -162,26 +201,27 @@ public class CatalogOptions extends Options
 
   public boolean isProtocolActions()
     {
-    return getProtocolName() != null && optionSet.has( protocol );
+    return optionSet.hasArgument( protocol ) && isActions() && !isTableActions();
     }
 
-  public String getSchemeClassname()
+  public List<String> getExtensions()
     {
-    return optionSet.valueOf( scheme );
+    return optionSet.valuesOf( extensions );
     }
 
-  public Map<String, String> getSchemeOptions()
+  public List<String> getURIs()
     {
-    Map<String, String> results = new HashMap<String, String>();
-    List<String> options = optionSet.valuesOf( schemeProperties );
-    for( String option : options )
-      {
-      String[] entry = option.split( "=" );
+    return optionSet.valuesOf( uris );
+    }
 
-      results.put( entry[ 0 ], entry.length == 1 ? null : entry[ 1 ] );
-      }
+  public List<String> getColumns()
+    {
+    return optionSet.valuesOf( columns );
+    }
 
-    return results;
+  public List<String> getTypes()
+    {
+    return optionSet.valuesOf( types );
     }
 
   /////

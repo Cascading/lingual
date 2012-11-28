@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 import cascading.lingual.LingualPlatformTestCase;
+import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ObjectArrays;
 import org.junit.Test;
 
 /**
@@ -58,37 +60,38 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     getPlatform().remoteRemove( outputPath, true );
 
+    Main.setLogLevel( "debug" );
+
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );
 
-//    execute( outputPath, "--format", "csv", "--add", "--exts", ".csv",
-//      "--scheme", schemeClass,
-//      "--scheme-param", "hasHeader=true,delimiter=\\,,quote=\""
-//    );
-//
-//    execute( outputPath, "--protocol", "http", "--add", "--uris", "http:,https:",
-//      "--tap", tapClass,
-//      "--tap-param", "..."
-//    );
-
     execute( outputPath, "--stereotype", "emps", "--add",
       "--columns", Joiner.on( "," ).join( EMPS_COLUMNS ),
-      "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES ),
-      "--formats", "csv",
-      "--protocols", "http"
+      "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
     );
 
-    execute( outputPath, "--schema", "adhoc", "--table", "emps", "--add", EMPS_TABLE,
+    execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", EMPS_TABLE,
       "--stereotype", "emps"
     );
     execute( outputPath, "--schema", "adhoc", "--table" );
-    execute( outputPath, "--schema" );
 
+    execute( outputPath, "--schema", "adhoc", "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+    execute( outputPath, "--schema", "adhoc", "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
+
+    execute( outputPath, "--schema", "adhoc", "--table", "remote", "--add", EMPS_TABLE,
+      "--stereotype", "emps",
+      "--format", "table", "--protocol", "jdbc"
+    );
+    execute( outputPath, "--schema", "adhoc", "--table" );
+
+    execute( outputPath, "--schema" );
     }
 
   private void execute( String testName, String... args ) throws IOException
     {
-    createCatalog( testName ).execute( args );
+    args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
+
+    assertTrue( "execute returned false", createCatalog( testName ).execute( args ) );
     }
 
   private Catalog createCatalog( String rootPath )

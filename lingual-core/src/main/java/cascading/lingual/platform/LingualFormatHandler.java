@@ -21,12 +21,15 @@
 package cascading.lingual.platform;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-import cascading.bind.catalog.Point;
 import cascading.bind.catalog.Stereotype;
-import cascading.bind.catalog.handler.SchemeHandler;
+import cascading.bind.catalog.handler.FormatHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 import cascading.tuple.Fields;
 import com.google.common.base.Function;
@@ -36,9 +39,10 @@ import com.google.common.collect.Table;
 /**
  *
  */
-public abstract class LingualSchemeFactory implements SchemeHandler<Protocol, Format>, Serializable
+public abstract class LingualFormatHandler implements FormatHandler<Protocol, Format>, Serializable
   {
-  protected transient Table<Protocol, Format, Function<Fields, Scheme>> table;
+  private transient Table<Protocol, Format, Function<Fields, Scheme>> table;
+  private MultiProperties<Format> defaults = new MultiProperties<Format>();
 
   protected Table<Protocol, Format, Function<Fields, Scheme>> getTable()
     {
@@ -51,12 +55,29 @@ public abstract class LingualSchemeFactory implements SchemeHandler<Protocol, Fo
     return table;
     }
 
+  protected MultiProperties<Format> getDefaults()
+    {
+    return defaults;
+    }
+
+  @Override
+  public Map<String, List<String>> getDefaultProperties( Format format )
+    {
+    return getDefaults().getValueFor( format );
+    }
+
   protected abstract void initialize( Table<Protocol, Format, Function<Fields, Scheme>> table );
 
   @Override
-  public boolean handles( Point<Protocol, Format> point )
+  public boolean handles( Protocol protocol, Format format )
     {
-    return getTable().containsRow( point.protocol ) && getTable().containsColumn( point.format );
+    return getTable().containsRow( protocol ) && getTable().containsColumn( format );
+    }
+
+  @Override
+  public Collection<? extends Format> getFormats()
+    {
+    return getTable().columnKeySet();
     }
 
   @Override

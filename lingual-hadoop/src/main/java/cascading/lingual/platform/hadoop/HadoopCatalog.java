@@ -23,8 +23,8 @@ package cascading.lingual.platform.hadoop;
 import java.util.Collections;
 import java.util.List;
 
-import cascading.bind.catalog.handler.SchemeHandler;
-import cascading.bind.catalog.handler.TapHandler;
+import cascading.bind.catalog.handler.FormatHandler;
+import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
@@ -34,19 +34,23 @@ import cascading.lingual.catalog.SchemaCatalog;
  */
 public class HadoopCatalog extends SchemaCatalog
   {
+  public static final Protocol DEFAULT_PROTOCOL = HadoopDefaultProtocolHandler.HDFS;
+  public static final Format DEFAULT_FORMAT = HadoopDefaultFormatHandler.CSV;
+
   public HadoopCatalog()
     {
+    super( DEFAULT_PROTOCOL, DEFAULT_FORMAT );
     }
 
   @Override
-  protected List<TapHandler<Protocol, Format>> createTapHandlers()
+  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers()
     {
-    return Collections.<TapHandler<Protocol, Format>>singletonList( new HadoopDefaultTapFactory() );
+    return Collections.<ProtocolHandler<Protocol, Format>>singletonList( new HadoopDefaultProtocolHandler() );
     }
 
   @Override
-  protected List<SchemeHandler<Protocol, Format>> createSchemeHandlers()
+  protected List<FormatHandler<Protocol, Format>> createFormatHandlers()
     {
-    return Collections.<SchemeHandler<Protocol, Format>>singletonList( new HadoopDefaultSchemeFactory() );
+    return Collections.<FormatHandler<Protocol, Format>>singletonList( new HadoopDefaultFormatHandler() );
     }
   }

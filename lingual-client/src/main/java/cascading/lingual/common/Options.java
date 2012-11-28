@@ -42,14 +42,14 @@ public class Options
   protected OptionSet optionSet;
 
   protected OptionSpecBuilder version;
-  protected OptionSpecBuilder help;
-  protected OptionSpecBuilder debug;
+  protected OptionSpec<Void> help;
+  protected OptionSpec<String> verbose;
   protected OptionSpec<String> platform;
 
   public Options()
     {
-    help = parser.accepts( "help" );
-    debug = parser.accepts( "debug" );
+    help = parser.accepts( "help" ).forHelp();
+    verbose = parser.accepts( "verbose" ).withOptionalArg().defaultsTo( "info" );
     version = parser.accepts( "version" );
 
     platform = parser.accepts( "platform", "platform planner to use" )
@@ -66,11 +66,22 @@ public class Options
       }
     catch( Exception exception )
       {
-      printStream.println( "invalid option: " + exception.getMessage() );
-      printUsage( printStream );
+      printInvalidOptionMessage( printStream, exception );
       }
 
     return optionSet != null;
+    }
+
+  public void printInvalidOptionMessage( PrintStream printStream, String message )
+    {
+    printStream.println( "invalid option: " + message );
+    printUsage( printStream );
+    }
+
+  public void printInvalidOptionMessage( PrintStream printStream, Exception exception )
+    {
+    printStream.println( "invalid option: " + exception.getMessage() );
+    printUsage( printStream );
     }
 
   protected void validate()
@@ -87,9 +98,14 @@ public class Options
     return optionSet.has( help );
     }
 
-  public boolean isDebug()
+  public boolean isVerbose()
     {
-    return optionSet.has( debug );
+    return optionSet.has( verbose );
+    }
+
+  public String getVerbose()
+    {
+    return optionSet.valueOf( verbose );
     }
 
   public boolean isListPlatforms()
