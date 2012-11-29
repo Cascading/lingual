@@ -1,0 +1,2 @@
+Lingual @version@
+
