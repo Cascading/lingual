@@ -22,6 +22,8 @@
 
 
 
+
+
 def bindVersion = "wip-+"
 def bindChanging = false
 
@@ -39,6 +41,7 @@ dependencies {
     exclude group: 'xerces'
     exclude group: 'xalan'
     exclude group: 'org.apache.ant'
+    exclude group: 'org.jgrapht'
   }
 
   compile group: 'net.hydromatic', name: 'linq4j', version: '0.1-SNAPSHOT', changing: true

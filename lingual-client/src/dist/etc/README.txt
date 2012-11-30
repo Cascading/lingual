@@ -1,2 +1,2 @@
-Lingual @version@
+Lingual @releaseVersion@
 

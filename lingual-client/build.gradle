@@ -35,16 +35,11 @@ dependencies {
 
   compile project( ':lingual-core' )
 
-  // make compile dep so get picked up by clientDist
-//  providedCompile project( ':lingual-local' )
-//  providedCompile project( path: ':lingual-hadoop', configuration: 'hadoopArtifacts' )
-
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 
   compile group: 'log4j', name: 'log4j', version: '1.2.16' // for setting log level as a cli option
   runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
 
-//  compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3'
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4-beta-2'
   compile group: 'sqlline', name: 'sqlline', version: '1_0_2'
 
@@ -76,14 +71,14 @@ clientDist << {
   copy {
     from( 'src/dist/etc/' ) {
       filter( ReplaceTokens, tokens: [
-              'version': "${releaseVersion}".toString()
+              'releaseVersion': "${releaseVersion}".toString()
       ] )
     }
     into "${distDir}/"
   }
 
   copy {
-    //      fileMode = 775 // is now extra broken
+    fileMode = 775
     from( 'src/dist/bin/' ) {
       rename '\\.sh', ''
       filter( ReplaceTokens, tokens: [
@@ -116,7 +111,10 @@ clientPackage << {
 
   copy {
     from( 'src/dist/util/install-lingual-client.sh' ) {
-      filter( ReplaceTokens, tokens: [ 'location': "${project.s3Bucket}".toString() ] ) //wtf^2
+      filter( ReplaceTokens, tokens: [
+              'location': "${project.s3Bucket}".toString(),
+              'majorVersion': "${majorVersion}".toString()
+      ] )
     }
     into buildDir
   }
@@ -125,7 +123,7 @@ clientPackage << {
 
   latestPath = new File( buildDir, 'latest.txt' )
   s3Upload.uploadFiles << latestPath
-  latestPath.write( "http://${s3Upload.s3Bucket}/${s3Upload.remotePath}${archiveName}" )
+  latestPath.write( "http://${project.s3Bucket}/${s3Upload.remotePath}${archiveName}" )
 }
 
 uploadArchives.enabled = false
