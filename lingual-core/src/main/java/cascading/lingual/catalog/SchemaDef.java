@@ -145,14 +145,14 @@ public class SchemaDef extends Def
     values.putAll( formatProperties.getKeyFor( property ) );
     }
 
-  public Collection<SchemaDef> getChildSchemaDefs()
+  public Collection<SchemaDef> getChildSchemas()
     {
     return schemas.values();
     }
 
   public Collection<String> getChildSchemaNames()
     {
-    return Collections2.transform( getChildSchemaDefs(), new Function<SchemaDef, String>()
+    return Collections2.transform( getChildSchemas(), new Function<SchemaDef, String>()
     {
     @Override
     public String apply( SchemaDef input )
@@ -162,14 +162,14 @@ public class SchemaDef extends Def
     } );
     }
 
-  public Collection<TableDef> getChildTableDefs()
+  public Collection<TableDef> getChildTables()
     {
     return tables.values();
     }
 
   public Collection<String> getChildTableNames()
     {
-    return Collections2.transform( getChildTableDefs(), new Function<TableDef, String>()
+    return Collections2.transform( getChildTables(), new Function<TableDef, String>()
     {
     @Override
     public String apply( TableDef input )
@@ -217,6 +217,11 @@ public class SchemaDef extends Def
   public SchemaDef getSchema( String name )
     {
     return schemas.get( name );
+    }
+
+  public TableDef getTable( String name )
+    {
+    return tables.get( name );
     }
 
   public boolean removeTable( String schemaName, String tableName )
@@ -299,7 +304,12 @@ public class SchemaDef extends Def
 
   public Stereotype<Protocol, Format> getStereotypeFor( Fields fields )
     {
-    return stereotypes.getStereotypeFor( fields );
+    Stereotype<Protocol, Format> stereotypeFor = stereotypes.getStereotypeFor( fields );
+
+    if( stereotypeFor != null || getParentSchema() == null )
+      return stereotypeFor;
+
+    return getParentSchema().getStereotypeFor( fields );
     }
 
   public boolean hasStereotype( String name )

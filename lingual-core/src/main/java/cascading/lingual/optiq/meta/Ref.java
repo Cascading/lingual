@@ -23,12 +23,12 @@ package cascading.lingual.optiq.meta;
 /**
  *
  */
-public class Head
+public class Ref
   {
   public final String name;
   public final String identifier;
 
-  public Head( String name, String identifier )
+  public Ref( String name, String identifier )
     {
     this.name = name;
     this.identifier = identifier;
@@ -42,7 +42,7 @@ public class Head
     if( object == null || getClass() != object.getClass() )
       return false;
 
-    Head head = (Head) object;
+    Ref head = (Ref) object;
 
     if( identifier != null ? !identifier.equals( head.identifier ) : head.identifier != null )
       return false;

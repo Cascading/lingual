@@ -23,7 +23,7 @@ package cascading.lingual.optiq;
 import java.util.HashMap;
 import java.util.Map;
 
-import cascading.lingual.optiq.meta.Head;
+import cascading.lingual.optiq.meta.Ref;
 import cascading.pipe.Pipe;
 
 /**
@@ -32,5 +32,5 @@ import cascading.pipe.Pipe;
  */
 public class Stack
   {
-  public final Map<Head, Pipe> heads = new HashMap<Head, Pipe>();
+  public final Map<Ref, Pipe> heads = new HashMap<Ref, Pipe>();
   }

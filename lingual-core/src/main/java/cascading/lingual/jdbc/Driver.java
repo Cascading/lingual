@@ -38,8 +38,9 @@ public class Driver extends UnregisteredDriver
 
   public static final String PLATFORM_PROP = "platform";
   public static final String CATALOG_PROP = "catalog";
-  public static final String SCHEMA_PROP = "schemas";
-  public static final String TABLE_PROP = "tables";
+  public static final String SCHEMA_PROP = "schema";
+  public static final String SCHEMAS_PROP = "schemas";
+  public static final String TABLES_PROP = "tables";
   public static final String RESULT_PATH_PROP = "resultPath";
   public static final String DOT_PATH_PROP = "dotPath";
 
@@ -110,7 +111,12 @@ public class Driver extends UnregisteredDriver
 
     if( !parts[ 0 ].contains( "=" ) )
       {
-      info.put( PLATFORM_PROP, parts[ 0 ] );
+      String[] elements = parts[ 0 ].split( ":" );
+
+      info.put( PLATFORM_PROP, elements[ 0 ] );
+
+      if( elements.length == 2 )
+        info.put( SCHEMA_PROP, elements[ 1 ] );
 
       if( urlSuffix.length() > parts[ 0 ].length() )
         urlSuffix = urlSuffix.substring( parts[ 0 ].length() + 1 );

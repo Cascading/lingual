@@ -27,8 +27,8 @@ import java.util.Properties;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.enumerable.CascadingEnumerable;
 import cascading.lingual.optiq.meta.Branch;
-import cascading.lingual.optiq.meta.Head;
 import cascading.lingual.optiq.meta.Holder;
+import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.platform.LingualFlowFactory;
 import cascading.lingual.platform.PlatformBroker;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
@@ -77,10 +77,13 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     Properties properties = platformBroker.getProperties();
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
-    flowFactory.addSink( branch.current.getName(), getResultPath( properties, flowFactory.getName() ) );
-
-    for( Head head : branch.heads.keySet() )
+    for( Ref head : branch.heads.keySet() )
       flowFactory.addSource( head.name, head.identifier );
+
+    if( branch.tail != null )
+      flowFactory.addSink( branch.tail.name, branch.tail.identifier );
+    else
+      flowFactory.addSink( branch.current.getName(), getResultPath( properties, flowFactory.getName() ) );
 
     Holder holder = new Holder( flowFactory );
 

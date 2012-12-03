@@ -135,6 +135,19 @@ public abstract class SchemaCatalog implements Serializable
     this.defaultFormat = defaultFormat;
     }
 
+  public TableDef resolveTableDef( String[] names )
+    {
+    if( names.length == 0 )
+      return null;
+
+    SchemaDef current = rootSchemaDef;
+
+    for( int i = 0; i < names.length - 1; i++ )
+      current = current.getSchema( names[ i ] );
+
+    return current.getTable( names[ names.length - 1 ] );
+    }
+
   public Collection<String> getSchemaNames()
     {
     return rootSchemaDef.getChildSchemaNames();
@@ -161,6 +174,17 @@ public abstract class SchemaCatalog implements Serializable
   public boolean renameSchemaDef( String schemaName, String newName )
     {
     return rootSchemaDef.renameSchema( schemaName, newName );
+    }
+
+  public void createSchemaDefAndTableDefsFor( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName )
+    {
+    SchemaDef schemaDef = rootSchemaDef.getOrAddSchema( schemaName );
+    Stereotype<Protocol, Format> stereotype = createStereotype( schemaDef, getDefaultProtocol(), tableName, fields );
+
+    Protocol protocol = Protocol.getProtocol( protocolName );
+    Format format = Format.getFormat( formatName );
+
+    schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
     }
 
   public String createSchemaDefAndTableDefsFor( String schemaIdentifier )
@@ -229,14 +253,19 @@ public abstract class SchemaCatalog implements Serializable
 
     Fields fields = getFieldsFor( identifier );
 
+    if( fields == null )
+      return schema.getStereotypeFor( Fields.UNKNOWN );
+
+    String schemaName = schema.getName();
+    String stereotypeName = Util.createTableNameFrom( identifier );
+
     stereotype = schema.getStereotypeFor( fields );
 
     if( stereotype == null )
       {
-      String name = Util.createTableNameFrom( identifier );
-      Point<Protocol, Format> point = getPointFor( identifier, schema.getName(), null, null );
+      Point<Protocol, Format> point = getPointFor( identifier, schemaName, null, null );
 
-      return createStereotype( schema, point.protocol, name, fields );
+      return createStereotype( schema, point.protocol, stereotypeName, fields );
       }
 
     return stereotype;
@@ -245,21 +274,27 @@ public abstract class SchemaCatalog implements Serializable
   public void addSchemasTo( LingualConnection connection ) throws SQLException
     {
     MutableSchema rootSchema = connection.getRootSchema();
-    SchemaDef currentSchemaDef = rootSchemaDef;
 
-    addSchemas( connection, rootSchema, currentSchemaDef );
+    addSchemas( connection, rootSchema, rootSchemaDef );
     }
 
   private void addSchemas( LingualConnection connection, MutableSchema currentSchema, SchemaDef currentSchemaDef )
     {
-    Collection<SchemaDef> schemaDefs = currentSchemaDef.getChildSchemaDefs();
+    Collection<SchemaDef> schemaDefs = currentSchemaDef.getChildSchemas();
 
     for( SchemaDef childSchemaDef : schemaDefs )
       {
-      TapSchema childSchema = new TapSchema( connection, childSchemaDef );
-      addSchemas( connection, childSchema, childSchemaDef );
+      TapSchema childSchema = (TapSchema) currentSchema.getSubSchema( childSchemaDef.getName() );
 
-      currentSchema.addSchema( childSchemaDef.getName(), childSchema );
+      if( childSchema == null )
+        {
+        childSchema = new TapSchema( connection, childSchemaDef );
+        currentSchema.addSchema( childSchemaDef.getName(), childSchema );
+        }
+
+      childSchema.addTableTapsFor( childSchemaDef );
+
+      addSchemas( connection, childSchema, childSchemaDef );
       }
     }
 
@@ -389,11 +424,27 @@ public abstract class SchemaCatalog implements Serializable
     Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( identifier, point.protocol, point.format, SinkMode.KEEP );
 
     Tap tap = createTapFor( rootSchemaDef.getStereotypeFor( Fields.UNKNOWN ), resource );
+
+    if( !resourceExists( tap ) )
+      return null;
+
     Fields fields = tap.retrieveSourceFields( platformBroker.getFlowProcess() );
 
     nameFieldsMap.put( name, fields );
 
     return fields;
+    }
+
+  private boolean resourceExists( Tap tap )
+    {
+    try
+      {
+      return tap.resourceExists( platformBroker.getFlowProcess().getConfigCopy() );
+      }
+    catch( IOException exception )
+      {
+      return false;
+      }
     }
 
   private Tap createTapFor( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )

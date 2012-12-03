@@ -35,15 +35,16 @@ public class Branch
   private static final Logger LOG = LoggerFactory.getLogger( Branch.class );
 
   public PlatformBroker platformBroker;
-  public Map<Head, Pipe> heads;
+  public Map<Ref, Pipe> heads;
   public Pipe current;
+  public Ref tail;
 
-  public Branch( PlatformBroker platformBroker, Map<Head, Pipe> heads, String name, String identifier )
+  public Branch( PlatformBroker platformBroker, Map<Ref, Pipe> heads, String name, String identifier )
     {
     this.platformBroker = platformBroker;
     this.heads = heads;
 
-    Head head = new Head( name, identifier );
+    Ref head = new Ref( name, identifier );
 
     if( this.heads.containsKey( head ) )
       {
@@ -60,12 +61,21 @@ public class Branch
       }
     }
 
+  public Branch( Branch branch, String name, String identifier )
+    {
+    LOG.info( "adding branch tail: {}, for: {}", name, identifier );
+
+    this.platformBroker = branch.platformBroker;
+    this.heads = branch.heads;
+    this.current = new Pipe( name, branch.current );
+    this.tail = new Ref( name, identifier );
+    }
+
   public Branch( Pipe current, Branch... branches )
     {
     LOG.info( "adding branch: {}", current.getName() );
 
     this.current = current;
-
     this.heads = branches[ 0 ].heads; // all shared
 
     for( Branch branch : branches )

@@ -42,20 +42,13 @@ public class CascadingAggregateConverterRule extends ConverterRule
   @Override
   public RelNode convert( RelNode rel )
     {
-//    if( !rel.getTraitSet().contains( CallingConvention.NONE ) )
-//      return null;
-
     // stolen from JavaRules.EnumerableAggregateRule
-
     AggregateRel agg = (AggregateRel) rel;
 
     RelNode convertedChild = mergeTraitsAndConvert( agg.getTraitSet(), CASCADING, agg.getChild() );
 
     if( convertedChild == null )
       return null; // We can't convert the child, so we can't convert rel.
-
-//    if(agg.getAggCallList().isEmpty())
-//      return new CascadingUnionRel( rel.getCluster(), rel.getTraitSet(), convertedChild)
 
     return new CascadingAggregateRel( rel.getCluster(), rel.getTraitSet(), convertedChild, agg.getGroupSet(), agg.getAggCallList() );
     }

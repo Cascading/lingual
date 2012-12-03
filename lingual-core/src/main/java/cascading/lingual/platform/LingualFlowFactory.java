@@ -27,7 +27,7 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.meta.Branch;
-import cascading.lingual.optiq.meta.Head;
+import cascading.lingual.optiq.meta.Ref;
 import cascading.pipe.Pipe;
 import cascading.tap.SinkMode;
 import cascading.tuple.Fields;
@@ -48,7 +48,7 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     this.catalog = platformBroker.getCatalog();
     this.tail = branch.current;
 
-    for( Head head : branch.heads.keySet() )
+    for( Ref head : branch.heads.keySet() )
       setSourceStereotype( head.name, catalog.findStereotypeFor( head.identifier ) );
 
     setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );

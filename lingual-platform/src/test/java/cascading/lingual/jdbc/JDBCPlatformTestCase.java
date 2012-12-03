@@ -32,6 +32,7 @@ import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.tap.TypedFieldTypeResolver;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
 import com.google.common.base.Supplier;
@@ -46,7 +47,7 @@ import org.junit.rules.TestName;
  */
 public class JDBCPlatformTestCase extends LingualPlatformTestCase
   {
-  public static final String URI = "jdbc:lingual:";
+  public static final String URI = "jdbc:lingual";
   public static final String DRIVER_CLASSNAME = cascading.lingual.jdbc.Driver.class.getName();
 
   public static final String TEST_ROOT = DATA_PATH + "expected/";
@@ -55,15 +56,7 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
   public TestName name = new TestName();
 
   private Connection connection;
-
-  public String getConnectionString( String test )
-    {
-    String platformName = getPlatformName();
-    String outputPath = getOutputPath( "jdbc/results/" + test );
-    String dotPath = getRootPath() + "/jdbc/dot/" + test;
-
-    return String.format( "%s%s;schemas=%s;resultPath=%s;dotPath=%s", URI, platformName, SALES_SCHEMA, outputPath, dotPath );
-    }
+  private String resultPath;
 
   @Override
   public void setUp() throws Exception
@@ -71,12 +64,29 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     super.setUp();
     }
 
-  protected Connection getConnection() throws Exception
+  protected String getResultPath()
+    {
+    if( resultPath == null )
+      resultPath = getOutputPath( "jdbc/results/" + name.getMethodName() );
+
+    return resultPath;
+    }
+
+  public String getConnectionString()
+    {
+    String platformName = getPlatformName();
+    String resultPath = getResultPath();
+    String dotPath = getRootPath() + "/jdbc/dot/" + name.getMethodName();
+
+    return String.format( "%s:%s;schemas=%s;resultPath=%s;dotPath=%s", URI, platformName, SALES_SCHEMA, resultPath, dotPath );
+    }
+
+  protected synchronized Connection getConnection() throws Exception
     {
     if( connection == null )
       {
       Class.forName( DRIVER_CLASSNAME );
-      connection = DriverManager.getConnection( getConnectionString( name.getMethodName() ) );
+      connection = DriverManager.getConnection( getConnectionString() );
       }
 
     return connection;
@@ -98,6 +108,17 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     tap.retrieveSourceFields( getPlatform().getFlowProcess() );
 
     return tap.openForRead( getPlatform().getFlowProcess() );
+    }
+
+  protected void addTable( String schemaName, String tableName, String identifier, Fields fields ) throws Exception
+    {
+    addTable( schemaName, tableName, identifier, fields, null, null );
+    }
+
+  protected void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws Exception
+    {
+    LingualConnection connection = (LingualConnection) getConnection();
+    connection.createTable( schemaName, tableName, identifier, fields, protocolName, formatName );
     }
 
   protected ResultSet executeSql( String sql ) throws Exception

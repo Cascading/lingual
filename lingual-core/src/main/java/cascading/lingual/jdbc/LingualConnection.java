@@ -41,12 +41,14 @@ import java.util.Properties;
 import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
+import cascading.tuple.Fields;
 import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.jdbc.OptiqConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.jdbc.Driver.PLATFORM_PROP;
+import static cascading.lingual.jdbc.Driver.SCHEMA_PROP;
 
 /**
  *
@@ -77,6 +79,14 @@ public class LingualConnection implements Connection
       platformName = "local";
 
     LOG.info( "using platform: {}", platformName );
+
+    String schemaName = getStringProperty( SCHEMA_PROP );
+
+    if( schemaName != null )
+      {
+      setSchema( schemaName );
+      LOG.info( "using schema: {}", schemaName );
+      }
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
 
@@ -109,6 +119,17 @@ public class LingualConnection implements Connection
     }
 
   // Connection methods
+  public void setSchema( String schema ) throws SQLException
+    {
+    parent.setSchema( schema );
+    }
+
+  public void createTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws SQLException
+    {
+    platformBroker.getCatalog().createSchemaDefAndTableDefsFor( schemaName, tableName, identifier, fields, protocolName, formatName );
+    platformBroker.getCatalog().addSchemasTo( this );
+    }
+
   @Override
   public Statement createStatement() throws SQLException
     {

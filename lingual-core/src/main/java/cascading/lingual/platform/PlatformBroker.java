@@ -159,10 +159,10 @@ public abstract class PlatformBroker<Config>
     if( catalog == null )
       catalog = newInstance();
 
-    if( properties.containsKey( SCHEMA_PROP ) )
+    if( properties.containsKey( SCHEMAS_PROP ) )
       loadSchemas( catalog );
 
-    if( properties.containsKey( TABLE_PROP ) )
+    if( properties.containsKey( TABLES_PROP ) )
       loadTables( catalog );
 
     return catalog;
@@ -255,6 +255,11 @@ public abstract class PlatformBroker<Config>
     return rootPath + Util.join( elements, fileSeparator );
     }
 
+
+  public void createTable( String schemaName, String tableName, String uri )
+    {
+    }
+
   protected abstract String getFileSeparator();
 
   public abstract boolean pathExists( String path );
@@ -269,7 +274,7 @@ public abstract class PlatformBroker<Config>
 
   private void loadSchemas( SchemaCatalog catalog )
     {
-    String schemaProperty = getStringProperty( SCHEMA_PROP );
+    String schemaProperty = getStringProperty( SCHEMAS_PROP );
     String[] schemaIdentifiers = schemaProperty.split( "," );
 
     for( String schemaIdentifier : schemaIdentifiers )
@@ -278,7 +283,7 @@ public abstract class PlatformBroker<Config>
 
   private void loadTables( SchemaCatalog catalog )
     {
-    String tableProperty = getStringProperty( TABLE_PROP );
+    String tableProperty = getStringProperty( TABLES_PROP );
     String[] tableIdentifiers = tableProperty.split( "," );
 
     for( String tableIdentifier : tableIdentifiers )

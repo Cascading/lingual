@@ -20,46 +20,47 @@
 
 package cascading.lingual.optiq;
 
-import java.util.Collections;
-
-import org.eigenbase.rel.CalcRel;
-import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelNode;
+import org.eigenbase.rel.TableModificationRel;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
-import org.eigenbase.rex.RexMultisetUtil;
 
 import static cascading.lingual.optiq.CascadingCallingConvention.CASCADING;
 
 /**
  *
  */
-public class CascadingCalcConverterRule extends ConverterRule
+public class CascadingTableModificationConverterRule extends ConverterRule
   {
-  public static final CascadingCalcConverterRule INSTANCE = new CascadingCalcConverterRule();
+  public static final CascadingTableModificationConverterRule INSTANCE = new CascadingTableModificationConverterRule();
 
-  public CascadingCalcConverterRule()
+  public CascadingTableModificationConverterRule()
     {
-    super( CalcRel.class, CallingConvention.NONE, CASCADING, "CascadingCalcRule" );
+    super( TableModificationRel.class, CallingConvention.NONE, CASCADING, "CascadingTableModificationRule" );
     }
 
   @Override
   public RelNode convert( RelNode rel )
     {
-    // stolen from JavaRules.EnumerableAggregateRule
-    final CalcRel calc = (CalcRel) rel;
+    final TableModificationRel modificationRel = (TableModificationRel) rel;
 
-    final RelNode convertedChild =
-      mergeTraitsAndConvert( calc.getTraitSet(), CASCADING, calc.getChild() );
+    final RelNode convertedChild = mergeTraitsAndConvert(
+      modificationRel.getTraitSet(),
+      CASCADING,
+      modificationRel.getChild() );
 
     if( convertedChild == null )
       return null; // We can't convert the child, so we can't convert rel.
 
-    // If there's a multiset, let FarragoMultisetSplitter work on it
-    // first.
-    if( RexMultisetUtil.containsMultiset( calc.getProgram() ) )
-      return null;
-
-    return new CascadingCalcRel( rel.getCluster(), rel.getTraitSet(), convertedChild, rel.getRowType(), calc.getProgram(), Collections.<RelCollation>emptyList() );
+    return new CascadingTableModificationRel(
+      modificationRel.getCluster(),
+      modificationRel.getTraitSet()
+        .plus( CASCADING ),
+      modificationRel.getTable(),
+      modificationRel.getCatalogReader(),
+      convertedChild,
+      modificationRel.getOperation(),
+      modificationRel.getUpdateColumnList(),
+      modificationRel.isFlattened() );
     }
   }

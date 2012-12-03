@@ -43,9 +43,6 @@ public class TapSchema extends MapSchema
   public TapSchema( LingualConnection connection, SchemaDef schemaDef )
     {
     this( connection, schemaDef.getName(), schemaDef.getIdentifier() );
-
-    for( TableDef tableDef : schemaDef.getChildTableDefs() )
-      addTableTapFor( tableDef );
     }
 
   public TapSchema( LingualConnection connection, String name, String identifier )
@@ -54,6 +51,12 @@ public class TapSchema extends MapSchema
     this.platformBroker = connection.getPlatformBroker();
     this.name = name;
     this.identifier = identifier;
+    }
+
+  public void addTableTapsFor( SchemaDef schemaDef )
+    {
+    for( TableDef tableDef : schemaDef.getChildTables() )
+      addTableTapFor( tableDef );
     }
 
   public String getName()
@@ -74,7 +77,7 @@ public class TapSchema extends MapSchema
   public void addTableTapFor( TableDef tableDef )
     {
     if( getTable( tableDef.getName() ) != null )
-      throw new IllegalArgumentException( "table with name: " + tableDef.getName() + " already exists" );
+      return;
 
     TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef );
 

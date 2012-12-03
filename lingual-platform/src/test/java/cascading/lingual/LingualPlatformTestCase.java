@@ -29,7 +29,8 @@ import cascading.tuple.Fields;
 public class LingualPlatformTestCase extends PlatformTestCase
   {
   public static final String DATA_PATH = System.getProperty( "test.data.path", "../lingual-platform/src/test/resources/data/" );
-  public static final String SALES_SCHEMA = DATA_PATH + "sales/";
+  public static final String SALES_SCHEMA_NAME = "sales";
+  public static final String SALES_SCHEMA = DATA_PATH + SALES_SCHEMA_NAME + "/";
   public static final String DEPTS_TABLE = SALES_SCHEMA + "depts.tcsv";
   public static final String EMPS_TABLE = SALES_SCHEMA + "emps.tcsv";
 

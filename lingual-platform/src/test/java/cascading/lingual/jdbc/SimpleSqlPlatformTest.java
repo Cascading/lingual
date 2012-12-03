@@ -20,6 +20,7 @@
 
 package cascading.lingual.jdbc;
 
+import cascading.tuple.Fields;
 import org.junit.Test;
 
 public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
@@ -160,5 +161,13 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testSelectUnionOrderBy() throws Exception
     {
     assertTablesEqual( "emps-depts-union-groupby", "select * from (select name from sales.emps union select name from sales.depts) order by 1" );
+    }
+
+  @Test
+  public void testIntoSelect() throws Exception
+    {
+    Fields fields = new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class );
+    addTable( "TEST", "RESULTS", getResultPath() + "/results.tcsv", fields );
+    assertTablesEqual( "emps-select", "insert into test.results select empno, name from sales.emps" );
     }
   }
