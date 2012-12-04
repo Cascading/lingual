@@ -166,8 +166,8 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testIntoSelect() throws Exception
     {
-    Fields fields = new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class );
-    addTable( "TEST", "RESULTS", getResultPath() + "/results.tcsv", fields );
+    setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
+
     assertTablesEqual( "emps-select", "insert into test.results select empno, name from sales.emps" );
     }
   }

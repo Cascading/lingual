@@ -101,6 +101,11 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
       connection.close();
     }
 
+  protected void setResultsTo( String schemaName, String tableName, Fields fields ) throws Exception
+    {
+    addTable( schemaName, tableName, getResultPath() + "/results.tcsv", fields );
+    }
+
   protected TupleEntryIterator getTable( String tableName ) throws IOException
     {
     Tap tap = getPlatform().getDelimitedFile( ",", "\"", new TypedFieldTypeResolver(), TEST_ROOT + tableName + ".tcsv", SinkMode.KEEP );

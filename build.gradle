@@ -20,6 +20,8 @@
 
 
 
+
+
 apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.2.+'
@@ -47,6 +49,7 @@ subprojects {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+    mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
   }
 
   task sourcesJar( type: Jar, dependsOn: classes ) {

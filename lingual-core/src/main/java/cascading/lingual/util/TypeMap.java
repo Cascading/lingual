@@ -20,6 +20,7 @@
 
 package cascading.lingual.util;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.google.common.collect.BiMap;
@@ -28,7 +29,7 @@ import com.google.common.collect.HashBiMap;
 /**
  *
  */
-public class TypeMap
+public class TypeMap implements Serializable
   {
   final BiMap<String, Class> nameToType = HashBiMap.<String, Class>create();
   final BiMap<Class, String> typeToName = nameToType.inverse();
