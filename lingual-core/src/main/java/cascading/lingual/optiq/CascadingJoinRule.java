@@ -40,8 +40,8 @@ public class CascadingJoinRule extends RelOptRule
     {
     super(
       new RelOptRuleOperand( JoinRel.class,
-        new RelOptRuleOperand( RelNode.class, CascadingCallingConvention.CASCADING ),
-        new RelOptRuleOperand( RelNode.class, CascadingCallingConvention.CASCADING ) ),
+        new RelOptRuleOperand( RelNode.class, CascadingConvention.CASCADING ),
+        new RelOptRuleOperand( RelNode.class, CascadingConvention.CASCADING ) ),
       "cascading cogroup join" );
     }
 
@@ -65,7 +65,7 @@ public class CascadingJoinRule extends RelOptRule
     call.transformTo(
       new CascadingJoinRel(
         join.getCluster(),
-        join.getCluster().getEmptyTraitSet().plus( CascadingCallingConvention.CASCADING ),
+        join.getCluster().getEmptyTraitSet().plus( CascadingConvention.CASCADING ),
         left,
         right,
         join.getCondition(),

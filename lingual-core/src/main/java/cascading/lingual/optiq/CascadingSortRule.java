@@ -43,7 +43,7 @@ public class CascadingSortRule extends RelOptRule
     {
     SortRel rel = (SortRel) call.getRels()[ 0 ];
 
-    RelTraitSet newTraits = rel.getTraitSet().plus( CascadingCallingConvention.CASCADING );
+    RelTraitSet newTraits = rel.getTraitSet().plus( CascadingConvention.CASCADING );
 
     call.transformTo( new CascadingSortRel(
       rel.getCluster(),

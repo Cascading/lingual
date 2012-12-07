@@ -48,7 +48,7 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
     {
     super( cluster, traits, child, collations );
 
-    assert child.getTraitSet().contains( CascadingCallingConvention.CASCADING );
+    assert child.getTraitSet().contains( CascadingConvention.CASCADING );
     }
 
   @Override
@@ -91,7 +91,9 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
     for( RelFieldCollation collation : collations )
       {
       if( collation.getDirection() == RelFieldCollation.Direction.Descending )
+        {
         fields.setComparator( collation.getFieldIndex(), Collections.reverseOrder() );
+        }
       }
 
     return fields;

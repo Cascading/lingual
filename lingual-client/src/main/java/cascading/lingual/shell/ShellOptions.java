@@ -23,7 +23,6 @@ package cascading.lingual.shell;
 import java.util.List;
 
 import cascading.util.Util;
-import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionSpec;
 
 /**
@@ -32,10 +31,11 @@ import joptsimple.OptionSpec;
 public class ShellOptions extends cascading.lingual.common.Options
   {
 
-  private ArgumentAcceptingOptionSpec<String> schemas;
-
+  private OptionSpec<String> schemas;
   private OptionSpec<String> resultPath;
   private OptionSpec<String> dotPath;
+  private OptionSpec<String> sqlFile;
+
 
   public ShellOptions()
     {
@@ -48,6 +48,9 @@ public class ShellOptions extends cascading.lingual.common.Options
       .withRequiredArg();
 
     dotPath = parser.accepts( "dotPath", "path to write flow dot files" )
+      .withRequiredArg();
+
+    sqlFile = parser.accepts( "sql", "file with sql commands to execute" )
       .withRequiredArg();
     }
 
@@ -65,10 +68,14 @@ public class ShellOptions extends cascading.lingual.common.Options
       }
 
     if( getResultPath() != null )
+      {
       builder.append( ";resultPath=" ).append( getResultPath() );
+      }
 
     if( getDotPath() != null )
+      {
       builder.append( ";dotPath=" ).append( getDotPath() );
+      }
 
     return builder.toString();
     }
@@ -88,6 +95,11 @@ public class ShellOptions extends cascading.lingual.common.Options
   public String getDotPath()
     {
     return optionSet.valueOf( dotPath );
+    }
+
+  public String getSqlFile()
+    {
+    return optionSet.valueOf( sqlFile );
     }
 
   /////

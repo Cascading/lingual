@@ -25,7 +25,7 @@ import org.eigenbase.rel.TableModificationRel;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 
-import static cascading.lingual.optiq.CascadingCallingConvention.CASCADING;
+import static cascading.lingual.optiq.CascadingConvention.CASCADING;
 
 /**
  *
@@ -50,7 +50,9 @@ public class CascadingTableModificationConverterRule extends ConverterRule
       modificationRel.getChild() );
 
     if( convertedChild == null )
+      {
       return null; // We can't convert the child, so we can't convert rel.
+      }
 
     return new CascadingTableModificationRel(
       modificationRel.getCluster(),

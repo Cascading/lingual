@@ -29,7 +29,7 @@ import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 import org.eigenbase.rex.RexMultisetUtil;
 
-import static cascading.lingual.optiq.CascadingCallingConvention.CASCADING;
+import static cascading.lingual.optiq.CascadingConvention.CASCADING;
 
 /**
  *
@@ -53,12 +53,16 @@ public class CascadingCalcConverterRule extends ConverterRule
       mergeTraitsAndConvert( calc.getTraitSet(), CASCADING, calc.getChild() );
 
     if( convertedChild == null )
+      {
       return null; // We can't convert the child, so we can't convert rel.
+      }
 
     // If there's a multiset, let FarragoMultisetSplitter work on it
     // first.
     if( RexMultisetUtil.containsMultiset( calc.getProgram() ) )
+      {
       return null;
+      }
 
     return new CascadingCalcRel( rel.getCluster(), rel.getTraitSet(), convertedChild, rel.getRowType(), calc.getProgram(), Collections.<RelCollation>emptyList() );
     }

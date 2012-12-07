@@ -20,6 +20,7 @@
 
 package cascading.lingual.shell;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import cascading.lingual.common.Main;
@@ -36,13 +37,19 @@ public class Shell extends Main<ShellOptions>
     Shell shell = new Shell();
 
     if( !shell.parse( args ) )
+      {
       return;
+      }
 
     if( shell.printUsage() )
+      {
       return;
+      }
 
     if( shell.printVersion() )
+      {
       return;
+      }
 
     shell.handle();
     }
@@ -60,7 +67,20 @@ public class Shell extends Main<ShellOptions>
       "-u", getOptions().createJDBCUrl()
     };
 
-    SqlLine.main( sqlLineArgs );
+    String sql = getOptions().getSqlFile();
+
+    if( sql == null )
+      {
+      SqlLine.main( sqlLineArgs );
+      }
+    else if( "-".equals( sql ) )
+      {
+      SqlLine.mainWithInputRedirection( sqlLineArgs, System.in );
+      }
+    else
+      {
+      SqlLine.mainWithInputRedirection( sqlLineArgs, new FileInputStream( sql ) );
+      }
 
     return true;
     }

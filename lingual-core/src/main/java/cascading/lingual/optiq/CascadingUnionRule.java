@@ -43,8 +43,8 @@ public class CascadingUnionRule extends RelOptRule
     super(
       new RelOptRuleOperand(
         UnionRel.class,
-        new RelOptRuleOperand( RelNode.class, CascadingCallingConvention.CASCADING ),
-        new RelOptRuleOperand( RelNode.class, CascadingCallingConvention.CASCADING ) ),
+        new RelOptRuleOperand( RelNode.class, CascadingConvention.CASCADING ),
+        new RelOptRuleOperand( RelNode.class, CascadingConvention.CASCADING ) ),
       "cascading groubpy merge" );
     }
 
@@ -65,7 +65,7 @@ public class CascadingUnionRule extends RelOptRule
     call.transformTo(
       new CascadingUnionRel(
         union.getCluster(),
-        union.getCluster().getEmptyTraitSet().plus( CascadingCallingConvention.CASCADING ),
+        union.getCluster().getEmptyTraitSet().plus( CascadingConvention.CASCADING ),
         inputs,
         !union.isDistinct()
       ) );

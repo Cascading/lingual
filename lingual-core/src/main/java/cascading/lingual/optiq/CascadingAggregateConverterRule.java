@@ -25,7 +25,7 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 
-import static cascading.lingual.optiq.CascadingCallingConvention.CASCADING;
+import static cascading.lingual.optiq.CascadingConvention.CASCADING;
 
 /**
  *
@@ -48,7 +48,9 @@ public class CascadingAggregateConverterRule extends ConverterRule
     RelNode convertedChild = mergeTraitsAndConvert( agg.getTraitSet(), CASCADING, agg.getChild() );
 
     if( convertedChild == null )
+      {
       return null; // We can't convert the child, so we can't convert rel.
+      }
 
     return new CascadingAggregateRel( rel.getCluster(), rel.getTraitSet(), convertedChild, agg.getGroupSet(), agg.getAggCallList() );
     }

@@ -36,9 +36,9 @@ import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
 import net.hydromatic.optiq.rules.java.EnumerableRel;
 import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
+import net.hydromatic.optiq.rules.java.JavaRules;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SingleRel;
-import org.eigenbase.relopt.CallingConvention;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
@@ -51,7 +51,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   {
   public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
     {
-    super( cluster, traitSet.plus( CallingConvention.ENUMERABLE ), input );
+    super( cluster, traitSet.plus( JavaRules.CONVENTION ), input );
     }
 
   @Override
@@ -78,12 +78,18 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
     for( Ref head : branch.heads.keySet() )
+      {
       flowFactory.addSource( head.name, head.identifier );
+      }
 
     if( branch.tail != null )
+      {
       flowFactory.addSink( branch.tail.name, branch.tail.identifier );
+      }
     else
+      {
       flowFactory.addSink( branch.current.getName(), getResultPath( properties, flowFactory.getName() ) );
+      }
 
     Holder holder = new Holder( flowFactory );
 
@@ -108,12 +114,16 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     String tempdir = System.getenv( "TEMPDIR" );
 
     if( tempdir == null || tempdir.isEmpty() )
+      {
       tempdir = System.getenv( "TMPDIR" );
+      }
 
     String path = properties.getProperty( Driver.RESULT_PATH_PROP, tempdir );
 
     if( !path.endsWith( "/" ) )
+      {
       path += "/";
+      }
 
     return path;
     }
@@ -121,12 +131,16 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   private void setDotPath( Properties properties, String name, Holder holder )
     {
     if( !properties.containsKey( Driver.DOT_PATH_PROP ) )
+      {
       return;
+      }
 
     holder.dotPath = properties.getProperty( Driver.DOT_PATH_PROP );
 
     if( !holder.dotPath.endsWith( "/" ) )
+      {
       holder.dotPath += "/";
+      }
 
     holder.dotPath += name + ".dot";
     }

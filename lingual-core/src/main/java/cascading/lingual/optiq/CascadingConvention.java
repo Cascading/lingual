@@ -20,18 +20,13 @@
 
 package cascading.lingual.optiq;
 
-import org.eigenbase.relopt.CallingConvention;
+import org.eigenbase.relopt.Convention;
 
 /**
  * Calling convention for relational expressions that will be implemented
  * by generating Cascading assemblies.
  */
-public class CascadingCallingConvention extends CallingConvention
+public class CascadingConvention
   {
-  public static final CascadingCallingConvention CASCADING = new CascadingCallingConvention( "CASCADING", 100 );
-
-  private CascadingCallingConvention( String name, int ordinal )
-    {
-    super( name, ordinal, CascadingRelNode.class );
-    }
+  public static final Convention CASCADING = new Convention.Impl( "CASCADING", CascadingRelNode.class );
   }
