@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+
+
 dependencies {
 
   compile project( ':lingual-core' )
@@ -25,6 +27,8 @@ dependencies {
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
+
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion, classifier: 'tests', changing: true
