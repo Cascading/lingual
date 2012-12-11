@@ -62,10 +62,11 @@ public class TableTarget extends Target
       throw new IllegalArgumentException( "add action must have a uri value" );
 
     String tableName = getOptions().getTableName();
+    String stereotypeName = getOptions().getStereotypeName();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
     Format format = Format.getFormat( getOptions().getFormatName() );
 
-    return catalog.createTableDefFor( catalog.getRootSchemaDef().getOrAddSchema( getOptions().getSchemaName() ), tableName, addURI, protocol, format );
+    return catalog.createTableDefFor( getOptions().getSchemaName(), tableName, addURI, stereotypeName, protocol, format );
     }
 
   @Override

@@ -287,6 +287,14 @@ public class SchemaDef extends Def
     return null;
     }
 
+  public Stereotype<Protocol, Format> getStereotype( String stereotypeName )
+    {
+    if( stereotypeName == null || stereotypeName.isEmpty() )
+      return null;
+
+    return stereotypes.getStereotypeFor( stereotypeName );
+    }
+
   public void addStereotype( Stereotype<Protocol, Format> stereotype )
     {
     stereotypes.addStereotype( stereotype );

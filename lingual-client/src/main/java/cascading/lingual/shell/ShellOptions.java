@@ -22,15 +22,15 @@ package cascading.lingual.shell;
 
 import java.util.List;
 
+import cascading.lingual.common.Options;
 import cascading.util.Util;
 import joptsimple.OptionSpec;
 
 /**
  *
  */
-public class ShellOptions extends cascading.lingual.common.Options
+public class ShellOptions extends Options
   {
-
   private OptionSpec<String> schemas;
   private OptionSpec<String> resultPath;
   private OptionSpec<String> dotPath;

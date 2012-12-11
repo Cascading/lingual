@@ -34,24 +34,39 @@ public class Shell extends Main<ShellOptions>
   {
   public static void main( String[] args ) throws IOException
     {
-    Shell shell = new Shell();
+    boolean result = new Shell().execute( args );
 
-    if( !shell.parse( args ) )
+    if( !result )
+      System.exit( -1 );
+    }
+
+  public boolean execute( String[] args ) throws IOException
+    {
+    if( !parse( args ) )
+      return true;
+
+    setVerbose();
+
+    if( printUsage() )
+      return true;
+
+    if( printVersion() )
+      return true;
+
+    try
       {
-      return;
+      return handle();
+      }
+    catch( IllegalArgumentException exception )
+      {
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), exception );
+      }
+    catch( Throwable throwable )
+      {
+      printFailure( getErrPrintStream(), throwable );
       }
 
-    if( shell.printUsage() )
-      {
-      return;
-      }
-
-    if( shell.printVersion() )
-      {
-      return;
-      }
-
-    shell.handle();
+    return false;
     }
 
   protected ShellOptions createOptions()
@@ -70,17 +85,11 @@ public class Shell extends Main<ShellOptions>
     String sql = getOptions().getSqlFile();
 
     if( sql == null )
-      {
       SqlLine.main( sqlLineArgs );
-      }
     else if( "-".equals( sql ) )
-      {
       SqlLine.mainWithInputRedirection( sqlLineArgs, System.in );
-      }
     else
-      {
       SqlLine.mainWithInputRedirection( sqlLineArgs, new FileInputStream( sql ) );
-      }
 
     return true;
     }

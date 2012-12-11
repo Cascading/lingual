@@ -48,7 +48,7 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
     {
     super( cluster, traits, child, collations );
 
-    assert child.getTraitSet().contains( CascadingConvention.CASCADING );
+    assert child.getTraitSet().contains( Cascading.CONVENTION );
     }
 
   @Override

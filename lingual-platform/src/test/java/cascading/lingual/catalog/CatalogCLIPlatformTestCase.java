@@ -28,8 +28,6 @@ import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
-import cascading.tap.Tap;
-import cascading.tuple.Fields;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Test;
@@ -39,18 +37,10 @@ import org.junit.Test;
  */
 public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
   {
-  private String tapClass;
-  private String schemeClass;
-
   @Override
   public void setUp() throws Exception
     {
     super.setUp();
-
-    Tap tap = getPlatform().getDelimitedFile( Fields.UNKNOWN, ",", "foo" );
-
-    tapClass = tap.getClass().getName();
-    schemeClass = tap.getScheme().getClass().getName();
     }
 
   @Test

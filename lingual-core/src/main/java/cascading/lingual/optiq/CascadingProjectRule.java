@@ -43,7 +43,7 @@ public class CascadingProjectRule extends RelOptRule
     {
     ProjectRel rel = (ProjectRel) call.getRels()[ 0 ];
 
-    RelTraitSet newTraits = rel.getTraitSet().plus( CascadingConvention.CASCADING );
+    RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
     call.transformTo( new CascadingProjectRel(
       rel.getCluster(),

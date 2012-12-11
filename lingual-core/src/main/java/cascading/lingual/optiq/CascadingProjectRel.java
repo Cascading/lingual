@@ -57,7 +57,7 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
     {
     super( cluster, traits, child, exps, rowType, flags, collationList );
 
-    assert child.getTraitSet().contains( CascadingConvention.CASCADING );
+    assert child.getTraitSet().contains( Cascading.CONVENTION );
     }
 
   @Override

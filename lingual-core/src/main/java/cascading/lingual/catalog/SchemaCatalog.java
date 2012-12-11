@@ -161,9 +161,13 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getSchema( name );
     }
 
-  public void addSchemaDefNamed( String name )
+  public boolean addSchemaDefNamed( String name )
     {
+    if( rootSchemaDef.getSchema( name ) != null )
+      return false;
+
     rootSchemaDef.getOrAddSchema( name );
+    return true;
     }
 
   public boolean removeSchemaDef( String schemaName )
@@ -195,7 +199,7 @@ public abstract class SchemaCatalog implements Serializable
     String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
 
     for( String identifier : childIdentifiers )
-      createTableDefFor( schemaDef, null, identifier, null, null );
+      createTableDefFor( schemaDef, null, identifier, null, null, null );
 
     return schemaName;
     }
@@ -219,7 +223,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public void createTableDefFor( String identifier )
     {
-    createTableDefFor( rootSchemaDef, null, identifier, null, null );
+    createTableDefFor( rootSchemaDef, null, identifier, null, null, null );
     }
 
   public boolean removeTableDef( String schemaName, String tableName )
@@ -232,12 +236,22 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.renameTable( schemaName, tableName, renameName );
     }
 
-  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String identifier, Protocol protocol, Format format )
+  protected String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
+    {
+    SchemaDef schemaDef = getRootSchemaDef().getOrAddSchema( schemaName );
+
+    return createTableDefFor( schemaDef, tableName, identifier, stereotypeName, protocol, format );
+    }
+
+  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
     if( tableName == null )
       tableName = Util.createTableNameFrom( identifier );
 
-    Stereotype<Protocol, Format> stereotype = getOrCreateStereotype( schemaDef, identifier );
+    Stereotype<Protocol, Format> stereotype = getStereoType( schemaDef.getName(), stereotypeName );
+
+    if( stereotype == null )
+      stereotype = getOrCreateStereotype( schemaDef, identifier );
 
     schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
 
@@ -361,6 +375,17 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getStereotypeNames();
     }
 
+  public Stereotype<Protocol, Format> getStereoType( String schemaName, String stereotypeName )
+    {
+    SchemaDef schema = rootSchemaDef;
+
+    if( schemaName != null )
+      schema = rootSchemaDef.getSchema( schemaName );
+
+    return schema.getStereotype( stereotypeName );
+
+    }
+
   public boolean removeStereotype( String schemaName, String stereotypeName )
     {
     SchemaDef schema = rootSchemaDef;
@@ -437,6 +462,9 @@ public abstract class SchemaCatalog implements Serializable
 
   private boolean resourceExists( Tap tap )
     {
+    if( tap == null )
+      return false;
+
     try
       {
       return tap.resourceExists( platformBroker.getFlowProcess().getConfigCopy() );

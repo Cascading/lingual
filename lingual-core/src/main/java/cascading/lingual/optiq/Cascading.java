@@ -26,7 +26,7 @@ import org.eigenbase.relopt.Convention;
  * Calling convention for relational expressions that will be implemented
  * by generating Cascading assemblies.
  */
-public class CascadingConvention
+public class Cascading
   {
-  public static final Convention CASCADING = new Convention.Impl( "CASCADING", CascadingRelNode.class );
+  public static final Convention CONVENTION = new Convention.Impl( "CASCADING", CascadingRelNode.class );
   }

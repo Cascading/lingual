@@ -55,7 +55,7 @@ public class CatalogPlatformTestCase extends LingualPlatformTestCase
 
     catalog.addSchemaDefNamed( "test" );
 
-    catalog.createTableDefFor( catalog.getRootSchemaDef().getOrAddSchema( "test" ), null, DEPTS_TABLE, null, null );
+    catalog.createTableDefFor( "test", null, DEPTS_TABLE, null, null, null );
 
     assertEquals( "SALES", catalog.createSchemaDefAndTableDefsFor( SALES_SCHEMA ) );
 

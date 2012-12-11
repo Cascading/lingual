@@ -22,6 +22,9 @@ package cascading.lingual.common;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Properties;
+
+import com.google.common.base.Throwables;
 
 /**
  *
@@ -30,6 +33,7 @@ public abstract class Main<O extends Options>
   {
   protected final PrintStream outPrintStream;
   protected final PrintStream errPrintStream;
+  protected final Properties properties;
 
   private String[] args;
 
@@ -39,12 +43,28 @@ public abstract class Main<O extends Options>
     {
     this.outPrintStream = System.out;
     this.errPrintStream = System.err;
+    this.properties = new Properties();
+    }
+
+  public Main( Properties properties )
+    {
+    this.outPrintStream = System.out;
+    this.errPrintStream = System.err;
+    this.properties = properties;
     }
 
   protected Main( PrintStream outPrintStream, PrintStream errPrintStream )
     {
     this.outPrintStream = outPrintStream;
     this.errPrintStream = errPrintStream;
+    this.properties = new Properties();
+    }
+
+  protected Main( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
+    {
+    this.outPrintStream = outPrintStream;
+    this.errPrintStream = errPrintStream;
+    this.properties = properties;
     }
 
   public O getOptions()
@@ -111,6 +131,23 @@ public abstract class Main<O extends Options>
 
   public static void setLogLevel( String level )
     {
-    org.apache.log4j.Logger.getLogger( "cascading.lingual" ).setLevel( org.apache.log4j.Level.toLevel( level ) );
+    org.apache.log4j.Logger.getLogger( "cascading" ).setLevel( org.apache.log4j.Level.toLevel( level ) );
+    }
+
+  protected void printFailure( PrintStream errPrintStream, Throwable throwable )
+    {
+    errPrintStream.println( "command failed with: " + throwable.getMessage() );
+
+    Throwable cause = Throwables.getRootCause( throwable );
+
+    if( cause != null )
+      {
+      errPrintStream.println( "with cause: " + cause.getClass() );
+
+      if( cause.getMessage() != null )
+        errPrintStream.println( "          : " + cause.getMessage() );
+
+      errPrintStream.println( Throwables.getStackTraceAsString( cause ) );
+      }
     }
   }

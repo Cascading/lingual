@@ -98,6 +98,11 @@ public class Options
     return optionSet.has( help );
     }
 
+  public boolean isHasOptions()
+    {
+    return optionSet.hasOptions();
+    }
+
   public boolean isVerbose()
     {
     return optionSet.has( verbose );

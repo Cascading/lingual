@@ -38,7 +38,7 @@ public class CascadingFilterRel extends FilterRelBase implements CascadingRelNod
     {
     super( cluster, traits, child, condition );
 
-    assert child.getTraitSet().contains( CascadingConvention.CASCADING );
+    assert child.getTraitSet().contains( Cascading.CONVENTION );
     }
 
   @Override

@@ -29,8 +29,6 @@ import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 import org.eigenbase.rex.RexMultisetUtil;
 
-import static cascading.lingual.optiq.CascadingConvention.CASCADING;
-
 /**
  *
  */
@@ -40,7 +38,7 @@ public class CascadingCalcConverterRule extends ConverterRule
 
   public CascadingCalcConverterRule()
     {
-    super( CalcRel.class, CallingConvention.NONE, CASCADING, "CascadingCalcRule" );
+    super( CalcRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingCalcRule" );
     }
 
   @Override
@@ -50,7 +48,7 @@ public class CascadingCalcConverterRule extends ConverterRule
     final CalcRel calc = (CalcRel) rel;
 
     final RelNode convertedChild =
-      mergeTraitsAndConvert( calc.getTraitSet(), CASCADING, calc.getChild() );
+      mergeTraitsAndConvert( calc.getTraitSet(), Cascading.CONVENTION, calc.getChild() );
 
     if( convertedChild == null )
       {

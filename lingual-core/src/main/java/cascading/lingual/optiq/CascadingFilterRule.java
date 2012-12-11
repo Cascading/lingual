@@ -43,7 +43,7 @@ public class CascadingFilterRule extends RelOptRule
     {
     FilterRel rel = (FilterRel) call.getRels()[ 0 ];
 
-    RelTraitSet newTraits = rel.getTraitSet().plus( CascadingConvention.CASCADING );
+    RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
     call.transformTo(
       new CascadingFilterRel(

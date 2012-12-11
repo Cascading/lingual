@@ -38,8 +38,6 @@ public class Catalog extends Main<CatalogOptions>
   {
   private static final Logger LOG = LoggerFactory.getLogger( Catalog.class );
 
-  Properties properties;
-
   public static void main( String[] args ) throws IOException
     {
     boolean result = new Catalog().execute( args );
@@ -50,8 +48,7 @@ public class Catalog extends Main<CatalogOptions>
 
   public Catalog( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
     {
-    super( outPrintStream, errPrintStream );
-    this.properties = properties;
+    super( outPrintStream, errPrintStream, properties );
     }
 
   public Catalog( PrintStream outPrintStream, PrintStream errPrintStream )
@@ -61,7 +58,7 @@ public class Catalog extends Main<CatalogOptions>
 
   public Catalog( Properties properties )
     {
-    this.properties = properties;
+    super( properties );
     }
 
   public Catalog()
@@ -100,23 +97,6 @@ public class Catalog extends Main<CatalogOptions>
       }
 
     return false;
-    }
-
-  private void printFailure( PrintStream errPrintStream, Throwable throwable )
-    {
-    errPrintStream.println( "command failed with: " + throwable.getMessage() );
-
-    Throwable cause = Throwables.getRootCause( throwable );
-
-    if( cause != null )
-      {
-      errPrintStream.println( "with cause: " + cause.getClass() );
-
-      if( cause.getMessage() != null )
-        errPrintStream.println( "          : " + cause.getMessage() );
-
-      errPrintStream.println( Throwables.getStackTraceAsString( cause ) );
-      }
     }
 
   @Override

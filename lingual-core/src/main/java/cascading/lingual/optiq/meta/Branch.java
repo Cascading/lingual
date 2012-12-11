@@ -48,13 +48,13 @@ public class Branch
 
     if( this.heads.containsKey( head ) )
       {
-      LOG.info( "re-using branch head: {}, for: {}", name, identifier );
+      LOG.debug( "re-using branch head: {}, for: {}", name, identifier );
 
       this.current = this.heads.get( head );
       }
     else
       {
-      LOG.info( "adding branch head: {}, for: {}", name, identifier );
+      LOG.debug( "adding branch head: {}, for: {}", name, identifier );
 
       this.current = new Pipe( name );
       this.heads.put( head, this.current );
@@ -63,7 +63,7 @@ public class Branch
 
   public Branch( Branch branch, String name, String identifier )
     {
-    LOG.info( "adding branch tail: {}, for: {}", name, identifier );
+    LOG.debug( "adding branch tail: {}, for: {}", name, identifier );
 
     this.platformBroker = branch.platformBroker;
     this.heads = branch.heads;
@@ -73,7 +73,7 @@ public class Branch
 
   public Branch( Pipe current, Branch... branches )
     {
-    LOG.info( "adding branch: {}", current.getName() );
+    LOG.debug( "adding branch: {}", current.getName() );
 
     this.current = current;
     this.heads = branches[ 0 ].heads; // all shared

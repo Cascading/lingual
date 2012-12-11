@@ -34,7 +34,7 @@ public class CascadingEnumerableConverterRule extends ConverterRule
 
   public CascadingEnumerableConverterRule()
     {
-    super( AbstractConverter.class, CascadingConvention.CASCADING, JavaRules.CONVENTION, "Convert Cascading rels to Enumerable" );
+    super( AbstractConverter.class, Cascading.CONVENTION, JavaRules.CONVENTION, "Convert Cascading rels to Enumerable" );
     }
 
   @Override
@@ -46,10 +46,8 @@ public class CascadingEnumerableConverterRule extends ConverterRule
   @Override
   public RelNode convert( RelNode rel )
     {
-    if( !rel.getTraitSet().contains( CascadingConvention.CASCADING ) )
-      {
+    if( !rel.getTraitSet().contains( Cascading.CONVENTION ) )
       return null;
-      }
 
     return new CascadingEnumerableRel( rel.getCluster(), rel.getTraitSet(), rel );
     }

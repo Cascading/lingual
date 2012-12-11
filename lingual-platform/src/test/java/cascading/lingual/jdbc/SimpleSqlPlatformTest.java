@@ -32,15 +32,27 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
-  public void testSelectFilterOne() throws Exception
+  public void testSelectFilterOneInt() throws Exception
     {
     assertTablesEqual( "emps-filter-one", "select name from sales.emps where empno = 120" );
     }
 
   @Test
-  public void testSelectFilterTwo() throws Exception
+  public void testSelectFilterOneString() throws Exception
+    {
+    assertTablesEqual( "emps-filter-one", "select name from sales.emps where name = 'Wilma'" );
+    }
+
+  @Test
+  public void testSelectFilterTwoIntInt() throws Exception
     {
     assertTablesEqual( "emps-filter-two", "select name from sales.emps where empno = 120 or deptno = 20" );
+    }
+
+  @Test
+  public void testSelectFilterTwoStringInt() throws Exception
+    {
+    assertTablesEqual( "emps-filter-two", "select name from sales.emps where name = 'Wilma' or deptno = 20" );
     }
 
   @Test

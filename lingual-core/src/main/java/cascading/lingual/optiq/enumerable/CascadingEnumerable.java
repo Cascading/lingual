@@ -93,7 +93,11 @@ public class CascadingEnumerable extends AbstractEnumerable implements Enumerabl
       flow.writeDOT( holder.dotPath );
       }
 
+    LOG.debug( "starting flow: {}", flow.getName() );
     flow.complete(); // need to block
+    LOG.debug( "completed flow: {}", flow.getName() );
+
+    LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
 
     if( flow.getSink().getSinkFields().size() == 1 )
       return new FlowObjectEnumerator( flow );

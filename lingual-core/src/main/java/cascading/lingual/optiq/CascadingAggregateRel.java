@@ -68,7 +68,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
   {
   public CascadingAggregateRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode child, BitSet groupSet, List<AggregateCall> aggCallList )
     {
-    super( cluster, traitSet.plus( CascadingConvention.CASCADING ), child, groupSet, aggCallList );
+    super( cluster, traitSet.plus( Cascading.CONVENTION ), child, groupSet, aggCallList );
     }
 
   @Override

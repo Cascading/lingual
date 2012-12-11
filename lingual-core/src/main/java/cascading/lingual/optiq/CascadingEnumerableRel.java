@@ -43,12 +43,16 @@ import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelTraitSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   {
+  private static final Logger LOG = LoggerFactory.getLogger( CascadingEnumerableRel.class );
+
   public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
     {
     super( cluster, traitSet.plus( JavaRules.CONVENTION ), input );
@@ -68,6 +72,8 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
   public BlockExpression implement( EnumerableRelImplementor implementor )
     {
+    LOG.debug( "implementing enumerable" );
+
     Stack stack = new Stack();
     CascadingRelNode input = (CascadingRelNode) getChild();
 
@@ -78,28 +84,22 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
     for( Ref head : branch.heads.keySet() )
-      {
       flowFactory.addSource( head.name, head.identifier );
-      }
 
     if( branch.tail != null )
-      {
       flowFactory.addSink( branch.tail.name, branch.tail.identifier );
-      }
     else
-      {
       flowFactory.addSink( branch.current.getName(), getResultPath( properties, flowFactory.getName() ) );
-      }
 
     Holder holder = new Holder( flowFactory );
 
     setDotPath( properties, flowFactory.getName(), holder );
 
-    int x = CascadingEnumerable.addHolder( holder );
+    int ordinal = CascadingEnumerable.addHolder( holder );
 
     Constructor<CascadingEnumerable> constructor = getConstructorFor( CascadingEnumerable.class );
 
-    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( x ) ) ).toBlock();
+    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
   private String getResultPath( Properties properties, String name )
@@ -114,16 +114,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     String tempdir = System.getenv( "TEMPDIR" );
 
     if( tempdir == null || tempdir.isEmpty() )
-      {
       tempdir = System.getenv( "TMPDIR" );
-      }
 
     String path = properties.getProperty( Driver.RESULT_PATH_PROP, tempdir );
 
     if( !path.endsWith( "/" ) )
-      {
       path += "/";
-      }
 
     return path;
     }
@@ -131,16 +127,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   private void setDotPath( Properties properties, String name, Holder holder )
     {
     if( !properties.containsKey( Driver.DOT_PATH_PROP ) )
-      {
       return;
-      }
 
     holder.dotPath = properties.getProperty( Driver.DOT_PATH_PROP );
 
     if( !holder.dotPath.endsWith( "/" ) )
-      {
       holder.dotPath += "/";
-      }
 
     holder.dotPath += name + ".dot";
     }

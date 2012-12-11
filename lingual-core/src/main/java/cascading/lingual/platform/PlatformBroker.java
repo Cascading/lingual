@@ -64,6 +64,9 @@ public abstract class PlatformBroker<Config>
 
   public Properties getProperties()
     {
+    if( properties == null )
+      properties = new Properties();
+
     return properties;
     }
 

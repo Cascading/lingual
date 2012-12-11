@@ -54,7 +54,19 @@ public class SchemaTarget extends Target
   @Override
   protected String performAdd( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().createSchemaDefAndTableDefsFor( getOptions().getAddURI() );
+    String addURI = getOptions().getAddURI();
+
+    if( addURI == null )
+      {
+      boolean success = platformBroker.getCatalog().addSchemaDefNamed( getOptions().getSchemaName() );
+
+      if( success )
+        return getOptions().getSchemaName();
+
+      return null;
+      }
+
+    return platformBroker.getCatalog().createSchemaDefAndTableDefsFor( addURI );
     }
 
   @Override

@@ -25,7 +25,7 @@ import org.eigenbase.rel.RelNode;
 
 /**
  * Interface implemented by all relational expressions of
- * {@link CascadingConvention cascading calling convention}.
+ * {@link Cascading cascading calling convention}.
  */
 interface CascadingRelNode extends RelNode
   {

@@ -25,7 +25,7 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 
-import static cascading.lingual.optiq.CascadingConvention.CASCADING;
+import static cascading.lingual.optiq.Cascading.CONVENTION;
 
 /**
  *
@@ -36,7 +36,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
 
   public CascadingAggregateConverterRule()
     {
-    super( AggregateRel.class, CallingConvention.NONE, CASCADING, "CascadingAggregateRule" );
+    super( AggregateRel.class, CallingConvention.NONE, CONVENTION, "CascadingAggregateRule" );
     }
 
   @Override
@@ -45,7 +45,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
     // stolen from JavaRules.EnumerableAggregateRule
     AggregateRel agg = (AggregateRel) rel;
 
-    RelNode convertedChild = mergeTraitsAndConvert( agg.getTraitSet(), CASCADING, agg.getChild() );
+    RelNode convertedChild = mergeTraitsAndConvert( agg.getTraitSet(), CONVENTION, agg.getChild() );
 
     if( convertedChild == null )
       {
