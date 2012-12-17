@@ -31,7 +31,7 @@ import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.json.JsonFactory;
+import cascading.lingual.catalog.json.JSONFactory;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.type.FileType;
 import cascading.util.Util;
@@ -229,7 +229,7 @@ public abstract class PlatformBroker<Config>
 
   private ObjectMapper getObjectMapper()
     {
-    return JsonFactory.getObjectMapper( this );
+    return JSONFactory.getObjectMapper( this );
     }
 
   private String makeFullMetadataFilePath( String catalogPath )

@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.module.SimpleSerializers;
 /**
  *
  */
-public class JsonFactory
+public class JSONFactory
   {
   public static ObjectMapper getObjectMapper( PlatformBroker platformBroker )
     {
