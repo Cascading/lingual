@@ -18,9 +18,13 @@
  * limitations under the License.
  */
 
+
+
 dependencies {
 
   compile project( ':lingual-local' )
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 }
+
+platformTest.enabled = false

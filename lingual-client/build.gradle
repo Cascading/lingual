@@ -29,21 +29,22 @@ evaluationDependsOn( ':lingual-hadoop' )
 
 dependencies {
 
-  compile project( ':lingual-core' )
-
-  compile group: 'log4j', name: 'log4j', version: '1.2.16' // for setting log level as a cli option
-  runtime group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+  providedCompile project( ':lingual-core' )
 
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4-beta-2'
   compile group: 'sqlline', name: 'sqlline', version: '1_0_2'
 
   runtime group: 'jline', name: 'jline', version: '1.0'
+
+  providedCompile group: 'log4j', name: 'log4j', version: '1.2.16' // for setting log level as a cli option
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
 }
 
 task clientDist( dependsOn: jar ) {
-  dependsOn << project( ":lingual-local" ).tasks[ "jar" ]
+  dependsOn << project( ":lingual-local" ).tasks[ "fatJar" ]
   dependsOn << project( ":lingual-hadoop" ).tasks[ "hadoopJar" ]
+  dependsOn << project( ":lingual-hadoop" ).tasks[ "fatJar" ]
 }
 
 clientDist << {
@@ -56,11 +57,17 @@ clientDist << {
     into "$distDir/lib"
     from configurations.runtime
     from jar.archivePath
-    from project( ":lingual-local" ).configurations.runtime
-    from project( ":lingual-local" ).jar
-    from project( ":lingual-hadoop" ).configurations.hadoopArtifacts
-    from project( ":lingual-hadoop" ).jar
-    from project( ":lingual-hadoop" ).hadoopJar
+  }
+
+  copy {
+    into "$distDir/platform/local"
+    from project( ":lingual-local" ).fatJar
+  }
+
+  copy {
+    into "$distDir/platform/hadoop"
+    from project( ":lingual-hadoop" ).fatJar
+//    from project( ":lingual-hadoop" ).hadoopJar
   }
 
   copy {
@@ -71,6 +78,8 @@ clientDist << {
     }
     into "${distDir}/"
   }
+
+  delete "${distDir}/bin/"
 
   copy {
     fileMode = 775
@@ -122,4 +131,6 @@ clientPackage << {
 }
 
 uploadArchives.enabled = false
+
+platformTest.enabled = false
 

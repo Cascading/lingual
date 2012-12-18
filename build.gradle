@@ -20,10 +20,21 @@
 
 
 
+
 apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.2.+'
 ext.hadoopVersion = '1.0.4'
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+  }
+}
 
 subprojects {
 

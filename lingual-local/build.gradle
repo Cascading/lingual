@@ -20,6 +20,8 @@
 
 
 
+apply plugin: 'fatjar'
+
 dependencies {
 
   compile project( ':lingual-core' )
@@ -28,9 +30,20 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  runtime group: 'log4j', name: 'log4j', version: '1.2.16'
+  runtime group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  runtime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
+}
+
+fatJar {
+  classifier = 'fatjar'
+  exclude 'META-INF/*.DSA'
+}
+
+artifacts {
+  archives fatJar
 }

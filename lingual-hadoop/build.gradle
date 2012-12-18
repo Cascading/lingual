@@ -20,6 +20,8 @@
 
 
 
+apply plugin: 'fatjar'
+
 configurations {
   hadoopArtifacts {
     extendsFrom runtime
@@ -34,11 +36,11 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
 
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
-
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 
   // hadoop deps
   providedCompile( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
@@ -83,4 +85,13 @@ task hadoopJar( type: Jar, dependsOn: jar ) {
 artifacts {
   archives hadoopJar
   hadoopArtifacts hadoopJar
+}
+
+fatJar {
+  classifier = 'fatjar'
+  exclude 'META-INF/*.DSA'
+}
+
+artifacts {
+  archives fatJar
 }

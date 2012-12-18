@@ -31,7 +31,9 @@ if( new String( project.buildNumber ).equals( "wip-dev" ) )
 
 dependencies {
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
-  compile group: 'cascading', name: 'cascading-bind', version: "1.0.0-${bindVersion}", changing: bindChanging
+  compile( group: 'cascading', name: 'cascading-bind', version: "1.0.0-${bindVersion}", changing: bindChanging ) {
+    exclude group: 'org.slf4j'
+  }
 
   compile( group: 'net.hydromatic', name: 'optiq', version: '0.1-SNAPSHOT', changing: true ) {
     exclude group: 'xerces'
