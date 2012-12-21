@@ -35,7 +35,7 @@ public class FieldTypeFactory extends JavaTypeFactoryImpl
   {
   public Type createFieldsType( Fields sourceFields )
     {
-    Class[] types = sourceFields.getTypes();
+    Class[] types = sourceFields.getTypesClasses();
     RelDataTypeField[] fields = new RelDataTypeField[ sourceFields.size() ];
 
     for( int i = 0; i < fields.length; i++ )

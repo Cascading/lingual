@@ -76,7 +76,9 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     List<Expression> parameters = new ArrayList<Expression>();
 
     for( int i = 0; i < fields.size(); i++ )
+      {
       parameters.add( Expressions.parameter( fields.getType( i ), fields.get( i ).toString() ) );
+      }
 
     Expressions.FluentList<Statement> statements = Expressions.<Statement>list();
     Expression condition = RexToLixTranslator.translateCondition(
@@ -100,7 +102,7 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
 
     LOG.debug( "calc expression: {}", expression );
 
-    Filter expressionFilter = new ScriptFilter( expression, fieldNames, fields.getTypes() );
+    Filter expressionFilter = new ScriptFilter( expression, fieldNames, fields.getTypesClasses() );
     Pipe pipe = new Each( branch.current, fields, expressionFilter );
 
     // TODO: Each( ..., filter, ... ) should accept an output selector in the future
