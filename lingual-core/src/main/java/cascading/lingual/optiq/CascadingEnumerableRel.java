@@ -89,7 +89,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     if( branch.tail != null )
       flowFactory.addSink( branch.tail.name, branch.tail.identifier );
     else
-      flowFactory.addSink( branch.current.getName(), getResultPath( properties, flowFactory.getName() ) );
+      flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
 
     Holder holder = new Holder( flowFactory );
 
@@ -102,26 +102,15 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
-  private String getResultPath( Properties properties, String name )
+  private String getResultPath( PlatformBroker platformBroker, Properties properties, String name )
     {
-    String path = getResultPath( properties );
-
-    return path + name;
-    }
-
-  private String getResultPath( Properties properties )
-    {
-    String tempdir = System.getenv( "TEMPDIR" );
-
-    if( tempdir == null || tempdir.isEmpty() )
-      tempdir = System.getenv( "TMPDIR" );
-
-    String path = properties.getProperty( Driver.RESULT_PATH_PROP, tempdir );
+    String path = platformBroker.getTempPath();
+    path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
 
     if( !path.endsWith( "/" ) )
       path += "/";
 
-    return path;
+    return path + name;
     }
 
   private void setDotPath( Properties properties, String name, Holder holder )

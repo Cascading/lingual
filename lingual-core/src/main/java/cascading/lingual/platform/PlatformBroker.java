@@ -265,6 +265,8 @@ public abstract class PlatformBroker<Config>
 
   protected abstract String getFileSeparator();
 
+  public abstract String getTempPath();
+
   public abstract boolean pathExists( String path );
 
   public abstract boolean deletePath( String path );

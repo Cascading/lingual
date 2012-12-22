@@ -131,7 +131,7 @@ public abstract class Main<O extends Options>
 
   public static void setLogLevel( String level )
     {
-    org.apache.log4j.Logger.getLogger( "cascading" ).setLevel( org.apache.log4j.Level.toLevel( level ) );
+    org.apache.log4j.Logger.getLogger( "cascading" ).setLevel( org.apache.log4j.Level.toLevel( level.toUpperCase() ) );
     }
 
   protected void printFailure( PrintStream errPrintStream, Throwable throwable )

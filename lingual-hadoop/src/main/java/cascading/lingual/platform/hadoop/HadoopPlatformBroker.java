@@ -23,9 +23,12 @@ package cascading.lingual.platform.hadoop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
@@ -52,6 +55,10 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   {
   private static final Logger LOG = LoggerFactory.getLogger( HadoopPlatformBroker.class );
 
+  public static final String HADOOP_USER_ENV = "HADOOP_USER_NAME";
+  public static final String HADOOP_USER_PROPERTY = "hadoop.username";
+  private JobConf jobConf;
+
   public HadoopPlatformBroker()
     {
     }
@@ -65,38 +72,105 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public JobConf getConfig()
     {
-    JobConf jobConf = HadoopUtil.createJobConf( getProperties(), new JobConf() );
-
-    if( jobConf.getJar() != null )
+    if( jobConf != null )
       return jobConf;
+
+    jobConf = HadoopUtil.createJobConf( getProperties(), new JobConf() );
 
     String appJar = findAppJar();
 
-    if( appJar != null )
+    if( jobConf.getJar() == null && appJar != null )
       jobConf.setJar( appJar );
+
+    String userName = findUserName();
+
+    if( jobConf.getUser() == null && userName != null )
+      jobConf.setUser( userName );
+
+    LOG.info( "using app jar: {}", jobConf.getJar() );
+    LOG.info( "using user: {}", jobConf.getUser() );
+
+    URL url = Thread.currentThread().getContextClassLoader().getResource( "hadoop-override.properties" );
+
+    if( url != null )
+      {
+      LOG.info( "loading override properties from: {}", url.toString() );
+
+      Properties properties = loadPropertiesFrom( url );
+
+      for( String propertyName : properties.stringPropertyNames() )
+        jobConf.set( propertyName, properties.getProperty( propertyName ) );
+
+      if( LOG.isDebugEnabled() )
+        LOG.debug( HadoopUtil.createProperties( jobConf ).toString() );
+      }
 
     return jobConf;
     }
 
+  private Properties loadPropertiesFrom( URL url )
+    {
+    Properties properties = new Properties();
+
+    try
+      {
+      properties.load( url.openStream() );
+      }
+    catch( IOException exception )
+      {
+      LOG.warn( "unable to open resource file" );
+      }
+
+    return properties;
+    }
+
   private String findAppJar()
     {
-    URL url = Thread.currentThread().getContextClassLoader().getResource( "/META-INF/hadoop.job.properties" );
+    URL url = Thread.currentThread().getContextClassLoader().getResource( "META-INF/hadoop.job.properties" );
 
     if( url == null || !url.toString().startsWith( "jar" ) )
       return null;
 
-    String path = url.toString();
-    String jarPath = path.substring( 0, path.lastIndexOf( "!" ) + 1 );
+    String jarPath;
+
+    if( !"jar".equals( url.getProtocol() ) )
+      throw new RuntimeException( "invalid url: " + url.toString() );
+
+    jarPath = url.getPath();
+
+    if( jarPath.startsWith( "file:" ) )
+      jarPath = jarPath.substring( "file:".length() );
+
+    jarPath = decode( jarPath );
+
+    jarPath = jarPath.replaceAll( "!.*$", "" );
 
     LOG.info( "using hadoop job jar: {}", jarPath );
 
     return jarPath;
     }
 
+  private String decode( String jarPath )
+    {
+    try
+      {
+      return URLDecoder.decode( jarPath, "UTF-8" );
+      }
+    catch( UnsupportedEncodingException exception )
+      {
+      throw new RuntimeException( exception.getMessage(), exception );
+      }
+    }
+
+  private String findUserName()
+    {
+    return System.getProperty( HADOOP_USER_PROPERTY, System.getenv( HADOOP_USER_ENV ) );
+    }
+
   @Override
   public FlowConnector getFlowConnector()
     {
-    return new HadoopFlowConnector( getProperties() );
+    return new HadoopFlowConnector( HadoopUtil.createProperties( getConfig() ) );
     }
 
   @Override
@@ -151,6 +225,12 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       {
       throw new RuntimeException( "unable to delete path: " + path, exception );
       }
+    }
+
+  @Override
+  public String getTempPath()
+    {
+    return Hfs.getTempPath( getConfig() ).toString();
     }
 
   @Override

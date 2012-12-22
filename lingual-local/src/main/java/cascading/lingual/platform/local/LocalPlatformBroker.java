@@ -157,6 +157,17 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
       }
     }
 
+  @Override
+  public String getTempPath()
+    {
+    String tempdir = System.getenv( "TEMPDIR" );
+
+    if( tempdir == null || tempdir.isEmpty() )
+      tempdir = System.getenv( "TMPDIR" );
+
+    return tempdir;
+    }
+
   protected String getFileSeparator()
     {
     return File.separator;

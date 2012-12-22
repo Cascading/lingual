@@ -54,7 +54,21 @@ dependencies {
   testRuntime 'javax.ws.rs:jsr311-api:1.1.1' // missed dep in hadoop, go figure
 }
 
-task hadoopJar( type: Jar, dependsOn: jar ) {
+task createProps() {
+  ext.jobPropsDir = "${buildDir}/tmp/hadoopManifest/"
+  ext.jobProps = "${jobPropsDir}/hadoop.job.properties"
+
+  doLast {
+
+    delete jobPropsDir
+    mkdir( jobPropsDir )
+    new File( "${jobProps}" ).write( "hadoop.job.jar=true" );
+
+    outputs.file jobProps
+  }
+}
+
+task hadoopJar( type: Jar, dependsOn: [ jar, createProps ] ) {
   description = "Assembles a Hadoop ready jar file"
 
   classifier = 'hadoop'
@@ -63,16 +77,12 @@ task hadoopJar( type: Jar, dependsOn: jar ) {
 
   doFirst {
 
-    def jobProps = "${buildDir}/tmp/hadoopManifest"
-    mkdir( jobProps )
-    new File( "${jobProps}/hadoop.job.properties" ).write( "hadoop.job.jar=true" );
-
     into( 'lib' ) {
       from( configurations.runtime )
     }
 
     metaInf() {
-      from( jobProps )
+      from( createProps.jobProps )
     }
   }
 
@@ -88,8 +98,14 @@ artifacts {
 }
 
 fatJar {
+  dependsOn << createProps
+
   classifier = 'fatjar'
   exclude 'META-INF/*.DSA'
+
+  metaInf() {
+    from( createProps.jobProps )
+  }
 }
 
 artifacts {

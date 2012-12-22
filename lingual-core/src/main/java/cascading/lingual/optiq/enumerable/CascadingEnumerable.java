@@ -32,6 +32,7 @@ import cascading.lingual.optiq.meta.Holder;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
+import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
@@ -93,9 +94,23 @@ public class CascadingEnumerable extends AbstractEnumerable implements Enumerabl
       flow.writeDOT( holder.dotPath );
       }
 
-    LOG.debug( "starting flow: {}", flow.getName() );
-    flow.complete(); // need to block
-    LOG.debug( "completed flow: {}", flow.getName() );
+    try
+      {
+      LOG.debug( "starting flow: {}", flow.getName() );
+      flow.complete(); // need to block
+      LOG.debug( "completed flow: {}", flow.getName() );
+      }
+    catch( Exception exception )
+      {
+      LOG.error( "flow failed", exception );
+
+      Throwable rootCause = Throwables.getRootCause( exception );
+
+      if( rootCause != null && exception != rootCause )
+        LOG.error( "with root cause", rootCause );
+
+      throw new RuntimeException( "flow failed", exception );
+      }
 
     LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
 
