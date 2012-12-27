@@ -5,7 +5,7 @@ BINDIR=`dirname $0`
 BASEDIR=`dirname ${BINDIR}`
 
 if [ "$1" = "selfupdate" ]; then
-  curl http://@location@/lingual/@majorVersion@/client/install-lingual-client.sh | sh
+  curl http://@location@/lingual/@majorVersion@/lingual-client/install-lingual-client.sh | sh
   exit 0
 fi
 
@@ -13,9 +13,10 @@ fi
 if [ $# = 0 ]; then
   echo "Usage: lingual COMMAND [options]"
   echo "where COMMAND is one of:"
-  echo "  shell                configure/manage the server"
+  echo "  shell                execute interactive SQL queries"
   echo "  catalog              manage table and schema catalog"
-  echo "  selfupdate           fetch the latest version of driven"
+  echo "  selfupdate           fetch the latest version of lingual"
+  echo ""
   echo "Most commands print help when invoked w/o parameters."
   exit 1
 fi
@@ -74,7 +75,5 @@ case $PLATFORM in
        exit 1
        ;;
 esac
-
-#[ -n "$COLUMNS" ] && OPTIONS="--display-width $COLUMNS $OPTIONS"
 
 $JAVA_EXEC -Xmx512m $OPTIONS -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN $ARGS

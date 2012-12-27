@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+
+
 import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: 'application'
@@ -77,6 +79,11 @@ clientDist << {
     into "${distDir}/"
   }
 
+  copy {
+    into "$distDir/docs"
+    from 'docs/'
+  }
+
   delete "${distDir}/bin/"
 
   copy {
@@ -123,7 +130,7 @@ clientPackage << {
 
   s3Upload.uploadFiles << "${buildDir}/install-lingual-client.sh"
 
-  latestPath = new File( buildDir, 'latest.txt' )
+  def latestPath = new File( buildDir, 'latest.txt' )
   s3Upload.uploadFiles << latestPath
   latestPath.write( "http://${project.s3Bucket}/${s3Upload.remotePath}${archiveName}" )
 }
