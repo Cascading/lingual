@@ -80,7 +80,7 @@ sudo tar -xzf $ARCHIVE -C $LINGUAL_HOME
 
 sudo chmod a+x $LINGUAL_HOME/bin/*
 
-if [ -n "$UPDATE_BASH" && -w "$USER_HOME/$BASH_PROFILE" ]; then
+if [ -n "$UPDATE_BASH" -a -w "$USER_HOME/$BASH_PROFILE" ]; then
 cat >> $USER_HOME/$BASH_PROFILE <<- EOF
 
 # Lingual - Concurrent, Inc.
