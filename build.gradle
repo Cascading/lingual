@@ -18,8 +18,6 @@
  * limitations under the License.
  */
 
-
-
 apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.2.+'
