@@ -11,3 +11,9 @@ version and configuration may be includedin the CLASSPATH.
 
 If working with a remote Amazon Elastic MapReduce cluster, see the [Bash EMR](https://github.com/cwensel/bash-emr)
 utilities, specifically the `emrconf` command to fetch remote configuration files.
+
+If errors are encountered executing SQL queries remotely, calling:
+
+    > export HADOOP_USER_NAME=hadoop
+
+Should alleviate any security issues causing failures on the remote EMR Cluster.
