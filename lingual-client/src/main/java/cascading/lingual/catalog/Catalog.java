@@ -122,7 +122,7 @@ public class Catalog extends Main<CatalogOptions>
       else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
         return handleProtocol( platformBroker );
 
-      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove" );
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update" );
       }
     catch( Throwable throwable )
       {
@@ -132,7 +132,8 @@ public class Catalog extends Main<CatalogOptions>
       }
     finally
       {
-      if( !doNotWrite )
+      LOG.info( "catalog loaded: {}", platformBroker.catalogLoaded() );
+      if( !doNotWrite && platformBroker.catalogLoaded() )
         platformBroker.writeCatalog();
       }
 

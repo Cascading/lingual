@@ -31,15 +31,19 @@ import joptsimple.OptionSpec;
  */
 public class ShellOptions extends Options
   {
-  private OptionSpec<String> schemas;
-  private OptionSpec<String> resultPath;
-  private OptionSpec<String> dotPath;
-  private OptionSpec<String> sqlFile;
+  private final OptionSpec<String> schema;
+  private final OptionSpec<String> schemas;
+  private final OptionSpec<String> resultPath;
+  private final OptionSpec<String> dotPath;
+  private final OptionSpec<String> sqlFile;
 
 
   public ShellOptions()
     {
     super();
+
+    schema = parser.accepts( "schema", "name of current schema" )
+      .withRequiredArg();
 
     schemas = parser.accepts( "schemas", "root path for each schema to use" )
       .withRequiredArg().withValuesSeparatedBy( ',' );
@@ -59,6 +63,9 @@ public class ShellOptions extends Options
     StringBuilder builder = new StringBuilder( "jdbc:lingual:" );
 
     builder.append( getPlatform() );
+
+    if( getSchema() != null )
+      builder.append( ":" ).append( getSchema() );
 
     if( !getSchemas().isEmpty() )
       {
@@ -81,6 +88,11 @@ public class ShellOptions extends Options
     }
 
   /////
+
+  public String getSchema()
+    {
+    return optionSet.valueOf( schema );
+    }
 
   public List<String> getSchemas()
     {

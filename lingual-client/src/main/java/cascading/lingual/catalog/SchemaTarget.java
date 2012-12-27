@@ -36,6 +36,12 @@ public class SchemaTarget extends Target
     }
 
   @Override
+  public boolean updateIsNoop()
+    {
+    return true;
+    }
+
+  @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
@@ -54,7 +60,7 @@ public class SchemaTarget extends Target
   @Override
   protected String performAdd( PlatformBroker platformBroker )
     {
-    String addURI = getOptions().getAddURI();
+    String addURI = getOptions().getAddOrUpdateURI();
 
     if( addURI == null )
       {

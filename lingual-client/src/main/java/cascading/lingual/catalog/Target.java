@@ -59,6 +59,11 @@ public abstract class Target
     return options;
     }
 
+  public boolean updateIsNoop()
+    {
+    return false;
+    }
+
   public boolean handle( PlatformBroker platformBroker )
     {
     if( getOptions().isList() )
@@ -70,10 +75,47 @@ public abstract class Target
     if( getOptions().isRemove() )
       return handleRemove( platformBroker );
 
-    if( getOptions().getRenameName() != null )
+    if( getOptions().isUpdate() )
+      return handleUpdate( platformBroker );
+
+    if( getOptions().isRename() )
       return handleRename( platformBroker );
 
     return false;
+    }
+
+  protected boolean handleAdd( PlatformBroker platformBroker )
+    {
+    LOG.debug( "{}: add", name );
+
+    String name = performAdd( platformBroker );
+
+    getPrinter().print( "added %s: %s", getName(), name );
+
+    return true;
+    }
+
+  protected abstract String performAdd( PlatformBroker platformBroker );
+
+  protected boolean handleUpdate( PlatformBroker platformBroker )
+    {
+    LOG.debug( "{}: update", name );
+
+    if( updateIsNoop() )
+      return true;
+
+    String name = performUpdate( platformBroker );
+
+    getPrinter().print( "updated %s: %s", getName(), name );
+
+    return true;
+    }
+
+  protected String performUpdate( PlatformBroker platformBroker )
+    {
+    performRemove( platformBroker );
+
+    return performAdd( platformBroker );
     }
 
   protected boolean handleRename( PlatformBroker platformBroker )
@@ -107,19 +149,6 @@ public abstract class Target
     }
 
   protected abstract boolean performRemove( PlatformBroker platformBroker );
-
-  protected boolean handleAdd( PlatformBroker platformBroker )
-    {
-    LOG.debug( "{}: add", name );
-
-    String schemaName = performAdd( platformBroker );
-
-    getPrinter().print( "added %s: %s", getName(), schemaName );
-
-    return true;
-    }
-
-  protected abstract String performAdd( PlatformBroker platformBroker );
 
   protected boolean handlePrint( PlatformBroker platformBroker )
     {

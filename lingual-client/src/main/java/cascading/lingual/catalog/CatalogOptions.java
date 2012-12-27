@@ -42,6 +42,7 @@ public class CatalogOptions extends Options
   private final OptionSpec<String> protocol;
 
   private final OptionSpec<String> add;
+  private final OptionSpec<String> update;
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
 
@@ -75,7 +76,10 @@ public class CatalogOptions extends Options
     protocol = parser.accepts( "protocol", "name of protocol to use" )
       .withOptionalArg();
 
-    add = parser.accepts( "add", "uri path to schema or table" )
+    add = parser.accepts( "add", "possible uri path to schema or table" )
+      .withOptionalArg();
+
+    update = parser.accepts( "update", "possible uri path to schema or table" )
       .withOptionalArg();
 
     remove = parser.accepts( "remove", "remove the specified schema or table" );
@@ -112,7 +116,7 @@ public class CatalogOptions extends Options
 
   public boolean isActions()
     {
-    return optionSet.has( add ) || optionSet.has( remove ) || optionSet.has( rename );
+    return optionSet.has( add ) || optionSet.has( update ) || optionSet.has( remove ) || optionSet.has( rename );
     }
 
   public String getURI()
@@ -234,6 +238,26 @@ public class CatalogOptions extends Options
   public String getAddURI()
     {
     return optionSet.valueOf( add );
+    }
+
+  public boolean isUpdate()
+    {
+    return optionSet.has( update );
+    }
+
+  public String getUpdateURI()
+    {
+    return optionSet.valueOf( update );
+    }
+
+  public String getAddOrUpdateURI()
+    {
+    if( isAdd() )
+      return getAddURI();
+    else if( isUpdate() )
+      return getUpdateURI();
+
+    throw new IllegalStateException( "not update or add" );
     }
 
   public boolean isRemove()

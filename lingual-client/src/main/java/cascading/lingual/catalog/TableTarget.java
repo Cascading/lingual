@@ -56,7 +56,7 @@ public class TableTarget extends Target
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    String addURI = getOptions().getAddURI();
+    String addURI = getOptions().getAddOrUpdateURI();
 
     if( addURI == null )
       throw new IllegalArgumentException( "add action must have a uri value" );

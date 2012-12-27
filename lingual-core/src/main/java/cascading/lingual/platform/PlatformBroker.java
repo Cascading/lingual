@@ -76,7 +76,12 @@ public abstract class PlatformBroker<Config>
 
   public abstract FlowProcess<Config> getFlowProcess();
 
-  public SchemaCatalog getCatalog()
+  public boolean catalogLoaded()
+    {
+    return catalog != null;
+    }
+
+  public synchronized SchemaCatalog getCatalog()
     {
     if( catalog == null )
       catalog = loadCatalog();
@@ -155,7 +160,7 @@ public abstract class PlatformBroker<Config>
       }
     }
 
-  private SchemaCatalog loadCatalog()
+  private synchronized SchemaCatalog loadCatalog()
     {
     catalog = readCatalog();
 
