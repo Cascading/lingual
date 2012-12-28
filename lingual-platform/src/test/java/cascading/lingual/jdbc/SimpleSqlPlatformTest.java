@@ -182,4 +182,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
 
     assertTablesEqual( "emps-select", "insert into test.results select empno, name from sales.emps" );
     }
+
+  @Test
+  public void testIntoSelectValues() throws Exception
+    {
+    setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
+
+    assertTablesEqual( "emps-select", "insert into test.results values (100,'Fred'),(110,'Eric'),(110,'John'),(120,'Wilma'),(130,'Alice')" );
+    }
   }
