@@ -73,7 +73,7 @@ wget -S -T 10 -t 5 ${LATEST} -O ${REDIR}
 
 [ -f ${LINGUAL_HOME}/latest ] && LINGUAL_CURRENT=`cat ${LINGUAL_HOME}/latest`
 # force update if on dev releases
-if [ `cat $REDIR` = ${LINGUAL_CURRENT/wip-dev/} ]; then
+if [ "`cat $REDIR`" = "${LINGUAL_CURRENT/wip-dev/}" ]; then
   echo "no update available"
   exit 0
 fi
