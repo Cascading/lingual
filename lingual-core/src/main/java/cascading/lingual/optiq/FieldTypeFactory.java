@@ -35,15 +35,26 @@ public class FieldTypeFactory extends JavaTypeFactoryImpl
   {
   public Type createFieldsType( Fields sourceFields )
     {
-    Class[] types = sourceFields.getTypesClasses();
+    Type[] types = sourceFields.getTypes();
     RelDataTypeField[] fields = new RelDataTypeField[ sourceFields.size() ];
 
     for( int i = 0; i < fields.length; i++ )
       {
-      Class type = types != null && types[ i ] != null ? types[ i ] : String.class;
-      RelDataType javaType = canonize( new JavaType( type ) );
+      Type type = types != null && types[ i ] != null ? types[ i ] : String.class;
 
-      fields[ i ] = new RelDataTypeFieldImpl( (String) sourceFields.get( i ), i, javaType );
+      RelDataType javaType;
+
+      if( type instanceof Class )
+        javaType = canonize( new JavaType( (Class) type ) );
+      else if( type instanceof RelDataType )
+        javaType = canonize( (RelDataType) type );
+      else
+        throw new IllegalStateException( "unknown type: " + type.getClass().getSimpleName() );
+
+      Comparable comparable = sourceFields.get( i );
+      String fieldName = comparable instanceof String ? (String) comparable : comparable.toString();
+
+      fields[ i ] = new RelDataTypeFieldImpl( fieldName, i, javaType );
       }
 
     return canonize( new FieldRecordType( sourceFields, fields ) );

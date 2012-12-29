@@ -20,13 +20,14 @@
 
 package cascading.lingual.catalog;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
-import cascading.lingual.util.SimpleTypeMap;
-import cascading.lingual.util.TypeMap;
+import cascading.lingual.type.SqlTypeMap;
+import cascading.lingual.type.TypeMap;
 import cascading.tuple.Fields;
 
 /**
@@ -34,7 +35,7 @@ import cascading.tuple.Fields;
  */
 public class StereotypeTarget extends Target
   {
-  TypeMap typeMap = new SimpleTypeMap();
+  TypeMap typeMap = new SqlTypeMap();
 
   public StereotypeTarget( Printer printer, CatalogOptions options )
     {
@@ -84,7 +85,7 @@ public class StereotypeTarget extends Target
     {
     Fields fields = new Fields( columns.toArray( new Comparable[ columns.size() ] ) );
 
-    Class[] typeArray = typeMap.getTypesFor( types.toArray( new String[ types.size() ] ) );
+    Type[] typeArray = typeMap.getTypesFor( types.toArray( new String[ types.size() ] ) );
 
     return fields.applyTypes( typeArray );
     }

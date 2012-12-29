@@ -20,10 +20,11 @@
 
 package cascading.lingual.tap;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
-import cascading.lingual.util.SimpleTypeMap;
-import cascading.lingual.util.TypeMap;
+import cascading.lingual.type.SqlTypeMap;
+import cascading.lingual.type.TypeMap;
 import cascading.scheme.util.FieldTypeResolver;
 
 /**
@@ -32,24 +33,24 @@ import cascading.scheme.util.FieldTypeResolver;
 public class TypedFieldTypeResolver implements FieldTypeResolver
   {
   private final TypeMap typeMap;
-  private final Class defaultType;
+  private final Type defaultType;
 
   public TypedFieldTypeResolver()
     {
-    typeMap = new SimpleTypeMap();
+    typeMap = new SqlTypeMap();
     defaultType = String.class;
     }
 
-  public TypedFieldTypeResolver( TypeMap typeMap, Class defaultType )
+  public TypedFieldTypeResolver( TypeMap typeMap, Type defaultType )
     {
     this.typeMap = typeMap;
     this.defaultType = defaultType;
     }
 
   @Override
-  public Class inferTypeFrom( int ordinal, String fieldName )
+  public Type inferTypeFrom( int ordinal, String fieldName )
     {
-    for( Map.Entry<String, Class> entry : typeMap.getNameToTypeMap().entrySet() )
+    for( Map.Entry<String, Type> entry : typeMap.getNameToTypeMap().entrySet() )
       {
       String pattern = entry.getKey();
 
@@ -66,7 +67,7 @@ public class TypedFieldTypeResolver implements FieldTypeResolver
     }
 
   @Override
-  public String prepareField( int i, String fieldName, Class type )
+  public String prepareField( int i, String fieldName, Type type )
     {
     String pattern = typeMap.getNameFor( type );
 
@@ -77,7 +78,7 @@ public class TypedFieldTypeResolver implements FieldTypeResolver
     }
 
   @Override
-  public String cleanField( int ordinal, String fieldName, Class type )
+  public String cleanField( int ordinal, String fieldName, Type type )
     {
     return fieldName.replaceAll( ":.*$", "" );
     }

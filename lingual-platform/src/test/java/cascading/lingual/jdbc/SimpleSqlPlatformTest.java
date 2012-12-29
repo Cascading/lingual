@@ -190,4 +190,10 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
 
     assertTablesEqual( "emps-select", "insert into test.results values (100,'Fred'),(110,'Eric'),(110,'John'),(120,'Wilma'),(130,'Alice')" );
     }
+
+  @Test
+  public void testSelectDate() throws Exception
+    {
+    assertTablesEqual( "sales-select-date", "select empno, sale_date, sale_time from sales.sales" );
+    }
   }

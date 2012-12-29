@@ -18,9 +18,10 @@
  * limitations under the License.
  */
 
-package cascading.lingual.util;
+package cascading.lingual.type;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.google.common.collect.BiMap;
@@ -31,22 +32,22 @@ import com.google.common.collect.HashBiMap;
  */
 public class TypeMap implements Serializable
   {
-  final BiMap<String, Class> nameToType = HashBiMap.<String, Class>create();
-  final BiMap<Class, String> typeToName = nameToType.inverse();
+  final BiMap<String, Type> nameToType = HashBiMap.<String, Type>create();
+  final BiMap<Type, String> typeToName = nameToType.inverse();
 
-  protected void put( String name, Class type )
+  protected void put( String name, Type type )
     {
     nameToType.put( name, type );
     }
 
-  public Class getTypeFor( String name )
+  public Type getTypeFor( String name )
     {
     return nameToType.get( name );
     }
 
-  public Class[] getTypesFor( String... names )
+  public Type[] getTypesFor( String... names )
     {
-    Class[] types = new Class[ names.length ];
+    Type[] types = new Type[ names.length ];
 
     for( int i = 0; i < names.length; i++ )
       {
@@ -59,17 +60,17 @@ public class TypeMap implements Serializable
     return types;
     }
 
-  public String getNameFor( Class type )
+  public String getNameFor( Type type )
     {
     return typeToName.get( type );
     }
 
-  public Map<String, Class> getNameToTypeMap()
+  public Map<String, Type> getNameToTypeMap()
     {
     return nameToType;
     }
 
-  public Map<Class, String> getTypeToNameMap()
+  public Map<Type, String> getTypeToNameMap()
     {
     return typeToName;
     }

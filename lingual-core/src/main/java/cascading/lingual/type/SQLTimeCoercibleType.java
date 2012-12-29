@@ -18,31 +18,25 @@
  * limitations under the License.
  */
 
-package cascading.lingual.util;
+package cascading.lingual.type;
+
+import org.eigenbase.sql.type.SqlTypeName;
+import org.eigenbase.util14.ZonelessDatetime;
+import org.eigenbase.util14.ZonelessTime;
 
 /**
  *
  */
-public class SimpleTypeMap extends TypeMap
+public class SQLTimeCoercibleType extends SQLDateTimeCoercibleType
   {
-  public SimpleTypeMap()
+  public SQLTimeCoercibleType()
     {
-    put( "string", String.class );
+    super( SqlTypeName.TIME, new ZonelessTime() );
+    computeDigest();
+    }
 
-    // primitives
-    put( "boolean", Boolean.TYPE );
-    put( "int", Integer.TYPE );
-    put( "short", Short.TYPE );
-    put( "long", Long.TYPE );
-    put( "float", Float.TYPE );
-    put( "byte", Byte.TYPE );
-
-    // objects
-    put( "Boolean", Boolean.class );
-    put( "Integer", Integer.class );
-    put( "Short", Short.class );
-    put( "Long", Long.class );
-    put( "Float", Float.class );
-    put( "Byte", Byte.class );
+  protected ZonelessDatetime parse( String value )
+    {
+    return ZonelessTime.parse( value );
     }
   }
