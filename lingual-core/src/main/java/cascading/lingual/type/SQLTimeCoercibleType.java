@@ -32,7 +32,6 @@ public class SQLTimeCoercibleType extends SQLDateTimeCoercibleType
   public SQLTimeCoercibleType()
     {
     super( SqlTypeName.TIME, new ZonelessTime() );
-    computeDigest();
     }
 
   protected ZonelessDatetime parse( String value )

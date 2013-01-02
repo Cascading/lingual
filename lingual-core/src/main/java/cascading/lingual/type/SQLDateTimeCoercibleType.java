@@ -44,6 +44,15 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     }
 
   @Override
+  public int hashCode()
+    {
+    if( digest == null ) // no idea how or why this becomes null
+      computeDigest();
+
+    return super.hashCode();
+    }
+
+  @Override
   public Object canonical( Object value )
     {
     if( value == null )
