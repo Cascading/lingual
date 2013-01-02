@@ -18,10 +18,12 @@
  * limitations under the License.
  */
 
+
+
 def bindVersion = "wip-+"
 def bindChanging = false
 
-if( new String( project.buildNumber ).equals( "wip-dev" ) )
+if( System.properties[ 'lingual.release.local' ] )
 {
   bindVersion = "wip-dev"
   bindChanging = true

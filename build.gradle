@@ -24,7 +24,9 @@ apply from: 'etc/version.gradle'
 
 ext.cascadingVersion = '2.2.+'
 
-if( buildNumber == 'wip-dev' )
+// set property to use locally installed cascading builds
+// otherwise wip releases will be pulled from conjars
+if( System.properties[ 'lingual.release.local' ] )
   cascadingVersion = '2.2.0-wip-dev'
 
 ext.hadoopVersion = '1.0.4'
