@@ -33,6 +33,7 @@ import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.json.JSONFactory;
 import cascading.lingual.optiq.meta.Branch;
+import cascading.operation.DebugLevel;
 import cascading.tap.type.FileType;
 import cascading.util.Util;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +50,8 @@ public abstract class PlatformBroker<Config>
 
   public static final String CATALOG_FILE_PROP = "lingual.catalog.name";
   public static final String CATALOG_FILE = "catalog";
+
+  public static final String PLANNER_DEBUG = "lingual.planner.debug";
 
   private Properties properties;
   private SchemaCatalog catalog;
@@ -75,6 +78,13 @@ public abstract class PlatformBroker<Config>
   public abstract Config getConfig();
 
   public abstract FlowProcess<Config> getFlowProcess();
+
+  public DebugLevel getDebugLevel()
+    {
+    String plannerVerbose = getProperties().getProperty( PLANNER_DEBUG, DebugLevel.NONE.toString() );
+
+    return DebugLevel.valueOf( plannerVerbose.toUpperCase() );
+    }
 
   public boolean catalogLoaded()
     {

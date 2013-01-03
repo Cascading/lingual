@@ -88,11 +88,15 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       Fields fields = RelUtil.getFieldsFor( this ).applyType( 0, javaType );
       Pipe pipe = new Each( branch.current, new Insert( fields, value ), Fields.RESULTS );
 
+      pipe = stack.addDebug( this, pipe );
+
       return new Branch( pipe, branch );
       }
 
     Fields fields = RelUtil.createFields( getChild(), exps );
     Pipe current = new Retain( branch.current, fields );
+
+    current = stack.addDebug( this, current );
 
     return new Branch( current, branch );
     }

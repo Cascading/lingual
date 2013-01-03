@@ -85,6 +85,8 @@ public class CascadingUnionRel extends UnionRelBase implements CascadingRelNode
       {
       branches[ i ] = ( (CascadingRelNode) inputs.get( i ) ).visitChild( stack );
       pipes[ i ] = branches[ i ].current;
+
+      pipes[ i ] = stack.addDebug( this, pipes[ i ], i );
       }
 
     Pipe pipe;
@@ -93,6 +95,8 @@ public class CascadingUnionRel extends UnionRelBase implements CascadingRelNode
       pipe = new Unique( pipes, Fields.ALL );
     else
       pipe = new GroupBy( pipes, Fields.ALL );
+
+    pipe = stack.addDebug( this, pipe );
 
     return new Branch( pipe, branches );
     }

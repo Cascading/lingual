@@ -70,6 +70,8 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
 
     Pipe current = new GroupBy( branch.current, fields );
 
+    current = stack.addDebug( this, current );
+
     return new Branch( current, branch );
     }
 
@@ -91,9 +93,7 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
     for( RelFieldCollation collation : collations )
       {
       if( collation.getDirection() == RelFieldCollation.Direction.Descending )
-        {
         fields.setComparator( collation.getFieldIndex(), Collections.reverseOrder() );
-        }
       }
 
     return fields;

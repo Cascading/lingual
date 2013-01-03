@@ -102,8 +102,8 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Branch lhsBranch = ( (CascadingRelNode) left ).visitChild( stack );
     Branch rhsBranch = ( (CascadingRelNode) right ).visitChild( stack );
 
-    Pipe leftPipe = lhsBranch.current;
-    Pipe rightPipe = rhsBranch.current;
+    Pipe leftPipe = stack.addDebug( this, lhsBranch.current, "lhs" );
+    Pipe rightPipe = stack.addDebug( this, rhsBranch.current, "rhs" );
 
     Fields lhsGroup = getFieldsFor( leftKeys, left.getRowType() );
     Fields rhsGroup = getFieldsFor( rightKeys, right.getRowType() );
@@ -113,7 +113,9 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Fields declaredFields = RelUtil.getTypedFieldsFor( this );
 
     // need to parse lhs rhs fields from condition
-    CoGroup coGroup = new CoGroup( leftPipe, lhsGroup, rightPipe, rhsGroup, declaredFields, joiner );
+    Pipe coGroup = new CoGroup( leftPipe, lhsGroup, rightPipe, rhsGroup, declaredFields, joiner );
+
+    coGroup = stack.addDebug( this, coGroup );
 
     return new Branch( coGroup, lhsBranch, rhsBranch );
     }

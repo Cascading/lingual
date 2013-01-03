@@ -37,7 +37,6 @@ import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
-import cascading.pipe.Splice;
 import cascading.pipe.assembly.AggregateBy;
 import cascading.pipe.assembly.AverageBy;
 import cascading.pipe.assembly.CountBy;
@@ -94,6 +93,8 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       {
       Pipe current = new Unique( branch.current, getTypedFieldsFor( this ) );
 
+      current = stack.addDebug( this, current );
+
       return new Branch( current, branch );
       }
 
@@ -106,37 +107,29 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     List<AggregateCall> concurrents = getConcurrents( distincts );
 
     AggregateBy concurrentAggregates = createConcurrentAggregates( inputRowType, previous, groupFields, concurrents );
-    Pipe[] distinctAggregates = createDistinctAggregates( inputRowType, previous, groupFields, distincts );
+    Pipe[] distinctAggregates = createDistinctAggregates( stack, inputRowType, previous, groupFields, distincts );
 
     if( concurrentAggregates == null && distinctAggregates == null )
-      {
       throw new IllegalStateException( "concurrent and distinct aggregates are null" );
-      }
 
     if( concurrentAggregates != null && distinctAggregates == null )
-      {
-      return new Branch( concurrentAggregates, branch );
-      }
+      return new Branch( stack.addDebug( this, concurrentAggregates ), branch );
 
     if( concurrentAggregates == null && distinctAggregates != null && distinctAggregates.length == 1 )
-      {
-      return new Branch( distinctAggregates[ 0 ], branch );
-      }
+      return new Branch( stack.addDebug( this, distinctAggregates[ 0 ] ), branch );
 
     Pipe[] pipes = createPipes( concurrentAggregates, distinctAggregates );
     Fields declaredFields = createDeclaredFields( groupFields, distincts, concurrentAggregates );
     Fields[] groupFieldsArray = createGroupingFields( groupFields, pipes );
 
-    Splice join;
+    Pipe join;
 
     if( groupFields.isNone() ) // not grouping, just appending tuples into a single row
-      {
       join = new HashJoin( pipes, groupFieldsArray, declaredFields, new InnerJoin() );
-      }
     else
-      {
       join = new CoGroup( pipes, groupFieldsArray, declaredFields, new InnerJoin() );
-      }
+
+    join = stack.addDebug( this, join );
 
     return new Branch( join, branch );
     }
@@ -154,9 +147,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     List<Pipe> pipeList = new ArrayList<Pipe>();
 
     if( concurrentAggregates != null )
-      {
       pipeList.add( concurrentAggregates );
-      }
 
     Collections.addAll( pipeList, distinctAggregates );
 
@@ -170,21 +161,17 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     declaredFieldsList.add( groupFields );
 
     if( concurrentAggregates != null )
-      {
       Collections.addAll( declaredFieldsList, concurrentAggregates.getFieldDeclarations() );
-      }
 
     Collections.addAll( declaredFieldsList, makeFieldsFor( distincts ) );
 
     return Fields.join( declaredFieldsList.toArray( new Fields[ declaredFieldsList.size() ] ) );
     }
 
-  private Pipe[] createDistinctAggregates( RelDataType inputRowType, Pipe previous, Fields groupFields, List<AggregateCall> distincts )
+  private Pipe[] createDistinctAggregates( Stack stack, RelDataType inputRowType, Pipe previous, Fields groupFields, List<AggregateCall> distincts )
     {
     if( distincts.isEmpty() )
-      {
       return null;
-      }
 
     List<Every> aggregates = new ArrayList<Every>();
 
@@ -194,41 +181,29 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       Fields argFields = getTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
-        {
         argFields = Fields.ALL;
-        }
 
       Fields resultFields = makeFieldsFor( aggCall );
 
       Pipe current = new Retain( previous, argFields );
       Pipe unique = new Unique( resultFields.toString(), current, argFields, Unique.Include.NO_NULLS );
 
+      unique = stack.addDebug( this, unique );
+
       unique = new GroupBy( unique, groupFields );
 
       if( aggregationName.equals( "COUNT" ) )
-        {
         aggregates.add( makeCount( unique, argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "SUM" ) )
-        {
         aggregates.add( makeSum( unique, argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "MIN" ) )
-        {
         aggregates.add( makeMin( unique, argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "MAX" ) )
-        {
         aggregates.add( makeMax( unique, argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "AVG" ) )
-        {
         aggregates.add( makeAvg( unique, argFields, resultFields ) );
-        }
       else
-        {
         throw new UnsupportedOperationException( "unimplemented aggregation: " + aggregationName );
-        }
       }
 
     return aggregates.toArray( new Every[ aggregates.size() ] );
@@ -262,9 +237,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
   private AggregateBy createConcurrentAggregates( RelDataType inputRowType, Pipe previous, Fields groupFields, List<AggregateCall> concurrents )
     {
     if( concurrents.isEmpty() )
-      {
       return null;
-      }
 
     List<AggregateBy> aggregates = new ArrayList<AggregateBy>();
     for( AggregateCall aggCall : concurrents )
@@ -273,36 +246,22 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       Fields argFields = getTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
-        {
         argFields = Fields.ALL;
-        }
 
       Fields resultFields = makeFieldsFor( aggCall );
 
       if( aggregationName.equals( "COUNT" ) )
-        {
         aggregates.add( makeCountBy( argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "SUM" ) )
-        {
         aggregates.add( makeSumBy( argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "MIN" ) )
-        {
         aggregates.add( makeMinBy( argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "MAX" ) )
-        {
         aggregates.add( makeMaxBy( argFields, resultFields ) );
-        }
       else if( aggregationName.equals( "AVG" ) )
-        {
         aggregates.add( makeAvgBy( argFields, resultFields ) );
-        }
       else
-        {
         throw new UnsupportedOperationException( "unimplemented aggregation: " + aggregationName );
-        }
       }
 
     return new AggregateBy( previous, groupFields, aggregates.toArray( new AggregateBy[ aggregates.size() ] ) );
@@ -323,9 +282,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     for( AggregateCall aggCall : aggCalls )
       {
       if( aggCall.isDistinct() )
-        {
         distincts.add( aggCall );
-        }
       }
     return distincts;
     }
@@ -361,9 +318,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     Fields[] fields = new Fields[ aggCalls.size() ];
 
     for( int i = 0; i < aggCalls.size(); i++ )
-      {
       fields[ i ] = makeFieldsFor( aggCalls.get( i ) );
-      }
 
     return fields;
     }

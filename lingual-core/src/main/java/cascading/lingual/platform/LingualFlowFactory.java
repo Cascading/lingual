@@ -23,6 +23,7 @@ package cascading.lingual.platform;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
+import cascading.flow.FlowDef;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
@@ -73,6 +74,11 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   @Override
   public Flow create()
     {
-    return createFlowFrom( getName(), tail );
+    FlowDef flowDef = FlowDef.flowDef()
+      .setName( getName() )
+      .addTails( tail )
+      .setDebugLevel( platformBroker.getDebugLevel() );
+
+    return createFlowFrom( flowDef, tail );
     }
   }

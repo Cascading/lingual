@@ -112,6 +112,8 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
       pipe = new Retain( pipe, resultFields );
       }
 
+    pipe = stack.addDebug( this, pipe );
+
     return new Branch( pipe, branch );
     }
 
