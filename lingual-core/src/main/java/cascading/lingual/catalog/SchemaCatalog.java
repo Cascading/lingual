@@ -161,13 +161,20 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getSchema( name );
     }
 
-  public boolean addSchemaDefNamed( String name )
+  public boolean addSchemaDef( String name )
     {
     if( rootSchemaDef.getSchema( name ) != null )
       return false;
 
     rootSchemaDef.getOrAddSchema( name );
     return true;
+    }
+
+  public SchemaDef createSchemaDef( String name, String identifier )
+    {
+    rootSchemaDef.addSchema( name, identifier );
+
+    return rootSchemaDef.getSchema( name );
     }
 
   public boolean removeSchemaDef( String schemaName )
@@ -193,8 +200,20 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createSchemaDefAndTableDefsFor( String schemaIdentifier )
     {
-    String schemaName = Util.createSchemaNameFrom( schemaIdentifier );
-    SchemaDef schemaDef = rootSchemaDef.getOrAddSchema( schemaName );
+    return createSchemaDefAndTableDefsFor( null, schemaIdentifier );
+    }
+
+  public String createSchemaDefAndTableDefsFor( String schemaName, String schemaIdentifier )
+    {
+    if( schemaName == null )
+      schemaName = Util.createSchemaNameFrom( schemaIdentifier );
+
+    SchemaDef schemaDef = getSchemaDef( schemaName );
+
+    if( schemaDef == null )
+      schemaDef = createSchemaDef( schemaName, schemaIdentifier );
+    else if( !schemaIdentifier.equals( schemaDef.getIdentifier() ) )
+      throw new IllegalArgumentException( "schema exists: " + schemaName + ", with differing identifier: " + schemaIdentifier );
 
     String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
 
@@ -236,7 +255,7 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.renameTable( schemaName, tableName, renameName );
     }
 
-  protected String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
+  public String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
     SchemaDef schemaDef = getRootSchemaDef().getOrAddSchema( schemaName );
 
@@ -435,6 +454,16 @@ public abstract class SchemaCatalog implements Serializable
   public Stereotype getStereoTypeFor( Fields fields )
     {
     return rootSchemaDef.getStereotypeFor( fields );
+    }
+
+  public Stereotype getStereoTypeFor( String schemaName, Fields fields )
+    {
+    SchemaDef schema = getSchemaDef( schemaName );
+
+    if( schema == null )
+      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
+
+    return schema.getStereotypeFor( fields );
     }
 
   public Fields getFieldsFor( String identifier )

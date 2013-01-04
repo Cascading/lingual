@@ -184,6 +184,11 @@ public class SchemaDef extends Def
     schemas.put( name, new SchemaDef( this, name ) );
     }
 
+  public void addSchema( String name, String identifier )
+    {
+    schemas.put( name, new SchemaDef( this, name, identifier ) );
+    }
+
   public boolean removeSchema( String schemaName )
     {
     return schemas.remove( schemaName ) != null;

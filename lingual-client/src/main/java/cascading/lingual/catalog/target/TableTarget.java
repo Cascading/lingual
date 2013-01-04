@@ -18,20 +18,23 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.target;
 
 import java.util.Collection;
-import java.util.List;
 
+import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
  *
  */
-public class ProtocolTarget extends Target
+public class TableTarget extends CRUDTarget
   {
-  public ProtocolTarget( Printer printer, CatalogOptions options )
+  public TableTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
@@ -39,13 +42,17 @@ public class ProtocolTarget extends Target
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.renameTableDef( getOptions().getSchemaName(), getOptions().getTableName(), getOptions().getRenameName() );
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.removeTableDef( getOptions().getSchemaName(), getOptions().getTableName() );
     }
 
   @Override
@@ -53,23 +60,23 @@ public class ProtocolTarget extends Target
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
+    String addURI = getOptions().getAddOrUpdateURI();
+
+    if( addURI == null )
+      throw new IllegalArgumentException( "add action must have a uri value" );
+
+    String tableName = getOptions().getTableName();
+    String stereotypeName = getOptions().getStereotypeName();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    Format format = Format.getFormat( getOptions().getFormatName() );
 
-    if( protocol == null )
-      throw new IllegalArgumentException( "add action must have a protocol name value" );
-
-    String schemaName = getOptions().getSchemaName();
-    List<String> extensions = getOptions().getExtensions();
-
-    catalog.addProtocol( schemaName, protocol, extensions );
-
-    return protocol.getName();
+    return catalog.createTableDefFor( getOptions().getSchemaName(), tableName, addURI, stereotypeName, protocol, format );
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getProtocolNames( getOptions().getSchemaName() );
+    return catalog.getTableNames( getOptions().getSchemaName() );
     }
   }

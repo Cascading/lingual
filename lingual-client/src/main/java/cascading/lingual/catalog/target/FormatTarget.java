@@ -18,19 +18,23 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.target;
 
 import java.util.Collection;
+import java.util.List;
 
+import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
  *
  */
-public class TableTarget extends Target
+public class FormatTarget extends CRUDTarget
   {
-  public TableTarget( Printer printer, CatalogOptions options )
+  public FormatTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
@@ -38,17 +42,13 @@ public class TableTarget extends Target
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    return catalog.renameTableDef( getOptions().getSchemaName(), getOptions().getTableName(), getOptions().getRenameName() );
+    return false;
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    return catalog.removeTableDef( getOptions().getSchemaName(), getOptions().getTableName() );
+    return false;
     }
 
   @Override
@@ -56,23 +56,23 @@ public class TableTarget extends Target
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    String addURI = getOptions().getAddOrUpdateURI();
-
-    if( addURI == null )
-      throw new IllegalArgumentException( "add action must have a uri value" );
-
-    String tableName = getOptions().getTableName();
-    String stereotypeName = getOptions().getStereotypeName();
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
     Format format = Format.getFormat( getOptions().getFormatName() );
 
-    return catalog.createTableDefFor( getOptions().getSchemaName(), tableName, addURI, stereotypeName, protocol, format );
+    if( format == null )
+      throw new IllegalArgumentException( "add action must have a format name value" );
+
+    String schemaName = getOptions().getSchemaName();
+    List<String> extensions = getOptions().getExtensions();
+
+    catalog.addFormat( schemaName, format, extensions );
+
+    return format.getName();
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getTableNames( getOptions().getSchemaName() );
+    return catalog.getFormatNames( getOptions().getSchemaName() );
     }
   }

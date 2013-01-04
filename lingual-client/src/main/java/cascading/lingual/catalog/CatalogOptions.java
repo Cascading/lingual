@@ -34,6 +34,8 @@ public class CatalogOptions extends Options
   {
   private final OptionSpec<Void> init;
 
+  private final OptionSpec<String> ddl;
+
   private final OptionSpec<String> uri;
   private final OptionSpec<String> schema;
   private final OptionSpec<String> table;
@@ -54,12 +56,13 @@ public class CatalogOptions extends Options
 
   public CatalogOptions()
     {
-    super();
-
     init = parser.accepts( "init", "initializes meta-data store" );
 
     uri = parser.accepts( "uri", "path to catalog location, defaults is current directory" )
-      .withRequiredArg().defaultsTo( "./" );
+      .withRequiredArg().describedAs( "directory" ).defaultsTo( "./" );
+
+    ddl = parser.accepts( "ddl", "initializes schema with DDL commands" )
+      .withRequiredArg().describedAs( "filename" );
 
     schema = parser.accepts( "schema", "name of schema to use" )
       .withOptionalArg();
@@ -112,6 +115,16 @@ public class CatalogOptions extends Options
   public boolean isInit()
     {
     return optionSet.has( init );
+    }
+
+  public boolean isDDL()
+    {
+    return optionSet.has( ddl );
+    }
+
+  public String getDDL()
+    {
+    return optionSet.valueOf( ddl );
     }
 
   public boolean isActions()

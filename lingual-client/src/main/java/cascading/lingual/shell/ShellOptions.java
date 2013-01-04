@@ -37,11 +37,8 @@ public class ShellOptions extends Options
   private final OptionSpec<String> dotPath;
   private final OptionSpec<String> sqlFile;
 
-
   public ShellOptions()
     {
-    super();
-
     schema = parser.accepts( "schema", "name of current schema" )
       .withRequiredArg();
 
@@ -49,13 +46,13 @@ public class ShellOptions extends Options
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
     resultPath = parser.accepts( "resultPath", "root temp path to store results" )
-      .withRequiredArg();
+      .withRequiredArg().describedAs( "directory" );
 
     dotPath = parser.accepts( "dotPath", "path to write flow dot files" )
-      .withRequiredArg();
+      .withRequiredArg().describedAs( "directory" );
 
     sqlFile = parser.accepts( "sql", "file with sql commands to execute" )
-      .withRequiredArg();
+      .withRequiredArg().describedAs( "filename" );
     }
 
   public String createJDBCUrl()

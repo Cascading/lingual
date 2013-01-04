@@ -18,66 +18,61 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.target;
 
 import java.util.Collection;
+import java.util.List;
 
+import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
  *
  */
-public class SchemaTarget extends Target
+public class ProtocolTarget extends CRUDTarget
   {
-  public SchemaTarget( Printer printer, CatalogOptions options )
+  public ProtocolTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
 
   @Override
-  public boolean updateIsNoop()
-    {
-    return true;
-    }
-
-  @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    return catalog.renameSchemaDef( getOptions().getSchemaName(), getOptions().getRenameName() );
+    return false;
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
-    return catalog.removeSchemaDef( getOptions().getSchemaName() );
+    return false;
     }
 
   @Override
   protected String performAdd( PlatformBroker platformBroker )
     {
-    String addURI = getOptions().getAddOrUpdateURI();
+    SchemaCatalog catalog = platformBroker.getCatalog();
 
-    if( addURI == null )
-      {
-      boolean success = platformBroker.getCatalog().addSchemaDefNamed( getOptions().getSchemaName() );
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
 
-      if( success )
-        return getOptions().getSchemaName();
+    if( protocol == null )
+      throw new IllegalArgumentException( "add action must have a protocol name value" );
 
-      return null;
-      }
+    String schemaName = getOptions().getSchemaName();
+    List<String> extensions = getOptions().getExtensions();
 
-    return platformBroker.getCatalog().createSchemaDefAndTableDefsFor( addURI );
+    catalog.addProtocol( schemaName, protocol, extensions );
+
+    return protocol.getName();
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getSchemaNames();
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    return catalog.getProtocolNames( getOptions().getSchemaName() );
     }
   }

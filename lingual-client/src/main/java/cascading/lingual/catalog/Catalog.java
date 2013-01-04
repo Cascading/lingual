@@ -24,6 +24,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
 
+import cascading.lingual.catalog.target.DDLTarget;
+import cascading.lingual.catalog.target.FormatTarget;
+import cascading.lingual.catalog.target.ProtocolTarget;
+import cascading.lingual.catalog.target.SchemaTarget;
+import cascading.lingual.catalog.target.StereotypeTarget;
+import cascading.lingual.catalog.target.TableTarget;
 import cascading.lingual.common.Main;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
@@ -111,6 +117,8 @@ public class Catalog extends Main<CatalogOptions>
 
     try
       {
+      if( getOptions().isDDL() )
+        return handleDDL( platformBroker );
       if( getOptions().isListSchemas() || getOptions().isSchemaActions() )
         return handleSchema( platformBroker );
       else if( getOptions().isListTables() || getOptions().isTableActions() )
@@ -138,6 +146,11 @@ public class Catalog extends Main<CatalogOptions>
       }
 
     return false;
+    }
+
+  private boolean handleDDL( PlatformBroker platformBroker )
+    {
+    return new DDLTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   private boolean handleSchema( PlatformBroker platformBroker )

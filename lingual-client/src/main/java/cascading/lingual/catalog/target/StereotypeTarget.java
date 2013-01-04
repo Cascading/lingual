@@ -18,20 +18,28 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.target;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
+import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.type.SqlTypeMap;
+import cascading.lingual.type.TypeMap;
+import cascading.tuple.Fields;
 
 /**
  *
  */
-public class FormatTarget extends Target
+public class StereotypeTarget extends CRUDTarget
   {
-  public FormatTarget( Printer printer, CatalogOptions options )
+  TypeMap typeMap = new SqlTypeMap();
+
+  public StereotypeTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
     }
@@ -39,13 +47,17 @@ public class FormatTarget extends Target
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.renameStereotype( getOptions().getSchemaName(), getOptions().getStereotypeName(), getOptions().getRenameName() );
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.removeStereotype( getOptions().getSchemaName(), getOptions().getStereotypeName() );
     }
 
   @Override
@@ -53,23 +65,30 @@ public class FormatTarget extends Target
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    Format format = Format.getFormat( getOptions().getFormatName() );
-
-    if( format == null )
-      throw new IllegalArgumentException( "add action must have a format name value" );
-
     String schemaName = getOptions().getSchemaName();
-    List<String> extensions = getOptions().getExtensions();
+    String stereotypeName = getOptions().getStereotypeName();
+    List<String> columns = getOptions().getColumns();
+    List<String> types = getOptions().getTypes();
+    Fields fields = createFields( columns, types );
 
-    catalog.addFormat( schemaName, format, extensions );
+    catalog.createStereotype( schemaName, stereotypeName, fields );
 
-    return format.getName();
+    return stereotypeName;
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getFormatNames( getOptions().getSchemaName() );
+    return catalog.getStereotypeNames();
+    }
+
+  private Fields createFields( List<String> columns, List<String> types )
+    {
+    Fields fields = new Fields( columns.toArray( new Comparable[ columns.size() ] ) );
+
+    Type[] typeArray = typeMap.getTypesFor( types.toArray( new String[ types.size() ] ) );
+
+    return fields.applyTypes( typeArray );
     }
   }

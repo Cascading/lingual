@@ -18,10 +18,11 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.target;
 
 import java.util.Collection;
 
+import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import org.slf4j.Logger;
@@ -30,33 +31,13 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public abstract class Target
+public abstract class CRUDTarget extends Target
   {
-  private static final Logger LOG = LoggerFactory.getLogger( Target.class );
+  private static final Logger LOG = LoggerFactory.getLogger( CRUDTarget.class );
 
-  private String name = getClass().getSimpleName().replaceAll( "Target$", "" ).toLowerCase();
-  private final Printer printer;
-  private final CatalogOptions options;
-
-  public Target( Printer printer, CatalogOptions options )
+  public CRUDTarget( Printer printer, CatalogOptions options )
     {
-    this.printer = printer;
-    this.options = options;
-    }
-
-  public String getName()
-    {
-    return name;
-    }
-
-  public Printer getPrinter()
-    {
-    return printer;
-    }
-
-  public CatalogOptions getOptions()
-    {
-    return options;
+    super( printer, options );
     }
 
   public boolean updateIsNoop()
@@ -64,6 +45,7 @@ public abstract class Target
     return false;
     }
 
+  @Override
   public boolean handle( PlatformBroker platformBroker )
     {
     if( getOptions().isList() )

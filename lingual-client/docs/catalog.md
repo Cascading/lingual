@@ -52,18 +52,23 @@ To add new table to an existing schema:
 | --platform [name]   |                              | use the named platform (relative uri will be resolved for given platform)
 | --default*          |                              | make the current relevant options the default environment
 |                     |                              |
+| --init              |                              | initializes a new catalog in the current directory if --uri is not given
+|                     |                              |
+| --ddl [file]        |                              | use DDL file to define tables in an existing schema
+|                     | --schema name                |
+|                     | --format name                |
+|                     | --protocol name              |
+|                     |                              |
 | --repo*             |                              | list all maven repos
 | --repo [name]       |                              |
 |                     | --remove                     | remove maven repo
 |                     | --add [uri]                  | add maven repo
 |                     |                              |
-| --init              |                              | initializes a new catalog in the current directory if --uri is not given
-|                     |                              |
 | --schema            |                              | lists all current schemas
 | --schema [name]     |                              |
 |                     | --remove                     |
 |                     | --rename [new name]          |
-|                     | --add [uri]*                 | uri optional, add path as a new schema root
+|                     | --add [uri]                  | uri optional, add path as a new schema root
 |                     |                              |
 | --table             |                              | lists all tables for the current schema
 | --table [name]      |                              |
@@ -99,7 +104,7 @@ To add new table to an existing schema:
 | --format [name]     |                              |
 |                     | --remove                     |
 |                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
-|                     | --provider [name]            | use the given provider
+|                     | --provider [name]*           | use the given provider
 |                     | --update                     | update with given values (replaces values)
 |                     | --ext [.ext,.]               | file extension used to identify format (.csv, .tsv, etc)
 |                     | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
@@ -108,7 +113,7 @@ To add new table to an existing schema:
 | --protocol [name]   |                              |
 |                     | --remove                     |
 |                     | --add                        | register a new protocol
-|                     | --provider [name]            | use the given provider
+|                     | --provider [name]*           | use the given provider
 |                     | --update                     | update with given values (replaces values)
 |                     | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
 |                     | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
