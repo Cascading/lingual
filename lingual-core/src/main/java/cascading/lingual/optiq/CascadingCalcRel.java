@@ -76,9 +76,7 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     List<Expression> parameters = new ArrayList<Expression>();
 
     for( int i = 0; i < fields.size(); i++ )
-      {
       parameters.add( Expressions.parameter( fields.getType( i ), fields.get( i ).toString() ) );
-      }
 
     Expressions.FluentList<Statement> statements = Expressions.<Statement>list();
     Expression condition = RexToLixTranslator.translateCondition(
