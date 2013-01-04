@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
+import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.tap.TypedFieldTypeResolver;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -87,6 +88,8 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
       {
       Class.forName( DRIVER_CLASSNAME );
       connection = DriverManager.getConnection( getConnectionString() );
+
+      PlatformBrokerFactory.instance().reloadBrokers();
       }
 
     return connection;
