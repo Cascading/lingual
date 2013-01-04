@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -23,7 +23,6 @@ package cascading.lingual.util;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;

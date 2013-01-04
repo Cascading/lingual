@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -20,16 +20,10 @@
 
 package cascading.lingual.platform.local;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.platform.LingualFormatHandler;
 import cascading.lingual.tap.local.TypedTextDelimited;
-import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
 import cascading.tuple.Fields;

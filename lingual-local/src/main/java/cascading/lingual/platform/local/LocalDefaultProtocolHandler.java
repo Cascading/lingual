@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -22,8 +22,6 @@ package cascading.lingual.platform.local;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;

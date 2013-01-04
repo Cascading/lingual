@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -22,10 +22,7 @@ package cascading.lingual.catalog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import cascading.lingual.util.Util;
 import com.google.common.base.Function;
