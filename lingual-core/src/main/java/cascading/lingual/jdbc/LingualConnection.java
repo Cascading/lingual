@@ -53,7 +53,7 @@ import static cascading.lingual.jdbc.Driver.SCHEMA_PROP;
 /**
  *
  */
-public class LingualConnection implements Connection
+public abstract class LingualConnection implements Connection
   {
   private static final Logger LOG = LoggerFactory.getLogger( LingualConnection.class );
 

@@ -35,6 +35,7 @@ import org.eigenbase.util14.ConnectStringParser;
 public class Driver extends UnregisteredDriver
   {
   private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( Driver.class );
+  private final Factory factory = instantiateFactory();
 
   public static final String PLATFORM_PROP = "platform";
   public static final String CATALOG_PROP = "catalog";
@@ -93,7 +94,7 @@ public class Driver extends UnregisteredDriver
 
     Properties connectionProperties = parseConnectionProperties( url, info );
 
-    return new LingualConnection( connection, connectionProperties );
+    return factory.createConnection( connection, connectionProperties );
     }
 
   private Properties parseConnectionProperties( String url, Properties info ) throws SQLException
@@ -123,5 +124,27 @@ public class Driver extends UnregisteredDriver
       }
 
     return urlSuffix;
+    }
+
+  static Factory instantiateFactory()
+    {
+    if( true )
+      return new JaninoFactory();
+
+    try
+      {
+      Class clazz = Class.forName( factoryClassName() );
+      return (Factory) clazz.newInstance();
+      }
+    catch( Throwable e )
+      {
+      LOG.error( "Error while instantiating driver factory", e );
+      return null;
+      }
+    }
+
+  static String factoryClassName()
+    {
+    return "cascading.lingual.jdbc.FactoryJdbc40";
     }
   }
