@@ -22,27 +22,38 @@ package cascading.lingual.catalog;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.tuple.Fields;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
  */
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.ANY,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class TableDef extends Def
   {
+
   @JsonProperty
-  private Stereotype stereotype;
-
+  private Stereotype<Protocol, Format> stereotype;
+  @JsonProperty
   private Protocol protocol;
-
+  @JsonProperty
   private Format format;
 
-  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype )
+  protected TableDef()
+    {
+    }
+
+  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype<Protocol, Format> stereotype )
     {
     super( parentSchema, name, identifier );
     this.stereotype = stereotype;
     }
 
-  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype stereotype, Protocol protocol, Format format )
+  public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
     super( parentSchema, name, identifier );
     this.stereotype = stereotype;
@@ -55,7 +66,7 @@ public class TableDef extends Def
     return new TableDef( parentSchema, newName, identifier, stereotype );
     }
 
-  public Stereotype getStereotype()
+  public Stereotype<Protocol, Format> getStereotype()
     {
     return stereotype;
     }
@@ -73,5 +84,37 @@ public class TableDef extends Def
   public Format getFormat()
     {
     return format;
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( !( object instanceof TableDef ) )
+      return false;
+    if( !super.equals( object ) )
+      return false;
+
+    TableDef tableDef = (TableDef) object;
+
+    if( format != null ? !format.equals( tableDef.format ) : tableDef.format != null )
+      return false;
+    if( protocol != null ? !protocol.equals( tableDef.protocol ) : tableDef.protocol != null )
+      return false;
+    if( stereotype != null ? !stereotype.equals( tableDef.stereotype ) : tableDef.stereotype != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    int result = super.hashCode();
+    result = 31 * result + ( stereotype != null ? stereotype.hashCode() : 0 );
+    result = 31 * result + ( protocol != null ? protocol.hashCode() : 0 );
+    result = 31 * result + ( format != null ? format.hashCode() : 0 );
+    return result;
     }
   }

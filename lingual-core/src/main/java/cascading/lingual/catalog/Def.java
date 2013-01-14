@@ -22,7 +22,7 @@ package cascading.lingual.catalog;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Def implements Serializable
   {
-  @JsonIgnore
+  @JsonBackReference
   protected SchemaDef parentSchema;
   @JsonProperty
   protected String name;
@@ -59,13 +59,54 @@ public class Def implements Serializable
     return parentSchema;
     }
 
+  protected void setParentSchema( SchemaDef parentSchema )
+    {
+    this.parentSchema = parentSchema;
+    }
+
   public String getName()
     {
     return name;
     }
 
+  protected void setName( String name )
+    {
+    this.name = name;
+    }
+
   public String getIdentifier()
     {
     return identifier;
+    }
+
+  protected void setIdentifier( String identifier )
+    {
+    this.identifier = identifier;
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( !( object instanceof Def ) )
+      return false;
+
+    Def def = (Def) object;
+
+    if( identifier != null ? !identifier.equals( def.identifier ) : def.identifier != null )
+      return false;
+    if( name != null ? !name.equals( def.name ) : def.name != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    int result = name != null ? name.hashCode() : 0;
+    result = 31 * result + ( identifier != null ? identifier.hashCode() : 0 );
+    return result;
     }
   }

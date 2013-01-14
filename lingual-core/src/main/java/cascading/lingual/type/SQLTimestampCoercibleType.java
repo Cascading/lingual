@@ -20,6 +20,7 @@
 
 package cascading.lingual.type;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.eigenbase.sql.type.SqlTypeName;
 import org.eigenbase.util14.ZonelessDatetime;
 import org.eigenbase.util14.ZonelessTimestamp;
@@ -27,6 +28,7 @@ import org.eigenbase.util14.ZonelessTimestamp;
 /**
  *
  */
+@JsonTypeName("SQLTimestamp")
 public class SQLTimestampCoercibleType extends SQLDateTimeCoercibleType
   {
   public SQLTimestampCoercibleType()

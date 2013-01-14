@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cascading.bind.catalog.Catalog;
 import cascading.bind.catalog.Stereotype;
+import cascading.bind.catalog.Stereotypes;
 import cascading.lingual.util.MultiProperties;
 import cascading.tuple.Fields;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -38,17 +38,25 @@ import com.google.common.collect.Collections2;
 /**
  *
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.ANY,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE,
+  isGetterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public class SchemaDef extends Def
   {
-  @JsonIgnore
-  private Catalog<Protocol, Format> stereotypes = new Catalog<Protocol, Format>();
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Stereotypes<Protocol, Format> stereotypes = new Stereotypes<Protocol, Format>();
 
   @JsonProperty
-  private Map<String, SchemaDef> schemas = new HashMap<String, SchemaDef>();
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Map<String, SchemaDef> childSchemas = new HashMap<String, SchemaDef>();
 
   @JsonProperty
-  private Map<String, TableDef> tables = new HashMap<String, TableDef>();
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Map<String, TableDef> childTables = new HashMap<String, TableDef>();
 
   @JsonProperty
   private MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
@@ -79,7 +87,6 @@ public class SchemaDef extends Def
     {
     return getParentSchema() == null;
     }
-
 
   public void addProtocolProperties( Protocol protocol, Map<String, List<String>> properties )
     {
@@ -147,7 +154,7 @@ public class SchemaDef extends Def
 
   public Collection<SchemaDef> getChildSchemas()
     {
-    return schemas.values();
+    return childSchemas.values();
     }
 
   public Collection<String> getChildSchemaNames()
@@ -164,7 +171,7 @@ public class SchemaDef extends Def
 
   public Collection<TableDef> getChildTables()
     {
-    return tables.values();
+    return childTables.values();
     }
 
   public Collection<String> getChildTableNames()
@@ -179,29 +186,37 @@ public class SchemaDef extends Def
     } );
     }
 
-  public void addSchema( String name )
+  public boolean addSchema( String name )
     {
-    schemas.put( name, new SchemaDef( this, name ) );
+    if( childSchemas.containsKey( name ) )
+      return false;
+
+    childSchemas.put( name, new SchemaDef( this, name ) );
+    return true;
     }
 
-  public void addSchema( String name, String identifier )
+  public boolean addSchema( String name, String identifier )
     {
-    schemas.put( name, new SchemaDef( this, name, identifier ) );
+    if( childSchemas.containsKey( name ) )
+      return false;
+
+    childSchemas.put( name, new SchemaDef( this, name, identifier ) );
+    return true;
     }
 
   public boolean removeSchema( String schemaName )
     {
-    return schemas.remove( schemaName ) != null;
+    return childSchemas.remove( schemaName ) != null;
     }
 
   public boolean renameSchema( String schemaName, String newName )
     {
-    SchemaDef schemaDef = schemas.remove( schemaName );
+    SchemaDef schemaDef = childSchemas.remove( schemaName );
 
     if( schemaDef == null )
       return false;
 
-    schemas.put( newName, schemaDef.copyWith( newName ) );
+    childSchemas.put( newName, schemaDef.copyWith( newName ) );
 
     return true;
     }
@@ -211,22 +226,19 @@ public class SchemaDef extends Def
     SchemaDef schema = getSchema( name );
 
     if( schema == null )
-      {
-      schema = new SchemaDef( this, name );
-      schemas.put( name, schema );
-      }
+      addSchema( name );
 
-    return schema;
+    return getSchema( name );
     }
 
   public SchemaDef getSchema( String name )
     {
-    return schemas.get( name );
+    return childSchemas.get( name );
     }
 
   public TableDef getTable( String name )
     {
-    return tables.get( name );
+    return childTables.get( name );
     }
 
   public boolean removeTable( String schemaName, String tableName )
@@ -241,7 +253,7 @@ public class SchemaDef extends Def
 
   private boolean removeTable( String tableName )
     {
-    return tables.remove( tableName ) != null;
+    return childTables.remove( tableName ) != null;
     }
 
   public boolean renameTable( String schemaName, String tableName, String newName )
@@ -256,35 +268,36 @@ public class SchemaDef extends Def
 
   private boolean renameTable( String tableName, String newName )
     {
-    TableDef tableDef = tables.remove( tableName );
+    TableDef tableDef = childTables.remove( tableName );
 
     if( tableDef == null )
       return false;
 
-    tables.put( newName, tableDef.copyWith( newName ) );
+    childTables.put( newName, tableDef.copyWith( newName ) );
 
     return true;
     }
 
   public void addTable( String name, String identifier, Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
-    if( tables.containsKey( name ) )
+    if( childTables.containsKey( name ) )
       throw new IllegalArgumentException( "table named: " + name + " already exists" );
 
-    tables.put( name, new TableDef( this, name, identifier, stereotype, protocol, format ) );
+    childTables.put( name, new TableDef( this, name, identifier, stereotype, protocol, format ) );
     }
 
   public TableDef findTableFor( String identifier )
     {
-    for( TableDef tableDef : tables.values() )
+    for( TableDef tableDef : childTables.values() )
       {
       if( tableDef.getIdentifier().equals( identifier ) )
         return tableDef;
       }
 
-    for( SchemaDef schemaDef : schemas.values() )
+    for( SchemaDef schemaDef : childSchemas.values() )
       {
       TableDef tableDef = schemaDef.findTableFor( identifier );
+
       if( tableDef != null )
         return tableDef;
       }
@@ -360,5 +373,43 @@ public class SchemaDef extends Def
   public Collection<String> getStereotypeNames()
     {
     return stereotypes.getStereotypeNames();
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( !( object instanceof SchemaDef ) )
+      return false;
+    if( !super.equals( object ) )
+      return false;
+
+    SchemaDef schemaDef = (SchemaDef) object;
+
+    if( childSchemas != null ? !childSchemas.equals( schemaDef.childSchemas ) : schemaDef.childSchemas != null )
+      return false;
+    if( childTables != null ? !childTables.equals( schemaDef.childTables ) : schemaDef.childTables != null )
+      return false;
+    if( formatProperties != null ? !formatProperties.equals( schemaDef.formatProperties ) : schemaDef.formatProperties != null )
+      return false;
+    if( protocolProperties != null ? !protocolProperties.equals( schemaDef.protocolProperties ) : schemaDef.protocolProperties != null )
+      return false;
+    if( stereotypes != null ? !stereotypes.equals( schemaDef.stereotypes ) : schemaDef.stereotypes != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    int result = super.hashCode();
+    result = 31 * result + ( stereotypes != null ? stereotypes.hashCode() : 0 );
+    result = 31 * result + ( childSchemas != null ? childSchemas.hashCode() : 0 );
+    result = 31 * result + ( childTables != null ? childTables.hashCode() : 0 );
+    result = 31 * result + ( protocolProperties != null ? protocolProperties.hashCode() : 0 );
+    result = 31 * result + ( formatProperties != null ? formatProperties.hashCode() : 0 );
+    return result;
     }
   }

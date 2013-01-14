@@ -42,11 +42,11 @@ public class CatalogPlatformTestCase extends LingualPlatformTestCase
 
     properties.setProperty( Driver.CATALOG_PROP, brokerDataPath );
     properties.setProperty( PlatformBroker.META_DATA_PATH_PROP, "_lingual" );
-    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.ser" );
+    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.json" );
 
     PlatformBroker broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
 
-    String catalogFilePath = PlatformBroker.makePath( "/", brokerDataPath, "_lingual", "catalog.ser" );
+    String catalogFilePath = PlatformBroker.makePath( "/", brokerDataPath, "_lingual", "catalog.json" );
 
     if( broker.pathExists( catalogFilePath ) )
       broker.deletePath( catalogFilePath );

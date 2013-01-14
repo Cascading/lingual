@@ -20,43 +20,50 @@
 
 package cascading.lingual.catalog.json;
 
-import cascading.lingual.platform.PlatformBroker;
+import cascading.bind.json.FieldsDeserializer;
+import cascading.bind.json.FieldsSerializer;
+import cascading.tuple.Fields;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
 /**
  *
  */
 public class JSONFactory
   {
-  public static ObjectMapper getObjectMapper( PlatformBroker platformBroker )
+  public static ObjectMapper getObjectMapper()
     {
     ObjectMapper mapper = new ObjectMapper();
 
+    mapper.registerModule( new GuavaModule() );
+
     SimpleModule module = new SimpleModule( "LingualModule" );
 
-    addSerializers( platformBroker, module );
-    addDeserializers( platformBroker, module );
+    addSerializers( module );
+    addDeserializers( module );
 
     mapper.registerModule( module );
 
     return mapper;
     }
 
-  private static void addDeserializers( PlatformBroker platformBroker, SimpleModule module )
+  private static void addDeserializers( SimpleModule module )
     {
     SimpleDeserializers deserializers = new SimpleDeserializers();
 
+    deserializers.addDeserializer( Fields.class, new FieldsDeserializer() );
 
     module.setDeserializers( deserializers );
     }
 
-  private static void addSerializers( PlatformBroker platformBroker, SimpleModule module )
+  private static void addSerializers( SimpleModule module )
     {
     SimpleSerializers serializers = new SimpleSerializers();
 
+    serializers.addSerializer( new FieldsSerializer() );
 
     module.setSerializers( serializers );
     }

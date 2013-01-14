@@ -43,6 +43,7 @@ dependencies {
   compile group: 'net.hydromatic', name: 'linq4j', version: '0.1-SNAPSHOT', changing: true
   compile group: 'com.google.guava', name: 'guava', version: '14.0-rc1'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.1.1'
+  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.1.1'
 
   compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
 
@@ -57,6 +58,10 @@ dependencies {
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
+
+  testRuntime group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+  testRuntime group: 'log4j', name: 'log4j', version: '1.2.16'
 }
 
 platformTest.enabled = false

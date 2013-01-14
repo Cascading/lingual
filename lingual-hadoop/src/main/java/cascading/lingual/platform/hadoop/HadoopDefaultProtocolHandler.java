@@ -31,10 +31,15 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 /**
  *
  */
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.NONE,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class HadoopDefaultProtocolHandler extends LingualProtocolHandler
   {
   public static final Protocol HDFS = Protocol.getProtocol( "hdfs" );

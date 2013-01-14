@@ -33,10 +33,12 @@ import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  *
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol, Format>, Serializable
   {
   private MultiProperties<Protocol> defaults = new MultiProperties<Protocol>();

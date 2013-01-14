@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cascading.lingual.util.Util;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
 
@@ -44,6 +46,7 @@ public class Protocol implements Serializable
 
   private static final LoadingCache<String, Protocol> cache = Util.makeInternedCache( factory );
 
+  @JsonCreator
   public static Protocol getProtocol( String name )
     {
     if( name == null || name.isEmpty() )
@@ -69,6 +72,7 @@ public class Protocol implements Serializable
     this.name = name;
     }
 
+  @JsonValue
   public String getName()
     {
     return name;

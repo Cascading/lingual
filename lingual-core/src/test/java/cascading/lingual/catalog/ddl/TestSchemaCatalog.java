@@ -34,6 +34,10 @@ import cascading.lingual.catalog.SchemaCatalog;
  */
 public class TestSchemaCatalog extends SchemaCatalog
   {
+  public TestSchemaCatalog()
+    {
+    }
+
   protected TestSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
     {
     super( defaultProtocol, defaultFormat );

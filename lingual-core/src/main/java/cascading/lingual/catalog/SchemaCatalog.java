@@ -42,14 +42,19 @@ import cascading.lingual.util.Util;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.hydromatic.optiq.MutableSchema;
 
 /**
  *
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.ANY,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE,
+  isGetterVisibility = JsonAutoDetect.Visibility.NONE
+)
 public abstract class SchemaCatalog implements Serializable
   {
   private transient PlatformBroker platformBroker;
@@ -61,11 +66,20 @@ public abstract class SchemaCatalog implements Serializable
   @JsonProperty
   private SchemaDef rootSchemaDef = new SchemaDef();
 
+  @JsonProperty
   private ProtocolHandlers<Protocol, Format> protocolHandlers;
+  @JsonProperty
   private FormatHandlers<Protocol, Format> formatHandlers;
 
+  @JsonProperty
   private Map<String, Fields> nameFieldsMap = new HashMap<String, Fields>();
+
+  @JsonProperty
   private Map<String, Point<Protocol, Format>> idPointMap = new HashMap<String, Point<Protocol, Format>>();
+
+  protected SchemaCatalog()
+    {
+    }
 
   protected SchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
     {
@@ -140,7 +154,7 @@ public abstract class SchemaCatalog implements Serializable
     if( names.length == 0 )
       return null;
 
-    SchemaDef current = rootSchemaDef;
+    SchemaDef current = getRootSchemaDef();
 
     for( int i = 0; i < names.length - 1; i++ )
       current = current.getSchema( names[ i ] );
@@ -150,41 +164,41 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getSchemaNames()
     {
-    return rootSchemaDef.getChildSchemaNames();
+    return getRootSchemaDef().getChildSchemaNames();
     }
 
   public SchemaDef getSchemaDef( String name )
     {
     if( name == null )
-      return rootSchemaDef;
+      return getRootSchemaDef();
 
-    return rootSchemaDef.getSchema( name );
+    return getRootSchemaDef().getSchema( name );
     }
 
   public boolean addSchemaDef( String name )
     {
-    if( rootSchemaDef.getSchema( name ) != null )
+    if( getRootSchemaDef().getSchema( name ) != null )
       return false;
 
-    rootSchemaDef.getOrAddSchema( name );
+    getRootSchemaDef().getOrAddSchema( name );
     return true;
     }
 
   public SchemaDef createSchemaDef( String name, String identifier )
     {
-    rootSchemaDef.addSchema( name, identifier );
+    getRootSchemaDef().addSchema( name, identifier );
 
-    return rootSchemaDef.getSchema( name );
+    return getRootSchemaDef().getSchema( name );
     }
 
   public boolean removeSchemaDef( String schemaName )
     {
-    return rootSchemaDef.removeSchema( schemaName );
+    return getRootSchemaDef().removeSchema( schemaName );
     }
 
   public boolean renameSchemaDef( String schemaName, String newName )
     {
-    return rootSchemaDef.renameSchema( schemaName, newName );
+    return getRootSchemaDef().renameSchema( schemaName, newName );
     }
 
   public void createSchemaDefAndTableDefsFor( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName )
@@ -242,17 +256,17 @@ public abstract class SchemaCatalog implements Serializable
 
   public void createTableDefFor( String identifier )
     {
-    createTableDefFor( rootSchemaDef, null, identifier, null, null, null );
+    createTableDefFor( getRootSchemaDef(), null, identifier, null, null, null );
     }
 
   public boolean removeTableDef( String schemaName, String tableName )
     {
-    return rootSchemaDef.removeTable( schemaName, tableName );
+    return getRootSchemaDef().removeTable( schemaName, tableName );
     }
 
   public boolean renameTableDef( String schemaName, String tableName, String renameName )
     {
-    return rootSchemaDef.renameTable( schemaName, tableName, renameName );
+    return getRootSchemaDef().renameTable( schemaName, tableName, renameName );
     }
 
   public String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
@@ -539,5 +553,46 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schemaDef = getSchemaDef( schemaName );
 
     schemaDef.addProtocolProperty( format, FormatProperties.EXTENSIONS, uris );
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( !( object instanceof SchemaCatalog ) )
+      return false;
+
+    SchemaCatalog catalog = (SchemaCatalog) object;
+
+    if( defaultFormat != null ? !defaultFormat.equals( catalog.defaultFormat ) : catalog.defaultFormat != null )
+      return false;
+    if( defaultProtocol != null ? !defaultProtocol.equals( catalog.defaultProtocol ) : catalog.defaultProtocol != null )
+      return false;
+    if( formatHandlers != null ? !formatHandlers.equals( catalog.formatHandlers ) : catalog.formatHandlers != null )
+      return false;
+    if( idPointMap != null ? !idPointMap.equals( catalog.idPointMap ) : catalog.idPointMap != null )
+      return false;
+    if( nameFieldsMap != null ? !nameFieldsMap.equals( catalog.nameFieldsMap ) : catalog.nameFieldsMap != null )
+      return false;
+    if( protocolHandlers != null ? !protocolHandlers.equals( catalog.protocolHandlers ) : catalog.protocolHandlers != null )
+      return false;
+    if( rootSchemaDef != null ? !rootSchemaDef.equals( catalog.rootSchemaDef ) : catalog.rootSchemaDef != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    int result = defaultProtocol != null ? defaultProtocol.hashCode() : 0;
+    result = 31 * result + ( defaultFormat != null ? defaultFormat.hashCode() : 0 );
+    result = 31 * result + ( rootSchemaDef != null ? rootSchemaDef.hashCode() : 0 );
+    result = 31 * result + ( protocolHandlers != null ? protocolHandlers.hashCode() : 0 );
+    result = 31 * result + ( formatHandlers != null ? formatHandlers.hashCode() : 0 );
+    result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
+    result = 31 * result + ( idPointMap != null ? idPointMap.hashCode() : 0 );
+    return result;
     }
   }

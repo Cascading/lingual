@@ -22,13 +22,18 @@ package cascading.lingual.catalog.ddl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.json.JSONFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
@@ -82,11 +87,13 @@ public class DDLParserTest extends TestCase
   Collections.addAll( expectedTables, tables );
   }
 
+  ObjectMapper mapper = JSONFactory.getObjectMapper();
+
   public DDLParserTest()
     {
     }
 
-  public void testParseDDL() throws IOException
+  public void testParseAndPersistDDL() throws IOException
     {
     TestSchemaCatalog catalog = new TestSchemaCatalog( Protocol.getProtocol( "file" ), Format.getFormat( "csv" ) );
 
@@ -97,5 +104,35 @@ public class DDLParserTest extends TestCase
     Set<String> tables = new HashSet<String>( catalog.getTableNames( "test" ) );
 
     assertTrue( Sets.difference( tables, expectedTables ).size() == 0 );
+
+    String jsonFirst = writeObject( catalog );
+
+//    System.out.println( jsonFirst );
+
+    TestSchemaCatalog firstRead = readCatalog( jsonFirst );
+
+    Assert.assertEquals( catalog, firstRead );
+
+    String jsonSecond = writeObject( firstRead );
+
+//    System.out.println( jsonSecond );
+
+    TestSchemaCatalog secondRead = readCatalog( jsonSecond );
+
+    Assert.assertEquals( firstRead, secondRead );
+    }
+
+  private TestSchemaCatalog readCatalog( String json ) throws IOException
+    {
+    StringReader reader = new StringReader( json );
+    return mapper.readValue( reader, TestSchemaCatalog.class );
+    }
+
+  private String writeObject( TestSchemaCatalog wroteCatalog ) throws IOException
+    {
+    StringWriter writer = new StringWriter();
+    mapper.writer().withDefaultPrettyPrinter().writeValue( writer, wroteCatalog );
+
+    return writer.toString();
     }
   }

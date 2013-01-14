@@ -26,6 +26,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -34,10 +37,29 @@ import com.google.common.collect.Table;
  */
 public class MultiProperties<K> implements Serializable
   {
+  @JsonProperty
   private Table<K, String, List<String>> properties = HashBasedTable.create();
 
   public MultiProperties()
     {
+    }
+
+  @JsonSetter
+  protected void setProperties( Map<K, Map<String, List<String>>> map )
+    {
+    for( Map.Entry<K, Map<String, List<String>>> entry : map.entrySet() )
+      {
+      K row = entry.getKey();
+      Map<String, List<String>> value = entry.getValue();
+      for( String column : value.keySet() )
+        properties.put( row, column, value.get( column ) );
+      }
+    }
+
+  @JsonGetter
+  protected Map<K, Map<String, List<String>>> getProperties()
+    {
+    return properties.rowMap();
     }
 
   public void addProperties( K k, Map<String, List<String>> properties )
@@ -67,5 +89,27 @@ public class MultiProperties<K> implements Serializable
   public Map<String, List<String>> getValueFor( K k )
     {
     return properties.row( k );
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+    if( !( object instanceof MultiProperties ) )
+      return false;
+
+    MultiProperties that = (MultiProperties) object;
+
+    if( properties != null ? !properties.equals( that.properties ) : that.properties != null )
+      return false;
+
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    return properties != null ? properties.hashCode() : 0;
     }
   }

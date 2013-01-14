@@ -27,6 +27,7 @@ import cascading.lingual.tap.hadoop.TypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tuple.Fields;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Function;
 import com.google.common.collect.Table;
 
@@ -36,6 +37,10 @@ import static cascading.lingual.platform.hadoop.HadoopDefaultProtocolHandler.HDF
 /**
  *
  */
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.NONE,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class HadoopDefaultFormatHandler extends LingualFormatHandler
   {
   public static final Format CSV = Format.getFormat( "csv" );

@@ -31,10 +31,15 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 /**
  *
  */
+@JsonAutoDetect(
+  fieldVisibility = JsonAutoDetect.Visibility.NONE,
+  getterVisibility = JsonAutoDetect.Visibility.NONE,
+  setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class LocalDefaultProtocolHandler extends LingualProtocolHandler
   {
   public static final Protocol FILE = Protocol.getProtocol( "file" );

@@ -55,6 +55,7 @@ public abstract class PlatformBroker<Config>
 
   private Properties properties;
   private SchemaCatalog catalog;
+  private boolean saveAsBinary = false;
 
   protected PlatformBroker()
     {
@@ -115,10 +116,9 @@ public abstract class PlatformBroker<Config>
   public void writeCatalog()
     {
     String catalogPath = getFullCatalogPath();
-
     OutputStream outputStream = getOutputStream( catalogPath );
 
-    if( true )
+    if( saveAsBinary )
       writeAsObjectAndClose( catalogPath, outputStream );
     else
       writeAsJsonAndClose( catalogPath, outputStream );
@@ -160,7 +160,7 @@ public abstract class PlatformBroker<Config>
 
     try
       {
-      mapper.writeValue( outputStream, getCatalog() );
+      mapper.writer().withDefaultPrettyPrinter().writeValue( outputStream, getCatalog() );
 
       outputStream.close();
       }
@@ -195,7 +195,7 @@ public abstract class PlatformBroker<Config>
     if( inputStream == null )
       return null;
 
-    if( true )
+    if( saveAsBinary )
       return readAsObjectAndClose( catalogPath, inputStream );
     else
       return readAsJsonAndClose( catalogPath, inputStream );
@@ -244,7 +244,7 @@ public abstract class PlatformBroker<Config>
 
   private ObjectMapper getObjectMapper()
     {
-    return JSONFactory.getObjectMapper( this );
+    return JSONFactory.getObjectMapper();
     }
 
   private String makeFullMetadataFilePath( String catalogPath )
