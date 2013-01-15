@@ -102,8 +102,11 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Branch lhsBranch = ( (CascadingRelNode) left ).visitChild( stack );
     Branch rhsBranch = ( (CascadingRelNode) right ).visitChild( stack );
 
-    Pipe leftPipe = stack.addDebug( this, lhsBranch.current, "lhs" );
-    Pipe rightPipe = stack.addDebug( this, rhsBranch.current, "rhs" );
+    Pipe leftPipe = new Pipe( "lhs", lhsBranch.current );
+    leftPipe = stack.addDebug( this, leftPipe, "lhs" );
+
+    Pipe rightPipe = new Pipe( "rhs", rhsBranch.current );
+    rightPipe = stack.addDebug( this, rightPipe, "rhs" );
 
     Fields lhsGroup = getFieldsFor( leftKeys, left.getRowType() );
     Fields rhsGroup = getFieldsFor( rightKeys, right.getRowType() );
