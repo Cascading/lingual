@@ -42,10 +42,9 @@ public class CascadingTableModificationConverterRule extends ConverterRule
     {
     final TableModificationRel modificationRel = (TableModificationRel) rel;
 
-    final RelNode convertedChild = mergeTraitsAndConvert(
-      modificationRel.getTraitSet(),
-      Cascading.CONVENTION,
-      modificationRel.getChild() );
+    final RelNode convertedChild = convert(
+      modificationRel.getChild(),
+      modificationRel.getTraitSet().replace( Cascading.CONVENTION) );
 
     if( convertedChild == null )
       {

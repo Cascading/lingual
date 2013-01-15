@@ -20,7 +20,7 @@
 
 package cascading.lingual.optiq;
 
-import net.hydromatic.optiq.rules.java.JavaRules;
+import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.volcano.AbstractConverter;
@@ -34,7 +34,7 @@ public class CascadingEnumerableConverterRule extends ConverterRule
 
   public CascadingEnumerableConverterRule()
     {
-    super( AbstractConverter.class, Cascading.CONVENTION, JavaRules.CONVENTION, "Convert Cascading rels to Enumerable" );
+    super( AbstractConverter.class, Cascading.CONVENTION, EnumerableConvention.ARRAY, "Convert Cascading rels to Enumerable" );
     }
 
   @Override

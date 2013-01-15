@@ -20,8 +20,7 @@
 
 package cascading.lingual.optiq;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.Filter;
@@ -30,11 +29,9 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
-import net.hydromatic.linq4j.expressions.BlockExpression;
-import net.hydromatic.linq4j.expressions.Expression;
-import net.hydromatic.linq4j.expressions.Expressions;
-import net.hydromatic.linq4j.expressions.Statement;
+import net.hydromatic.linq4j.expressions.*;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
+import net.hydromatic.optiq.rules.java.PhysType;
 import net.hydromatic.optiq.rules.java.RexToLixTranslator;
 import org.eigenbase.rel.CalcRelBase;
 import org.eigenbase.rel.RelCollation;
@@ -44,6 +41,7 @@ import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexProgram;
+import org.eigenbase.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,29 +71,34 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     RelDataType inputRowType = getChild().getRowType();
     Fields fields = RelUtil.createFields( getChild(), getProgram().getExprList() );
 
-    List<Expression> parameters = new ArrayList<Expression>();
+    final List<Expression> parameters = new ArrayList<Expression>();
 
     for( int i = 0; i < fields.size(); i++ )
       parameters.add( Expressions.parameter( fields.getType( i ), fields.get( i ).toString() ) );
 
-    Expressions.FluentList<Statement> statements = Expressions.<Statement>list();
-    Expression condition = RexToLixTranslator.translateCondition(
-      parameters,
-      program,
-      typeFactory,
-      statements );
-
+    BlockBuilder statements = new BlockBuilder();
     Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
 
     List<String> fieldNameList = RelOptUtil.getFieldNameList( inputRowType );
     String[] fieldNames = fieldNameList.toArray( new String[ fieldNameList.size() ] );
 
+    Expression condition = RexToLixTranslator.translateCondition(
+      program,
+      typeFactory,
+      statements,
+      new RexToLixTranslator.InputGetter()
+        {
+        public Expression field(BlockBuilder list, int index)
+          {
+          return parameters.get(index);
+          }
+        });
+
     Expression nullToFalse = Expressions.call( CascadingCalcRel.class, "falseIfNull", condition );
     Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
 
     statements.add( Expressions.return_( null, not ) );
-
-    BlockExpression block = Expressions.block( statements );
+    BlockExpression block = statements.toBlock();
     String expression = Expressions.toString( block );
 
     LOG.debug( "calc expression: {}", expression );
@@ -124,5 +127,10 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
   public static boolean falseIfNull( Boolean result )
     {
     return result == null ? false : result;
+    }
+
+  public static boolean falseIfNull( boolean result )
+    {
+    return result;
     }
   }

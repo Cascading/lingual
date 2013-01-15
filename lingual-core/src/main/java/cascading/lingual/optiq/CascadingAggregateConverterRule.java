@@ -45,7 +45,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
     // stolen from JavaRules.EnumerableAggregateRule
     AggregateRel agg = (AggregateRel) rel;
 
-    RelNode convertedChild = mergeTraitsAndConvert( agg.getTraitSet(), CONVENTION, agg.getChild() );
+    RelNode convertedChild = convert( agg.getChild(), agg.getTraitSet().replace( CONVENTION ) );
 
     if( convertedChild == null )
       {

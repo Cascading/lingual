@@ -20,8 +20,6 @@
 
 package cascading.lingual.tap;
 
-import java.lang.reflect.Type;
-
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.CascadingTableAccessRel;
 import cascading.lingual.optiq.FieldTypeFactory;
@@ -34,6 +32,7 @@ import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.TranslatableTable;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptTable;
+import org.eigenbase.reltype.RelDataType;
 
 /**
  *
@@ -45,20 +44,22 @@ public class TapTable extends BaseQueryable implements TranslatableTable
   private final PlatformBroker platformBroker;
   private final MutableSchema parentTableSchema;
   private final TableDef tableDef;
+  private final RelDataType rowType;
 
   public TapTable( PlatformBroker platformBroker, QueryProvider provider, TapSchema parentSchema, TableDef tableDef )
     {
-    super( provider, null, null );
+    super( provider, Object.class, null );
 
     this.platformBroker = platformBroker;
     this.parentTableSchema = parentSchema;
     this.tableDef = tableDef;
+    this.rowType = typeFactory.createFieldsType( getFields() );
     }
 
   @Override
-  public Type getElementType()
+  public RelDataType getRowType()
     {
-    return typeFactory.createFieldsType( getFields() );
+    return rowType;
     }
 
   public String getName()

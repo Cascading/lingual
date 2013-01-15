@@ -33,7 +33,7 @@ import org.eigenbase.reltype.RelDataTypeFieldImpl;
  */
 public class FieldTypeFactory extends JavaTypeFactoryImpl
   {
-  public Type createFieldsType( Fields sourceFields )
+  public RelDataType createFieldsType( Fields sourceFields )
     {
     Type[] types = sourceFields.getTypes();
     RelDataTypeField[] fields = new RelDataTypeField[ sourceFields.size() ];

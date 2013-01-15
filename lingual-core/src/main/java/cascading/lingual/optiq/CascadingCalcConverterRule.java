@@ -48,7 +48,7 @@ public class CascadingCalcConverterRule extends ConverterRule
     final CalcRel calc = (CalcRel) rel;
 
     final RelNode convertedChild =
-      mergeTraitsAndConvert( calc.getTraitSet(), Cascading.CONVENTION, calc.getChild() );
+      convert( calc.getChild(), calc.getTraitSet().replace(Cascading.CONVENTION) );
 
     if( convertedChild == null )
       {

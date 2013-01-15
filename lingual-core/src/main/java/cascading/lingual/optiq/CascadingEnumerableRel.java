@@ -34,9 +34,8 @@ import cascading.lingual.platform.PlatformBroker;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
-import net.hydromatic.optiq.rules.java.EnumerableRel;
-import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
-import net.hydromatic.optiq.rules.java.JavaRules;
+import net.hydromatic.optiq.impl.java.JavaTypeFactory;
+import net.hydromatic.optiq.rules.java.*;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.relopt.RelOptCluster;
@@ -53,9 +52,17 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingEnumerableRel.class );
 
+  private PhysType physType;
+
   public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
     {
-    super( cluster, traitSet.plus( JavaRules.CONVENTION ), input );
+    super( cluster, traitSet.plus( EnumerableConvention.ARRAY ), input );
+    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), JavaRowFormat.ARRAY );
+    }
+
+  public PhysType getPhysType()
+    {
+    return physType;
     }
 
   @Override
