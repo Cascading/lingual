@@ -180,7 +180,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
 
-    assertUpdate( 4, "insert into test.results select empno, name from sales.emps" );
+    assertUpdate( 5, "insert into test.results select empno, name from sales.emps" );
     }
 
   @Test

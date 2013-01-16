@@ -35,7 +35,11 @@ import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
-import net.hydromatic.optiq.rules.java.*;
+import net.hydromatic.optiq.rules.java.EnumerableConvention;
+import net.hydromatic.optiq.rules.java.EnumerableRel;
+import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
+import net.hydromatic.optiq.rules.java.PhysType;
+import net.hydromatic.optiq.rules.java.PhysTypeImpl;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.relopt.RelOptCluster;
@@ -99,7 +103,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     else
       flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
 
-    Holder holder = new Holder( flowFactory );
+    Holder holder = new Holder( flowFactory, branch.isModification );
 
     setDotPath( properties, flowFactory.getName(), holder );
 

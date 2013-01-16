@@ -28,10 +28,12 @@ import cascading.lingual.platform.LingualFlowFactory;
 public class Holder
   {
   public LingualFlowFactory flowFactory;
+  public boolean isModification;
   public String dotPath;
 
-  public Holder( LingualFlowFactory flowFactory )
+  public Holder( LingualFlowFactory flowFactory, boolean isModification )
     {
     this.flowFactory = flowFactory;
+    this.isModification = isModification;
     }
   }

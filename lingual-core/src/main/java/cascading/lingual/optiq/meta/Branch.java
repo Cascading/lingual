@@ -38,6 +38,7 @@ public class Branch
   public Map<Ref, Pipe> heads;
   public Pipe current;
   public Ref tail;
+  public boolean isModification = false;
 
   public Branch( PlatformBroker platformBroker, Map<Ref, Pipe> heads, String name, String identifier )
     {
@@ -69,6 +70,7 @@ public class Branch
     this.heads = branch.heads;
     this.current = new Pipe( name, branch.current );
     this.tail = new Ref( name, identifier );
+    this.isModification = true;
     }
 
   public Branch( Pipe current, Branch... branches )

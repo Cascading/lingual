@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowStep;
+import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
 import cascading.lingual.optiq.meta.Holder;
 import cascading.tuple.Tuple;
@@ -36,6 +38,7 @@ import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
+import net.hydromatic.linq4j.Linq4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,6 +116,13 @@ public class CascadingEnumerable extends AbstractEnumerable implements Enumerabl
       }
 
     LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
+
+    if( holder.isModification )
+      {
+      FlowStep flowStep = (FlowStep) flow.getFlowSteps().get( flow.getFlowSteps().size() - 1 );
+      long rowCount = flowStep.getFlowStepStats().getCounterValue( StepCounters.Tuples_Written );
+      return new Linq4j().singletonEnumerable( rowCount ).enumerator();
+      }
 
     if( flow.getSink().getSinkFields().size() == 1 )
       return new FlowObjectEnumerator( flow );
