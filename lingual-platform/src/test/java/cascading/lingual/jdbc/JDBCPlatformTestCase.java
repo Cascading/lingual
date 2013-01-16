@@ -134,6 +134,11 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     return getConnection().createStatement().executeQuery( sql );
     }
 
+  protected int executeUpdateSql(String sql) throws Exception
+    {
+    return getConnection().createStatement().executeUpdate( sql );
+    }
+
   protected void assertTablesEqual( String tableName, String sqlQuery ) throws Exception
     {
     ResultSet result = executeSql( sqlQuery );
@@ -143,6 +148,12 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     Table expectedTable = createTable( entryIterator );
 
     assertEquals( expectedTable, resultTable );
+    }
+
+  protected void assertUpdate( int expectedRowCount, String sqlQuery ) throws Exception
+    {
+    int rowCount = executeUpdateSql(sqlQuery);
+    assertEquals( expectedRowCount, rowCount );
     }
 
   private Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator )

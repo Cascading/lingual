@@ -50,7 +50,8 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     {
     super.register( planner );
     // handles actual flow planning
-    planner.addRule( CascadingEnumerableConverterRule.INSTANCE );
+    planner.addRule( CascadingEnumerableConverterRule.ARRAY_INSTANCE );
+    planner.addRule( CascadingEnumerableConverterRule.CUSTOM_INSTANCE );
 
     planner.addRule( CascadingTableModificationConverterRule.INSTANCE );
     planner.addRule( CascadingAggregateConverterRule.INSTANCE );

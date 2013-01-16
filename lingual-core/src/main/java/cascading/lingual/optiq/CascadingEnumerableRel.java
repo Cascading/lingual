@@ -56,8 +56,9 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
   public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
     {
-    super( cluster, traitSet.plus( EnumerableConvention.ARRAY ), input );
-    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), JavaRowFormat.ARRAY );
+    super( cluster, traitSet, input );
+    assert getConvention() instanceof EnumerableConvention;
+    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), (EnumerableConvention) getConvention() );
     }
 
   public PhysType getPhysType()

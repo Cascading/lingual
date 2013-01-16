@@ -28,16 +28,20 @@ import cascading.tuple.Fields;
 import net.hydromatic.linq4j.BaseQueryable;
 import net.hydromatic.linq4j.QueryProvider;
 import net.hydromatic.optiq.DataContext;
+import net.hydromatic.optiq.ModifiableTable;
 import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.TranslatableTable;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.reltype.RelDataType;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  *
  */
-public class TapTable extends BaseQueryable implements TranslatableTable
+public class TapTable extends BaseQueryable implements TranslatableTable, ModifiableTable
   {
   private static FieldTypeFactory typeFactory = new FieldTypeFactory();
 
@@ -85,5 +89,10 @@ public class TapTable extends BaseQueryable implements TranslatableTable
   public RelNode toRel( RelOptTable.ToRelContext context, RelOptTable relOptTable )
     {
     return new CascadingTableAccessRel( context.getCluster(), relOptTable, platformBroker, getName(), getIdentifier() );
+    }
+
+  public Collection getModifiableCollection()
+    {
+    return Collections.emptyList();
     }
   }
