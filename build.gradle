@@ -19,6 +19,8 @@
  */
 
 apply from: 'etc/version.gradle'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
 
 ext.cascadingVersion = '2.2.+'
 

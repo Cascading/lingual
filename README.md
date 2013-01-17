@@ -22,3 +22,12 @@ the command line.
 
 # Installing
 
+
+# Developing
+
+Running:
+
+    > gradle idea
+
+from the root of the project will create all IntelliJ project and module files, and retrieve all dependencies.
+
