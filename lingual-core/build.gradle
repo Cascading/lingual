@@ -21,10 +21,27 @@
 def bindVersion = "wip-+"
 def bindChanging = false
 
-if( System.properties[ 'lingual.release.local' ] )
+def linq4jVersion = '0.1'
+def linq4jChanging = false
+def optiqVersion = '0.1'
+def optiqChanging = false
+
+// set the following property in $root/gradle.properties to use local installs of bind
+// systemProp.bind.release.local=true
+if( System.properties[ 'bind.release.local' ] )
 {
   bindVersion = "wip-dev"
   bindChanging = true
+}
+
+// set the following property in $root/gradle.properties to use local installs of optiq/linq4j
+// systemProp.optiq.release.local=true
+if( System.properties[ 'optiq.release.local' ] )
+{
+  linq4jVersion = "${linq4jVersion}-SNAPSHOT"
+  linq4jChanging = true
+  optiqVersion = "${optiqVersion}-SNAPSHOT"
+  optiqChanging = true
 }
 
 dependencies {
@@ -33,14 +50,14 @@ dependencies {
     exclude group: 'org.slf4j'
   }
 
-  compile( group: 'net.hydromatic', name: 'optiq', version: '0.1-SNAPSHOT', changing: true ) {
+  compile( group: 'net.hydromatic', name: 'optiq', version: optiqVersion, changing: optiqChanging ) {
     exclude group: 'xerces'
     exclude group: 'xalan'
     exclude group: 'org.apache.ant'
     exclude group: 'org.jgrapht'
   }
 
-  compile group: 'net.hydromatic', name: 'linq4j', version: '0.1-SNAPSHOT', changing: true
+  compile group: 'net.hydromatic', name: 'linq4j', version: linq4jVersion, changing: linq4jChanging
   compile group: 'com.google.guava', name: 'guava', version: '14.0-rc1'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.1.1'
   compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.1.1'
