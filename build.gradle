@@ -63,6 +63,7 @@ subprojects {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+    mavenRepo name: 'pentaho', url: 'http://repo.pentaho.org/artifactory/repo/' // optiq deps
     mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
   }
 
