@@ -40,21 +40,16 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 
 /**
  *
  */
-public class JDBCPlatformTestCase extends LingualPlatformTestCase
+public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   {
   public static final String URI = "jdbc:lingual";
   public static final String DRIVER_CLASSNAME = cascading.lingual.jdbc.Driver.class.getName();
 
   public static final String TEST_ROOT = DATA_PATH + "expected/";
-
-  @Rule
-  public TestName name = new TestName();
 
   private Connection connection;
   private String resultPath;
@@ -68,18 +63,28 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
   protected String getResultPath()
     {
     if( resultPath == null )
-      resultPath = getOutputPath( "jdbc/results/" + name.getMethodName() );
+      {
+      resultPath = getOutputPath( "jdbc/results/" + getTestName() );
+      }
 
     return resultPath;
+    }
+
+  protected abstract String getDefaultSchemaPath();
+
+  protected String getDotPath()
+    {
+    return getRootPath() + "/jdbc/dot/" + getTestName();
     }
 
   public String getConnectionString()
     {
     String platformName = getPlatformName();
+    String schemaPath = getDefaultSchemaPath();
     String resultPath = getResultPath();
-    String dotPath = getRootPath() + "/jdbc/dot/" + name.getMethodName();
+    String dotPath = getDotPath();
 
-    return String.format( "%s:%s;schemas=%s;resultPath=%s;dotPath=%s", URI, platformName, SALES_SCHEMA, resultPath, dotPath );
+    return String.format( "%s:%s;schemas=%s;resultPath=%s;dotPath=%s", URI, platformName, schemaPath, resultPath, dotPath );
     }
 
   protected synchronized Connection getConnection() throws Exception
@@ -134,25 +139,41 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     return getConnection().createStatement().executeQuery( sql );
     }
 
-  protected int executeUpdateSql(String sql) throws Exception
+  protected int executeUpdateSql( String sql ) throws Exception
     {
     return getConnection().createStatement().executeUpdate( sql );
     }
 
   protected void assertTablesEqual( String tableName, String sqlQuery ) throws Exception
     {
-    ResultSet result = executeSql( sqlQuery );
     TupleEntryIterator entryIterator = getTable( tableName );
-
-    Table resultTable = createTable( result );
     Table expectedTable = createTable( entryIterator );
+
+    assertTablesEqual( expectedTable, sqlQuery );
+    }
+
+  protected void assertTablesEqual( Table expectedTable, String sqlQuery ) throws Exception
+    {
+    ResultSet result = executeSql( sqlQuery );
+    Table resultTable = createTable( result );
+
+    assertEquals( expectedTable, resultTable );
+    }
+
+  protected void assertNamedTablesEqual( String expectedTableName, String resultTableName ) throws Exception
+    {
+    TupleEntryIterator expectedIterator = getTable( expectedTableName );
+    TupleEntryIterator resultIterator = getTable( resultTableName );
+
+    Table expectedTable = createTable( expectedIterator );
+    Table resultTable = createTable( resultIterator );
 
     assertEquals( expectedTable, resultTable );
     }
 
   protected void assertUpdate( int expectedRowCount, String sqlQuery ) throws Exception
     {
-    int rowCount = executeUpdateSql(sqlQuery);
+    int rowCount = executeUpdateSql( sqlQuery );
     assertEquals( expectedRowCount, rowCount );
     }
 
@@ -161,6 +182,7 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     int row = 0;
+
     while( entryIterator.hasNext() )
       {
       TupleEntry entry = entryIterator.next();
@@ -185,6 +207,7 @@ public class JDBCPlatformTestCase extends LingualPlatformTestCase
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     int row = 0;
+
     while( resultSet.next() )
       {
       for( int i = 0; i < columnCount; i++ )

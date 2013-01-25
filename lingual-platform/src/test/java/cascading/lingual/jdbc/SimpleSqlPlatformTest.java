@@ -25,6 +25,11 @@ import org.junit.Test;
 
 public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   {
+  protected String getDefaultSchemaPath()
+    {
+    return SALES_SCHEMA;
+    }
+
   @Test
   public void testSelect() throws Exception
     {

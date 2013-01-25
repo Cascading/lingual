@@ -35,6 +35,11 @@ import org.junit.Test;
  */
 public class ProgrammaticSqlTest extends JDBCPlatformTestCase
   {
+  protected String getDefaultSchemaPath()
+    {
+    return SALES_SCHEMA;
+    }
+
   private void assertQueryReturns( String sql, String expected ) throws Exception
     {
     Connection connection = getConnection();
@@ -49,6 +54,7 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
     finally
       {
       if( resultSet != null )
+        {
         try
           {
           resultSet.close();
@@ -57,7 +63,9 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
           {
           // ignore
           }
+        }
       if( statement != null )
+        {
         try
           {
           statement.close();
@@ -66,6 +74,7 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
           {
           // ignore
           }
+        }
       }
     }
 
@@ -77,7 +86,9 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
     for( int i = 0; i < columnCount; i++ )
       {
       if( i > 0 )
+        {
         buf.append( ", " );
+        }
       buf.append( "[" ).append( metaData.getColumnName( i + 1 ) ).append( "]" );
       }
     buf.append( "\n" );
@@ -86,7 +97,9 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
       for( int i = 0; i < columnCount; i++ )
         {
         if( i > 0 )
+          {
           buf.append( ", " );
+          }
         buf.append( resultSet.getObject( i + 1 ) );
         }
       buf.append( "\n" );
