@@ -128,23 +128,14 @@ public class Driver extends UnregisteredDriver
 
   static Factory instantiateFactory()
     {
-    if( true )
-      return new JaninoFactory();
-
     try
       {
-      Class clazz = Class.forName( factoryClassName() );
-      return (Factory) clazz.newInstance();
+      return new JaninoFactory();
       }
     catch( Throwable e )
       {
       LOG.error( "Error while instantiating driver factory", e );
       return null;
       }
-    }
-
-  static String factoryClassName()
-    {
-    return "cascading.lingual.jdbc.FactoryJdbc40";
     }
   }
