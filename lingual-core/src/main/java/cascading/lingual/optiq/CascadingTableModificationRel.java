@@ -27,9 +27,7 @@ import cascading.lingual.optiq.meta.Branch;
 import org.eigenbase.oj.stmt.OJPreparingStmt;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableModificationRelBase;
-import org.eigenbase.relopt.RelOptCluster;
-import org.eigenbase.relopt.RelOptTable;
-import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.relopt.*;
 
 /**
  *
@@ -56,6 +54,19 @@ public class CascadingTableModificationRel extends TableModificationRelBase impl
       getOperation(),
       getUpdateColumnList(),
       isFlattened() );
+    }
+
+  @Override
+  public void register( RelOptPlanner planner )
+    {
+    super.register( planner );
+
+    // Most queries read from at least one cascading table, and the rules
+    // get registered when the CascadingTableAccessRel is registered. We
+    // register the rules here, for queries that only write to tables, such as
+    //   INSERT INTO cascading_table VALUES ...;
+
+    CascadingTableAccessRel.registerRules( planner );
     }
 
   @Override

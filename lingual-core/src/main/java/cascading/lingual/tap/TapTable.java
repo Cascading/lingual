@@ -21,8 +21,7 @@
 package cascading.lingual.tap;
 
 import cascading.lingual.catalog.TableDef;
-import cascading.lingual.optiq.CascadingTableAccessRel;
-import cascading.lingual.optiq.FieldTypeFactory;
+import cascading.lingual.optiq.*;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.BaseQueryable;
@@ -31,12 +30,13 @@ import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.ModifiableTable;
 import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.TranslatableTable;
+import org.eigenbase.oj.stmt.OJPreparingStmt;
 import org.eigenbase.rel.RelNode;
-import org.eigenbase.relopt.RelOptTable;
+import org.eigenbase.rel.TableModificationRelBase;
+import org.eigenbase.relopt.*;
 import org.eigenbase.reltype.RelDataType;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 /**
  *
@@ -94,5 +94,18 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
   public Collection getModifiableCollection()
     {
     return Collections.emptyList();
+    }
+
+  public TableModificationRelBase toModificationRel( RelOptCluster cluster,
+                                                     RelOptTable table,
+                                                     OJPreparingStmt.CatalogReader catalogReader,
+                                                     RelNode input,
+                                                     TableModificationRelBase.Operation operation,
+                                                     List updateColumnList,
+                                                     boolean flattened )
+    {
+    final RelTraitSet traits = input.getTraitSet().replace(Cascading.CONVENTION);
+    final RelNode convertedInput = RelOptRule.convert(input, traits);
+    return new CascadingTableModificationRel( cluster, traits, table, catalogReader, convertedInput, operation, updateColumnList, flattened);
     }
   }
