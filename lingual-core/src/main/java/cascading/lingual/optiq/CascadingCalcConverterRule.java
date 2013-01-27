@@ -48,19 +48,15 @@ public class CascadingCalcConverterRule extends ConverterRule
     final CalcRel calc = (CalcRel) rel;
 
     final RelNode convertedChild =
-      convert( calc.getChild(), calc.getTraitSet().replace(Cascading.CONVENTION) );
+      convert( calc.getChild(), calc.getTraitSet().replace( Cascading.CONVENTION ) );
 
     if( convertedChild == null )
-      {
       return null; // We can't convert the child, so we can't convert rel.
-      }
 
     // If there's a multiset, let FarragoMultisetSplitter work on it
     // first.
     if( RexMultisetUtil.containsMultiset( calc.getProgram() ) )
-      {
       return null;
-      }
 
     return new CascadingCalcRel( rel.getCluster(), rel.getTraitSet(), convertedChild, rel.getRowType(), calc.getProgram(), Collections.<RelCollation>emptyList() );
     }

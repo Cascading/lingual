@@ -26,63 +26,59 @@ import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
-import org.eigenbase.oj.stmt.OJPreparingStmt;
+import org.eigenbase.rel.AbstractRelNode;
 import org.eigenbase.rel.RelNode;
-import org.eigenbase.rel.TableModificationRelBase;
 import org.eigenbase.relopt.RelOptCluster;
-import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.rex.RexLiteral;
 
 /**
  *
  */
-public class CascadingTableModificationRel extends TableModificationRelBase implements CascadingRelNode
+public class CascadingInsertValuesRel extends AbstractRelNode implements CascadingRelNode
   {
-  public CascadingTableModificationRel( RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
-                                        OJPreparingStmt.CatalogReader catalogReader, RelNode child,
-                                        Operation operation, List<String> updateColumnList, boolean flattened )
+  private final RelOptTable table;
+  private final List<List<RexLiteral>> tuples;
+
+  public CascadingInsertValuesRel( RelOptCluster cluster, RelTraitSet traits, RelDataType rowType, RelOptTable table, List<List<RexLiteral>> tuples )
     {
-    super( cluster, traits, table, catalogReader, child, operation, updateColumnList, flattened );
+    super( cluster, traits );
+    this.rowType = rowType;
+    this.table = table;
+    this.tuples = tuples;
     }
 
   @Override
   public RelNode copy( RelTraitSet traitSet, List<RelNode> inputs )
     {
-    assert inputs.size() == 1;
-    return new CascadingTableModificationRel(
+    return new CascadingInsertValuesRel(
       getCluster(),
       traitSet,
-      getTable(),
-      getCatalogReader(),
-      inputs.get( 0 ),
-      getOperation(),
-      getUpdateColumnList(),
-      isFlattened() );
+      rowType, table,
+      tuples
+    );
     }
 
   @Override
-  public void register( RelOptPlanner planner )
+  public RelOptTable getTable()
     {
-    super.register( planner );
+    return table;
+    }
 
-    // Most queries read from at least one cascading table, and the rules
-    // get registered when the CascadingTableAccessRel is registered. We
-    // register the rules here, for queries that only write to tables, such as
-    //   INSERT INTO cascading_table VALUES ...;
-
-    CascadingTableAccessRel.registerRules( planner );
+  public List<List<RexLiteral>> getTuples()
+    {
+    return tuples;
     }
 
   @Override
   public Branch visitChild( Stack stack )
     {
-    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
-
     PlatformBroker platformBroker = getPlatformBroker();
     TableDef tableDef = platformBroker.getCatalog().resolveTableDef( getTable().getQualifiedName() );
 
-    return new Branch( platformBroker, branch, tableDef.getName(), tableDef.getIdentifier() );
+    return new Branch( platformBroker, tableDef.getName(), tableDef.getIdentifier(), getTuples() );
     }
 
   public PlatformBroker getPlatformBroker()

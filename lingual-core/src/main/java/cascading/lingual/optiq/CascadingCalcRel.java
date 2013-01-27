@@ -20,7 +20,8 @@
 
 package cascading.lingual.optiq;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.Filter;
@@ -29,9 +30,12 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
-import net.hydromatic.linq4j.expressions.*;
+import net.hydromatic.linq4j.expressions.BlockBuilder;
+import net.hydromatic.linq4j.expressions.BlockExpression;
+import net.hydromatic.linq4j.expressions.ConstantExpression;
+import net.hydromatic.linq4j.expressions.Expression;
+import net.hydromatic.linq4j.expressions.Expressions;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
-import net.hydromatic.optiq.rules.java.PhysType;
 import net.hydromatic.optiq.rules.java.RexToLixTranslator;
 import org.eigenbase.rel.CalcRelBase;
 import org.eigenbase.rel.RelCollation;
@@ -41,7 +45,6 @@ import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexProgram;
-import org.eigenbase.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +69,9 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
   @Override
   public Branch visitChild( Stack stack )
     {
+    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
+    Pipe pipe = branch.current;
+
     JavaTypeFactory typeFactory = (JavaTypeFactory) getCluster().getTypeFactory();
 
     RelDataType inputRowType = getChild().getRowType();
@@ -77,7 +83,6 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
       parameters.add( Expressions.parameter( fields.getType( i ), fields.get( i ).toString() ) );
 
     BlockBuilder statements = new BlockBuilder();
-    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
 
     List<String> fieldNameList = RelOptUtil.getFieldNameList( inputRowType );
     String[] fieldNames = fieldNameList.toArray( new String[ fieldNameList.size() ] );
@@ -87,33 +92,42 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
       typeFactory,
       statements,
       new RexToLixTranslator.InputGetter()
+      {
+      public Expression field( BlockBuilder list, int index )
         {
-        public Expression field(BlockBuilder list, int index)
-          {
-          return parameters.get(index);
-          }
-        });
+        return parameters.get( index );
+        }
+      } );
 
-    Expression nullToFalse = Expressions.call( CascadingCalcRel.class, "falseIfNull", condition );
-    Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
+    // if condition is constant and true, we don't need an expression filter to keep it around
+    boolean isConstantTrue = condition instanceof ConstantExpression && Boolean.TRUE.equals( ( (ConstantExpression) condition ).value );
 
-    statements.add( Expressions.return_( null, not ) );
-    BlockExpression block = statements.toBlock();
-    String expression = Expressions.toString( block );
+    if( !isConstantTrue )
+      {
+      Expression nullToFalse = Expressions.call( CascadingCalcRel.class, "falseIfNull", condition );
+      Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
 
-    LOG.debug( "calc expression: {}", expression );
+      statements.add( Expressions.return_( null, not ) );
+      BlockExpression block = statements.toBlock();
+      String expression = Expressions.toString( block );
 
-    Filter expressionFilter = new ScriptFilter( expression, fieldNames, fields.getTypesClasses() );
-    Pipe pipe = new Each( branch.current, fields, expressionFilter );
+      LOG.debug( "calc expression: {}", expression );
+
+      Filter expressionFilter = new ScriptFilter( expression, fieldNames, fields.getTypesClasses() );
+      pipe = new Each( pipe, fields, expressionFilter );
+      }
+
+    boolean isProjection = program.projectsIdentity( false );
 
     // TODO: Each( ..., filter, ... ) should accept an output selector in the future
-    if( !program.projectsIdentity( false ) )
+    if( !isProjection )
       {
       Fields resultFields = RelUtil.getTypedFields( getCluster(), program.getOutputRowType() );
       pipe = new Retain( pipe, resultFields );
       }
 
-    pipe = stack.addDebug( this, pipe );
+    if( !isConstantTrue || !isProjection )
+      pipe = stack.addDebug( this, pipe );
 
     return new Branch( pipe, branch );
     }

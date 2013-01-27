@@ -30,7 +30,7 @@ import cascading.flow.Flow;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
-import cascading.lingual.optiq.meta.Holder;
+import cascading.lingual.optiq.meta.FlowHolder;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
@@ -45,28 +45,29 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class CascadingEnumerable extends AbstractEnumerable implements Enumerable
+public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements Enumerable
   {
-  private static final Logger LOG = LoggerFactory.getLogger( CascadingEnumerable.class );
+  private static final Logger LOG = LoggerFactory.getLogger( CascadingFlowRunnerEnumerable.class );
 
-  static final List<Holder> FLOWS = new ArrayList<Holder>();
-  protected final Holder holder;
+  static final List<FlowHolder> HOLDERS = new ArrayList<FlowHolder>();
 
-  public static synchronized int addHolder( Holder holder )
+  protected final FlowHolder flowHolder;
+
+  public static synchronized int addHolder( FlowHolder flowHolder )
     {
-    FLOWS.add( holder );
+    HOLDERS.add( flowHolder );
 
-    return FLOWS.size() - 1;
+    return HOLDERS.size() - 1;
     }
 
-  public static synchronized Holder getHolder( int index )
+  public static synchronized FlowHolder getHolder( int index )
     {
-    return FLOWS.get( index );
+    return HOLDERS.get( index );
     }
 
-  public CascadingEnumerable( int x )
+  public CascadingFlowRunnerEnumerable( int x )
     {
-    holder = getHolder( x );
+    flowHolder = getHolder( x );
     }
 
   @Override
@@ -76,25 +77,25 @@ public class CascadingEnumerable extends AbstractEnumerable implements Enumerabl
 
     try
       {
-      flow = holder.flowFactory.create();
+      flow = flowHolder.flowFactory.create();
       }
     catch( PlannerException exception )
       {
       LOG.error( "planner failed", exception );
 
-      if( holder.dotPath != null )
+      if( flowHolder.dotPath != null )
         {
-        LOG.info( "writing flow dot: {}", holder.dotPath );
-        exception.writeDOT( holder.dotPath );
+        LOG.info( "writing flow dot: {}", flowHolder.dotPath );
+        exception.writeDOT( flowHolder.dotPath );
         }
 
       throw exception;
       }
 
-    if( holder.dotPath != null )
+    if( flowHolder.dotPath != null )
       {
-      LOG.info( "writing flow dot: {}", holder.dotPath );
-      flow.writeDOT( holder.dotPath );
+      LOG.info( "writing flow dot: {}", flowHolder.dotPath );
+      flow.writeDOT( flowHolder.dotPath );
       }
 
     try
@@ -117,7 +118,7 @@ public class CascadingEnumerable extends AbstractEnumerable implements Enumerabl
 
     LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
 
-    if( holder.isModification )
+    if( flowHolder.isModification )
       {
       FlowStep flowStep = (FlowStep) flow.getFlowSteps().get( flow.getFlowSteps().size() - 1 );
       long rowCount = flowStep.getFlowStepStats().getCounterValue( StepCounters.Tuples_Written );

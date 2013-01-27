@@ -20,10 +20,12 @@
 
 package cascading.lingual.optiq.meta;
 
+import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.platform.PlatformBroker;
 import cascading.pipe.Pipe;
+import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ public class Branch
   private static final Logger LOG = LoggerFactory.getLogger( Branch.class );
 
   public PlatformBroker platformBroker;
+  public List<List<RexLiteral>> tuples;
   public Map<Ref, Pipe> heads;
   public Pipe current;
   public Ref tail;
@@ -62,11 +65,11 @@ public class Branch
       }
     }
 
-  public Branch( Branch branch, String name, String identifier )
+  public Branch( PlatformBroker platformBroker, Branch branch, String name, String identifier )
     {
     LOG.debug( "adding branch tail: {}, for: {}", name, identifier );
 
-    this.platformBroker = branch.platformBroker;
+    this.platformBroker = platformBroker;
     this.heads = branch.heads;
     this.current = new Pipe( name, branch.current );
     this.tail = new Ref( name, identifier );
@@ -87,5 +90,15 @@ public class Branch
       else if( platformBroker != branch.platformBroker )
         throw new IllegalStateException( "diff instances of properties found in branches" );
       }
+    }
+
+  public Branch( PlatformBroker platformBroker, String name, String identifier, List<List<RexLiteral>> tuples )
+    {
+    LOG.debug( "adding values insertion" );
+
+    this.platformBroker = platformBroker;
+    this.tuples = tuples;
+    this.tail = new Ref( name, identifier );
+    this.isModification = true;
     }
   }

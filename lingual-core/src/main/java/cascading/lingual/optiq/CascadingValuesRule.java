@@ -20,14 +20,15 @@
 
 package cascading.lingual.optiq;
 
-import org.eigenbase.rel.*;
+import org.eigenbase.rel.ValuesRel;
 import org.eigenbase.rel.convert.ConverterRel;
-import org.eigenbase.rel.convert.ConverterRule;
-import org.eigenbase.relopt.*;
+import org.eigenbase.relopt.Convention;
+import org.eigenbase.relopt.RelOptRule;
+import org.eigenbase.relopt.RelOptRuleCall;
+import org.eigenbase.relopt.RelOptRuleOperand;
+import org.eigenbase.relopt.RelTraitSet;
 
-/**
- * Rule that converts a VALUES relational expression to Cascading convention.
- */
+/** Rule that converts a VALUES relational expression to Cascading convention. */
 public class CascadingValuesRule extends RelOptRule
   {
   public static final CascadingValuesRule INSTANCE = new CascadingValuesRule();
@@ -35,22 +36,23 @@ public class CascadingValuesRule extends RelOptRule
   private CascadingValuesRule()
     {
     super(
+      new RelOptRuleOperand(
+        ConverterRel.class,
+        Cascading.CONVENTION,
         new RelOptRuleOperand(
-            ConverterRel.class,
-            Cascading.CONVENTION,
-            new RelOptRuleOperand(
-            ValuesRel.class, Convention.NONE)),
-        "CascadingValuesRule" );
+          ValuesRel.class, Convention.NONE ) ),
+      "CascadingValuesRule" );
     }
 
-      @Override
-      public void onMatch(RelOptRuleCall call) {
-          final RelNode converter = call.getRels()[0];
-          final ValuesRel values = (ValuesRel) call.getRels()[1];
+  @Override
+  public void onMatch( RelOptRuleCall call )
+    {
+    final ValuesRel values = (ValuesRel) call.getRels()[ 1 ];
 
     RelTraitSet newTraits = values.getTraitSet().plus( Cascading.CONVENTION );
 
-          call.transformTo(
-    new CascadingValuesRel( values.getCluster(), newTraits, values.getRowType(), values.getTuples() ));
+    call.transformTo(
+      new CascadingValuesRel( values.getCluster(), newTraits, values.getRowType(), values.getTuples() )
+    );
     }
   }

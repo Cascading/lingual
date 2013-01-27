@@ -25,13 +25,13 @@ import cascading.lingual.platform.LingualFlowFactory;
 /**
  *
  */
-public class Holder
+public class FlowHolder
   {
-  public LingualFlowFactory flowFactory;
-  public boolean isModification;
+  public final LingualFlowFactory flowFactory;
+  public final boolean isModification;
   public String dotPath;
 
-  public Holder( LingualFlowFactory flowFactory, boolean isModification )
+  public FlowHolder( LingualFlowFactory flowFactory, boolean isModification )
     {
     this.flowFactory = flowFactory;
     this.isModification = isModification;

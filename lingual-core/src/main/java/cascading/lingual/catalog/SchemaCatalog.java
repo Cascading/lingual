@@ -204,10 +204,11 @@ public abstract class SchemaCatalog implements Serializable
   public void createSchemaDefAndTableDefsFor( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName )
     {
     SchemaDef schemaDef = rootSchemaDef.getOrAddSchema( schemaName );
-    Stereotype<Protocol, Format> stereotype = createStereotype( schemaDef, getDefaultProtocol(), tableName, fields );
 
-    Protocol protocol = Protocol.getProtocol( protocolName );
-    Format format = Format.getFormat( formatName );
+    Protocol protocol = protocolName == null ? getDefaultProtocol() : getDefaultProtocolFor( identifier );
+    Format format = getDefaultFormatFor( identifier, schemaName );
+
+    Stereotype<Protocol, Format> stereotype = createStereotype( schemaDef, protocol, tableName, fields );
 
     schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
     }
@@ -439,9 +440,14 @@ public abstract class SchemaCatalog implements Serializable
     return schema.renameStereotype( name, newName );
     }
 
+  public TableDef findTableDefFor( String identifier )
+    {
+    return rootSchemaDef.findTableFor( identifier );
+    }
+
   public Stereotype<Protocol, Format> findStereotypeFor( String identifier )
     {
-    TableDef tableDef = rootSchemaDef.findTableFor( identifier );
+    TableDef tableDef = findTableDefFor( identifier );
 
     if( tableDef == null )
       return null;
@@ -516,6 +522,28 @@ public abstract class SchemaCatalog implements Serializable
       {
       return false;
       }
+    }
+
+  public Tap createTapFor( String identifier, SinkMode sinkMode )
+    {
+    TableDef tableDef = findTableDefFor( identifier );
+
+    if( tableDef == null )
+      throw new IllegalArgumentException( "no table for identifier: " + identifier );
+
+    Protocol protocol = tableDef.getProtocol();
+
+    if( protocol == null )
+      protocol = getDefaultProtocol();
+
+    ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( protocol );
+
+    if( protocolHandler == null )
+      throw new IllegalArgumentException( "no protocol handler for protocol: " + protocol );
+
+    Resource<Protocol, Format, SinkMode> resource = tableDef.getResourceWith( sinkMode );
+
+    return protocolHandler.createTap( tableDef.getStereotype(), resource );
     }
 
   private Tap createTapFor( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )

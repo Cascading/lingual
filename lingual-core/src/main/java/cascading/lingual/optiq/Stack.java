@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cascading.lingual.optiq.meta.Ref;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.operation.Debug;
 import cascading.operation.DebugLevel;
 import cascading.pipe.Each;
@@ -38,6 +39,17 @@ public class Stack
   public final Map<Ref, Pipe> heads = new HashMap<Ref, Pipe>();
 
   private final DebugLevel debugLevel = DebugLevel.VERBOSE;
+  private final PlatformBroker platformBroker;
+
+  public Stack( PlatformBroker platformBroker )
+    {
+    this.platformBroker = platformBroker;
+    }
+
+  public PlatformBroker getPlatformBroker()
+    {
+    return platformBroker;
+    }
 
   public Each addDebug( CascadingRelNode node, Pipe pipe )
     {

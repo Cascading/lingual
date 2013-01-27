@@ -23,10 +23,12 @@ package cascading.lingual.optiq;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
-import org.eigenbase.rel.*;
-import org.eigenbase.relopt.*;
+import org.eigenbase.rel.RelNode;
+import org.eigenbase.rel.ValuesRelBase;
+import org.eigenbase.relopt.RelOptCluster;
+import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.rex.*;
+import org.eigenbase.rex.RexLiteral;
 
 /**
  * Implementation of VALUES operator, that returns a constant set of tuples,
@@ -35,10 +37,10 @@ import org.eigenbase.rex.*;
 public class CascadingValuesRel extends ValuesRelBase implements CascadingRelNode
   {
   public CascadingValuesRel(
-      RelOptCluster cluster,
-      RelTraitSet traits,
-      RelDataType rowType,
-      List<List<RexLiteral>> tuples )
+    RelOptCluster cluster,
+    RelTraitSet traits,
+    RelDataType rowType,
+    List<List<RexLiteral>> tuples )
     {
     super( cluster, rowType, tuples, traits );
 
@@ -49,11 +51,12 @@ public class CascadingValuesRel extends ValuesRelBase implements CascadingRelNod
   public RelNode copy( RelTraitSet traitSet, List<RelNode> inputs )
     {
     assert inputs.isEmpty();
+
     return new CascadingValuesRel( getCluster(), traitSet, rowType, tuples );
     }
 
   public Branch visitChild( Stack stack )
     {
-    throw new UnsupportedOperationException(); // TODO:
+    return new Branch( stack.getPlatformBroker(), stack.heads, "anon", "anon" );
     }
   }

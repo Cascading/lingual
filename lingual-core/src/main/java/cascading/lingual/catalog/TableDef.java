@@ -20,7 +20,9 @@
 
 package cascading.lingual.catalog;
 
+import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
+import cascading.tap.SinkMode;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -84,6 +86,11 @@ public class TableDef extends Def
   public Format getFormat()
     {
     return format;
+    }
+
+  public Resource<Protocol, Format, SinkMode> getResourceWith( SinkMode sinkMode )
+    {
+    return new Resource<Protocol, Format, SinkMode>( identifier, protocol, format, sinkMode );
     }
 
   @Override

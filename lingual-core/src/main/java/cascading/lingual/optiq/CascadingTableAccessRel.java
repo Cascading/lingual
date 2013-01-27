@@ -68,6 +68,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     planner.addRule( CascadingJoinRule.INSTANCE );
     planner.addRule( CascadingUnionRule.INSTANCE );
     planner.addRule( CascadingValuesRule.INSTANCE );
+    planner.addRule( CascadingInsertValuesRule.INSTANCE );
     planner.addRule( AbstractConverter.ExpandConversionRule.instance );
     }
 

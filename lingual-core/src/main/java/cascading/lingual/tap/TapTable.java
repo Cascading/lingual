@@ -20,8 +20,15 @@
 
 package cascading.lingual.tap;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import cascading.lingual.catalog.TableDef;
-import cascading.lingual.optiq.*;
+import cascading.lingual.optiq.Cascading;
+import cascading.lingual.optiq.CascadingTableAccessRel;
+import cascading.lingual.optiq.CascadingTableModificationRel;
+import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.BaseQueryable;
@@ -33,10 +40,11 @@ import net.hydromatic.optiq.TranslatableTable;
 import org.eigenbase.oj.stmt.OJPreparingStmt;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableModificationRelBase;
-import org.eigenbase.relopt.*;
+import org.eigenbase.relopt.RelOptCluster;
+import org.eigenbase.relopt.RelOptRule;
+import org.eigenbase.relopt.RelOptTable;
+import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
-
-import java.util.*;
 
 /**
  *
@@ -58,6 +66,11 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
     this.parentTableSchema = parentSchema;
     this.tableDef = tableDef;
     this.rowType = typeFactory.createFieldsType( getFields() );
+    }
+
+  public PlatformBroker getPlatformBroker()
+    {
+    return platformBroker;
     }
 
   @Override
@@ -104,8 +117,8 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
                                                      List updateColumnList,
                                                      boolean flattened )
     {
-    final RelTraitSet traits = input.getTraitSet().replace(Cascading.CONVENTION);
-    final RelNode convertedInput = RelOptRule.convert(input, traits);
-    return new CascadingTableModificationRel( cluster, traits, table, catalogReader, convertedInput, operation, updateColumnList, flattened);
+    final RelTraitSet traits = input.getTraitSet().replace( Cascading.CONVENTION );
+    final RelNode convertedInput = RelOptRule.convert( input, traits );
+    return new CascadingTableModificationRel( cluster, traits, table, catalogReader, convertedInput, operation, updateColumnList, flattened );
     }
   }

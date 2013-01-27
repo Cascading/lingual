@@ -44,12 +44,10 @@ public class CascadingTableModificationConverterRule extends ConverterRule
 
     final RelNode convertedChild = convert(
       modificationRel.getChild(),
-      modificationRel.getTraitSet().replace( Cascading.CONVENTION) );
+      modificationRel.getTraitSet().replace( Cascading.CONVENTION ) );
 
     if( convertedChild == null )
-      {
       return null; // We can't convert the child, so we can't convert rel.
-      }
 
     return new CascadingTableModificationRel(
       modificationRel.getCluster(),
