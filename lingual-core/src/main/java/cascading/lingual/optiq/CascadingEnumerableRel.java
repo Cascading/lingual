@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowProcess;
@@ -37,6 +38,7 @@ import cascading.lingual.platform.LingualFlowFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tuple.TupleEntryCollector;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
@@ -94,34 +96,33 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     LOG.debug( "implementing enumerable" );
 
     CascadingRelNode input = (CascadingRelNode) getChild();
-
-    PlatformBroker platformBroker = null;
-
-    if( input instanceof CascadingTableModificationRel )
-      platformBroker = ( (CascadingTableModificationRel) input ).getPlatformBroker();
-
-    Stack stack = new Stack( platformBroker );
-    Branch branch = input.visitChild( stack );
-    platformBroker = branch.platformBroker;
+    Branch branch = input.visitChild( new Stack() );
+    PlatformBroker platformBroker = branch.platformBroker;
 
     if( platformBroker == null )
+      {
       throw new IllegalStateException( "platformBroker was null" );
+      }
 
     if( branch.tuples != null )
+      {
       return handleInsert( platformBroker, branch );
+      }
     else
+      {
       return handleFlow( platformBroker, branch );
+      }
     }
 
   private BlockExpression handleInsert( PlatformBroker platformBroker, Branch branch )
     {
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();
+    Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
 
     List<List<RexLiteral>> tuples = branch.tuples;
     Tap tap = schemaCatalog.createTapFor( branch.tail.identifier, SinkMode.KEEP );
-
-    ValuesHolder holder = new ValuesHolder( flowProcess, tap, tuples );
+    ValuesHolder holder = new ValuesHolder( cache, flowProcess, tap, tuples );
 
     int ordinal = CascadingValueInsertEnumerable.addHolder( holder );
 
@@ -136,12 +137,18 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
     for( Ref head : branch.heads.keySet() )
+      {
       flowFactory.addSource( head.name, head.identifier );
+      }
 
     if( branch.tail != null )
+      {
       flowFactory.addSink( branch.tail.name, branch.tail.identifier );
+      }
     else
+      {
       flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
+      }
 
     FlowHolder flowHolder = new FlowHolder( flowFactory, branch.isModification );
 
@@ -160,7 +167,9 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
 
     if( !path.endsWith( "/" ) )
+      {
       path += "/";
+      }
 
     return path + name;
     }
@@ -168,12 +177,16 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   private void setDotPath( Properties properties, String name, FlowHolder flowHolder )
     {
     if( !properties.containsKey( Driver.DOT_PATH_PROP ) )
+      {
       return;
+      }
 
     flowHolder.dotPath = properties.getProperty( Driver.DOT_PATH_PROP );
 
     if( !flowHolder.dotPath.endsWith( "/" ) )
+      {
       flowHolder.dotPath += "/";
+      }
 
     flowHolder.dotPath += name + ".dot";
     }

@@ -47,8 +47,7 @@ import net.hydromatic.optiq.jdbc.OptiqConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static cascading.lingual.jdbc.Driver.PLATFORM_PROP;
-import static cascading.lingual.jdbc.Driver.SCHEMA_PROP;
+import static cascading.lingual.jdbc.Driver.*;
 
 /**
  *
@@ -76,7 +75,9 @@ public abstract class LingualConnection implements Connection
     String platformName = getStringProperty( PLATFORM_PROP );
 
     if( platformName == null )
+      {
       platformName = "local";
+      }
 
     LOG.info( "using platform: {}", platformName );
 
@@ -90,7 +91,19 @@ public abstract class LingualConnection implements Connection
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
 
-    platformBroker.getCatalog().addSchemasTo( this );
+    if( isCollectorCacheEnabled() )
+      {
+      setAutoCommit( false );
+      }
+
+    platformBroker.startConnection( this );
+    }
+
+  protected boolean isCollectorCacheEnabled()
+    {
+    String collectorCache = getStringProperty( COLLECTOR_CACHE_PROP );
+
+    return collectorCache != null && Boolean.parseBoolean( collectorCache );
     }
 
   public PlatformBroker getPlatformBroker()
@@ -118,16 +131,16 @@ public abstract class LingualConnection implements Connection
     return properties.getProperty( propertyName );
     }
 
+  public void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws SQLException
+    {
+    platformBroker.getCatalog().createSchemaDefAndTableDefsFor( schemaName, tableName, identifier, fields, protocolName, formatName );
+    platformBroker.getCatalog().addSchemasTo( this );
+    }
+
   // Connection methods
   public void setSchema( String schema ) throws SQLException
     {
     parent.setSchema( schema );
-    }
-
-  public void createTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws SQLException
-    {
-    platformBroker.getCatalog().createSchemaDefAndTableDefsFor( schemaName, tableName, identifier, fields, protocolName, formatName );
-    platformBroker.getCatalog().addSchemasTo( this );
     }
 
   @Override
@@ -158,6 +171,15 @@ public abstract class LingualConnection implements Connection
   public void setAutoCommit( boolean autoCommit ) throws SQLException
     {
     parent.setAutoCommit( autoCommit );
+
+    if( autoCommit )
+      {
+      platformBroker.disableCollectorCache();
+      }
+    else
+      {
+      platformBroker.enableCollectorCache();
+      }
     }
 
   @Override
@@ -169,19 +191,30 @@ public abstract class LingualConnection implements Connection
   @Override
   public void commit() throws SQLException
     {
-    parent.commit();
+    // parent.commit(); // not supported
+
+    platformBroker.closeCollectorCache();
     }
 
   @Override
   public void rollback() throws SQLException
     {
     parent.rollback();
+
+    // todo: close and delete pending cached items
     }
 
   @Override
   public void close() throws SQLException
     {
-    parent.close();
+    try
+      {
+      parent.close();
+      }
+    finally
+      {
+      platformBroker.closeConnection( this );
+      }
     }
 
   @Override
@@ -415,10 +448,14 @@ public abstract class LingualConnection implements Connection
   public <T> T unwrap( Class<T> iface ) throws SQLException
     {
     if( iface.isInstance( this ) )
+      {
       return iface.cast( this );
+      }
 
     else if( iface.isInstance( parent ) )
+      {
       return iface.cast( parent );
+      }
 
     throw new SQLException( "does not implement '" + iface + "'" );
     }

@@ -23,6 +23,7 @@ package cascading.lingual.shell;
 import java.util.List;
 
 import cascading.lingual.common.Options;
+import cascading.lingual.jdbc.Driver;
 import cascading.util.Util;
 import joptsimple.OptionSpec;
 
@@ -62,23 +63,35 @@ public class ShellOptions extends Options
     builder.append( getPlatform() );
 
     if( getSchema() != null )
+      {
       builder.append( ":" ).append( getSchema() );
+      }
 
     if( !getSchemas().isEmpty() )
       {
       builder
-        .append( ";schemas=" )
+        .append( ";" ).append( Driver.SCHEMAS_PROP ).append( "=" )
         .append( Util.join( getSchemas(), "," ) );
       }
 
     if( getResultPath() != null )
       {
-      builder.append( ";resultPath=" ).append( getResultPath() );
+      builder
+        .append( ";" ).append( Driver.RESULT_PATH_PROP ).append( "=" )
+        .append( getResultPath() );
       }
 
     if( getDotPath() != null )
       {
-      builder.append( ";dotPath=" ).append( getDotPath() );
+      builder
+        .append( ";" ).append( Driver.DOT_PATH_PROP ).append( "=" )
+        .append( getDotPath() );
+      }
+
+    if( getSqlFile() != null )
+      {
+      builder
+        .append( ";" ).append( Driver.COLLECTOR_CACHE_PROP ).append( "=true" );
       }
 
     return builder.toString();

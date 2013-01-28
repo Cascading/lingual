@@ -99,9 +99,11 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
     return parentTableSchema;
     }
 
-  public RelNode toRel( RelOptTable.ToRelContext context, RelOptTable relOptTable )
+  public RelNode toRel( RelOptTable.ToRelContext context, RelOptTable table )
     {
-    return new CascadingTableAccessRel( context.getCluster(), relOptTable, platformBroker, getName(), getIdentifier() );
+    RelOptCluster cluster = context.getCluster();
+
+    return new CascadingTableAccessRel( cluster, table, getName(), getIdentifier() );
     }
 
   public Collection getModifiableCollection()
@@ -117,8 +119,10 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
                                                      List updateColumnList,
                                                      boolean flattened )
     {
-    final RelTraitSet traits = input.getTraitSet().replace( Cascading.CONVENTION );
-    final RelNode convertedInput = RelOptRule.convert( input, traits );
-    return new CascadingTableModificationRel( cluster, traits, table, catalogReader, convertedInput, operation, updateColumnList, flattened );
+    RelTraitSet traits = input.getTraitSet().replace( Cascading.CONVENTION );
+    RelNode convertedInput = RelOptRule.convert( input, traits );
+
+    return new CascadingTableModificationRel( cluster, traits, table, catalogReader,
+      convertedInput, operation, updateColumnList, flattened );
     }
   }

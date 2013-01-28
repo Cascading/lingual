@@ -44,6 +44,7 @@ public class Driver extends UnregisteredDriver
   public static final String TABLES_PROP = "tables";
   public static final String RESULT_PATH_PROP = "resultPath";
   public static final String DOT_PATH_PROP = "dotPath";
+  public static final String COLLECTOR_CACHE_PROP = "collectorCache";
 
   static
     {
@@ -90,7 +91,9 @@ public class Driver extends UnregisteredDriver
     Connection connection = super.connect( url, info );
 
     if( connection == null )
+      {
       return null;
+      }
 
     Properties connectionProperties = parseConnectionProperties( url, info );
 
@@ -117,10 +120,14 @@ public class Driver extends UnregisteredDriver
       info.put( PLATFORM_PROP, elements[ 0 ] );
 
       if( elements.length == 2 )
+        {
         info.put( SCHEMA_PROP, elements[ 1 ] );
+        }
 
       if( urlSuffix.length() > parts[ 0 ].length() )
+        {
         urlSuffix = urlSuffix.substring( parts[ 0 ].length() + 1 );
+        }
       }
 
     return urlSuffix;

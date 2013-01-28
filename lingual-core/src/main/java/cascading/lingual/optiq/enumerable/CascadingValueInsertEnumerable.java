@@ -66,12 +66,27 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
   @Override
   public Enumerator enumerator()
     {
-    // todo: cache collectors and only close when batch is completed
     TupleEntryCollector collector;
 
     try
       {
-      collector = valuesHolder.tap.openForWrite( valuesHolder.flowProcess );
+      String identifier = valuesHolder.tap.getIdentifier();
+
+      if( valuesHolder.cache != null && valuesHolder.cache.containsKey( identifier ) )
+        {
+        LOG.info( "inserting into (cached): {}", identifier );
+        collector = valuesHolder.cache.get( identifier );
+        }
+      else
+        {
+        LOG.info( "inserting into: {}", identifier );
+        collector = valuesHolder.tap.openForWrite( valuesHolder.flowProcess );
+        }
+
+      if( valuesHolder.cache != null )
+        {
+        valuesHolder.cache.put( identifier, collector );
+        }
       }
     catch( IOException exception )
       {
@@ -87,14 +102,16 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       Tuple tuple = Tuple.size( values.size() );
 
       for( int i = 0; i < values.size(); i++ )
-        tuple.set( i, values.get( i ) );
+        {
+        tuple.set( i, values.get( i ).getValue2() ); // seem to come out canonical, so bypassing using TupleEntry to set
+        }
 
       collector.add( tuple );
 
       rowCount++;
       }
 
-    collector.close();
+    LOG.info( "inserted {} rows", rowCount );
 
     return new Linq4j().singletonEnumerable( rowCount ).enumerator();
     }

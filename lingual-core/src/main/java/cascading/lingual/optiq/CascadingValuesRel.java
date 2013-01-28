@@ -57,6 +57,6 @@ public class CascadingValuesRel extends ValuesRelBase implements CascadingRelNod
 
   public Branch visitChild( Stack stack )
     {
-    return new Branch( stack.getPlatformBroker(), stack.heads, "anon", "anon" );
+    return new Branch( tuples );
     }
   }

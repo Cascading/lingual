@@ -86,9 +86,13 @@ public class Branch
     for( Branch branch : branches )
       {
       if( platformBroker == null )
+        {
         platformBroker = branch.platformBroker;
+        }
       else if( platformBroker != branch.platformBroker )
+        {
         throw new IllegalStateException( "diff instances of properties found in branches" );
+        }
       }
     }
 
@@ -100,5 +104,12 @@ public class Branch
     this.tuples = tuples;
     this.tail = new Ref( name, identifier );
     this.isModification = true;
+    }
+
+  public Branch( List<List<RexLiteral>> tuples )
+    {
+    LOG.debug( "adding values" );
+
+    this.tuples = tuples;
     }
   }

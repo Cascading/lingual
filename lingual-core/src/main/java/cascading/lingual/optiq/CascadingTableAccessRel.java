@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.tap.TapTable;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
@@ -33,14 +34,12 @@ import org.eigenbase.relopt.volcano.AbstractConverter;
  */
 public class CascadingTableAccessRel extends TableAccessRelBase implements CascadingRelNode
   {
-  private final PlatformBroker platformBroker;
   private final String name;
   private final String identifier;
 
-  public CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, PlatformBroker platformBroker, String name, String identifier )
+  public CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, String name, String identifier )
     {
     super( cluster, cluster.getEmptyTraitSet().plus( Cascading.CONVENTION ), table );
-    this.platformBroker = platformBroker;
     this.name = name;
     this.identifier = identifier;
     }
@@ -74,6 +73,11 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public Branch visitChild( Stack stack )
     {
-    return new Branch( platformBroker, stack.heads, name, identifier );
+    return new Branch( getPlatformBroker(), stack.heads, name, identifier );
+    }
+
+  public PlatformBroker getPlatformBroker()
+    {
+    return getTable().unwrap( TapTable.class ).getPlatformBroker();
     }
   }

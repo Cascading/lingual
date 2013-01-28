@@ -21,9 +21,11 @@
 package cascading.lingual.optiq.meta;
 
 import java.util.List;
+import java.util.Map;
 
 import cascading.flow.FlowProcess;
 import cascading.tap.Tap;
+import cascading.tuple.TupleEntryCollector;
 import org.eigenbase.rex.RexLiteral;
 
 /**
@@ -31,12 +33,14 @@ import org.eigenbase.rex.RexLiteral;
  */
 public class ValuesHolder
   {
+  public final Map<String, TupleEntryCollector> cache;
   public final FlowProcess flowProcess;
   public final Tap tap;
   public final List<List<RexLiteral>> values;
 
-  public ValuesHolder( FlowProcess flowProcess, Tap tap, List<List<RexLiteral>> values )
+  public ValuesHolder( Map<String, TupleEntryCollector> cache, FlowProcess flowProcess, Tap tap, List<List<RexLiteral>> values )
     {
+    this.cache = cache;
     this.flowProcess = flowProcess;
     this.tap = tap;
     this.values = values;

@@ -106,7 +106,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     super.tearDown();
 
     if( connection != null )
+      {
       connection.close();
+      }
     }
 
   protected void setResultsTo( String schemaName, String tableName, Fields fields ) throws Exception
@@ -131,7 +133,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   protected void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws Exception
     {
     LingualConnection connection = (LingualConnection) getConnection();
-    connection.createTable( schemaName, tableName, identifier, fields, protocolName, formatName );
+    connection.addTable( schemaName, tableName, identifier, fields, protocolName, formatName );
     }
 
   protected ResultSet executeSql( String sql ) throws Exception
@@ -171,6 +173,23 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     assertEquals( expectedTable, resultTable );
     }
 
+  protected void assertUpdate( int[] expectedRowCounts, String[] sqlQueries ) throws Exception
+    {
+    // allows multiple queries to be appended to the same file
+    getConnection().setAutoCommit( false );
+
+    for( int i = 0; i < expectedRowCounts.length; i++ )
+      {
+      int expectedRowCount = expectedRowCounts[ i ];
+      String sqlQuery = sqlQueries[ i ];
+
+      assertUpdate( expectedRowCount, sqlQuery );
+      }
+
+    getConnection().commit();
+    getConnection().setAutoCommit( true ); // restore
+    }
+
   protected void assertUpdate( int expectedRowCount, String sqlQuery ) throws Exception
     {
     int rowCount = executeUpdateSql( sqlQuery );
@@ -192,7 +211,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         Object value = entry.getObject( field );
 
         if( value != null )
+          {
           table.put( row++, field, value );
+          }
         }
       }
 
@@ -215,7 +236,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         Object value = resultSet.getObject( i + 1 );
 
         if( value != null )
+          {
           table.put( row++, metaData.getColumnLabel( i + 1 ), value );
+          }
         }
       }
 

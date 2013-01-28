@@ -36,6 +36,7 @@ public class TapSchema extends MapSchema
   {
   private static final Logger LOG = LoggerFactory.getLogger( TapSchema.class );
 
+  private final LingualConnection connection;
   private final PlatformBroker platformBroker;
   private final String name;
   private final String identifier;
@@ -48,15 +49,10 @@ public class TapSchema extends MapSchema
   public TapSchema( LingualConnection connection, String name, String identifier )
     {
     super( connection.getParent(), connection.getTypeFactory(), makeExpression( connection, name ) );
+    this.connection = connection;
     this.platformBroker = connection.getPlatformBroker();
     this.name = name;
     this.identifier = identifier;
-    }
-
-  public void addTableTapsFor( SchemaDef schemaDef )
-    {
-    for( TableDef tableDef : schemaDef.getChildTables() )
-      addTableTapFor( tableDef );
     }
 
   public String getName()
@@ -74,10 +70,20 @@ public class TapSchema extends MapSchema
     return connection.getRootSchema().getSubSchemaExpression( name, Object.class );
     }
 
-  public void addTableTapFor( TableDef tableDef )
+  public void addTapTablesFor( SchemaDef schemaDef )
+    {
+    for( TableDef tableDef : schemaDef.getChildTables() )
+      {
+      addTapTableFor( tableDef );
+      }
+    }
+
+  public void addTapTableFor( TableDef tableDef )
     {
     if( getTable( tableDef.getName() ) != null )
+      {
       return;
+      }
 
     TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef );
 

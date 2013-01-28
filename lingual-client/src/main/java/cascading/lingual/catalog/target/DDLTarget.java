@@ -53,7 +53,7 @@ public class DDLTarget extends Target
     String formatName = getOptions().getFormatName();
     String protocolName = getOptions().getProtocolName();
 
-    LOG.info( "loading ddd from: {}", getOptions().getDDL() );
+    LOG.info( "loading ddl from: {}", getOptions().getDDL() );
 
     DDLParser parser = new DDLParser( catalog, schemaName, formatName, protocolName );
 

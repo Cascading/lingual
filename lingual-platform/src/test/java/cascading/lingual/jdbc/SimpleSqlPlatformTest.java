@@ -197,6 +197,25 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
+  public void testIntoSelectValuesBatch() throws Exception
+    {
+    setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
+
+    int[] expectedRowCount = new int[]{
+      5, 5
+    };
+
+    String[] queries = {
+      "insert into test.results values (100,'Fred'),(110,'Eric'),(110,'John'),(120,'Wilma'),(130,'Alice')",
+      "insert into test.results values (100,'Fred'),(110,'Eric'),(110,'John'),(120,'Wilma'),(130,'Alice')"
+    };
+
+    assertUpdate( expectedRowCount, queries );
+
+    assertTablesEqual( "emps-select-twice", "select * from test.results" );
+    }
+
+  @Test
   public void testSelectDate() throws Exception
     {
     assertTablesEqual( "sales-select-date", "select empno, sale_date, sale_time from sales.sales" );

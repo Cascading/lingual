@@ -79,10 +79,9 @@ public class CascadingTableModificationRel extends TableModificationRelBase impl
     {
     Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
 
-    PlatformBroker platformBroker = getPlatformBroker();
-    TableDef tableDef = platformBroker.getCatalog().resolveTableDef( getTable().getQualifiedName() );
+    TableDef tableDef = getPlatformBroker().getCatalog().resolveTableDef( getTable().getQualifiedName() );
 
-    return new Branch( platformBroker, branch, tableDef.getName(), tableDef.getIdentifier() );
+    return new Branch( getPlatformBroker(), branch, tableDef.getName(), tableDef.getIdentifier() );
     }
 
   public PlatformBroker getPlatformBroker()

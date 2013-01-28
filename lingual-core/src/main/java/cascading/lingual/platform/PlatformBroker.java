@@ -25,6 +25,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
@@ -32,11 +36,15 @@ import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.json.JSONFactory;
+import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.DebugLevel;
 import cascading.tap.type.FileType;
+import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.jdbc.Driver.*;
 
@@ -45,6 +53,8 @@ import static cascading.lingual.jdbc.Driver.*;
  */
 public abstract class PlatformBroker<Config>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( PlatformBroker.class );
+
   public static final String META_DATA_PATH_PROP = "lingual.meta-data.path";
   public static final String META_DATA_PATH = ".lingual";
 
@@ -55,6 +65,9 @@ public abstract class PlatformBroker<Config>
 
   private Properties properties;
   private SchemaCatalog catalog;
+
+  private Map<String, TupleEntryCollector> collectorCache;
+
   private boolean saveAsBinary = false;
 
   protected PlatformBroker()
@@ -69,7 +82,9 @@ public abstract class PlatformBroker<Config>
   public Properties getProperties()
     {
     if( properties == null )
+      {
       properties = new Properties();
+      }
 
     return properties;
     }
@@ -77,6 +92,70 @@ public abstract class PlatformBroker<Config>
   public abstract String getName();
 
   public abstract Config getConfig();
+
+  public void startConnection( LingualConnection connection ) throws SQLException
+    {
+    if( !connection.getAutoCommit() )
+      {
+      enableCollectorCache();
+      }
+
+    getCatalog().addSchemasTo( connection );
+    }
+
+  public synchronized void closeConnection( LingualConnection connection )
+    {
+    closeCollectorCache();
+    }
+
+  public synchronized void enableCollectorCache()
+    {
+    LOG.info( "enabling collector cache" );
+    collectorCache = Collections.synchronizedMap( new HashMap<String, TupleEntryCollector>() );
+    }
+
+  public synchronized void disableCollectorCache()
+    {
+    if( collectorCache == null )
+      {
+      return;
+      }
+
+    if( !collectorCache.isEmpty() )
+      {
+      throw new IllegalStateException( "must close collector cache before disabling" );
+      }
+
+    collectorCache = null;
+    }
+
+  public void closeCollectorCache()
+    {
+    if( collectorCache == null )
+      {
+      return;
+      }
+
+    for( String identifier : collectorCache.keySet() )
+      {
+      try
+        {
+        LOG.debug( "closing: {}", identifier );
+        collectorCache.get( identifier ).close();
+        }
+      catch( Exception exception )
+        {
+        LOG.error( "failed closing collector for: {}", identifier, exception );
+        }
+      }
+
+    collectorCache.clear();
+    }
+
+  public Map<String, TupleEntryCollector> getCollectorCache()
+    {
+    return collectorCache;
+    }
 
   public abstract FlowProcess<Config> getFlowProcess();
 
@@ -95,7 +174,9 @@ public abstract class PlatformBroker<Config>
   public synchronized SchemaCatalog getCatalog()
     {
     if( catalog == null )
+      {
       catalog = loadCatalog();
+      }
 
     return catalog;
     }
@@ -105,10 +186,14 @@ public abstract class PlatformBroker<Config>
     String path = getFullMetadataPath();
 
     if( pathExists( path ) )
+      {
       return true;
+      }
 
     if( !createPath( path ) )
+      {
       throw new RuntimeException( "unable to create catalog: " + path );
+      }
 
     return false;
     }
@@ -119,9 +204,13 @@ public abstract class PlatformBroker<Config>
     OutputStream outputStream = getOutputStream( catalogPath );
 
     if( saveAsBinary )
+      {
       writeAsObjectAndClose( catalogPath, outputStream );
+      }
     else
+      {
       writeAsJsonAndClose( catalogPath, outputStream );
+      }
     }
 
   public String getFullMetadataPath()
@@ -175,13 +264,22 @@ public abstract class PlatformBroker<Config>
     catalog = readCatalog();
 
     if( catalog == null )
+      {
       catalog = newInstance();
+      }
 
+    // schema and tables beyond here are not persisted in the catalog
+    // they are transient to the session
+    // todo: wrap transient catalog data around persistent catalog data
     if( properties.containsKey( SCHEMAS_PROP ) )
+      {
       loadSchemas( catalog );
+      }
 
     if( properties.containsKey( TABLES_PROP ) )
+      {
       loadTables( catalog );
+      }
 
     return catalog;
     }
@@ -193,12 +291,18 @@ public abstract class PlatformBroker<Config>
     InputStream inputStream = getInputStream( catalogPath );
 
     if( inputStream == null )
+      {
       return null;
+      }
 
     if( saveAsBinary )
+      {
       return readAsObjectAndClose( catalogPath, inputStream );
+      }
     else
+      {
       return readAsJsonAndClose( catalogPath, inputStream );
+      }
     }
 
   private SchemaCatalog readAsObjectAndClose( String catalogPath, InputStream inputStream )
@@ -265,10 +369,14 @@ public abstract class PlatformBroker<Config>
   public static String makePath( String fileSeparator, String rootPath, String... elements )
     {
     if( rootPath == null )
+      {
       rootPath = ".";
+      }
 
     if( !rootPath.endsWith( fileSeparator ) )
+      {
       rootPath += fileSeparator;
+      }
 
     return rootPath + Util.join( elements, fileSeparator );
     }
@@ -298,7 +406,9 @@ public abstract class PlatformBroker<Config>
     String[] schemaIdentifiers = schemaProperty.split( "," );
 
     for( String schemaIdentifier : schemaIdentifiers )
+      {
       catalog.createSchemaDefAndTableDefsFor( schemaIdentifier );
+      }
     }
 
   private void loadTables( SchemaCatalog catalog )
@@ -307,7 +417,9 @@ public abstract class PlatformBroker<Config>
     String[] tableIdentifiers = tableProperty.split( "," );
 
     for( String tableIdentifier : tableIdentifiers )
+      {
       catalog.createTableDefFor( tableIdentifier );
+      }
     }
 
   private String getStringProperty( String propertyName )
