@@ -90,7 +90,7 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     properties.setProperty( Driver.CATALOG_PROP, rootPath );
     properties.setProperty( PlatformBroker.META_DATA_PATH_PROP, "_lingual" );
-    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.ser" );
+    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
 
     return new Catalog( properties );

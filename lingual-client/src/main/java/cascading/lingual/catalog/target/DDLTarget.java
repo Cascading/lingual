@@ -27,7 +27,7 @@ import java.util.List;
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.ddl.DDLParser;
-import cascading.lingual.catalog.ddl.Table;
+import cascading.lingual.catalog.ddl.DDLTable;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public class DDLTarget extends Target
 
     try
       {
-      List<Table> commands = parser.parse( new File( getOptions().getDDL() ) );
+      List<DDLTable> commands = parser.parse( new File( getOptions().getDDL() ) );
 
       LOG.info( "found {} commands", commands.size() );
 

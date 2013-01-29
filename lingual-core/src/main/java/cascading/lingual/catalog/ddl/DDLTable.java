@@ -25,23 +25,23 @@ import java.util.Arrays;
 /**
  *
  */
-public class Table
+public class DDLTable
   {
-  Action action;
+  DDLAction ddlAction;
   String name;
-  Column[] columns;
+  DDLColumn[] ddlColumns;
 
-  public Table( Action action, String name )
+  public DDLTable( DDLAction ddlAction, String name )
     {
-    this.action = action;
+    this.ddlAction = ddlAction;
     this.name = name;
     }
 
-  public Table( Action action, String name, Column[] columns )
+  public DDLTable( DDLAction ddlAction, String name, DDLColumn[] ddlColumns )
     {
-    this.action = action;
+    this.ddlAction = ddlAction;
     this.name = name;
-    this.columns = columns;
+    this.ddlColumns = ddlColumns;
     }
 
   @Override
@@ -49,9 +49,9 @@ public class Table
     {
     final StringBuilder sb = new StringBuilder();
     sb.append( "Table" );
-    sb.append( "{action=" ).append( action );
+    sb.append( "{action=" ).append( ddlAction );
     sb.append( ", name='" ).append( name ).append( '\'' );
-    sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
+    sb.append( ", columns=" ).append( ddlColumns == null ? "null" : Arrays.asList( ddlColumns ).toString() );
     sb.append( '}' );
     return sb.toString();
     }

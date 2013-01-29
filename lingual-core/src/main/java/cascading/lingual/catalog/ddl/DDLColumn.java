@@ -20,7 +20,28 @@
 
 package cascading.lingual.catalog.ddl;
 
-public enum Action
+/**
+ *
+ */
+public class DDLColumn
   {
-    DROP, CREATE
+  String name;
+  Class type;
+
+  public DDLColumn( String name, Class type )
+    {
+    this.name = name;
+    this.type = type;
+    }
+
+  @Override
+  public String toString()
+    {
+    final StringBuilder sb = new StringBuilder();
+    sb.append( "Column" );
+    sb.append( "{name='" ).append( name ).append( '\'' );
+    sb.append( ", type=" ).append( type.getCanonicalName() );
+    sb.append( '}' );
+    return sb.toString();
+    }
   }

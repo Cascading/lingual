@@ -77,7 +77,9 @@ public class DDLParser
     this.format = Format.getFormat( format );
 
     if( this.schemaPath == null )
+      {
       throw new IllegalArgumentException( "schemaPath must not be null" );
+      }
     }
 
   private String getSchemaIdentifier( SchemaCatalog catalog, String schemaName )
@@ -85,7 +87,9 @@ public class DDLParser
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
 
     if( schemaDef == null )
+      {
       return null;
+      }
 
     return schemaDef.getIdentifier();
     }
@@ -95,21 +99,25 @@ public class DDLParser
     execute( parse( file ) );
     }
 
-  public void execute( List<Table> commands )
+  public void execute( List<DDLTable> commands )
     {
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
 
     if( schemaDef == null )
+      {
       catalog.createSchemaDef( schemaName, schemaPath );
+      }
     else if( !schemaPath.equals( schemaDef.getIdentifier() ) )
+      {
       throw new IllegalStateException( "schema already exists with identifier: " + schemaPath );
+      }
 
-    for( Table command : commands )
+    for( DDLTable command : commands )
       {
       String name = command.name;
-      Column[] columns = command.columns;
+      DDLColumn[] DDLColumns = command.ddlColumns;
 
-      switch( command.action )
+      switch( command.ddlAction )
         {
         case DROP:
           catalog.removeTableDef( schemaName, name );
@@ -117,13 +125,17 @@ public class DDLParser
           break;
         case CREATE:
           String stereotypeName = name;
-          Fields fields = toFields( columns );
+          Fields fields = toFields( DDLColumns );
           Stereotype stereotype = catalog.getStereoTypeFor( schemaName, fields );
 
           if( stereotype != null )
+            {
             stereotypeName = stereotype.getName();
+            }
           else
+            {
             catalog.createStereotype( schemaName, stereotypeName, fields );
+            }
 
           catalog.createTableDefFor( schemaName, name, createTableIdentifier( name ), stereotypeName, protocol, format );
           break;
@@ -136,23 +148,23 @@ public class DDLParser
     return getSchemaIdentifier( catalog, schemaName ) + "/" + name;
     }
 
-  public List<Table> parse( InputStream inputStream ) throws IOException
+  public List<DDLTable> parse( InputStream inputStream ) throws IOException
     {
     InputStreamReader stream = new InputStreamReader( inputStream );
 
     return parse( CharStreams.toString( stream ) );
     }
 
-  public List<Table> parse( File file ) throws IOException
+  public List<DDLTable> parse( File file ) throws IOException
     {
     return parse( Files.toString( file, Charset.forName( "UTF-8" ) ) );
     }
 
-  public List<Table> parse( String string )
+  public List<DDLTable> parse( String string )
     {
     Iterator<String> statements = parseStatements( string );
 
-    List<Table> commands = new ArrayList<Table>();
+    List<DDLTable> commands = new ArrayList<DDLTable>();
 
     Pattern pattern = Pattern.compile( "^([^\\s]*)\\s+([^\\s]*)\\s+\"([^\\s]*)\"(.*)$" );
 
@@ -161,7 +173,9 @@ public class DDLParser
       String statement = statements.next();
 
       if( statement == null || statement.isEmpty() )
+        {
         continue;
+        }
 
       LOG.debug( "statement: {}", statement );
 
@@ -177,22 +191,24 @@ public class DDLParser
       int found = matcher.groupCount();
 
       for( int i = 0; i < found; i++ )
+        {
         command[ i ] = matcher.group( i + 1 );
+        }
 
-      Action action = Action.valueOf( command[ 0 ].toUpperCase() );
-      Table table = null;
+      DDLAction ddlAction = DDLAction.valueOf( command[ 0 ].toUpperCase() );
+      DDLTable ddlTable = null;
 
-      switch( action )
+      switch( ddlAction )
         {
         case DROP:
-          table = new Table( action, command[ 2 ] );
+          ddlTable = new DDLTable( ddlAction, command[ 2 ] );
           break;
         case CREATE:
-          table = new Table( action, command[ 2 ], toColumns( command[ 3 ] ) );
+          ddlTable = new DDLTable( ddlAction, command[ 2 ], toColumns( command[ 3 ] ) );
           break;
         }
 
-      commands.add( table );
+      commands.add( ddlTable );
       }
 
     return commands;
@@ -208,14 +224,16 @@ public class DDLParser
     public String apply( String input )
       {
       if( input == null )
+        {
         return null;
+        }
 
       return input.replaceAll( "\n", "" );
       }
     } );
     }
 
-  public static Column[] toColumns( String decl )
+  public static DDLColumn[] toColumns( String decl )
     {
     // ("supply_time" SMALLINT,   "store_cost" DECIMAL(10,4) NOT NULL, "unit_sales" DECIMAL(10,4) NOT NULL)
     decl = decl.replaceAll( "^\\((.*)\\)$", "$1" );
@@ -223,12 +241,14 @@ public class DDLParser
     // "supply_time" SMALLINT, "store_cost" DECIMAL(10,4) NOT NULL, "unit_sales" DECIMAL(10,4) NOT NULL
     String[] defs = decl.split( ",(?![\\d, ]+\\))" );
     for( int i = 0; i < defs.length; i++ )
+      {
       defs[ i ] = defs[ i ].trim().replaceAll( "\\s+", " " );
+      }
 
     // "supply_time" SMALLINT
     // "store_cost" DECIMAL(10,4) NOT NULL
     // "unit_sales" DECIMAL(10,4) NOT NULL
-    Column[] columns = new Column[ defs.length ];
+    DDLColumn[] DDLColumns = new DDLColumn[ defs.length ];
     for( int i = 0; i < defs.length; i++ )
       {
       String def = defs[ i ];
@@ -236,10 +256,10 @@ public class DDLParser
 
       String name = split[ 0 ].replaceAll( "^\"(.*)\".*$", "$1" );
       Class type = getType( split[ 1 ] );
-      columns[ i ] = new Column( name, type );
+      DDLColumns[ i ] = new DDLColumn( name, type );
       }
 
-    return columns;
+    return DDLColumns;
     }
 
   private static Class getType( String string )
@@ -253,7 +273,9 @@ public class DDLParser
       boolean isNullable = !string.toUpperCase().contains( "NOT NULL" );
 
       if( matches )
+        {
         return getJavaTypeFor( typeName, isNullable );
+        }
       }
 
     throw new IllegalStateException( "type not found for: " + string );
@@ -294,12 +316,14 @@ public class DDLParser
     throw new IllegalStateException( "unknown sql type name: " + name );
     }
 
-  private static Fields toFields( Column[] columns )
+  private static Fields toFields( DDLColumn[] DDLColumns )
     {
     Fields fields = Fields.NONE;
 
-    for( Column column : columns )
-      fields = fields.append( new Fields( column.name ).applyTypes( column.type ) );
+    for( DDLColumn DDLColumn : DDLColumns )
+      {
+      fields = fields.append( new Fields( DDLColumn.name ).applyTypes( DDLColumn.type ) );
+      }
 
     return fields;
     }
