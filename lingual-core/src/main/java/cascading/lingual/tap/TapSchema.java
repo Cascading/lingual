@@ -80,7 +80,7 @@ public class TapSchema extends MapSchema
 
   public void addTapTableFor( TableDef tableDef )
     {
-    if( getTable( tableDef.getName() ) != null )
+    if( getTable( tableDef.getName(), Object.class ) != null )
       {
       return;
       }
