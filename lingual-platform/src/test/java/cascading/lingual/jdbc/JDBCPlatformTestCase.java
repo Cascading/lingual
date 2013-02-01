@@ -63,9 +63,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   protected String getResultPath()
     {
     if( resultPath == null )
-      {
       resultPath = getOutputPath( "jdbc/results/" + getTestName() );
-      }
 
     return resultPath;
     }
