@@ -100,18 +100,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     PlatformBroker platformBroker = branch.platformBroker;
 
     if( platformBroker == null )
-      {
       throw new IllegalStateException( "platformBroker was null" );
-      }
 
     if( branch.tuples != null )
-      {
       return handleInsert( platformBroker, branch );
-      }
     else
-      {
       return handleFlow( platformBroker, branch );
-      }
     }
 
   private BlockExpression handleInsert( PlatformBroker platformBroker, Branch branch )
@@ -137,18 +131,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
     for( Ref head : branch.heads.keySet() )
-      {
       flowFactory.addSource( head.name, head.identifier );
-      }
 
     if( branch.tail != null )
-      {
       flowFactory.addSink( branch.tail.name, branch.tail.identifier );
-      }
     else
-      {
       flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
-      }
 
     FlowHolder flowHolder = new FlowHolder( flowFactory, branch.isModification );
 
@@ -167,9 +155,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
 
     if( !path.endsWith( "/" ) )
-      {
       path += "/";
-      }
 
     return path + name;
     }
@@ -177,16 +163,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   private void setDotPath( Properties properties, String name, FlowHolder flowHolder )
     {
     if( !properties.containsKey( Driver.DOT_PATH_PROP ) )
-      {
       return;
-      }
 
     flowHolder.dotPath = properties.getProperty( Driver.DOT_PATH_PROP );
 
     if( !flowHolder.dotPath.endsWith( "/" ) )
-      {
       flowHolder.dotPath += "/";
-      }
 
     flowHolder.dotPath += name + ".dot";
     }

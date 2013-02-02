@@ -74,6 +74,7 @@ public class Branch
     this.current = new Pipe( name, branch.current );
     this.tail = new Ref( name, identifier );
     this.isModification = true;
+    this.tuples = branch.tuples;
     }
 
   public Branch( Pipe current, Branch... branches )
@@ -86,13 +87,9 @@ public class Branch
     for( Branch branch : branches )
       {
       if( platformBroker == null )
-        {
         platformBroker = branch.platformBroker;
-        }
       else if( platformBroker != branch.platformBroker )
-        {
         throw new IllegalStateException( "diff instances of properties found in branches" );
-        }
       }
     }
 

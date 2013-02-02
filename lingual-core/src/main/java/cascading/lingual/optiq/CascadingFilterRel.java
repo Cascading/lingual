@@ -53,8 +53,9 @@ public class CascadingFilterRel extends FilterRelBase implements CascadingRelNod
 
   public Branch visitChild( Stack stack )
     {
-    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
-
-    return null;
+    throw new UnsupportedOperationException( "unimplemented" );
+//    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
+//
+//    return null;
     }
   }

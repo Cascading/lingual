@@ -48,9 +48,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
     RelNode convertedChild = convert( agg.getChild(), agg.getTraitSet().replace( CONVENTION ) );
 
     if( convertedChild == null )
-      {
       return null; // We can't convert the child, so we can't convert rel.
-      }
 
     return new CascadingAggregateRel( rel.getCluster(), rel.getTraitSet(), convertedChild, agg.getGroupSet(), agg.getAggCallList() );
     }
