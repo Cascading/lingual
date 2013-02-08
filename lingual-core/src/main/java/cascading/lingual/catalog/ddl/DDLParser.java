@@ -24,10 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +39,9 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
+import cascading.lingual.type.SQLDateCoercibleType;
+import cascading.lingual.type.SQLTimeCoercibleType;
+import cascading.lingual.type.SQLTimestampCoercibleType;
 import cascading.tuple.Fields;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -77,9 +79,7 @@ public class DDLParser
     this.format = Format.getFormat( format );
 
     if( this.schemaPath == null )
-      {
       throw new IllegalArgumentException( "schemaPath must not be null" );
-      }
     }
 
   private String getSchemaIdentifier( SchemaCatalog catalog, String schemaName )
@@ -87,9 +87,7 @@ public class DDLParser
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
 
     if( schemaDef == null )
-      {
       return null;
-      }
 
     return schemaDef.getIdentifier();
     }
@@ -101,16 +99,7 @@ public class DDLParser
 
   public void execute( List<DDLTable> commands )
     {
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
-
-    if( schemaDef == null )
-      {
-      catalog.createSchemaDef( schemaName, schemaPath );
-      }
-    else if( !schemaPath.equals( schemaDef.getIdentifier() ) )
-      {
-      throw new IllegalStateException( "schema already exists with identifier: " + schemaPath );
-      }
+    verifySchemaDef();
 
     for( DDLTable command : commands )
       {
@@ -129,18 +118,24 @@ public class DDLParser
           Stereotype stereotype = catalog.getStereoTypeFor( schemaName, fields );
 
           if( stereotype != null )
-            {
             stereotypeName = stereotype.getName();
-            }
           else
-            {
             catalog.createStereotype( schemaName, stereotypeName, fields );
-            }
 
           catalog.createTableDefFor( schemaName, name, createTableIdentifier( name ), stereotypeName, protocol, format );
           break;
         }
       }
+    }
+
+  private void verifySchemaDef()
+    {
+    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
+
+    if( schemaDef == null )
+      catalog.createSchemaDef( schemaName, schemaPath );
+    else if( !schemaPath.equals( schemaDef.getIdentifier() ) )
+      throw new IllegalStateException( "schema already exists with identifier: " + schemaPath );
     }
 
   private String createTableIdentifier( String name )
@@ -173,9 +168,7 @@ public class DDLParser
       String statement = statements.next();
 
       if( statement == null || statement.isEmpty() )
-        {
         continue;
-        }
 
       LOG.debug( "statement: {}", statement );
 
@@ -191,9 +184,7 @@ public class DDLParser
       int found = matcher.groupCount();
 
       for( int i = 0; i < found; i++ )
-        {
         command[ i ] = matcher.group( i + 1 );
-        }
 
       DDLAction ddlAction = DDLAction.valueOf( command[ 0 ].toUpperCase() );
       DDLTable ddlTable = null;
@@ -224,9 +215,7 @@ public class DDLParser
     public String apply( String input )
       {
       if( input == null )
-        {
         return null;
-        }
 
       return input.replaceAll( "\n", "" );
       }
@@ -241,9 +230,7 @@ public class DDLParser
     // "supply_time" SMALLINT, "store_cost" DECIMAL(10,4) NOT NULL, "unit_sales" DECIMAL(10,4) NOT NULL
     String[] defs = decl.split( ",(?![\\d, ]+\\))" );
     for( int i = 0; i < defs.length; i++ )
-      {
       defs[ i ] = defs[ i ].trim().replaceAll( "\\s+", " " );
-      }
 
     // "supply_time" SMALLINT
     // "store_cost" DECIMAL(10,4) NOT NULL
@@ -255,14 +242,14 @@ public class DDLParser
       String[] split = def.split( "\\s+", 2 );
 
       String name = split[ 0 ].replaceAll( "^\"(.*)\".*$", "$1" );
-      Class type = getType( split[ 1 ] );
+      Type type = getType( split[ 1 ] );
       DDLColumns[ i ] = new DDLColumn( name, type );
       }
 
     return DDLColumns;
     }
 
-  private static Class getType( String string )
+  private static Type getType( String string )
     {
     for( int i = 0; i < SqlTypeName.values().length; i++ )
       {
@@ -273,15 +260,13 @@ public class DDLParser
       boolean isNullable = !string.toUpperCase().contains( "NOT NULL" );
 
       if( matches )
-        {
         return getJavaTypeFor( typeName, isNullable );
-        }
       }
 
     throw new IllegalStateException( "type not found for: " + string );
     }
 
-  private static Class getJavaTypeFor( SqlTypeName name, boolean isNullable )
+  private static Type getJavaTypeFor( SqlTypeName name, boolean isNullable )
     {
     switch( name )
       {
@@ -306,24 +291,22 @@ public class DDLParser
       case VARBINARY:
         return ByteString.class;
       case DATE:
-        return java.sql.Date.class;
+        return new SQLDateCoercibleType();
       case TIME:
-        return Time.class;
+        return new SQLTimeCoercibleType();
       case TIMESTAMP:
-        return Timestamp.class;
+        return new SQLTimestampCoercibleType();
       }
 
     throw new IllegalStateException( "unknown sql type name: " + name );
     }
 
-  private static Fields toFields( DDLColumn[] DDLColumns )
+  private static Fields toFields( DDLColumn[] ddlColumns )
     {
     Fields fields = Fields.NONE;
 
-    for( DDLColumn DDLColumn : DDLColumns )
-      {
-      fields = fields.append( new Fields( DDLColumn.name ).applyTypes( DDLColumn.type ) );
-      }
+    for( DDLColumn ddlColumn : ddlColumns )
+      fields = fields.append( new Fields( ddlColumn.name ).applyTypes( ddlColumn.type ) );
 
     return fields;
     }

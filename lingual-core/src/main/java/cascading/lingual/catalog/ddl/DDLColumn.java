@@ -20,15 +20,19 @@
 
 package cascading.lingual.catalog.ddl;
 
+import java.lang.reflect.Type;
+
+import cascading.util.Util;
+
 /**
  *
  */
 public class DDLColumn
   {
   String name;
-  Class type;
+  Type type;
 
-  public DDLColumn( String name, Class type )
+  public DDLColumn( String name, Type type )
     {
     this.name = name;
     this.type = type;
@@ -40,7 +44,7 @@ public class DDLColumn
     final StringBuilder sb = new StringBuilder();
     sb.append( "Column" );
     sb.append( "{name='" ).append( name ).append( '\'' );
-    sb.append( ", type=" ).append( type.getCanonicalName() );
+    sb.append( ", type=" ).append( Util.getTypeName( type ) );
     sb.append( '}' );
     return sb.toString();
     }

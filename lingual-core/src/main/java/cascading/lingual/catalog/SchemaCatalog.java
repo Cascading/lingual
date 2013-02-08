@@ -95,31 +95,23 @@ public abstract class SchemaCatalog implements Serializable
   public void initializeNew()
     {
     if( !rootSchemaDef.hasStereotype( "UNKNOWN" ) )
-      {
       createStereotype( rootSchemaDef, defaultProtocol, "UNKNOWN", Fields.UNKNOWN );
-      }
 
     ProtocolHandlers<Protocol, Format> protocolHandlers = getProtocolHandlers();
 
     for( Protocol protocol : protocolHandlers.getProtocols() )
-      {
       rootSchemaDef.addProtocolProperties( protocol, protocolHandlers.getProtocolProperties( protocol ) );
-      }
 
     FormatHandlers<Protocol, Format> formatHandlers = getFormatHandlers();
 
     for( Format format : formatHandlers.getFormats() )
-      {
       rootSchemaDef.addFormatProperties( format, formatHandlers.getFormatProperties( format ) );
-      }
     }
 
   public ProtocolHandlers<Protocol, Format> getProtocolHandlers()
     {
     if( protocolHandlers == null )
-      {
       protocolHandlers = new ProtocolHandlers<Protocol, Format>( createProtocolHandlers() );
-      }
 
     return protocolHandlers;
     }
@@ -127,9 +119,7 @@ public abstract class SchemaCatalog implements Serializable
   public FormatHandlers<Protocol, Format> getFormatHandlers()
     {
     if( formatHandlers == null )
-      {
       formatHandlers = new FormatHandlers<Protocol, Format>( createFormatHandlers() );
-      }
 
     return formatHandlers;
     }
@@ -162,16 +152,12 @@ public abstract class SchemaCatalog implements Serializable
   public TableDef resolveTableDef( String[] names )
     {
     if( names.length == 0 )
-      {
       return null;
-      }
 
     SchemaDef current = getRootSchemaDef();
 
     for( int i = 0; i < names.length - 1; i++ )
-      {
       current = current.getSchema( names[ i ] );
-      }
 
     return current.getTable( names[ names.length - 1 ] );
     }
@@ -184,9 +170,7 @@ public abstract class SchemaCatalog implements Serializable
   public SchemaDef getSchemaDef( String name )
     {
     if( name == null )
-      {
       return getRootSchemaDef();
-      }
 
     return getRootSchemaDef().getSchema( name );
     }
@@ -194,11 +178,10 @@ public abstract class SchemaCatalog implements Serializable
   public boolean addSchemaDef( String name )
     {
     if( getRootSchemaDef().getSchema( name ) != null )
-      {
       return false;
-      }
 
     getRootSchemaDef().getOrAddSchema( name );
+
     return true;
     }
 
@@ -239,27 +222,19 @@ public abstract class SchemaCatalog implements Serializable
   public String createSchemaDefAndTableDefsFor( String schemaName, String schemaIdentifier )
     {
     if( schemaName == null )
-      {
       schemaName = Util.createSchemaNameFrom( schemaIdentifier );
-      }
 
     SchemaDef schemaDef = getSchemaDef( schemaName );
 
     if( schemaDef == null )
-      {
       schemaDef = createSchemaDef( schemaName, schemaIdentifier );
-      }
     else if( !schemaIdentifier.equals( schemaDef.getIdentifier() ) )
-      {
       throw new IllegalArgumentException( "schema exists: " + schemaName + ", with differing identifier: " + schemaIdentifier );
-      }
 
     String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
 
     for( String identifier : childIdentifiers )
-      {
       createTableDefFor( schemaDef, null, identifier, null, null, null );
-      }
 
     return schemaName;
     }
@@ -306,16 +281,12 @@ public abstract class SchemaCatalog implements Serializable
   protected String createTableDefFor( SchemaDef schemaDef, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
     if( tableName == null )
-      {
       tableName = Util.createTableNameFrom( identifier );
-      }
 
     Stereotype<Protocol, Format> stereotype = getStereoType( schemaDef.getName(), stereotypeName );
 
     if( stereotype == null )
-      {
       stereotype = getOrCreateStereotype( schemaDef, identifier );
-      }
 
     schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
 
@@ -327,16 +298,12 @@ public abstract class SchemaCatalog implements Serializable
     Stereotype<Protocol, Format> stereotype = findStereotypeFor( identifier );
 
     if( stereotype != null )
-      {
       return stereotype;
-      }
 
     Fields fields = getFieldsFor( identifier );
 
     if( fields == null )
-      {
       return schema.getStereotypeFor( Fields.UNKNOWN );
-      }
 
     String schemaName = schema.getName();
     String stereotypeName = Util.createTableNameFrom( identifier );
@@ -393,9 +360,7 @@ public abstract class SchemaCatalog implements Serializable
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
     {
     if( idPointMap.containsKey( identifier ) )
-      {
       return idPointMap.get( identifier );
-      }
 
     Point<Protocol, Format> point = createPointFor( identifier, protocol, format, schemaName );
 
@@ -407,14 +372,10 @@ public abstract class SchemaCatalog implements Serializable
   private Point<Protocol, Format> createPointFor( String identifier, Protocol protocol, Format format, String schemaName )
     {
     if( protocol == null )
-      {
       protocol = getDefaultProtocolFor( identifier );
-      }
 
     if( format == null )
-      {
       format = getDefaultFormatFor( identifier, schemaName );
-      }
 
     return new Point<Protocol, Format>( protocol, format );
     }
@@ -424,9 +385,7 @@ public abstract class SchemaCatalog implements Serializable
     TableDef tableDef = rootSchemaDef.findTableFor( identifier );
 
     if( tableDef != null && tableDef.getProtocol() != null )
-      {
       return tableDef.getProtocol();
-      }
 
     return defaultProtocol;
     }
@@ -436,16 +395,12 @@ public abstract class SchemaCatalog implements Serializable
     TableDef tableDef = rootSchemaDef.findTableFor( identifier );
 
     if( tableDef != null && tableDef.getFormat() != null )
-      {
       return tableDef.getFormat();
-      }
 
     Format format = FormatProperties.findFormatFor( getSchemaDef( schemaName ), identifier );
 
     if( format == null )
-      {
       format = defaultFormat;
-      }
 
     return format;
     }
@@ -460,9 +415,7 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schema = rootSchemaDef;
 
     if( schemaName != null )
-      {
       schema = rootSchemaDef.getSchema( schemaName );
-      }
 
     return schema.getStereotype( stereotypeName );
 
@@ -473,9 +426,7 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schema = rootSchemaDef;
 
     if( schemaName != null )
-      {
       schema = rootSchemaDef.getSchema( schemaName );
-      }
 
     return schema.removeStereotype( stereotypeName );
     }
@@ -485,9 +436,7 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schema = rootSchemaDef;
 
     if( schemaName != null )
-      {
       schema = rootSchemaDef.getSchema( schemaName );
-      }
 
     return schema.renameStereotype( name, newName );
     }
@@ -502,9 +451,7 @@ public abstract class SchemaCatalog implements Serializable
     TableDef tableDef = findTableDefFor( identifier );
 
     if( tableDef == null )
-      {
       return null;
-      }
 
     return tableDef.getStereotype();
     }
@@ -535,9 +482,7 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schema = getSchemaDef( schemaName );
 
     if( schema == null )
-      {
       throw new IllegalArgumentException( "schema does not exist: " + schemaName );
-      }
 
     return schema.getStereotypeFor( fields );
     }
@@ -547,9 +492,7 @@ public abstract class SchemaCatalog implements Serializable
     String name = Util.createTableNameFrom( identifier );
 
     if( nameFieldsMap.containsKey( name ) )
-      {
       return nameFieldsMap.get( name );
-      }
 
     Point<Protocol, Format> point = getPointFor( identifier, null, null, null );
 
@@ -558,9 +501,7 @@ public abstract class SchemaCatalog implements Serializable
     Tap tap = createTapFor( rootSchemaDef.getStereotypeFor( Fields.UNKNOWN ), resource );
 
     if( !resourceExists( tap ) )
-      {
       return null;
-      }
 
     Fields fields = tap.retrieveSourceFields( platformBroker.getFlowProcess() );
 
@@ -572,9 +513,7 @@ public abstract class SchemaCatalog implements Serializable
   private boolean resourceExists( Tap tap )
     {
     if( tap == null )
-      {
       return false;
-      }
 
     try
       {
@@ -591,23 +530,17 @@ public abstract class SchemaCatalog implements Serializable
     TableDef tableDef = findTableDefFor( identifier );
 
     if( tableDef == null )
-      {
       throw new IllegalArgumentException( "no table for identifier: " + identifier );
-      }
 
     Protocol protocol = tableDef.getProtocol();
 
     if( protocol == null )
-      {
       protocol = getDefaultProtocol();
-      }
 
     ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( protocol );
 
     if( protocolHandler == null )
-      {
       throw new IllegalArgumentException( "no protocol handler for protocol: " + protocol );
-      }
 
     Resource<Protocol, Format, SinkMode> resource = tableDef.getResourceWith( sinkMode );
 
@@ -619,9 +552,7 @@ public abstract class SchemaCatalog implements Serializable
     ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( resource.getProtocol() );
 
     if( protocolHandler != null )
-      {
       return protocolHandler.createTap( stereotype, resource );
-      }
 
     return null;
     }
@@ -657,44 +588,27 @@ public abstract class SchemaCatalog implements Serializable
   public boolean equals( Object object )
     {
     if( this == object )
-      {
       return true;
-      }
+
     if( !( object instanceof SchemaCatalog ) )
-      {
       return false;
-      }
 
     SchemaCatalog catalog = (SchemaCatalog) object;
 
     if( defaultFormat != null ? !defaultFormat.equals( catalog.defaultFormat ) : catalog.defaultFormat != null )
-      {
       return false;
-      }
     if( defaultProtocol != null ? !defaultProtocol.equals( catalog.defaultProtocol ) : catalog.defaultProtocol != null )
-      {
       return false;
-      }
     if( formatHandlers != null ? !formatHandlers.equals( catalog.formatHandlers ) : catalog.formatHandlers != null )
-      {
       return false;
-      }
     if( idPointMap != null ? !idPointMap.equals( catalog.idPointMap ) : catalog.idPointMap != null )
-      {
       return false;
-      }
     if( nameFieldsMap != null ? !nameFieldsMap.equals( catalog.nameFieldsMap ) : catalog.nameFieldsMap != null )
-      {
       return false;
-      }
     if( protocolHandlers != null ? !protocolHandlers.equals( catalog.protocolHandlers ) : catalog.protocolHandlers != null )
-      {
       return false;
-      }
     if( rootSchemaDef != null ? !rootSchemaDef.equals( catalog.rootSchemaDef ) : catalog.rootSchemaDef != null )
-      {
       return false;
-      }
 
     return true;
     }
