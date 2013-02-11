@@ -277,8 +277,8 @@ CREATE TABLE "product"(
     "SRP" DECIMAL(10,4),
     "gross_weight" REAL,
     "net_weight" REAL,
-    "recyclable_package" SMALLINT,
-    "low_fat" SMALLINT,
+    "recyclable_package" BOOLEAN,
+    "low_fat" BOOLEAN,
     "units_per_case" SMALLINT,
     "cases_per_pallet" SMALLINT,
     "shelf_width" REAL,
@@ -358,11 +358,11 @@ CREATE TABLE "store"(
     "grocery_sqft" INTEGER,
     "frozen_sqft" INTEGER,
     "meat_sqft" INTEGER,
-    "coffee_bar" SMALLINT,
-    "video_store" SMALLINT,
-    "salad_bar" SMALLINT,
-    "prepared_food" SMALLINT,
-    "florist" SMALLINT);
+    "coffee_bar" BOOLEAN,
+    "video_store" BOOLEAN,
+    "salad_bar" BOOLEAN,
+    "prepared_food" BOOLEAN,
+    "florist" BOOLEAN);
 DROP TABLE "store_ragged";
 CREATE TABLE "store_ragged"(
     "store_id" INTEGER NOT NULL,
@@ -384,11 +384,11 @@ CREATE TABLE "store_ragged"(
     "grocery_sqft" INTEGER,
     "frozen_sqft" INTEGER,
     "meat_sqft" INTEGER,
-    "coffee_bar" SMALLINT,
-    "video_store" SMALLINT,
-    "salad_bar" SMALLINT,
-    "prepared_food" SMALLINT,
-    "florist" SMALLINT);
+    "coffee_bar" BOOLEAN,
+    "video_store" BOOLEAN,
+    "salad_bar" BOOLEAN,
+    "prepared_food" BOOLEAN,
+    "florist" BOOLEAN);
 DROP TABLE "time_by_day";
 CREATE TABLE "time_by_day"(
     "time_id" INTEGER NOT NULL,
