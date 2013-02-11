@@ -74,12 +74,12 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
 
       if( valuesHolder.cache != null && valuesHolder.cache.containsKey( identifier ) )
         {
-        LOG.info( "inserting into (cached): {}", identifier );
+        LOG.debug( "inserting into (cached): {}", identifier );
         collector = valuesHolder.cache.get( identifier );
         }
       else
         {
-        LOG.info( "inserting into: {}", identifier );
+        LOG.debug( "inserting into: {}", identifier );
         collector = valuesHolder.tap.openForWrite( valuesHolder.flowProcess );
         }
 
@@ -111,7 +111,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       rowCount++;
       }
 
-    LOG.info( "inserted {} rows", rowCount );
+    LOG.debug( "inserted {} rows", rowCount );
 
     return new Linq4j().singletonEnumerable( rowCount ).enumerator();
     }
