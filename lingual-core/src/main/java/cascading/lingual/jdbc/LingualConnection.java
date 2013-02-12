@@ -75,9 +75,7 @@ public abstract class LingualConnection implements Connection
     String platformName = getStringProperty( PLATFORM_PROP );
 
     if( platformName == null )
-      {
       platformName = "local";
-      }
 
     LOG.info( "using platform: {}", platformName );
 
@@ -92,9 +90,7 @@ public abstract class LingualConnection implements Connection
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
 
     if( isCollectorCacheEnabled() )
-      {
       setAutoCommit( false );
-      }
 
     platformBroker.startConnection( this );
     }
@@ -173,13 +169,9 @@ public abstract class LingualConnection implements Connection
     parent.setAutoCommit( autoCommit );
 
     if( autoCommit )
-      {
       platformBroker.disableCollectorCache();
-      }
     else
-      {
       platformBroker.enableCollectorCache();
-      }
     }
 
   @Override
@@ -448,14 +440,10 @@ public abstract class LingualConnection implements Connection
   public <T> T unwrap( Class<T> iface ) throws SQLException
     {
     if( iface.isInstance( this ) )
-      {
       return iface.cast( this );
-      }
 
     else if( iface.isInstance( parent ) )
-      {
       return iface.cast( parent );
-      }
 
     throw new SQLException( "does not implement '" + iface + "'" );
     }

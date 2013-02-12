@@ -82,9 +82,7 @@ public abstract class PlatformBroker<Config>
   public Properties getProperties()
     {
     if( properties == null )
-      {
       properties = new Properties();
-      }
 
     return properties;
     }
@@ -96,9 +94,7 @@ public abstract class PlatformBroker<Config>
   public void startConnection( LingualConnection connection ) throws SQLException
     {
     if( !connection.getAutoCommit() )
-      {
       enableCollectorCache();
-      }
 
     getCatalog().addSchemasTo( connection );
     }
@@ -117,14 +113,10 @@ public abstract class PlatformBroker<Config>
   public synchronized void disableCollectorCache()
     {
     if( collectorCache == null )
-      {
       return;
-      }
 
     if( !collectorCache.isEmpty() )
-      {
       throw new IllegalStateException( "must close collector cache before disabling" );
-      }
 
     collectorCache = null;
     }
@@ -132,9 +124,7 @@ public abstract class PlatformBroker<Config>
   public void closeCollectorCache()
     {
     if( collectorCache == null )
-      {
       return;
-      }
 
     for( String identifier : collectorCache.keySet() )
       {
@@ -174,9 +164,7 @@ public abstract class PlatformBroker<Config>
   public synchronized SchemaCatalog getCatalog()
     {
     if( catalog == null )
-      {
       catalog = loadCatalog();
-      }
 
     return catalog;
     }
@@ -186,14 +174,10 @@ public abstract class PlatformBroker<Config>
     String path = getFullMetadataPath();
 
     if( pathExists( path ) )
-      {
       return true;
-      }
 
     if( !createPath( path ) )
-      {
       throw new RuntimeException( "unable to create catalog: " + path );
-      }
 
     return false;
     }
@@ -204,13 +188,9 @@ public abstract class PlatformBroker<Config>
     OutputStream outputStream = getOutputStream( catalogPath );
 
     if( saveAsBinary )
-      {
       writeAsObjectAndClose( catalogPath, outputStream );
-      }
     else
-      {
       writeAsJsonAndClose( catalogPath, outputStream );
-      }
     }
 
   public String getFullMetadataPath()
@@ -264,22 +244,16 @@ public abstract class PlatformBroker<Config>
     catalog = readCatalog();
 
     if( catalog == null )
-      {
       catalog = newInstance();
-      }
 
     // schema and tables beyond here are not persisted in the catalog
     // they are transient to the session
     // todo: wrap transient catalog data around persistent catalog data
     if( properties.containsKey( SCHEMAS_PROP ) )
-      {
       loadSchemas( catalog );
-      }
 
     if( properties.containsKey( TABLES_PROP ) )
-      {
       loadTables( catalog );
-      }
 
     return catalog;
     }
@@ -291,18 +265,12 @@ public abstract class PlatformBroker<Config>
     InputStream inputStream = getInputStream( catalogPath );
 
     if( inputStream == null )
-      {
       return null;
-      }
 
     if( saveAsBinary )
-      {
       return readAsObjectAndClose( catalogPath, inputStream );
-      }
     else
-      {
       return readAsJsonAndClose( catalogPath, inputStream );
-      }
     }
 
   private SchemaCatalog readAsObjectAndClose( String catalogPath, InputStream inputStream )
@@ -369,14 +337,10 @@ public abstract class PlatformBroker<Config>
   public static String makePath( String fileSeparator, String rootPath, String... elements )
     {
     if( rootPath == null )
-      {
       rootPath = ".";
-      }
 
     if( !rootPath.endsWith( fileSeparator ) )
-      {
       rootPath += fileSeparator;
-      }
 
     return rootPath + Util.join( elements, fileSeparator );
     }
@@ -406,9 +370,7 @@ public abstract class PlatformBroker<Config>
     String[] schemaIdentifiers = schemaProperty.split( "," );
 
     for( String schemaIdentifier : schemaIdentifiers )
-      {
       catalog.createSchemaDefAndTableDefsFor( schemaIdentifier );
-      }
     }
 
   private void loadTables( SchemaCatalog catalog )
@@ -417,9 +379,7 @@ public abstract class PlatformBroker<Config>
     String[] tableIdentifiers = tableProperty.split( "," );
 
     for( String tableIdentifier : tableIdentifiers )
-      {
       catalog.createTableDefFor( tableIdentifier );
-      }
     }
 
   private String getStringProperty( String propertyName )

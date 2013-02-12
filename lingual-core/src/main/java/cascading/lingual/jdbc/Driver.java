@@ -91,9 +91,7 @@ public class Driver extends UnregisteredDriver
     Connection connection = super.connect( url, info );
 
     if( connection == null )
-      {
       return null;
-      }
 
     Properties connectionProperties = parseConnectionProperties( url, info );
 
@@ -120,14 +118,10 @@ public class Driver extends UnregisteredDriver
       info.put( PLATFORM_PROP, elements[ 0 ] );
 
       if( elements.length == 2 )
-        {
         info.put( SCHEMA_PROP, elements[ 1 ] );
-        }
 
       if( urlSuffix.length() > parts[ 0 ].length() )
-        {
         urlSuffix = urlSuffix.substring( parts[ 0 ].length() + 1 );
-        }
       }
 
     return urlSuffix;

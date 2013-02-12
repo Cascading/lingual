@@ -84,9 +84,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
         }
 
       if( valuesHolder.cache != null )
-        {
         valuesHolder.cache.put( identifier, collector );
-        }
       }
     catch( IOException exception )
       {
@@ -102,9 +100,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       Tuple tuple = Tuple.size( values.size() );
 
       for( int i = 0; i < values.size(); i++ )
-        {
         tuple.set( i, values.get( i ).getValue2() ); // seem to come out canonical, so bypassing using TupleEntry to set
-        }
 
       collector.add( tuple );
 

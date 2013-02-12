@@ -73,9 +73,7 @@ public class TapSchema extends MapSchema
   public void addTapTablesFor( SchemaDef schemaDef )
     {
     for( TableDef tableDef : schemaDef.getChildTables() )
-      {
       addTapTableFor( tableDef );
-      }
     }
 
   public void addTapTableFor( TableDef tableDef )

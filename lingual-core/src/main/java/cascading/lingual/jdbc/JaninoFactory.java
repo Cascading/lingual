@@ -80,6 +80,7 @@ public class JaninoFactory implements Factory
     Object[] constructorArgs ) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IOException, CompileException
     {
     Class clazz;
+
     if( !isAbstract( abstractClass.getModifiers() ) )
       {
       clazz = abstractClass;
@@ -87,54 +88,65 @@ public class JaninoFactory implements Factory
     else
       {
       final StringBuilder buf = new StringBuilder();
+
       buf.append( "public " )
         .append( "SC" )
         .append( "(" );
+
       for( int i = 0; i < constructorParamTypes.length; i++ )
         {
         Class constructorParamType = constructorParamTypes[ i ];
+
         if( i > 0 )
-          {
           buf.append( ", " );
-          }
+
         unparse( buf, constructorParamType )
           .append( " p" )
           .append( i );
         }
+
       buf.append( ") throws java.sql.SQLException { super(" );
+
       for( int i = 0; i < constructorParamTypes.length; i++ )
         {
         if( i > 0 )
-          {
           buf.append( ", " );
-          }
+
         buf.append( "p" )
           .append( i );
         }
+
       buf.append( "); }\n" );
+
       for( Method method : abstractClass.getMethods() )
         {
         if( isAbstract( method.getModifiers() ) )
           {
           buf.append( "public " );
+
           unparse( buf, method.getReturnType() )
             .append( " " )
             .append( method.getName() )
             .append( "(" );
+
           Class<?>[] parameterTypes = method.getParameterTypes();
+
           for( int i = 0; i < parameterTypes.length; i++ )
             {
             if( i > 0 )
-              {
               buf.append( ", " );
-              }
+
             Class<?> type = parameterTypes[ i ];
+
             unparse( buf, type ).append( " " ).append( "p" ).append( i );
             }
+
           buf.append( ") { throw new UnsupportedOperationException();}\n" );
           }
         }
+
       final String s = buf.toString();
+
       clazz = new ClassBodyEvaluator(
         new Scanner( null, new StringReader( s ) ),
         abstractClass,
@@ -154,16 +166,10 @@ public class JaninoFactory implements Factory
   private static StringBuilder unparse( StringBuilder buf, Class clazz )
     {
     if( clazz.isPrimitive() )
-      {
       return buf.append( clazz );
-      }
     else if( clazz.isArray() )
-      {
       return unparse( buf, clazz.getComponentType() ).append( "[]" );
-      }
     else
-      {
       return buf.append( clazz.getName() );
-      }
     }
   }

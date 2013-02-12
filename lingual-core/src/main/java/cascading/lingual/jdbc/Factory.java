@@ -24,10 +24,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-/**
- * Creates Connections etc. for the driver.
- */
-interface Factory {
-    Connection createConnection(
-        Connection connection, Properties connectionProperties) throws SQLException;
-}
+/** Creates Connections etc. for the driver. */
+interface Factory
+  {
+  Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException;
+  }
