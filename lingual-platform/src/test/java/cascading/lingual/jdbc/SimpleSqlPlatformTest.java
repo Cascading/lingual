@@ -73,6 +73,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
+  public void testSelectHavingAlias() throws Exception
+    {
+    assertTablesEqual( "emps-having-alias", "select age as a from sales.emps group by a having a > 30" );
+    }
+
+  @Test
   public void testSelectOrderBy() throws Exception
     {
     assertTablesEqual( "emps-select-ordered", "select empno, name from sales.emps order by name" );
@@ -220,4 +226,8 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     assertTablesEqual( "sales-select-date", "select empno, sale_date, sale_time from sales.sales" );
     }
+
+  //select "time_by_day"."the_year" as "c0" from "time_by_day" as "time_by_day" group by "time_by_day"."the_year" order by "time_by_day"."the_year" ASC
+
+
   }
