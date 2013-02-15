@@ -191,7 +191,7 @@ public abstract class LingualConnection implements Connection
   @Override
   public void rollback() throws SQLException
     {
-    parent.rollback();
+    // parent.rollback(); // not supported
 
     // todo: close and delete pending cached items
     }
@@ -314,24 +314,28 @@ public abstract class LingualConnection implements Connection
   @Override
   public Savepoint setSavepoint() throws SQLException
     {
+    //note that Optiq does not currently support savepoints
     return parent.setSavepoint();
     }
 
   @Override
   public Savepoint setSavepoint( String name ) throws SQLException
     {
+    //note that Optiq does not currently support savepoints
     return parent.setSavepoint( name );
     }
 
   @Override
   public void rollback( Savepoint savepoint ) throws SQLException
     {
+    //note that Optiq does not currently support savepoints
     parent.rollback( savepoint );
     }
 
   @Override
   public void releaseSavepoint( Savepoint savepoint ) throws SQLException
     {
+    //note that Optiq does not currently support savepoints
     parent.releaseSavepoint( savepoint );
     }
 
