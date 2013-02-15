@@ -48,10 +48,10 @@ subprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
 
-  apply from: "${rootDir}/etc/includes.gradle"
-
   group = 'lingual'
   version = releaseVersion
+
+  apply from: "${rootDir}/etc/includes.gradle"
 
   configurations {
     testArtifacts {
