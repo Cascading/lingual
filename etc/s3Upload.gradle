@@ -43,8 +43,8 @@ task s3Upload( type: S3Sync ) {
 
   configFile "${rootProject.projectDir}/etc/synchronizer.properties"
 
-  ext.source = "${buildDir}/publish".toString()
-  ext.destination = "${project.s3Bucket}/${project.group}/${majorVersion}/${project.name}/".toString()
+  ext.source = "${buildDir}/publish"
+  ext.destination = "${project.s3Bucket}/${project.group}/${majorVersion}/${project.name}/"
 
   from source
   into destination
