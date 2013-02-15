@@ -56,17 +56,17 @@ task createProps() {
   ext.jobPropsDir = "${buildDir}/tmp/hadoopManifest/"
   ext.jobProps = "${jobPropsDir}/hadoop.job.properties"
 
+  outputs.file jobProps
+
   doLast {
 
     delete jobPropsDir
     mkdir( jobPropsDir )
-    new File( "${jobProps}" ).write( "hadoop.job.jar=true" );
-
-    outputs.file jobProps
+    file( jobProps ).write( "hadoop.job.jar=true" );
   }
 }
 
-task hadoopJar( type: Jar, dependsOn: [ jar, createProps ] ) {
+task hadoopJar( type: Jar, dependsOn: [jar, createProps] ) {
   description = "Assembles a Hadoop ready jar file"
 
   classifier = 'hadoop'
@@ -82,11 +82,6 @@ task hadoopJar( type: Jar, dependsOn: [ jar, createProps ] ) {
     metaInf() {
       from( createProps.jobProps )
     }
-  }
-
-  manifest {
-//    attributes( "Main-Class": "cascading/load/Main" )
-//    attributes( "Build-Date": "${timestamp}" )
   }
 }
 
