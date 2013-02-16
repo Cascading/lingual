@@ -104,9 +104,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     super.tearDown();
 
     if( connection != null )
-      {
       connection.close();
-      }
     }
 
   protected void setResultsTo( String schemaName, String tableName, Fields fields ) throws Exception

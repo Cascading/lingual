@@ -239,9 +239,26 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( identifier == null || identifier.isEmpty() )
       return null;
 
+    // allows us to get the actual case for the path
     FileSystem fileSystem = getFileSystem( getConfig(), identifier );
+    Path path = fileSystem.makeQualified( new Path( identifier ) );
 
-    return fileSystem.makeQualified( new Path( identifier ) ).toString();
+    try
+      {
+      String[] childIdentifiers = getFileTypeFor( path.getParent().toString() ).getChildIdentifiers( getConfig() );
+
+      for( String child : childIdentifiers )
+        {
+        if( child.equalsIgnoreCase( path.toString() ) )
+          return child;
+        }
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to get full path: " + path, exception );
+      }
+
+    return path.toString();
     }
 
   @Override
