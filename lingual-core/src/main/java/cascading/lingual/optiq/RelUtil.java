@@ -29,8 +29,8 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
-import org.eigenbase.rex.RexInputRef;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexSlot;
 
 /**
  *
@@ -104,26 +104,38 @@ public class RelUtil
     return (Class) ( (JavaTypeFactory) cluster.getTypeFactory() ).getJavaClass( dataType );
     }
 
-  static Fields createFields( RelNode relNode, List<RexNode> rexNodes )
+  static Fields createTypedFields( RelNode relNode, List<? extends RexNode> rexNodes )
     {
-    return createFields( relNode, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
+    return createTypedFields( relNode, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
     }
 
-  static Fields createFields( RelNode relNode, RexNode[] rexNodes )
+  static Fields createTypedFields( RelNode relNode, RexNode[] rexNodes )
+    {
+    RelOptCluster cluster = relNode.getCluster();
+    RelDataType inputRowType = relNode.getRowType();
+
+    return createTypedFields( cluster, inputRowType, rexNodes );
+    }
+
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType inputRowType, List<? extends RexNode> rexNodes )
+    {
+    return createTypedFields( cluster, inputRowType, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
+    }
+
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType inputRowType, RexNode[] rexNodes )
     {
     Fields fields = new Fields();
-    RelDataType inputRowType = relNode.getRowType();
     List<RelDataTypeField> fieldList = inputRowType.getFieldList();
 
     for( RexNode exp : rexNodes )
       {
-      if( !( exp instanceof RexInputRef ) )
+      if( !( exp instanceof RexSlot ) )
         continue;
 
-      RelDataTypeField dataTypeField = fieldList.get( ( (RexInputRef) exp ).getIndex() );
+      RelDataTypeField dataTypeField = fieldList.get( ( (RexSlot) exp ).getIndex() );
       String name = dataTypeField.getName();
       RelDataType dataType = dataTypeField.getType();
-      Class type = getJavaType( relNode.getCluster(), dataType );
+      Class type = getJavaType( cluster, dataType );
       fields = fields.append( new Fields( name, type ) );
       }
 

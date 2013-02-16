@@ -96,7 +96,7 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
 
     Fields currentFields = RelUtil.getTypedFieldsFor( this );
     Fields childFields = RelUtil.getTypedFieldsFor( getChild() );
-    Fields narrowChildFields = RelUtil.createFields( getChild(), exps );
+    Fields narrowChildFields = RelUtil.createTypedFields( getChild(), exps );
 
     Pipe current = branch.current;
 

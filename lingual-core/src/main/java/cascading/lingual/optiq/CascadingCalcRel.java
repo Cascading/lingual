@@ -28,6 +28,7 @@ import cascading.operation.Filter;
 import cascading.operation.expression.ScriptFilter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
@@ -75,7 +76,7 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     JavaTypeFactory typeFactory = (JavaTypeFactory) getCluster().getTypeFactory();
 
     RelDataType inputRowType = getChild().getRowType();
-    Fields fields = RelUtil.createFields( getChild(), getProgram().getExprList() );
+    Fields fields = RelUtil.createTypedFields( getChild(), getProgram().getExprList() );
 
     final List<Expression> parameters = new ArrayList<Expression>();
 
@@ -122,8 +123,14 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     // TODO: Each( ..., filter, ... ) should accept an output selector in the future
     if( !isProjection )
       {
-      Fields resultFields = RelUtil.getTypedFields( getCluster(), program.getOutputRowType() );
-      pipe = new Retain( pipe, resultFields );
+      Fields projectedFields = RelUtil.createTypedFields( getCluster(), program.getInputRowType(), program.getProjectList() );
+
+      pipe = new Retain( pipe, projectedFields );
+
+      Fields renameFields = RelUtil.getTypedFields( getCluster(), program.getOutputRowType() );
+
+      if( !renameFields.equals( projectedFields ) )
+        pipe = new Rename( pipe, projectedFields, renameFields );
       }
 
     if( !isConstantTrue || !isProjection )
