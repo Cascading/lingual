@@ -234,6 +234,17 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
+  public String getFullPath( String identifier )
+    {
+    if( identifier == null || identifier.isEmpty() )
+      return null;
+
+    FileSystem fileSystem = getFileSystem( getConfig(), identifier );
+
+    return fileSystem.makeQualified( new Path( identifier ) ).toString();
+    }
+
+  @Override
   public boolean pathExists( String path )
     {
     FileSystem fileSystem = getFileSystem( getConfig(), path );

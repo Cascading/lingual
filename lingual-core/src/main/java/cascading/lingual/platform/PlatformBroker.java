@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -345,14 +346,11 @@ public abstract class PlatformBroker<Config>
     return rootPath + Util.join( elements, fileSeparator );
     }
 
-
-  public void createTable( String schemaName, String tableName, String uri )
-    {
-    }
-
   protected abstract String getFileSeparator();
 
   public abstract String getTempPath();
+
+  public abstract String getFullPath( String identifier );
 
   public abstract boolean pathExists( String path );
 
@@ -363,6 +361,20 @@ public abstract class PlatformBroker<Config>
   protected abstract InputStream getInputStream( String path );
 
   protected abstract OutputStream getOutputStream( String path );
+
+  public String createSchemaNameFrom( String identifier )
+    {
+    String fullPath = getFullPath( identifier );
+    String path = URI.create( fullPath ).getPath();
+    return path.replaceAll( "^.*/([^/]+)/?$", "$1" );
+    }
+
+  public String createTableNameFrom( String identifier )
+    {
+    String fullPath = getFullPath( identifier );
+    String path = URI.create( fullPath ).getPath();
+    return path.replaceAll( "^.*/([^/.]+)(\\.?.*$|/$)", "$1" );
+    }
 
   private void loadSchemas( SchemaCatalog catalog )
     {

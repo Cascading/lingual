@@ -92,6 +92,19 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
+  public String getFullPath( String identifier )
+    {
+    try
+      {
+      return new File( identifier ).getCanonicalPath();
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to get full path for: " + identifier, exception );
+      }
+    }
+
+  @Override
   public boolean pathExists( String path )
     {
     File file = new File( path );

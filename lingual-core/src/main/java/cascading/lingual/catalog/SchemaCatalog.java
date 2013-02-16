@@ -38,7 +38,6 @@ import cascading.bind.catalog.handler.ProtocolHandlers;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
-import cascading.lingual.util.Util;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -222,7 +221,7 @@ public abstract class SchemaCatalog implements Serializable
   public String createSchemaDefAndTableDefsFor( String schemaName, String schemaIdentifier )
     {
     if( schemaName == null )
-      schemaName = Util.createSchemaNameFrom( schemaIdentifier );
+      schemaName = platformBroker.createSchemaNameFrom( schemaIdentifier );
 
     SchemaDef schemaDef = getSchemaDef( schemaName );
 
@@ -281,7 +280,7 @@ public abstract class SchemaCatalog implements Serializable
   protected String createTableDefFor( SchemaDef schemaDef, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
     if( tableName == null )
-      tableName = Util.createTableNameFrom( identifier );
+      tableName = platformBroker.createTableNameFrom( identifier );
 
     Stereotype<Protocol, Format> stereotype = getStereoType( schemaDef.getName(), stereotypeName );
 
@@ -306,7 +305,7 @@ public abstract class SchemaCatalog implements Serializable
       return schema.getStereotypeFor( Fields.UNKNOWN );
 
     String schemaName = schema.getName();
-    String stereotypeName = Util.createTableNameFrom( identifier );
+    String stereotypeName = platformBroker.createTableNameFrom( identifier );
 
     stereotype = schema.getStereotypeFor( fields );
 
@@ -489,7 +488,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public Fields getFieldsFor( String identifier )
     {
-    String name = Util.createTableNameFrom( identifier );
+    String name = platformBroker.createTableNameFrom( identifier );
 
     if( nameFieldsMap.containsKey( name ) )
       return nameFieldsMap.get( name );

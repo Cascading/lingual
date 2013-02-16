@@ -20,7 +20,6 @@
 
 package cascading.lingual.util;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,18 +43,6 @@ public class Util
       result.put( entry.getValue(), entry.getKey() );
 
     return result;
-    }
-
-  // todo: make file separator agnostic
-  public static String createSchemaNameFrom( String identifier )
-    {
-    return URI.create( identifier ).getPath().replaceAll( "^.*/([^/]+)/?$", "$1" ).toUpperCase();
-    }
-
-  // todo: make file separator agnostic
-  public static String createTableNameFrom( String identifier )
-    {
-    return URI.create( identifier ).getPath().replaceAll( "^.*/([^/.]+)\\..*$", "$1" ).toUpperCase();
     }
 
   public static <Key, Value> LoadingCache<Key, Value> makeInternedCache( Function<Key, Value> factory )

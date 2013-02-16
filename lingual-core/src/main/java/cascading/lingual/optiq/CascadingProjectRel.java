@@ -98,16 +98,13 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
     Fields childFields = RelUtil.getTypedFieldsFor( getChild() );
     Fields narrowChildFields = RelUtil.createFields( getChild(), exps );
 
-    Pipe current;
+    Pipe current = branch.current;
 
-    if( childFields.equals( narrowChildFields ) && currentFields.equals( childFields ) )
-      return branch; // nothing happens here
-    else if( childFields.equals( narrowChildFields ) && !currentFields.equals( childFields ) )
-      current = new Rename( branch.current, childFields, currentFields );
-    else if( childFields.size() > narrowChildFields.size() )
-      current = new Retain( branch.current, narrowChildFields );
-    else
-      throw new IllegalStateException( "current: " + currentFields.printVerbose() + " child: " + childFields.printVerbose() + " narrow: " + narrowChildFields.printVerbose() );
+    if( childFields.size() > narrowChildFields.size() )
+      current = new Retain( current, narrowChildFields );
+
+    if( !currentFields.equals( narrowChildFields ) )
+      current = new Rename( current, narrowChildFields, currentFields );
 
     current = stack.addDebug( this, current );
 

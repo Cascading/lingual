@@ -64,8 +64,6 @@ dependencies {
 
   compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
 
-  testCompile group: 'commons-io', name: 'commons-io', version: '2.1'
-
   providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
   providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
   providedCompile group: 'log4j', name: 'log4j', version: '1.2.16'

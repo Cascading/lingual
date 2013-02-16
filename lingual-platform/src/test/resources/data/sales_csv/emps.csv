@@ -1,6 +1,0 @@
-EMPNO,NAME,DEPTNO,GENDER,CITY,EMPID,AGE,SLACKER,MANAGER
-100,"Fred",10,,,30,25,true,false
-110,"Eric",20,"M","San Francisco",3,80,,false
-110,"John",40,"M","Vancouver",2,,false,true
-120,"Wilma",20,"F",,1,5,,true
-130,"Alice",40,"F","Vancouver",2,,false,true
