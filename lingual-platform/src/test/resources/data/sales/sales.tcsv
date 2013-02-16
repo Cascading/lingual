@@ -1,4 +1,0 @@
-EMPNO:int,ITEM:string,SALE_DATE:date,SALE_TIME:time
-100,"Anvil","1996-08-03","06:33:12"
-110,"Rubber Band","9999-01-01","14:54:09"
-110,"Wild Cat","1995-12-01","11:11:09"
