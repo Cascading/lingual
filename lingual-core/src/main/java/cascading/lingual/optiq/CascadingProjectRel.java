@@ -26,6 +26,7 @@ import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.Insert;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
 import org.eigenbase.rel.ProjectRelBase;
@@ -93,8 +94,20 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       return new Branch( pipe, branch );
       }
 
-    Fields fields = RelUtil.createFields( getChild(), exps );
-    Pipe current = new Retain( branch.current, fields );
+    Fields currentFields = RelUtil.getTypedFieldsFor( this );
+    Fields childFields = RelUtil.getTypedFieldsFor( getChild() );
+    Fields narrowChildFields = RelUtil.createFields( getChild(), exps );
+
+    Pipe current;
+
+    if( childFields.equals( narrowChildFields ) && currentFields.equals( childFields ) )
+      return branch; // nothing happens here
+    else if( childFields.equals( narrowChildFields ) && !currentFields.equals( childFields ) )
+      current = new Rename( branch.current, childFields, currentFields );
+    else if( childFields.size() > narrowChildFields.size() )
+      current = new Retain( branch.current, narrowChildFields );
+    else
+      throw new IllegalStateException( "current: " + currentFields.printVerbose() + " child: " + childFields.printVerbose() + " narrow: " + narrowChildFields.printVerbose() );
 
     current = stack.addDebug( this, current );
 
