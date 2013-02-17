@@ -80,12 +80,6 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  public String[] getChildIdentifiers( FileType<Properties> fileType ) throws IOException
-    {
-    return fileType.getChildIdentifiers( getConfig() );
-    }
-
-  @Override
   public Properties getConfig()
     {
     return getProperties();
@@ -96,7 +90,9 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     {
     try
       {
-      return new File( identifier ).getCanonicalPath();
+      File canonicalFile = new File( identifier ).getCanonicalFile();
+
+      return findActualPath( canonicalFile.getParent(), canonicalFile.toString() );
       }
     catch( IOException exception )
       {

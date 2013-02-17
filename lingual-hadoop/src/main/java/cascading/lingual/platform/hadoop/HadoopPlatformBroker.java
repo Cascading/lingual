@@ -39,7 +39,6 @@ import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
-import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.type.FileType;
@@ -193,15 +192,6 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
-  public String[] getChildIdentifiers( FileType<JobConf> fileType ) throws IOException
-    {
-    if( !( (Tap) fileType ).resourceExists( getConfig() ) )
-      throw new IllegalStateException( "resource does not exist: " + ( (Tap) fileType ).getFullIdentifier( getConfig() ) );
-
-    return fileType.getChildIdentifiers( getConfig() );
-    }
-
-  @Override
   public boolean createPath( String path )
     {
     FileSystem fileSystem = getFileSystem( getConfig(), path );
@@ -247,22 +237,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     FileSystem fileSystem = getFileSystem( getConfig(), identifier );
     Path path = fileSystem.makeQualified( new Path( identifier ) );
 
-    try
-      {
-      String[] childIdentifiers = getFileTypeFor( path.getParent().toString() ).getChildIdentifiers( getConfig() );
-
-      for( String child : childIdentifiers )
-        {
-        if( child.equalsIgnoreCase( path.toString() ) )
-          return child;
-        }
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to get full path: " + path, exception );
-      }
-
-    return path.toString();
+    return findActualPath( path.getParent().toString(), path.toString() );
     }
 
   @Override

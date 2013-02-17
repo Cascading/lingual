@@ -40,6 +40,7 @@ import cascading.lingual.catalog.json.JSONFactory;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.DebugLevel;
+import cascading.tap.Tap;
 import cascading.tap.type.FileType;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
@@ -414,7 +415,13 @@ public abstract class PlatformBroker<Config>
 
   public abstract FileType getFileTypeFor( String identifier );
 
-  public abstract String[] getChildIdentifiers( FileType<Config> fileType ) throws IOException;
+  public String[] getChildIdentifiers( FileType<Config> fileType ) throws IOException
+    {
+    if( !( (Tap) fileType ).resourceExists( getConfig() ) )
+      throw new IllegalStateException( "resource does not exist: " + ( (Tap) fileType ).getFullIdentifier( getConfig() ) );
+
+    return fileType.getChildIdentifiers( getConfig() );
+    }
 
   public PlatformInfo getPlatformInfo()
     {
@@ -449,5 +456,25 @@ public abstract class PlatformBroker<Config>
       {
       throw new RuntimeException( "unable to construct class: " + getCatalogClass().getName(), exception );
       }
+    }
+
+  protected String findActualPath( String parentIdentifier, String identifier )
+    {
+    try
+      {
+      String[] childIdentifiers = getFileTypeFor( parentIdentifier ).getChildIdentifiers( getConfig() );
+
+      for( String child : childIdentifiers )
+        {
+        if( child.equalsIgnoreCase( identifier ) )
+          return child;
+        }
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to get full path: " + identifier, exception );
+      }
+
+    return identifier;
     }
   }
