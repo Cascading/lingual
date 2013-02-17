@@ -39,6 +39,7 @@ import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
+import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.type.FileType;
@@ -194,6 +195,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public String[] getChildIdentifiers( FileType<JobConf> fileType ) throws IOException
     {
+    if( !( (Tap) fileType ).resourceExists( getConfig() ) )
+      throw new IllegalStateException( "resource does not exist: " + ( (Tap) fileType ).getFullIdentifier( getConfig() ) );
+
     return fileType.getChildIdentifiers( getConfig() );
     }
 

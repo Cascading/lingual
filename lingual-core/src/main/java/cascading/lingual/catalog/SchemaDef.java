@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.bind.catalog.Stereotypes;
@@ -52,11 +53,11 @@ public class SchemaDef extends Def
 
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, SchemaDef> childSchemas = new HashMap<String, SchemaDef>();
+  private Map<String, SchemaDef> childSchemas = new TreeMap<String, SchemaDef>( String.CASE_INSENSITIVE_ORDER );
 
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, TableDef> childTables = new HashMap<String, TableDef>();
+  private Map<String, TableDef> childTables = new TreeMap<String, TableDef>( String.CASE_INSENSITIVE_ORDER );
 
   @JsonProperty
   private MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
@@ -290,7 +291,7 @@ public class SchemaDef extends Def
     {
     for( TableDef tableDef : childTables.values() )
       {
-      if( tableDef.getIdentifier().equals( identifier ) )
+      if( tableDef.getIdentifier().equalsIgnoreCase( identifier ) )
         return tableDef;
       }
 

@@ -364,16 +364,22 @@ public abstract class PlatformBroker<Config>
 
   public String createSchemaNameFrom( String identifier )
     {
-    String fullPath = getFullPath( identifier );
-    String path = URI.create( fullPath ).getPath();
-    return path.replaceAll( "^.*/([^/]+)/?$", "$1" );
+    String path = URI.create( identifier ).getPath();
+    String schemaName = path.replaceAll( "^.*/([^/]+)/?$", "$1" );
+
+    LOG.debug( "found schema name: {}", schemaName );
+
+    return schemaName;
     }
 
   public String createTableNameFrom( String identifier )
     {
-    String fullPath = getFullPath( identifier );
-    String path = URI.create( fullPath ).getPath();
-    return path.replaceAll( "^.*/([^/.]+)(\\.?.*$|/$)", "$1" );
+    String path = URI.create( identifier ).getPath();
+    String tableName = path.replaceAll( "^.*/([^/.]+)(\\.?.*$|/$)", "$1" );
+
+    LOG.debug( "found table name: {}", tableName );
+
+    return tableName;
     }
 
   private void loadSchemas( SchemaCatalog catalog )

@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import cascading.bind.catalog.Point;
 import cascading.bind.catalog.Resource;
@@ -44,6 +44,8 @@ import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.hydromatic.optiq.MutableSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -56,6 +58,8 @@ import net.hydromatic.optiq.MutableSchema;
 )
 public abstract class SchemaCatalog implements Serializable
   {
+  private static final Logger LOG = LoggerFactory.getLogger( SchemaCatalog.class );
+
   private transient PlatformBroker platformBroker;
 
   @JsonProperty
@@ -71,10 +75,10 @@ public abstract class SchemaCatalog implements Serializable
   private FormatHandlers<Protocol, Format> formatHandlers;
 
   @JsonProperty
-  private Map<String, Fields> nameFieldsMap = new HashMap<String, Fields>();
+  private Map<String, Fields> nameFieldsMap = new TreeMap<String, Fields>( String.CASE_INSENSITIVE_ORDER );
 
   @JsonProperty
-  private Map<String, Point<Protocol, Format>> idPointMap = new HashMap<String, Point<Protocol, Format>>();
+  private Map<String, Point<Protocol, Format>> idPointMap = new TreeMap<String, Point<Protocol, Format>>( String.CASE_INSENSITIVE_ORDER );
 
   protected SchemaCatalog()
     {
@@ -220,6 +224,11 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createSchemaDefAndTableDefsFor( String schemaName, String schemaIdentifier )
     {
+    if( platformBroker != null )
+      schemaIdentifier = platformBroker.getFullPath( schemaIdentifier );
+
+    LOG.debug( "using schema full path: {}", schemaIdentifier );
+
     if( schemaName == null )
       schemaName = platformBroker.createSchemaNameFrom( schemaIdentifier );
 
@@ -227,10 +236,12 @@ public abstract class SchemaCatalog implements Serializable
 
     if( schemaDef == null )
       schemaDef = createSchemaDef( schemaName, schemaIdentifier );
-    else if( !schemaIdentifier.equals( schemaDef.getIdentifier() ) )
+    else if( !schemaIdentifier.equalsIgnoreCase( schemaDef.getIdentifier() ) )
       throw new IllegalArgumentException( "schema exists: " + schemaName + ", with differing identifier: " + schemaIdentifier );
 
     String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
+
+    LOG.debug( "schema {} has {} children", schemaName, childIdentifiers.length );
 
     for( String identifier : childIdentifiers )
       createTableDefFor( schemaDef, null, identifier, null, null, null );
@@ -277,17 +288,22 @@ public abstract class SchemaCatalog implements Serializable
     return createTableDefFor( schemaDef, tableName, identifier, stereotypeName, protocol, format );
     }
 
-  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
+  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String tableIdentifier, String stereotypeName, Protocol protocol, Format format )
     {
+    if( platformBroker != null )
+      tableIdentifier = platformBroker.getFullPath( tableIdentifier );
+
+    LOG.debug( "using table full path: {}", tableIdentifier );
+
     if( tableName == null )
-      tableName = platformBroker.createTableNameFrom( identifier );
+      tableName = platformBroker.createTableNameFrom( tableIdentifier );
 
     Stereotype<Protocol, Format> stereotype = getStereoType( schemaDef.getName(), stereotypeName );
 
     if( stereotype == null )
-      stereotype = getOrCreateStereotype( schemaDef, identifier );
+      stereotype = getOrCreateStereotype( schemaDef, tableIdentifier );
 
-    schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
+    schemaDef.addTable( tableName, tableIdentifier, stereotype, protocol, format );
 
     return tableName;
     }

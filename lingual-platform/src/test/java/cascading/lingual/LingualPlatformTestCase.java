@@ -22,6 +22,7 @@ package cascading.lingual;
 
 import cascading.PlatformTestCase;
 import cascading.tuple.Fields;
+import org.apache.log4j.Level;
 
 /**
  *
@@ -48,4 +49,8 @@ public class LingualPlatformTestCase extends PlatformTestCase
 
   public static Fields EMPS_FIELDS = new Fields( EMPS_COLUMNS );
 
+  public static void enableLogging( String log, String level )
+    {
+    org.apache.log4j.Logger.getLogger( log ).setLevel( Level.toLevel( level.toUpperCase() ) );
+    }
   }

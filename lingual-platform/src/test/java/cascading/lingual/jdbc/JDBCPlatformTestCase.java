@@ -58,6 +58,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   public void setUp() throws Exception
     {
     super.setUp();
+
+    // leave enabled for now
+    enableLogging( "cascading.lingual", "debug" );
     }
 
   protected String getResultPath()
@@ -207,9 +210,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         Object value = entry.getObject( field );
 
         if( value != null )
-          {
           table.put( row++, field, value );
-          }
         }
       }
 
@@ -232,9 +233,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         Object value = resultSet.getObject( i + 1 );
 
         if( value != null )
-          {
           table.put( row++, metaData.getColumnLabel( i + 1 ), value );
-          }
         }
       }
 
