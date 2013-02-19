@@ -274,19 +274,19 @@ public class DDLParser
       case CHAR:
         return String.class;
       case INTEGER:
-        return isNullable ? int.class : Integer.class;
+        return isNullable ? Integer.class : int.class;
       case BIGINT:
-        return isNullable ? long.class : Long.class;
+        return isNullable ? Long.class : long.class;
       case SMALLINT:
-        return isNullable ? short.class : Short.class;
+        return isNullable ? Short.class : short.class;
       case TINYINT:
-        return isNullable ? byte.class : Byte.class;
+        return isNullable ? Byte.class : byte.class;
       case REAL:
-        return isNullable ? float.class : Float.class;
+        return isNullable ? Float.class : float.class;
       case DECIMAL:
         return BigDecimal.class;
       case BOOLEAN:
-        return isNullable ? boolean.class : Boolean.class;
+        return isNullable ? Boolean.class: boolean.class;
       case BINARY:
       case VARBINARY:
         return ByteString.class;
