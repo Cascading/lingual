@@ -217,7 +217,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     return table;
     }
 
-  private Table<Integer, Comparable, Object> createTable( ResultSet resultSet ) throws SQLException
+  protected Table<Integer, Comparable, Object> createTable( ResultSet resultSet ) throws SQLException
     {
     ResultSetMetaData metaData = resultSet.getMetaData();
     int columnCount = metaData.getColumnCount();
