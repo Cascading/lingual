@@ -138,6 +138,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "depts-sum", "select sum( deptno ) from sales.depts" );
     }
 
+  //@Test
+  public void testSumInOrderByNotSelect() throws Exception
+    {
+    assertTablesEqual( "depts-sum-age-deptno", "select d.deptno from depts d, emps e where d.deptno = e.deptno group by d.deptno order by sum(age), d.deptno" );
+    }
+
   @Test
   public void testMax() throws Exception
     {
