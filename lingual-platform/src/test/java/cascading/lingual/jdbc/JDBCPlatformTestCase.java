@@ -240,6 +240,30 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     return table;
     }
 
+  protected Table<Integer, Comparable, Object> createTableWithRows( ResultSet resultSet ) throws SQLException
+    {
+    ResultSetMetaData metaData = resultSet.getMetaData();
+    int columnCount = metaData.getColumnCount();
+
+    Table<Integer, Comparable, Object> table = createNullableTable();
+
+    int row = 0;
+
+    while( resultSet.next() )
+      {
+      for( int i = 0; i < columnCount; i++ )
+        {
+        Object value = resultSet.getObject( i + 1 );
+
+        if( value != null )
+          table.put( row, metaData.getColumnLabel( i + 1 ), value );
+        }
+      row++;
+      }
+
+    return table;
+    }
+
   private Table<Integer, Comparable, Object> createNullableTable()
     {
     return Tables.newCustomTable(
