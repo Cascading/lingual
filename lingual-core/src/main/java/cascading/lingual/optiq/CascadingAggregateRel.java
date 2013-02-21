@@ -27,14 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
-import cascading.operation.aggregator.Average;
-import cascading.operation.aggregator.Count;
-import cascading.operation.aggregator.Max;
-import cascading.operation.aggregator.Min;
-import cascading.operation.aggregator.Sum;
 import cascading.pipe.CoGroup;
-import cascading.pipe.Every;
-import cascading.pipe.GroupBy;
 import cascading.pipe.HashJoin;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.AggregateBy;
@@ -173,7 +166,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     if( distincts.isEmpty() )
       return null;
 
-    List<Every> aggregates = new ArrayList<Every>();
+    List<Pipe> aggregates = new ArrayList<Pipe>();
 
     for( AggregateCall aggCall : distincts )
       {
@@ -183,55 +176,60 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;
 
-      Fields resultFields = makeFieldsFor( aggCall );
+      Fields uniqueFields = argFields;
 
-      Pipe current = new Retain( previous, argFields );
-      Pipe unique = new Unique( resultFields.toString(), current, argFields, Unique.Include.NO_NULLS );
+      if( !groupFields.equals( Fields.NONE ) )
+        uniqueFields = groupFields.append( uniqueFields );
 
-      unique = stack.addDebug( this, unique );
+      Fields aggResultFields = makeFieldsFor( aggCall );
 
-      unique = new GroupBy( unique, groupFields );
+      Pipe current = previous;
+
+      current = new Retain( current, uniqueFields );
+      current = new Unique( aggResultFields.toString(), current, uniqueFields, Unique.Include.NO_NULLS );
+
+      current = stack.addDebug( this, current );
 
       if( aggregationName.equals( "COUNT" ) )
-        aggregates.add( makeCount( unique, argFields, resultFields ) );
+        aggregates.add( makeCount( current, groupFields, argFields, aggResultFields ) );
       else if( aggregationName.equals( "SUM" ) )
-        aggregates.add( makeSum( unique, argFields, resultFields ) );
+        aggregates.add( makeSum( current, groupFields, argFields, aggResultFields ) );
       else if( aggregationName.equals( "MIN" ) )
-        aggregates.add( makeMin( unique, argFields, resultFields ) );
+        aggregates.add( makeMin( current, groupFields, argFields, aggResultFields ) );
       else if( aggregationName.equals( "MAX" ) )
-        aggregates.add( makeMax( unique, argFields, resultFields ) );
+        aggregates.add( makeMax( current, groupFields, argFields, aggResultFields ) );
       else if( aggregationName.equals( "AVG" ) )
-        aggregates.add( makeAvg( unique, argFields, resultFields ) );
+        aggregates.add( makeAvg( current, groupFields, argFields, aggResultFields ) );
       else
         throw new UnsupportedOperationException( "unimplemented aggregation: " + aggregationName );
       }
 
-    return aggregates.toArray( new Every[ aggregates.size() ] );
+    return aggregates.toArray( new Pipe[ aggregates.size() ] );
     }
 
-  private Every makeCount( Pipe unique, Fields argFields, Fields resultFields )
+  private Pipe makeCount( Pipe unique, Fields groupFields, Fields argFields, Fields resultFields )
     {
-    return new Every( unique, argFields, new Count( resultFields ) );
+    return new CountBy( unique, groupFields, argFields, resultFields, CountBy.Include.NO_NULLS );
     }
 
-  private Every makeSum( Pipe unique, Fields argFields, Fields resultFields )
+  private Pipe makeSum( Pipe unique, Fields groupFields, Fields argFields, Fields resultFields )
     {
-    return new Every( unique, argFields, new Sum( resultFields ) );
+    return new SumBy( unique, groupFields, argFields, resultFields );
     }
 
-  private Every makeMin( Pipe unique, Fields argFields, Fields resultFields )
+  private Pipe makeMin( Pipe unique, Fields groupFields, Fields argFields, Fields resultFields )
     {
-    return new Every( unique, argFields, new Min( resultFields ) );
+    return new MinBy( unique, groupFields, argFields, resultFields );
     }
 
-  private Every makeMax( Pipe unique, Fields argFields, Fields resultFields )
+  private Pipe makeMax( Pipe unique, Fields groupFields, Fields argFields, Fields resultFields )
     {
-    return new Every( unique, argFields, new Max( resultFields ) );
+    return new MaxBy( unique, groupFields, argFields, resultFields );
     }
 
-  private Every makeAvg( Pipe unique, Fields argFields, Fields resultFields )
+  private Pipe makeAvg( Pipe unique, Fields groupFields, Fields argFields, Fields resultFields )
     {
-    return new Every( unique, argFields, new Average( resultFields ) );
+    return new AverageBy( unique, groupFields, argFields, resultFields, AverageBy.Include.NO_NULLS );
     }
 
   private AggregateBy createConcurrentAggregates( RelDataType inputRowType, Pipe previous, Fields groupFields, List<AggregateCall> concurrents )
@@ -240,6 +238,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       return null;
 
     List<AggregateBy> aggregates = new ArrayList<AggregateBy>();
+
     for( AggregateCall aggCall : concurrents )
       {
       String aggregationName = aggCall.getAggregation().getName();
@@ -248,18 +247,18 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;
 
-      Fields resultFields = makeFieldsFor( aggCall );
+      Fields aggResultFields = makeFieldsFor( aggCall );
 
       if( aggregationName.equals( "COUNT" ) )
-        aggregates.add( makeCountBy( argFields, resultFields ) );
+        aggregates.add( makeCountBy( argFields, aggResultFields ) );
       else if( aggregationName.equals( "SUM" ) )
-        aggregates.add( makeSumBy( argFields, resultFields ) );
+        aggregates.add( makeSumBy( argFields, aggResultFields ) );
       else if( aggregationName.equals( "MIN" ) )
-        aggregates.add( makeMinBy( argFields, resultFields ) );
+        aggregates.add( makeMinBy( argFields, aggResultFields ) );
       else if( aggregationName.equals( "MAX" ) )
-        aggregates.add( makeMaxBy( argFields, resultFields ) );
+        aggregates.add( makeMaxBy( argFields, aggResultFields ) );
       else if( aggregationName.equals( "AVG" ) )
-        aggregates.add( makeAvgBy( argFields, resultFields ) );
+        aggregates.add( makeAvgBy( argFields, aggResultFields ) );
       else
         throw new UnsupportedOperationException( "unimplemented aggregation: " + aggregationName );
       }
@@ -272,6 +271,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     List<AggregateCall> concurrent = new ArrayList<AggregateCall>( aggCalls );
 
     concurrent.removeAll( distincts );
+
     return concurrent;
     }
 
@@ -284,9 +284,9 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
       if( aggCall.isDistinct() )
         distincts.add( aggCall );
       }
+
     return distincts;
     }
-
 
   private AggregateBy makeMaxBy( Fields argFields, Fields resultFields )
     {

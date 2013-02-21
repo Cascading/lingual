@@ -1,0 +1,4 @@
+DEPTNO:int,EXPR$1:long
+10,0
+20,1
+40,1

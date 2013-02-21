@@ -126,10 +126,10 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-city-count-distinct-age-sum-distinct", "select count( distinct city ), sum( distinct age ) from sales.emps" );
     }
 
-  //@Test
+  @Test
   public void testCountDistinctCityGroupBy() throws Exception
     {
-    assertTablesEqual( "emps-select", "select deptno, count( distinct city ) from sales.emps group by deptno" );
+    assertTablesEqual( "emps-deptno-city-count-distinct", "select deptno, count( distinct city ) from sales.emps group by deptno" );
     }
 
   @Test
