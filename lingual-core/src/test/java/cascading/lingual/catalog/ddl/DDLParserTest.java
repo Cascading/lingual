@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,9 +106,12 @@ public class DDLParserTest extends TestCase
 
     assertTrue( Sets.difference( tables, expectedTables ).size() == 0 );
 
+    catalog.addFormat( "test", Format.getFormat( "xml" ), Arrays.asList("xml") );
+    catalog.addProtocol( "test", Protocol.getProtocol( "jdbc" ), Arrays.asList( "jdbc" ) );
+
     String jsonFirst = writeObject( catalog );
 
-//    System.out.println( jsonFirst );
+    System.out.println( jsonFirst );
 
     TestSchemaCatalog firstRead = readCatalog( jsonFirst );
 
@@ -115,7 +119,7 @@ public class DDLParserTest extends TestCase
 
     String jsonSecond = writeObject( firstRead );
 
-//    System.out.println( jsonSecond );
+    System.out.println( jsonSecond );
 
     TestSchemaCatalog secondRead = readCatalog( jsonSecond );
 

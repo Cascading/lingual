@@ -23,10 +23,13 @@ package cascading.lingual.shell;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
 /**
@@ -34,34 +37,28 @@ import sqlline.SqlLine;
  */
 public class Shell extends Main<ShellOptions>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( Shell.class );
+
   public static void main( String[] args ) throws IOException
     {
     boolean result = new Shell().execute( args );
 
     if( !result )
-      {
       System.exit( -1 );
-      }
     }
 
   public boolean execute( String[] args ) throws IOException
     {
     if( !parse( args ) )
-      {
       return true;
-      }
 
     setVerbose();
 
     if( printUsage() )
-      {
       return true;
-      }
 
     if( printVersion() )
-      {
       return true;
-      }
 
     try
       {
@@ -114,29 +111,30 @@ public class Shell extends Main<ShellOptions>
     add( args, "-u", getOptions().createJDBCUrl() );
 
     if( getOptions().isVerbose() )
-      {
       add( args, "--verbose", "true" );
-      }
 
     if( getOptions().getSqlFile() != null )
-      {
       add( args, "--autoCommit", "false" );
-      }
 
     String[] sqlLineArgs = args.toArray( new String[ args.size() ] );
+
+    LOG.info( "sqlline args: {}", Arrays.toString( sqlLineArgs ) );
 
     String sql = getOptions().getSqlFile();
 
     if( sql == null )
       {
+      LOG.info( "starting shell" );
       SqlLine.main( sqlLineArgs );
       }
-    else if( "-" .equals( sql ) )
+    else if( "-".equals( sql ) )
       {
+      LOG.info( "reading from stdin" );
       SqlLine.mainWithInputRedirection( sqlLineArgs, System.in );
       }
     else
       {
+      LOG.info( "reading from {}", sql );
       SqlLine.mainWithInputRedirection( sqlLineArgs, new FileInputStream( sql ) );
       }
 

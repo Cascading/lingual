@@ -96,32 +96,20 @@ public class TableDef extends Def
   public boolean equals( Object object )
     {
     if( this == object )
-      {
       return true;
-      }
     if( !( object instanceof TableDef ) )
-      {
       return false;
-      }
     if( !super.equals( object ) )
-      {
       return false;
-      }
 
     TableDef tableDef = (TableDef) object;
 
     if( format != null ? !format.equals( tableDef.format ) : tableDef.format != null )
-      {
       return false;
-      }
     if( protocol != null ? !protocol.equals( tableDef.protocol ) : tableDef.protocol != null )
-      {
       return false;
-      }
     if( stereotype != null ? !stereotype.equals( tableDef.stereotype ) : tableDef.stereotype != null )
-      {
       return false;
-      }
 
     return true;
     }

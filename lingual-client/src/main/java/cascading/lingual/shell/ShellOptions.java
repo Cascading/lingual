@@ -63,9 +63,7 @@ public class ShellOptions extends Options
     builder.append( getPlatform() );
 
     if( getSchema() != null )
-      {
       builder.append( ":" ).append( getSchema() );
-      }
 
     if( !getSchemas().isEmpty() )
       {

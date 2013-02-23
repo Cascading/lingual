@@ -37,16 +37,15 @@ import org.codehaus.janino.Scanner;
 /** Implements {@link Factory} by generating a non-abstract derived class. */
 public class JaninoFactory implements Factory
   {
-  public Connection createConnection(
-    Connection connection,
-    Properties connectionProperties ) throws SQLException
+  public Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException
     {
     try
       {
       return create(
         LingualConnection.class,
         new Class[]{Connection.class, Properties.class},
-        new Object[]{connection, connectionProperties} );
+        new Object[]{connection, connectionProperties}
+      );
       }
     catch( NoSuchMethodException e )
       {
@@ -74,16 +73,14 @@ public class JaninoFactory implements Factory
       }
     }
 
-  static <T> T create(
-    Class<T> abstractClass,
-    Class[] constructorParamTypes,
-    Object[] constructorArgs ) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IOException, CompileException
+  static <T> T create( Class<T> abstractClass, Class[] constructorParamTypes, Object[] constructorArgs )
+    throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IOException, CompileException
     {
-    Class clazz;
+    Class targetType;
 
     if( !isAbstract( abstractClass.getModifiers() ) )
       {
-      clazz = abstractClass;
+      targetType = abstractClass;
       }
     else
       {
@@ -145,16 +142,15 @@ public class JaninoFactory implements Factory
           }
         }
 
-      final String s = buf.toString();
+      StringReader stringReader = new StringReader( buf.toString() );
+      ClassLoader classLoader = JaninoFactory.class.getClassLoader();
+      ClassBodyEvaluator evaluator = new ClassBodyEvaluator( new Scanner( null, stringReader ), abstractClass, new Class[ 0 ], classLoader );
 
-      clazz = new ClassBodyEvaluator(
-        new Scanner( null, new StringReader( s ) ),
-        abstractClass,
-        new Class[ 0 ],
-        null ).getClazz();
+      targetType = evaluator.getClazz();
       }
-    Constructor constructor =
-      clazz.getConstructor( constructorParamTypes );
+
+    Constructor constructor = targetType.getConstructor( constructorParamTypes );
+
     return abstractClass.cast( constructor.newInstance( constructorArgs ) );
     }
 

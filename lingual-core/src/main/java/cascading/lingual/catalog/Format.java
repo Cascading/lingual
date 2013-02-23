@@ -75,14 +75,20 @@ public class Format implements Serializable
     return name;
     }
 
+//  @Override
+//  public String toString()
+//    {
+//    final StringBuilder sb = new StringBuilder();
+//    sb.append( "Format" );
+//    sb.append( "{name='" ).append( name ).append( '\'' );
+//    sb.append( '}' );
+//    return sb.toString();
+//    }
+
   @Override
   public String toString()
     {
-    final StringBuilder sb = new StringBuilder();
-    sb.append( "Format" );
-    sb.append( "{name='" ).append( name ).append( '\'' );
-    sb.append( '}' );
-    return sb.toString();
+    return name;
     }
 
   @Override

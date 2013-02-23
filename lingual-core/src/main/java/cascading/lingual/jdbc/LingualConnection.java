@@ -142,13 +142,13 @@ public abstract class LingualConnection implements Connection
   @Override
   public Statement createStatement() throws SQLException
     {
-    return parent.createStatement();
+    return new LingualStatement( parent.createStatement() );
     }
 
   @Override
   public PreparedStatement prepareStatement( String sql ) throws SQLException
     {
-    return parent.prepareStatement( sql );
+    return new LingualPreparedStatement( parent.prepareStatement( sql ) );
     }
 
   @Override
@@ -218,7 +218,7 @@ public abstract class LingualConnection implements Connection
   @Override
   public DatabaseMetaData getMetaData() throws SQLException
     {
-    return parent.getMetaData();
+    return new LingualDatabaseMetaData( this, parent.getMetaData() );
     }
 
   @Override

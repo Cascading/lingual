@@ -79,14 +79,12 @@ public class TapSchema extends MapSchema
   public void addTapTableFor( TableDef tableDef )
     {
     if( getTable( tableDef.getName(), Object.class ) != null )
-      {
       return;
-      }
 
     TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef );
 
-    LOG.info( "on schema: {}, adding table: {}, with fields: {}",
-      new Object[]{getName(), table.getName(), table.getFields()} );
+    LOG.info( "on schema: {}, table: {}, fields: {}, identifier: {}",
+      new Object[]{getName(), table.getName(), table.getFields(), table.getIdentifier()} );
 
     addTable( table.getName(), table );
     }

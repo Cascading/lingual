@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -37,7 +37,7 @@ import com.google.common.collect.Table;
  */
 public class MultiProperties<K> implements Serializable
   {
-  @JsonProperty
+  @JsonIgnore
   private Table<K, String, List<String>> properties = HashBasedTable.create();
 
   public MultiProperties()
@@ -51,6 +51,7 @@ public class MultiProperties<K> implements Serializable
       {
       K row = entry.getKey();
       Map<String, List<String>> value = entry.getValue();
+
       for( String column : value.keySet() )
         properties.put( row, column, value.get( column ) );
       }

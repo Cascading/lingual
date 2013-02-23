@@ -113,7 +113,9 @@ public class PlatformBrokerFactory
 
   private void loadBrokers()
     {
-    Set<Class<? extends PlatformBroker>> classes = getPlatformClass( Thread.currentThread().getContextClassLoader() );
+    // use the classloader, this fails Thread.currentThread().getContextClassLoader()
+    ClassLoader contextClassLoader = getClass().getClassLoader();
+    Set<Class<? extends PlatformBroker>> classes = getPlatformClass( contextClassLoader );
 
     for( Class<? extends PlatformBroker> platformClass : classes )
       addPlatform( platformClass );

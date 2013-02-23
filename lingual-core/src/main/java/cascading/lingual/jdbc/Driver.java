@@ -26,15 +26,43 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import cascading.lingual.util.LogUtil;
 import cascading.lingual.util.Version;
 import net.hydromatic.optiq.jdbc.DriverVersion;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
 import org.eigenbase.util14.ConnectStringParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** Lingual JDBC driver. */
+/**
+ * Lingual JDBC driver.
+ * <p/>
+ * The JDBC Driver connection string consists of the following parts:
+ * <p/>
+ * {@code jdbc:lingual:[platform]}
+ * <p/>
+ * Optionally, the following parameters can be added
+ * <p/>
+ * <ul>
+ * <li>{@code catalog=[path]} - the working directory where your .lingual workspace is kept</li>
+ * <li>{@code schema=[name]} - set the default schema name to use</li>
+ * <li>{@code schemas=[path,path]} - URI paths to the set of schema/tables to install in the catalog</li>
+ * <li>{@code resultPath=[path]} - temporary root path for result sets to be stored</li>
+ * <li>{@code dotPath=[path]} - for debugging, print the corresponding SQL dot file here</li>
+ * </ul>
+ * <p/>
+ * For example, using Cascading local mode, and to load all the subdirectories of {@code ./employees/} as tables,
+ * use the following connection string:
+ * <p/>
+ * {@code jdbc:lingual:local;schemas=./employees/}
+ * <p/>
+ * This will create a schema called "employees" and every file underneath (files as opposed to directories on Hadoop)
+ * will become tables named after the base-name of the file (minus the extension).
+ */
 public class Driver extends UnregisteredDriver
   {
-  private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger( Driver.class );
+  private static final Logger LOG = LoggerFactory.getLogger( Driver.class );
+
   private final Factory factory = instantiateFactory();
 
   public static final String PLATFORM_PROP = "platform";
@@ -42,6 +70,7 @@ public class Driver extends UnregisteredDriver
   public static final String SCHEMA_PROP = "schema";
   public static final String SCHEMAS_PROP = "schemas";
   public static final String TABLES_PROP = "tables";
+  public static final String VERBOSE_PROP = "verbose";
   public static final String RESULT_PATH_PROP = "resultPath";
   public static final String DOT_PATH_PROP = "dotPath";
   public static final String COLLECTOR_CACHE_PROP = "collectorCache";
@@ -94,6 +123,9 @@ public class Driver extends UnregisteredDriver
       return null;
 
     Properties connectionProperties = parseConnectionProperties( url, info );
+
+    if( connectionProperties.contains( VERBOSE_PROP ) )
+      LogUtil.setLogLevel( connectionProperties.getProperty( VERBOSE_PROP, "info" ) );
 
     return factory.createConnection( connection, connectionProperties );
     }
