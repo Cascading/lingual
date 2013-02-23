@@ -93,7 +93,7 @@ artifacts {
 fatJar {
   dependsOn << createProps
 
-  classifier = 'fatjar'
+  classifier = 'jdbc'
   exclude 'META-INF/*.DSA'
 
   metaInf() {

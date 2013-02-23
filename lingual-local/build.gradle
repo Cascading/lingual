@@ -38,7 +38,7 @@ dependencies {
 }
 
 fatJar {
-  classifier = 'fatjar'
+  classifier = 'jdbc'
   exclude 'META-INF/*.DSA'
 }
 
