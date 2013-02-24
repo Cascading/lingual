@@ -21,7 +21,6 @@
 package cascading.lingual.optiq;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -66,24 +65,10 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     }
 
   @Override
-  public void explain( RelOptPlanWriter pw )
+  public RelOptPlanWriter explainTerms( RelOptPlanWriter pw )
     {
-    // Yuck. Add a builder pattern so we can just call super.
-    final List<String> nameList = new ArrayList<String>( Arrays.asList( "left", "right", "condition" ) );
-    final List<Object> valueList = new ArrayList<Object>();
-
-    nameList.add( "joinType" );
-    valueList.add( joinType.name().toLowerCase() );
-    nameList.add( "hash" );
-    valueList.add( hash );
-
-    if( !getSystemFieldList().isEmpty() )
-      {
-      nameList.add( "systemFields" );
-      valueList.add( getSystemFieldList() );
-      }
-
-    pw.explain( this, nameList, valueList );
+    return super.explainTerms( pw )
+        .item( "hash", hash );
     }
 
   @Override

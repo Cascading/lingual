@@ -21,6 +21,8 @@
 package cascading.lingual.optiq;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import cascading.tuple.Fields;
 import net.hydromatic.optiq.jdbc.JavaTypeFactoryImpl;
@@ -36,9 +38,9 @@ public class FieldTypeFactory extends JavaTypeFactoryImpl
   public RelDataType createFieldsType( Fields sourceFields )
     {
     Type[] types = sourceFields.getTypes();
-    RelDataTypeField[] fields = new RelDataTypeField[ sourceFields.size() ];
+    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
 
-    for( int i = 0; i < fields.length; i++ )
+    for( int i = 0; i < sourceFields.size(); i++ )
       {
       Type type = types != null && types[ i ] != null ? types[ i ] : String.class;
 
@@ -54,7 +56,7 @@ public class FieldTypeFactory extends JavaTypeFactoryImpl
       Comparable comparable = sourceFields.get( i );
       String fieldName = comparable instanceof String ? (String) comparable : comparable.toString();
 
-      fields[ i ] = new RelDataTypeFieldImpl( fieldName, i, javaType );
+      fields.add( new RelDataTypeFieldImpl( fieldName, i, javaType ) );
       }
 
     return canonize( new FieldRecordType( sourceFields, fields ) );

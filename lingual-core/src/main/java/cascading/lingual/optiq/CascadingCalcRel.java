@@ -142,8 +142,8 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
   /**
    * called by the above expression
    *
-   * @param result
-   * @return
+   * @param result Boolean value
+   * @return False if input is false or null
    */
   public static boolean falseIfNull( Boolean result )
     {

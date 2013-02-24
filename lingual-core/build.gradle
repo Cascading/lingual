@@ -23,7 +23,7 @@ def bindChanging = false
 
 def linq4jVersion = '0.1'
 def linq4jChanging = true // build versioning not implemented yet
-def optiqVersion = '0.1'
+def optiqVersion = '0.2'
 def optiqChanging = true // build versioning not implemented yet
 
 // set the following property in $root/gradle.properties to use local installs of bind

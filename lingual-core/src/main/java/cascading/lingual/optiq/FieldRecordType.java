@@ -24,6 +24,8 @@ import cascading.tuple.Fields;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.reltype.RelRecordType;
 
+import java.util.List;
+
 /**
  *
  */
@@ -35,7 +37,7 @@ public class FieldRecordType extends RelRecordType
    * Creates a <code>RecordType</code>. This should only be called from a
    * factory method.
    */
-  public FieldRecordType( Fields fields, RelDataTypeField[] relFields )
+  public FieldRecordType( Fields fields, List<RelDataTypeField> relFields )
     {
     super( relFields );
     this.fields = fields;
