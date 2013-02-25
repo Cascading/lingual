@@ -1,7 +1,7 @@
 # Overview
 
 The Lingual Catalog command line tool allows users to curate a catalog of database schemas and tables, where a table is
-a Tap accessible dataset and a schema is a collection of tables.
+a Tap accessible data-set and a schema is a collection of tables.
 
 The Lingual Catalog is used in tandem with the Lingual Shell and JDBC drivers. By default the Shell will use the current
 catalog of schemas and tables to satisfy the SQL planner.

@@ -25,7 +25,7 @@ To start the shell for running queries on Apache Hadoop:
 |                     |
 | --schema [name]     | name of the default schema (same as `set schema _name_`)
 |                     |
-| --schemas [uri,...] | root path for each schema to use, will use directory as schema name
+| --schemas [uri,...] | root path for each schema to use, will use base directory as schema name
 |                     |
 | --sql [file]        | file with SQL commands to execute
 |                     |
