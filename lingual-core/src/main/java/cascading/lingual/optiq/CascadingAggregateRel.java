@@ -96,8 +96,9 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     Pipe previous = branch.current;
     Fields groupFields = getTypedFields( getCluster(), inputRowType, Util.toIter( getGroupSet() ) );
 
-    List<AggregateCall> distincts = getDistincts();
-    List<AggregateCall> concurrents = getConcurrents( distincts );
+    List<AggregateCall> distincts = new ArrayList<AggregateCall>();
+    List<AggregateCall> concurrents = new ArrayList<AggregateCall>();
+    gatherAggregateCalls( distincts, concurrents );
 
     AggregateBy concurrentAggregates = createConcurrentAggregates( inputRowType, previous, groupFields, concurrents );
     Pipe[] distinctAggregates = createDistinctAggregates( stack, inputRowType, previous, groupFields, distincts );
@@ -125,6 +126,26 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     join = stack.addDebug( this, join );
 
     return new Branch( join, branch );
+    }
+
+  private void gatherAggregateCalls( List<AggregateCall> distincts, List<AggregateCall> concurrents )
+    {
+    for( int i = 0; i < aggCalls.size(); i++ )
+      {
+      AggregateCall aggCall = aggCalls.get( i );
+
+      if( aggCall.getName() == null )
+        {
+        String name = getRowType().getFieldList().get( groupSet.cardinality() + i ).getName();
+        // TODO: use AggregateCall.rename(name) when available
+        aggCall = new AggregateCall( aggCall.getAggregation(), aggCall.isDistinct(), aggCall.getArgList(), aggCall.getType(), name );
+        }
+
+      if( aggCall.isDistinct() )
+        distincts.add( aggCall );
+      else
+        concurrents.add( aggCall );
+      }
     }
 
   private Fields[] createGroupingFields( Fields groupFields, Pipe[] pipes )
@@ -241,18 +262,8 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     return new AggregateBy( previous, groupFields, aggregates.toArray( new AggregateBy[ aggregates.size() ] ) );
     }
 
-  private List<AggregateCall> getConcurrents( List<AggregateCall> distincts )
+  private List<AggregateCall> getDistincts( List<AggregateCall> distincts )
     {
-    List<AggregateCall> concurrent = new ArrayList<AggregateCall>( aggCalls );
-
-    concurrent.removeAll( distincts );
-
-    return concurrent;
-    }
-
-  private List<AggregateCall> getDistincts()
-    {
-    List<AggregateCall> distincts = new ArrayList<AggregateCall>();
 
     for( AggregateCall aggCall : aggCalls )
       {
