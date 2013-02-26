@@ -73,6 +73,11 @@ public class ProtocolTarget extends CRUDTarget
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getProtocolNames( getOptions().getSchemaName() );
+
+    String schemaName = getOptions().getSchemaName();
+    if( schemaName != null && !schemaName.isEmpty() )
+      return catalog.getProtocolNames( getOptions().getSchemaName() );
+    else
+      return catalog.getProtocolNames();
     }
   }

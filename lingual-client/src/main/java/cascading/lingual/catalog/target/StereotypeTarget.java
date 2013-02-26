@@ -80,7 +80,12 @@ public class StereotypeTarget extends CRUDTarget
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getStereotypeNames();
+
+    String schemaName = getOptions().getSchemaName();
+    if( schemaName != null && !schemaName.isEmpty() )
+      return catalog.getStereotypeNames( schemaName );
+    else
+      return catalog.getStereotypeNames();
     }
 
   private Fields createFields( List<String> columns, List<String> types )

@@ -362,9 +362,19 @@ public abstract class SchemaCatalog implements Serializable
       }
     }
 
+  public Collection<String> getFormatNames()
+    {
+    return rootSchemaDef.getFormatNames();
+    }
+
   public Collection<String> getFormatNames( String schemaName )
     {
     return rootSchemaDef.getSchema( schemaName ).getFormatNames();
+    }
+
+  public Collection<String> getProtocolNames()
+    {
+    return rootSchemaDef.getProtocolNames();
     }
 
   public Collection<String> getProtocolNames( String schemaName )
@@ -423,6 +433,11 @@ public abstract class SchemaCatalog implements Serializable
   public Collection<String> getStereotypeNames()
     {
     return rootSchemaDef.getStereotypeNames();
+    }
+
+  public Collection<String> getStereotypeNames( String schemaName )
+    {
+    return getSchemaDef( schemaName ).getStereotypeNames();
     }
 
   public Stereotype<Protocol, Format> getStereoType( String schemaName, String stereotypeName )

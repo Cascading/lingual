@@ -73,6 +73,12 @@ public class FormatTarget extends CRUDTarget
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getFormatNames( getOptions().getSchemaName() );
+
+    String schemaName = getOptions().getSchemaName();
+    if( schemaName != null && !schemaName.isEmpty() )
+      return catalog.getFormatNames( getOptions().getSchemaName() );
+    else
+      return catalog.getFormatNames();
+
     }
   }
