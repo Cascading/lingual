@@ -31,7 +31,7 @@ BASH_PROFILE=.bashrc
 UPDATE_BASH=true
 
 # don't install twice
-[ -z `which lingual` ] && UPDATE_BASH=false
+[ -n `which lingual` ] && UPDATE_BASH=false
 
 [ -z "$TMPDIR" ] && TMPDIR=/tmp
 
