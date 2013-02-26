@@ -20,6 +20,7 @@ INSTALL_ON_SLAVES=false
 IS_MASTER=true
 if [ -f /mnt/var/lib/info/instance.json ]
 then
+  set -x
   IS_MASTER=`cat /mnt/var/lib/info/instance.json | tr -d '\n ' | sed -n 's|.*\"isMaster\":\([^,]*\).*|\1|p'`
   USER_HOME=/home/hadoop
 fi
@@ -31,7 +32,7 @@ BASH_PROFILE=.bashrc
 UPDATE_BASH=true
 
 # don't install twice
-[ -n `which lingual` ] && UPDATE_BASH=false
+[ -n "`which lingual`" ] && UPDATE_BASH=false
 
 [ -z "$TMPDIR" ] && TMPDIR=/tmp
 
@@ -135,7 +136,7 @@ export PATH=\$PATH:\$LINGUAL_HOME/bin
 EOF
 
   echo "Successfully updated ${USER_HOME}/${BASH_PROFILE} with new PATH information."
-elif [ -z `which lingual` ]; then
+elif [ -z "`which lingual`" ]; then
 
   echo "To complete installation, add \"${LINGUAL_HOME}/bin\" to the PATH."
 fi
