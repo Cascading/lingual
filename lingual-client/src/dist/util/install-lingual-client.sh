@@ -15,6 +15,15 @@ case "`uname`" in
     USER_HOME=/home/${USER};;
 esac
 
+INSTALL_ON_SLAVES=false
+
+IS_MASTER=true
+if [ -f /mnt/var/lib/info/instance.json ]
+then
+  IS_MASTER=`cat /mnt/var/lib/info/instance.json | tr -d '\n ' | sed -n 's|.*\"isMaster\":\([^,]*\).*|\1|p'`
+  USER_HOME=/home/hadoop
+fi
+
 # root of install, by default becomes $USER_HOME/.lingual-client
 INSTALL_PATH=$USER_HOME
 
@@ -24,7 +33,7 @@ UPDATE_BASH=true
 # don't install twice
 [ -z `which lingual` ] && UPDATE_BASH=false
 
-[ -z $TMPDIR ] && TMPDIR=/tmp
+[ -z "$TMPDIR" ] && TMPDIR=/tmp
 
 error_msg () # msg
 {
@@ -51,6 +60,9 @@ do
     --no-bash)
       UPDATE_BASH=false
       ;;
+    --slaves)
+      INSTALL_ON_SLAVES=true
+      ;;
     -*)
       # do not exit out, just note failure
       error_msg "unrecognized option: $1"
@@ -61,6 +73,10 @@ do
   esac
   shift
 done
+
+if [ "$IS_MASTER" = "false" && "$INSTALL_ON_SLAVES" = "false" ]; then
+  exit 0
+fi
 
 [ -z ${LINGUAL_HOME} ] && LINGUAL_HOME=${INSTALL_PATH}/.lingual-client
 
