@@ -12,16 +12,16 @@ These concepts are inherited from the database world and are compatible with sta
 
 A Schema is a collection of Tables or nested Schemas. A Schema has a name like _employees_.
 
-A Table consists of a URI, Stereotype, a Format, and a Protocol. A Table also has a name like _titles_. The full name, if the Table
-belonged to the Schema _employees_ would be _employees.titles_.
+A Table consists of a URI, Stereotype, a Format, and a Protocol. A Table also has a name like _titles_. The full name,
+if the Table belonged to the Schema _employees_ would be _employees.titles_.
 
 Format is the format or encoding of a Table URI. Tab delimited (TSV) and comma delimited (CSV) are common text formats
 can be identified by the file extension on the URI (`employees/titles.csv`). Format maps to a Cascading Scheme
 instance internally (like `TextDelimited` for CSV).
 
 Protocol is how a Table URI is accessed. If on Hadoop, the default is HDFS. If in Local mode, the default is through
-the local filesystem. Protocols can be identified the the URI 'scheme'. `hdfs:/...` for HDFS and `file:/...` for the local
-filesystem. Protocol maps to a Cascading Tap type internally (like `HFS` for HDFS).
+the local filesystem. Protocols can be identified the the URI 'scheme'. `hdfs:/...` for HDFS and `file:/...` for the
+local filesystem. Protocol maps to a Cascading Tap type internally (like `HFS` for HDFS).
 
 A Stereotype represents the meta-data associated with a Table, the table definition, which includes column names
 and column types. Stereotypes have a name, may be nested in a Schema, and may be shared between Tables.
@@ -30,7 +30,7 @@ Use the command line to create and update new Schema, Table, Stereotype, Format,
 
 # CLI Usage
 
-Catalog is invoked from the command line via.
+Catalog is invoked from the command line via:
 
     lingual catalog [switches]*
 
@@ -128,10 +128,12 @@ Any directory can be the root namespace for a catalog
 |------------- |-----------------
 | .            | current directory
 | ./.lingual/  | all meta-data (hidden directory)
-|   defaults   | default environment values
-|   catalog    | catalog data file
-|   jars/      | copies of scheme jar files
+|   defaults   | default environment values *
+|   catalog    | catalog data file in JSON
+|   jars/      | copies of scheme jar files *
 | ./results    | local storage for all SELECT query results sets
+
+__* currently unsupported__
 
 # Configuration
 
