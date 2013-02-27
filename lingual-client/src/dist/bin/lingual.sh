@@ -67,7 +67,7 @@ case $PLATFORM in
        ;;
    hadoop)
        HADOOP_CLASSPATH=
-       [ -n "$HADOOP_HOME" ] && . $BINDIR/hadoop-env
+       source $BINDIR/hadoop-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
        ;;
    *)

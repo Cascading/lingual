@@ -325,7 +325,7 @@ public abstract class PlatformBroker<Config>
     {
     String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
 
-    return makePath( getFileSeparator(), catalogPath, metaDataPath );
+    return getFullPath( makePath( getFileSeparator(), catalogPath, metaDataPath ) );
     }
 
   private String makeFullCatalogFilePath( String catalogPath )
@@ -333,7 +333,7 @@ public abstract class PlatformBroker<Config>
     String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
     String metaDataFile = properties.getProperty( CATALOG_FILE_PROP, CATALOG_FILE );
 
-    return makePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile );
+    return getFullPath( makePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile ) );
     }
 
   public static String makePath( String fileSeparator, String rootPath, String... elements )

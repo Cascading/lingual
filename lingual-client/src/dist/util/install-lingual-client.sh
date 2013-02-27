@@ -20,6 +20,7 @@ INSTALL_ON_SLAVES=false
 IS_MASTER=true
 if [ -f /mnt/var/lib/info/instance.json ]
 then
+  # spit out debug info if run from a bootstrap action
   set -x
   IS_MASTER=`cat /mnt/var/lib/info/instance.json | tr -d '\n ' | sed -n 's|.*\"isMaster\":\([^,]*\).*|\1|p'`
   USER_HOME=/home/hadoop
@@ -125,8 +126,8 @@ echo "See \"${LINGUAL_HOME}/docs\" for documentation."
 if [ "${UPDATE_BASH}" = "true" -a -w "${USER_HOME}/${BASH_PROFILE}" ]; then
 cat >> ${USER_HOME}/${BASH_PROFILE} <<- EOF
 
-# Lingual - Concurrent, Inc.
-# http://www.concurrentinc.com/
+# Cascading Lingual - Concurrent, Inc.
+# http://cascading.org/lingual
 
 export LINGUAL_HOME=${LINGUAL_HOME}
 
