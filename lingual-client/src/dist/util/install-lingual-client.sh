@@ -105,7 +105,7 @@ tar -xzf ${ARCHIVE} -C ${UNARCHIVED}
 
 # move existing out of the way
 if [ -d "${LINGUAL_HOME}" ]; then
-  mv ${LINGUAL_HOME} $TMPDIR
+  mv ${LINGUAL_HOME} $TMPDIR/$RANDOM
 fi
 
 #if LINGUAL_HOME does not exist, create it
