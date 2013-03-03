@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import cascading.lingual.LingualPlatformTestCase;
-import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
@@ -50,7 +49,7 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     getPlatform().remoteRemove( outputPath, true );
 
-    Main.setLogLevel( "debug" );
+//    Main.setLogLevel( "debug" );
 
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );

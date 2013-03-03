@@ -38,30 +38,25 @@ import org.slf4j.LoggerFactory;
  */
 public class PlatformBrokerFactory
   {
-  static PlatformBrokerFactory factory;
+  private static final Logger LOG = LoggerFactory.getLogger( PlatformBrokerFactory.class );
 
   public static final String PLATFORM_NAME = "platform.name";
   public static final String PLATFORM_INCLUDES = "platform.includes";
   public static final String PLATFORM_RESOURCE = "cascading/lingual/platform.properties";
   public static final String PLATFORM_CLASSNAME = "platform.broker.classname";
 
-  private static final Logger LOG = LoggerFactory.getLogger( PlatformBrokerFactory.class );
-
   private Set<String> includes = new HashSet<String>();
 
   private Map<String, PlatformBroker> brokers = new HashMap<String, PlatformBroker>();
 
-  public static PlatformBrokerFactory instance()
+  static PlatformBrokerFactory factory;
+
+  public static synchronized PlatformBrokerFactory instance()
     {
     if( factory == null )
       factory = new PlatformBrokerFactory();
 
     return factory;
-    }
-
-  public static PlatformBroker createPlatformBroker( String platformName )
-    {
-    return createPlatformBroker( platformName, new Properties() );
     }
 
   public static PlatformBroker createPlatformBroker( String platformName, Properties properties )
@@ -106,14 +101,13 @@ public class PlatformBrokerFactory
   /** for testing */
   public void reloadBrokers()
     {
-    LOG.info( "reloading brokers" );
+    LOG.debug( "reloading brokers" );
     brokers.clear();
     loadBrokers();
     }
 
   private void loadBrokers()
     {
-    // use the classloader, this fails Thread.currentThread().getContextClassLoader()
     ClassLoader contextClassLoader = getClass().getClassLoader();
     Set<Class<? extends PlatformBroker>> classes = getPlatformClass( contextClassLoader );
 

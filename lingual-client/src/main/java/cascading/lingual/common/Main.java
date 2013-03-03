@@ -26,6 +26,8 @@ import java.util.Properties;
 
 import com.google.common.base.Throwables;
 
+import static cascading.lingual.util.LogUtil.setLogLevel;
+
 /**
  *
  */
@@ -124,14 +126,9 @@ public abstract class Main<O extends Options>
   protected void setVerbose()
     {
     if( getOptions().isVerbose() )
-      setLogLevel( getOptions().getVerbose() );
+      setLogLevel( Main.class.getClassLoader(), "cascading", getOptions().getVerbose() );
     else
-      setLogLevel( "off" );
-    }
-
-  public static void setLogLevel( String level )
-    {
-    org.apache.log4j.Logger.getLogger( "cascading" ).setLevel( org.apache.log4j.Level.toLevel( level ) );
+      setLogLevel( Main.class.getClassLoader(), "cascading", "off" );
     }
 
   protected void printFailure( PrintStream errPrintStream, Throwable throwable )

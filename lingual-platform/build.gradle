@@ -26,6 +26,8 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
+  testCompile group: 'commons-io', name: 'commons-io', version: '2.1'
+
   testCompile group: 'log4j', name: 'log4j', version: '1.2.16' // for setting log level as a cli option
   testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
   testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'

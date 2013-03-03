@@ -88,9 +88,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       jobConf.setUser( userName );
 
     LOG.info( "using app jar: {}", jobConf.getJar() );
-    LOG.info( "using user: {}", jobConf.getUser() );
+    LOG.info( "using user: {}", jobConf.getUser() == null ? "" : jobConf.getUser() );
 
-    URL url = Thread.currentThread().getContextClassLoader().getResource( "hadoop-override.properties" );
+    URL url = HadoopPlatformBroker.class.getClassLoader().getResource( "hadoop-override.properties" );
 
     if( url != null )
       {
