@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import cascading.bind.catalog.Point;
 import cascading.bind.catalog.Resource;
@@ -38,6 +37,7 @@ import cascading.bind.catalog.handler.ProtocolHandlers;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
+import cascading.lingual.util.InsensitiveMap;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -75,10 +75,10 @@ public abstract class SchemaCatalog implements Serializable
   private FormatHandlers<Protocol, Format> formatHandlers;
 
   @JsonProperty
-  private Map<String, Fields> nameFieldsMap = new TreeMap<String, Fields>( String.CASE_INSENSITIVE_ORDER );
+  private Map<String, Fields> nameFieldsMap = new InsensitiveMap<Fields>();
 
   @JsonProperty
-  private Map<String, Point<Protocol, Format>> idPointMap = new TreeMap<String, Point<Protocol, Format>>( String.CASE_INSENSITIVE_ORDER );
+  private Map<String, Point<Protocol, Format>> idPointMap = new InsensitiveMap<Point<Protocol, Format>>();
 
   protected SchemaCatalog()
     {
@@ -263,7 +263,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getTableNames( String schemaName )
     {
-    return getSchemaDef( schemaName ).getChildTableNames();
+    SchemaDef schema = getSchemaDef( schemaName );
+
+    if( schema == null )
+      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
+
+    return schema.getChildTableNames();
     }
 
   public void createTableDefFor( String identifier )
@@ -437,7 +442,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getStereotypeNames( String schemaName )
     {
-    return getSchemaDef( schemaName ).getStereotypeNames();
+    SchemaDef schema = getSchemaDef( schemaName );
+
+    if( schema == null )
+      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
+
+    return schema.getStereotypeNames();
     }
 
   public Stereotype<Protocol, Format> getStereoType( String schemaName, String stereotypeName )

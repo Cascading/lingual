@@ -24,10 +24,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.bind.catalog.Stereotypes;
+import cascading.lingual.util.InsensitiveMap;
 import cascading.lingual.util.MultiProperties;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -49,21 +49,21 @@ public class SchemaDef extends Def
   {
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Stereotypes<Protocol, Format> stereotypes = new Stereotypes<Protocol, Format>();
+  private final Stereotypes<Protocol, Format> stereotypes = new Stereotypes<Protocol, Format>();
 
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, SchemaDef> childSchemas = new TreeMap<String, SchemaDef>( String.CASE_INSENSITIVE_ORDER );
+  private final InsensitiveMap<SchemaDef> childSchemas = new InsensitiveMap<SchemaDef>();
 
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, TableDef> childTables = new TreeMap<String, TableDef>( String.CASE_INSENSITIVE_ORDER );
+  private final InsensitiveMap<TableDef> childTables = new InsensitiveMap<TableDef>();
 
   @JsonProperty
-  private MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
+  private final MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
 
   @JsonProperty
-  private MultiProperties<Format> formatProperties = new MultiProperties<Format>();
+  private final MultiProperties<Format> formatProperties = new MultiProperties<Format>();
 
   public SchemaDef()
     {
@@ -193,6 +193,7 @@ public class SchemaDef extends Def
       return false;
 
     childSchemas.put( name, new SchemaDef( this, name ) );
+
     return true;
     }
 
@@ -202,6 +203,7 @@ public class SchemaDef extends Def
       return false;
 
     childSchemas.put( name, new SchemaDef( this, name, identifier ) );
+
     return true;
     }
 
