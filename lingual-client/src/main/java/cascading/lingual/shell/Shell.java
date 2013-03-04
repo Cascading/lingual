@@ -109,6 +109,8 @@ public class Shell extends Main<ShellOptions>
 
     add( args, "-d", Driver.class.getName() );
     add( args, "-u", getOptions().createJDBCUrl() );
+    add( args, "--incremental", "true" );
+//    add( args, "--headerInterval", "100" ); // todo: this seems to crap out sqlline
 
     if( getOptions().isVerbose() )
       add( args, "--verbose", "true" );

@@ -41,8 +41,7 @@ public class LogUtil
 
   public static void setLogLevel( ClassLoader loader, String log, String level )
     {
-    Object loggerObject = invokeStaticMethod( loader, "org.apache.log4j.Logger", "getLogger",
-      new Object[]{log}, new Class[]{String.class} );
+    Object loggerObject = getLoggerObject( loader, log );
 
     Object levelObject = invokeStaticMethod( loader, "org.apache.log4j.Level", "toLevel",
       new Object[]{level}, new Class[]{String.class} );
@@ -53,8 +52,7 @@ public class LogUtil
 
   public static String getLogLevel( ClassLoader loader, String log )
     {
-    Object loggerObject = invokeStaticMethod( loader, "org.apache.log4j.Logger", "getLogger",
-      new Object[]{log}, new Class[]{String.class} );
+    Object loggerObject = getLoggerObject( loader, log );
 
     Object level = invokeInstanceMethod( loggerObject, "getLevel", new Object[]{}, new Class[]{} );
 
@@ -62,6 +60,15 @@ public class LogUtil
       return "";
 
     return level.toString();
+    }
+
+  private static Object getLoggerObject( ClassLoader loader, String log )
+    {
+    if( log == null || log.isEmpty() )
+      return invokeStaticMethod( loader, "org.apache.log4j.Logger", "getRootLogger", null, null );
+
+    return invokeStaticMethod( loader, "org.apache.log4j.Logger", "getLogger",
+      new Object[]{log}, new Class[]{String.class} );
     }
 
   public static Object invokeStaticMethod( ClassLoader loader, String typeString, String methodName, Object[] parameters, Class[] parameterTypes )

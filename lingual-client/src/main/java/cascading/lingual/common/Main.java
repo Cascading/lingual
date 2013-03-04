@@ -126,9 +126,9 @@ public abstract class Main<O extends Options>
   protected void setVerbose()
     {
     if( getOptions().isVerbose() )
-      setLogLevel( Main.class.getClassLoader(), "cascading", getOptions().getVerbose() );
+      setLogLevel( Main.class.getClassLoader(), "", getOptions().getVerbose() );
     else
-      setLogLevel( Main.class.getClassLoader(), "cascading", "off" );
+      setLogLevel( Main.class.getClassLoader(), "", "off" );
     }
 
   protected void printFailure( PrintStream errPrintStream, Throwable throwable )
