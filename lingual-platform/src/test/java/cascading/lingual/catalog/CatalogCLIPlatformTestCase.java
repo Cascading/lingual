@@ -49,7 +49,7 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     getPlatform().remoteRemove( outputPath, true );
 
-//    Main.setLogLevel( "debug" );
+//    LogUtil.setLogLevel( "off" );
 
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );
@@ -59,10 +59,13 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
       "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
     );
 
+    execute( outputPath, "--stereotype" );
+
     execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", EMPS_TABLE,
       "--stereotype", "emps"
     );
     execute( outputPath, "--schema", "adhoc", "--table" );
+    execute( outputPath, "--schema", "ADHOC", "--table" ); // verify case insensitivity
 
     execute( outputPath, "--schema", "adhoc", "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
     execute( outputPath, "--schema", "adhoc", "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
