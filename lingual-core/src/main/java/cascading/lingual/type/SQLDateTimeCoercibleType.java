@@ -107,6 +107,9 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     if( to == java.sql.Timestamp.class )
       return new java.sql.Timestamp( (Long) value );
 
+    if( to == java.sql.Time.class )
+      return new java.sql.Time( (Long) value );
+
     throw new CascadingException( "unknown type coercion requested, from: " + Util.getTypeName( from ) + " to: " + Util.getTypeName( to ) );
     }
 

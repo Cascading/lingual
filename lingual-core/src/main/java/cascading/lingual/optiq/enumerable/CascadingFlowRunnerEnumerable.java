@@ -21,6 +21,7 @@
 package cascading.lingual.optiq.enumerable;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -125,22 +126,31 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new Linq4j().singletonEnumerable( rowCount ).enumerator();
       }
 
-    if( flow.getSink().getSinkFields().size() == 1 )
-      return new FlowObjectEnumerator( flow );
+    int size = flow.getSink().getSinkFields().size();
+
+    Type[] types = new Type[ size ];
+
+    for( int i = 0; i < size; i++ )
+      types[ i ] = flowHolder.physType.fieldClass( i );
+
+    if( size == 1 )
+      return new FlowObjectEnumerator( types, flow );
     else
-      return new FlowArrayEnumerator( flow );
+      return new FlowArrayEnumerator( types, flow );
     }
 
   static class FlowObjectEnumerator implements Enumerator<Object>
     {
     private final static Object DUMMY = new Object();
 
+    Type[] types;
     Flow flow;
     Iterator<TupleEntry> iterator;
     Object current;
 
-    public FlowObjectEnumerator( Flow flow )
+    public FlowObjectEnumerator( Type[] types, Flow flow )
       {
+      this.types = types;
       this.flow = flow;
       iterator = openIterator( flow );
       current = DUMMY;
@@ -181,7 +191,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     private Object toNextObject()
       {
-      return iterator.next().getObject( 0 );
+      return iterator.next().getCoercedTuple( types ).getObject( 0 );
       }
 
     public void reset()
@@ -195,12 +205,14 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     {
     private final static Object[] DUMMY = new Object[ 0 ];
 
+    Type[] types;
     Flow flow;
     Iterator<TupleEntry> iterator;
     Object[] current;
 
-    public FlowArrayEnumerator( Flow flow )
+    public FlowArrayEnumerator( Type[] types, Flow flow )
       {
+      this.types = types;
       this.flow = flow;
       iterator = openIterator( flow );
       current = DUMMY;
@@ -243,7 +255,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       {
       TupleEntry entry = iterator.next();
 
-      return Tuple.elements( entry.getTuple() ).toArray( new Object[ entry.size() ] );
+      Tuple result = entry.getCoercedTuple( types );
+
+      return Tuple.elements( result ).toArray( new Object[ entry.size() ] );
       }
 
     public void reset()

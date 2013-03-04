@@ -138,7 +138,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     else
       flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
 
-    FlowHolder flowHolder = new FlowHolder( flowFactory, branch.isModification );
+    FlowHolder flowHolder = new FlowHolder( getPhysType(), flowFactory, branch.isModification );
 
     setDotPath( properties, flowFactory.getName(), flowHolder );
 

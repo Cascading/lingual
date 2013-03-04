@@ -21,18 +21,21 @@
 package cascading.lingual.optiq.meta;
 
 import cascading.lingual.platform.LingualFlowFactory;
+import net.hydromatic.optiq.rules.java.PhysType;
 
 /**
  *
  */
 public class FlowHolder
   {
+  public final PhysType physType;
   public final LingualFlowFactory flowFactory;
   public final boolean isModification;
   public String dotPath;
 
-  public FlowHolder( LingualFlowFactory flowFactory, boolean isModification )
+  public FlowHolder( PhysType physType, LingualFlowFactory flowFactory, boolean isModification )
     {
+    this.physType = physType;
     this.flowFactory = flowFactory;
     this.isModification = isModification;
     }

@@ -21,6 +21,7 @@
 package cascading.lingual.jdbc;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -36,10 +37,13 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
+import cascading.tuple.type.CoercibleType;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
+import net.hydromatic.optiq.impl.java.JavaTypeFactory;
+import org.eigenbase.sql.type.BasicSqlType;
 
 /**
  *
@@ -99,6 +103,18 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
       }
 
     return connection;
+    }
+
+  protected JavaTypeFactory getTypeFactory()
+    {
+    try
+      {
+      return ( (LingualConnection) getConnection() ).getTypeFactory();
+      }
+    catch( Exception exception )
+      {
+      throw new RuntimeException( "cound not get connection", exception );
+      }
     }
 
   @Override
@@ -199,6 +215,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     {
     Table<Integer, Comparable, Object> table = createNullableTable();
 
+    JavaTypeFactory typeFactory = getTypeFactory();
     int row = 0;
 
     while( entryIterator.hasNext() )
@@ -207,7 +224,12 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
 
       for( Comparable field : entry.getFields() )
         {
+        // we must coerce into the actual sql type returned by the result-set
         Object value = entry.getObject( field );
+        Type type = entry.getFields().getType( entry.getFields().getPos( field ) );
+
+        if( type instanceof BasicSqlType )
+          value = ( (CoercibleType) type ).coerce( value, typeFactory.getJavaClass( ( (BasicSqlType) type ) ) );
 
         if( value != null )
           table.put( row++, field, value );
