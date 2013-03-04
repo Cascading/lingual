@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.eigenbase.sql.type.BasicSqlType;
 import org.eigenbase.sql.type.SqlTypeName;
+import org.eigenbase.util14.DateTimeUtil;
 import org.eigenbase.util14.ZonelessDatetime;
 
 /**
@@ -43,12 +44,9 @@ import org.eigenbase.util14.ZonelessDatetime;
 )
 public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements CoercibleType
   {
-  ZonelessDatetime date;
-
-  protected SQLDateTimeCoercibleType( SqlTypeName sqlTypeName, ZonelessDatetime zonelessDatetime )
+  protected SQLDateTimeCoercibleType( SqlTypeName sqlTypeName )
     {
     super( sqlTypeName );
-    this.date = zonelessDatetime;
     }
 
   @Override
@@ -95,25 +93,28 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     if( to == Long.class || to == long.class || to == Object.class )
       return value;
 
+    ZonelessDatetime date = createInstance();
+
+    date.setZonelessTime( (Long) value );
+
     if( to == String.class )
-      {
-      date.setZonelessTime( (Long) value );
       return date.toString();
-      }
 
     if( to == java.sql.Date.class )
-      return new java.sql.Date( (Long) value );
+      return new java.sql.Date( date.getJdbcDate( DateTimeUtil.defaultZone ) );
 
     if( to == java.sql.Timestamp.class )
-      return new java.sql.Timestamp( (Long) value );
+      return new java.sql.Timestamp( date.getJdbcTimestamp( DateTimeUtil.defaultZone ) );
 
     if( to == java.sql.Time.class )
-      return new java.sql.Time( (Long) value );
+      return new java.sql.Time( date.getJdbcTime( DateTimeUtil.defaultZone ) );
 
     throw new CascadingException( "unknown type coercion requested, from: " + Util.getTypeName( from ) + " to: " + Util.getTypeName( to ) );
     }
 
   protected abstract ZonelessDatetime parse( String value );
+
+  protected abstract ZonelessDatetime createInstance();
 
   @Override
   public boolean isNullable()

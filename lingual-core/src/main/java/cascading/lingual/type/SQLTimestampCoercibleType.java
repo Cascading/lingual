@@ -33,11 +33,17 @@ public class SQLTimestampCoercibleType extends SQLDateTimeCoercibleType
   {
   public SQLTimestampCoercibleType()
     {
-    super( SqlTypeName.TIMESTAMP, new ZonelessTimestamp() );
+    super( SqlTypeName.TIMESTAMP );
     }
 
   protected ZonelessDatetime parse( String value )
     {
     return ZonelessTimestamp.parse( value );
+    }
+
+  @Override
+  protected ZonelessDatetime createInstance()
+    {
+    return new ZonelessTimestamp();
     }
   }
