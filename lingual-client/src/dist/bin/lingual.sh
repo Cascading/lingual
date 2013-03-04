@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2011-2012 Concurrent, Inc.
+# Copyright 2011-2013 Concurrent, Inc.
 
 BINDIR=`dirname $0`
 BASEDIR=`dirname ${BINDIR}`

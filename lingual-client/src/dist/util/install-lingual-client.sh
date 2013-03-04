@@ -84,7 +84,9 @@ fi
 
 REDIR=$TMPDIR/latest
 ARCHIVE=$TMPDIR/archive.tgz
-UNARCHIVED=$TMPDIR/unarchived
+UNARCHIVED=$TMPDIR/unarchived/
+
+[ -d "${UNARCHIVED}" ] && rm -rf ${UNARCHIVED}
 
 # find latest lingual client
 wget -S -T 10 -t 5 ${LATEST} -O ${REDIR}
