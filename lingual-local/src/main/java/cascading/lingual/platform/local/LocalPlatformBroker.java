@@ -39,12 +39,16 @@ import cascading.scheme.local.TextLine;
 import cascading.tap.SinkMode;
 import cascading.tap.local.FileTap;
 import cascading.tap.type.FileType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class LocalPlatformBroker extends PlatformBroker<Properties>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( LocalPlatformBroker.class );
+
   public LocalPlatformBroker()
     {
     }
@@ -173,6 +177,12 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
 
     if( tempdir == null || tempdir.isEmpty() )
       tempdir = System.getenv( "TMPDIR" );
+
+    if( tempdir == null || tempdir.isEmpty() )
+      {
+      LOG.warn( "neither TEMPDIR or TMPDIR is set, using '/tmp' as the temporary data path" );
+      tempdir = "/tmp/";
+      }
 
     return tempdir;
     }
