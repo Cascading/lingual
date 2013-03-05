@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.Properties;
 
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
@@ -37,14 +38,33 @@ class LingualStatement implements Statement
   {
   private static final Logger LOG = LoggerFactory.getLogger( LingualStatement.class );
 
+  private final Properties properties;
   private final Statement parent;
 
   private int maxRows;
   private int maxFieldSize;
 
-  public LingualStatement( Statement parent )
+  public LingualStatement( Properties properties, Statement parent )
     {
+    this.properties = properties;
     this.parent = parent;
+
+    setMaxRows();
+    }
+
+  private void setMaxRows()
+    {
+    if( !properties.contains( Driver.MAX_ROWS ) )
+      return;
+
+    try
+      {
+      setMaxRows( Integer.parseInt( properties.getProperty( Driver.MAX_ROWS ) ) );
+      }
+    catch( Exception exception )
+      {
+      throw new RuntimeException( "unable set set max rows", exception );
+      }
     }
 
   @Override

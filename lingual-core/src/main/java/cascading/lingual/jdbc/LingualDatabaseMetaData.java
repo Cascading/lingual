@@ -29,7 +29,7 @@ import java.sql.SQLException;
 /**
  *
  */
-class LingualDatabaseMetaData implements DatabaseMetaData
+public class LingualDatabaseMetaData implements DatabaseMetaData
   {
   private final LingualConnection connection;
   private final DatabaseMetaData parent;

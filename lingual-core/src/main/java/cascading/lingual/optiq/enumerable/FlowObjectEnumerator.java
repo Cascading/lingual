@@ -18,26 +18,30 @@
  * limitations under the License.
  */
 
-package cascading.lingual.optiq.meta;
+package cascading.lingual.optiq.enumerable;
 
-import cascading.lingual.platform.LingualFlowFactory;
-import net.hydromatic.optiq.rules.java.PhysType;
+import java.lang.reflect.Type;
+import java.util.NoSuchElementException;
+
+import cascading.flow.Flow;
 
 /**
  *
  */
-public class FlowHolder
+class FlowObjectEnumerator extends FlowResultsEnumerator<Object>
   {
-  public final PhysType physType;
-  public final LingualFlowFactory flowFactory;
-  public final boolean isModification;
-  public String dotPath;
-  public int maxRows = Integer.MAX_VALUE;
 
-  public FlowHolder( PhysType physType, LingualFlowFactory flowFactory, boolean isModification )
+  public FlowObjectEnumerator( int maxRows, Type[] types, Flow flow )
     {
-    this.physType = physType;
-    this.flowFactory = flowFactory;
-    this.isModification = isModification;
+    super( maxRows, types, flow );
+    }
+
+  @Override
+  public Object current()
+    {
+    if( current == DUMMY )
+      throw new NoSuchElementException();
+
+    return current.getObject( 0 );
     }
   }

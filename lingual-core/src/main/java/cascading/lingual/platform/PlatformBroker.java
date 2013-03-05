@@ -27,7 +27,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -64,6 +66,8 @@ public abstract class PlatformBroker<Config>
   public static final String CATALOG_FILE = "catalog";
 
   public static final String PLANNER_DEBUG = "lingual.planner.debug";
+
+  private static SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMdd-HHmmss" );
 
   private Properties properties;
   private SchemaCatalog catalog;
@@ -437,7 +441,12 @@ public abstract class PlatformBroker<Config>
 
   private String createName()
     {
-    return "" + System.currentTimeMillis() + "-" + Util.createUniqueID().substring( 0, 10 );
+    return getTimeStamp() + "-" + Util.createUniqueID().substring( 0, 10 );
+    }
+
+  private String getTimeStamp()
+    {
+    return dateFormat.format( new Date() );
     }
 
   public SchemaCatalog newInstance()

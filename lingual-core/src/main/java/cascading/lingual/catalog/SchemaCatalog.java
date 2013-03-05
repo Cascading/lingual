@@ -210,7 +210,7 @@ public abstract class SchemaCatalog implements Serializable
     SchemaDef schemaDef = rootSchemaDef.getOrAddSchema( schemaName );
 
     Protocol protocol = protocolName == null ? getDefaultProtocol() : getDefaultProtocolFor( identifier );
-    Format format = getDefaultFormatFor( identifier, schemaName );
+    Format format = getDefaultFormatFor( schemaName, identifier );
 
     Stereotype<Protocol, Format> stereotype = createStereotype( schemaDef, protocol, tableName, fields );
 
@@ -392,20 +392,20 @@ public abstract class SchemaCatalog implements Serializable
     if( idPointMap.containsKey( identifier ) )
       return idPointMap.get( identifier );
 
-    Point<Protocol, Format> point = createPointFor( identifier, protocol, format, schemaName );
+    Point<Protocol, Format> point = createPointFor( schemaName, identifier, protocol, format );
 
     idPointMap.put( identifier, point );
 
     return point;
     }
 
-  private Point<Protocol, Format> createPointFor( String identifier, Protocol protocol, Format format, String schemaName )
+  private Point<Protocol, Format> createPointFor( String schemaName, String identifier, Protocol protocol, Format format )
     {
     if( protocol == null )
       protocol = getDefaultProtocolFor( identifier );
 
     if( format == null )
-      format = getDefaultFormatFor( identifier, schemaName );
+      format = getDefaultFormatFor( schemaName, identifier );
 
     return new Point<Protocol, Format>( protocol, format );
     }
@@ -420,16 +420,18 @@ public abstract class SchemaCatalog implements Serializable
     return defaultProtocol;
     }
 
-  public Format getDefaultFormatFor( String identifier, String schemaName )
+  public Format getDefaultFormatFor( String schemaName, String identifier )
     {
     TableDef tableDef = rootSchemaDef.findTableFor( identifier );
 
     if( tableDef != null && tableDef.getFormat() != null )
       return tableDef.getFormat();
 
-    Format format = FormatProperties.findFormatFor( getSchemaDef( schemaName ), identifier );
+    SchemaDef schemaDef = getSchemaDef( schemaName );
 
-    if( format == null )
+    Format format = FormatProperties.findFormatFor( schemaDef, identifier );
+
+    if( format == null ) // todo: grab default from scheme
       format = defaultFormat;
 
     return format;

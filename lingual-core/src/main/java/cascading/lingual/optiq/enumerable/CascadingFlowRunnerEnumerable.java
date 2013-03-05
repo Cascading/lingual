@@ -20,21 +20,15 @@
 
 package cascading.lingual.optiq.enumerable;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
 import cascading.lingual.optiq.meta.FlowHolder;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-import cascading.tuple.TupleEntryIterator;
 import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
@@ -134,136 +128,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       types[ i ] = flowHolder.physType.fieldClass( i );
 
     if( size == 1 )
-      return new FlowObjectEnumerator( types, flow );
+      return new FlowObjectEnumerator( flowHolder.maxRows, types, flow );
     else
-      return new FlowArrayEnumerator( types, flow );
+      return new FlowArrayEnumerator( flowHolder.maxRows, types, flow );
     }
 
-  static class FlowObjectEnumerator implements Enumerator<Object>
-    {
-    private final static Object DUMMY = new Object();
-
-    Type[] types;
-    Flow flow;
-    Iterator<TupleEntry> iterator;
-    Object current;
-
-    public FlowObjectEnumerator( Type[] types, Flow flow )
-      {
-      this.types = types;
-      this.flow = flow;
-      iterator = openIterator( flow );
-      current = DUMMY;
-      }
-
-    private TupleEntryIterator openIterator( Flow flow )
-      {
-      try
-        {
-        return flow.openSink();
-        }
-      catch( IOException e )
-        {
-        throw new RuntimeException( e );
-        }
-      }
-
-    public Object current()
-      {
-      if( current == DUMMY )
-        throw new NoSuchElementException();
-
-      return current;
-      }
-
-    public boolean moveNext()
-      {
-      if( iterator.hasNext() )
-        {
-        current = toNextObject();
-        return true;
-        }
-
-      current = DUMMY;
-
-      return false;
-      }
-
-    private Object toNextObject()
-      {
-      return iterator.next().getCoercedTuple( types ).getObject( 0 );
-      }
-
-    public void reset()
-      {
-      iterator = openIterator( flow );
-      current = DUMMY;
-      }
-    }
-
-  static class FlowArrayEnumerator implements Enumerator<Object[]>
-    {
-    private final static Object[] DUMMY = new Object[ 0 ];
-
-    Type[] types;
-    Flow flow;
-    Iterator<TupleEntry> iterator;
-    Object[] current;
-
-    public FlowArrayEnumerator( Type[] types, Flow flow )
-      {
-      this.types = types;
-      this.flow = flow;
-      iterator = openIterator( flow );
-      current = DUMMY;
-      }
-
-    private TupleEntryIterator openIterator( Flow flow )
-      {
-      try
-        {
-        return flow.openSink();
-        }
-      catch( IOException e )
-        {
-        throw new RuntimeException( e );
-        }
-      }
-
-    public Object[] current()
-      {
-      if( current == DUMMY )
-        throw new NoSuchElementException();
-
-      return current;
-      }
-
-    public boolean moveNext()
-      {
-      if( iterator.hasNext() )
-        {
-        current = toNextObjectArray();
-        return true;
-        }
-
-      current = DUMMY;
-
-      return false;
-      }
-
-    private Object[] toNextObjectArray()
-      {
-      TupleEntry entry = iterator.next();
-
-      Tuple result = entry.getCoercedTuple( types );
-
-      return Tuple.elements( result ).toArray( new Object[ entry.size() ] );
-      }
-
-    public void reset()
-      {
-      iterator = openIterator( flow );
-      current = DUMMY;
-      }
-    }
   }

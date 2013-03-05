@@ -72,6 +72,7 @@ public class Driver extends UnregisteredDriver
   public static final String TABLES_PROP = "tables";
   public static final String VERBOSE_PROP = "verbose";
   public static final String RESULT_PATH_PROP = "resultPath";
+  public static final String MAX_ROWS = "maxRows";
   public static final String DOT_PATH_PROP = "dotPath";
   public static final String COLLECTOR_CACHE_PROP = "collectorCache";
 

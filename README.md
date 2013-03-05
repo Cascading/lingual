@@ -22,6 +22,16 @@ the command line.
 
 # Installing
 
+To install the Lingual command line tools, call:
+
+    > curl http://files.concurrentinc.com/lingual/1.0/lingual-client/install-lingual-client.sh | bash
+
+This scripts downloads and installs the latest `lingual` shell script into `~/.lingual-client/` and updates any
+local `.bashrc` file.
+
+To get the latest release, call:
+
+    > lingual selfupdate
 
 # Developing
 

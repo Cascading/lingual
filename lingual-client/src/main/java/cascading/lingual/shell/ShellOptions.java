@@ -37,23 +37,27 @@ public class ShellOptions extends Options
   private final OptionSpec<String> resultPath;
   private final OptionSpec<String> dotPath;
   private final OptionSpec<String> sqlFile;
+  private final OptionSpec<Integer> maxRows;
 
   public ShellOptions()
     {
     schema = parser.accepts( "schema", "name of current schema" )
       .withRequiredArg();
 
-    schemas = parser.accepts( "schemas", "root path for each schema to use" )
+    schemas = parser.accepts( "schemas", "platform path for each schema to use" )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
-    resultPath = parser.accepts( "resultPath", "root temp path to store results" )
-      .withRequiredArg().describedAs( "directory" );
+    resultPath = parser.accepts( "resultPath", "platform path to store results of SELECT queries" )
+      .withOptionalArg().defaultsTo( "results" ).describedAs( "directory" );
 
-    dotPath = parser.accepts( "dotPath", "path to write flow dot files" )
-      .withRequiredArg().describedAs( "directory" );
+    dotPath = parser.accepts( "dotPath", "platform path to write flow dot files" )
+      .withOptionalArg().defaultsTo( "dotFiles" ).describedAs( "directory" );
 
     sqlFile = parser.accepts( "sql", "file with sql commands to execute" )
       .withRequiredArg().describedAs( "filename" );
+
+    maxRows = parser.accepts( "maxRows", "number of results to limit. 0 for unlimited" )
+      .withRequiredArg().ofType( Integer.TYPE ).defaultsTo( 10000 ).describedAs( "number of records" );
     }
 
   public String createJDBCUrl()
@@ -72,14 +76,21 @@ public class ShellOptions extends Options
         .append( Util.join( getSchemas(), "," ) );
       }
 
-    if( getResultPath() != null )
+    if( getResultPath() != null ) // always override
       {
       builder
         .append( ";" ).append( Driver.RESULT_PATH_PROP ).append( "=" )
         .append( getResultPath() );
       }
 
-    if( getDotPath() != null )
+    if( getMaxRows() != 0 ) // always override
+      {
+      builder
+        .append( ";" ).append( Driver.MAX_ROWS ).append( "=" )
+        .append( getMaxRows() );
+      }
+
+    if( isDotPath() && getDotPath() != null )
       {
       builder
         .append( ";" ).append( Driver.DOT_PATH_PROP ).append( "=" )
@@ -112,6 +123,11 @@ public class ShellOptions extends Options
     return optionSet.valueOf( resultPath );
     }
 
+  public boolean isDotPath()
+    {
+    return optionSet.has( dotPath );
+    }
+
   public String getDotPath()
     {
     return optionSet.valueOf( dotPath );
@@ -120,6 +136,11 @@ public class ShellOptions extends Options
   public String getSqlFile()
     {
     return optionSet.valueOf( sqlFile );
+    }
+
+  public int getMaxRows()
+    {
+    return optionSet.valueOf( maxRows );
     }
 
   /////

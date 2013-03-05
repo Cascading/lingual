@@ -35,7 +35,7 @@ import cascading.lingual.catalog.SchemaCatalog;
 public class HadoopCatalog extends SchemaCatalog
   {
   public static final Protocol DEFAULT_PROTOCOL = HadoopDefaultProtocolHandler.HDFS;
-  public static final Format DEFAULT_FORMAT = HadoopDefaultFormatHandler.CSV;
+  public static final Format DEFAULT_FORMAT = HadoopDefaultFormatHandler.TCSV;
 
   public HadoopCatalog()
     {

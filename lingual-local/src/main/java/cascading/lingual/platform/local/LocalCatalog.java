@@ -35,7 +35,7 @@ import cascading.lingual.catalog.SchemaCatalog;
 public class LocalCatalog extends SchemaCatalog
   {
   public static final Protocol DEFAULT_PROTOCOL = LocalDefaultProtocolHandler.FILE;
-  public static final Format DEFAULT_FORMAT = LocalDefaultFormatHandler.CSV;
+  public static final Format DEFAULT_FORMAT = LocalDefaultFormatHandler.TCSV;
 
   public LocalCatalog()
     {

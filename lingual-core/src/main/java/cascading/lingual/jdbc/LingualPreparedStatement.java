@@ -40,6 +40,7 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Properties;
 
 /**
  *
@@ -48,9 +49,9 @@ public class LingualPreparedStatement extends LingualStatement implements Prepar
   {
   private final PreparedStatement parent;
 
-  public LingualPreparedStatement( PreparedStatement parent )
+  public LingualPreparedStatement( Properties properties, PreparedStatement parent )
     {
-    super( parent );
+    super( properties, parent );
 
     this.parent = parent;
     }

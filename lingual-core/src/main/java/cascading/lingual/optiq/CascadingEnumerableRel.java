@@ -141,6 +141,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     FlowHolder flowHolder = new FlowHolder( getPhysType(), flowFactory, branch.isModification );
 
     setDotPath( properties, flowFactory.getName(), flowHolder );
+    setMaxRows( properties, flowHolder );
 
     int ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
 
@@ -171,6 +172,14 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
       flowHolder.dotPath += "/";
 
     flowHolder.dotPath += name + ".dot";
+    }
+
+  private void setMaxRows( Properties properties, FlowHolder flowHolder )
+    {
+    if( !properties.containsKey( Driver.MAX_ROWS ) )
+      return;
+
+    flowHolder.maxRows = Integer.parseInt( properties.getProperty( Driver.MAX_ROWS ) );
     }
 
   private <T> Constructor<T> getConstructorFor( Class<T> type )

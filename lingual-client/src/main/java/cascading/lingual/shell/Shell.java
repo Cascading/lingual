@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
+import static java.util.Collections.addAll;
+
 /**
  *
  */
@@ -107,16 +109,16 @@ public class Shell extends Main<ShellOptions>
 
     List<String> args = new ArrayList<String>();
 
-    add( args, "-d", Driver.class.getName() );
-    add( args, "-u", getOptions().createJDBCUrl() );
-    add( args, "--incremental", "true" );
-//    add( args, "--headerInterval", "100" ); // todo: this seems to crap out sqlline
+    addAll( args, "-d", Driver.class.getName() );
+    addAll( args, "-u", getOptions().createJDBCUrl() );
+    addAll( args, "--incremental=true" );
+    addAll( args, "--headerInterval=100" ); // 100 is default
 
     if( getOptions().isVerbose() )
-      add( args, "--verbose", "true" );
+      addAll( args, "--verbose=true" );
 
     if( getOptions().getSqlFile() != null )
-      add( args, "--autoCommit", "false" );
+      addAll( args, "--autoCommit=false" );
 
     String[] sqlLineArgs = args.toArray( new String[ args.size() ] );
 
@@ -141,11 +143,5 @@ public class Shell extends Main<ShellOptions>
       }
 
     return true;
-    }
-
-  private void add( List<String> args, String string, String name )
-    {
-    args.add( string );
-    args.add( name );
     }
   }
