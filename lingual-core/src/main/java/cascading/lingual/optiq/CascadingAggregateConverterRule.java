@@ -36,7 +36,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
 
   public CascadingAggregateConverterRule()
     {
-    super( AggregateRel.class, CallingConvention.NONE, CONVENTION, "CascadingAggregateRule" );
+    super( AggregateRel.class, CallingConvention.NONE, CONVENTION, "CascadingAggregateConverterRule" );
     }
 
   @Override

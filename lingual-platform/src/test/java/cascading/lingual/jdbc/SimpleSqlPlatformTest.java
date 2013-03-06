@@ -201,6 +201,14 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
+  public void testIntoSelectDistinct() throws Exception
+    {
+    setResultsTo( "TEST", "RESULTS", new Fields( "NAME" ).applyTypes( String.class ) );
+
+    assertUpdate( 5, "insert into test.results select distinct(name) from sales.emps" );
+    }
+
+  @Test
   public void testIntoSelectValues() throws Exception
     {
     setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );

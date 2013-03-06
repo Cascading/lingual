@@ -20,43 +20,44 @@
 
 package cascading.lingual.optiq;
 
-import java.util.Collections;
-
-import org.eigenbase.rel.CalcRel;
-import org.eigenbase.rel.RelCollation;
+import org.eigenbase.rel.ProjectRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
-import org.eigenbase.rex.RexMultisetUtil;
+
+import static cascading.lingual.optiq.Cascading.CONVENTION;
 
 /**
  *
  */
-public class CascadingCalcConverterRule extends ConverterRule
+public class CascadingProjectConverterRule extends ConverterRule
   {
-  public static final CascadingCalcConverterRule INSTANCE = new CascadingCalcConverterRule();
+  public static final CascadingProjectConverterRule INSTANCE = new CascadingProjectConverterRule();
 
-  public CascadingCalcConverterRule()
+  public CascadingProjectConverterRule()
     {
-    super( CalcRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingCalcConverterRule" );
+    super( ProjectRel.class, CallingConvention.NONE, CONVENTION, "CascadingProjectConverterRule" );
     }
 
   @Override
   public RelNode convert( RelNode rel )
     {
     // stolen from JavaRules.EnumerableAggregateRule
-    final CalcRel calc = (CalcRel) rel;
+    ProjectRel project = (ProjectRel) rel;
 
-    final RelNode convertedChild = convert( calc.getChild(), calc.getTraitSet().replace( Cascading.CONVENTION ) );
+    RelNode convertedChild = convert( project.getChild(), project.getTraitSet().replace( CONVENTION ) );
 
     if( convertedChild == null )
       return null; // We can't convert the child, so we can't convert rel.
 
-    // If there's a multiset, let FarragoMultisetSplitter work on it
-    // first.
-    if( RexMultisetUtil.containsMultiset( calc.getProgram() ) )
-      return null;
+//    return new CascadingProjectRel( rel.getCluster(), rel.getTraitSet(), convertedChild, project.getGroupSet(), project.getAggCallList() );
 
-    return new CascadingCalcRel( rel.getCluster(), rel.getTraitSet(), convertedChild, rel.getRowType(), calc.getProgram(), Collections.<RelCollation>emptyList() );
+    return new CascadingProjectRel( rel.getCluster(),
+      rel.getTraitSet(),
+      convertedChild,
+      project.getProjectExps(),
+      project.getRowType(),
+      project.getFlags(),
+      project.getCollationList() );
     }
   }

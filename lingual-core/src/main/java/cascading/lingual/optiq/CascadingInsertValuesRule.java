@@ -31,6 +31,8 @@ import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexLiteral;
 
+import static cascading.lingual.optiq.Cascading.CONVENTION;
+
 /**
  *
  */
@@ -41,9 +43,9 @@ public class CascadingInsertValuesRule extends RelOptRule
   private CascadingInsertValuesRule()
     {
     super(
-      new RelOptRuleOperand( CascadingTableModificationRel.class, Cascading.CONVENTION,
-        new RelOptRuleOperand( CascadingCalcRel.class, Cascading.CONVENTION,
-          new RelOptRuleOperand( CascadingValuesRel.class, Cascading.CONVENTION
+      new RelOptRuleOperand( CascadingTableModificationRel.class, CONVENTION,
+        new RelOptRuleOperand( CascadingCalcRel.class, CONVENTION,
+          new RelOptRuleOperand( CascadingValuesRel.class, CONVENTION
           )
         )
       ),
@@ -56,7 +58,7 @@ public class CascadingInsertValuesRule extends RelOptRule
     CascadingTableModificationRel modificationRel = (CascadingTableModificationRel) call.getRels()[ 0 ];
     CascadingValuesRel valuesRel = (CascadingValuesRel) call.getRels()[ 2 ];
 
-    RelTraitSet newTraits = modificationRel.getTraitSet().plus( Cascading.CONVENTION );
+    RelTraitSet newTraits = modificationRel.getTraitSet().plus( CONVENTION );
     RelOptCluster cluster = modificationRel.getCluster();
 
     RelDataType rowType = modificationRel.getRowType();

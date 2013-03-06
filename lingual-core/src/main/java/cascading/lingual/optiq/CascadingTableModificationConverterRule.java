@@ -34,7 +34,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
 
   public CascadingTableModificationConverterRule()
     {
-    super( TableModificationRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingTableModificationRule" );
+    super( TableModificationRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingTableModificationConverterRule" );
     }
 
   @Override
@@ -47,9 +47,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
       modificationRel.getTraitSet().replace( Cascading.CONVENTION ) );
 
     if( convertedChild == null )
-      {
       return null; // We can't convert the child, so we can't convert rel.
-      }
 
     return new CascadingTableModificationRel(
       modificationRel.getCluster(),
