@@ -25,6 +25,8 @@ import org.eigenbase.rel.TableModificationRel;
 import org.eigenbase.rel.convert.ConverterRule;
 import org.eigenbase.relopt.CallingConvention;
 
+import static cascading.lingual.optiq.Cascading.CONVENTION;
+
 /**
  *
  */
@@ -34,7 +36,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
 
   public CascadingTableModificationConverterRule()
     {
-    super( TableModificationRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingTableModificationConverterRule" );
+    super( TableModificationRel.class, CallingConvention.NONE, CONVENTION, "CascadingTableModificationConverterRule" );
     }
 
   @Override
@@ -44,7 +46,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
 
     final RelNode convertedChild = convert(
       modificationRel.getChild(),
-      modificationRel.getTraitSet().replace( Cascading.CONVENTION ) );
+      modificationRel.getTraitSet().replace( CONVENTION ) );
 
     if( convertedChild == null )
       return null; // We can't convert the child, so we can't convert rel.
@@ -52,7 +54,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
     return new CascadingTableModificationRel(
       modificationRel.getCluster(),
       modificationRel.getTraitSet()
-        .plus( Cascading.CONVENTION ),
+        .plus( CONVENTION ),
       modificationRel.getTable(),
       modificationRel.getCatalogReader(),
       convertedChild,

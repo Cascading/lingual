@@ -18,20 +18,21 @@ To start the shell for running queries on Apache Hadoop:
 
 # CLI Options Reference
 
-| switch              | description
-| ------------------- | -----------
-|                     |
-| --platform [name]   | use the named platform
-|                     |
-| --schema [name]     | name of the default schema (same as `set schema _name_`)
-|                     |
-| --schemas [uri,...] | root path for each schema to use, will use base directory as schema name
-|                     |
-| --sql [file]        | file with SQL commands to execute
-|                     |
-| --resultPath [dir]  | where to store temporary result sets
-| --dotPath [dir]     | where to write out the Cascading planner DOT file for debugging
-|                     |
+| switch               | description
+| -------------------- | -----------
+|                      |
+| --platform [name]    | use the named platform
+|                      |
+| --schema [name]      | name of the default schema (same as `set schema _name_`)
+|                      |
+| --schemas [uri,...]  | root path for each schema to use, will use base directory as schema name
+|                      |
+| --sql [file]         | file with SQL commands to execute
+|                      |
+| --resultPath [dir]   | where to store temporary result sets
+| --flowPlanPath [dir] | where to write out the Cascading planner DOT file for debugging
+| --sqlPlanPath [dir ] | where to write out the Optiq planner plan file for debugging
+|                      |
 
 # Configuration
 

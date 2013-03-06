@@ -35,7 +35,8 @@ public class ShellOptions extends Options
   private final OptionSpec<String> schema;
   private final OptionSpec<String> schemas;
   private final OptionSpec<String> resultPath;
-  private final OptionSpec<String> dotPath;
+  private final OptionSpec<String> flowPlanPath;
+  private final OptionSpec<String> sqlPlanPath;
   private final OptionSpec<String> sqlFile;
   private final OptionSpec<Integer> maxRows;
 
@@ -50,8 +51,11 @@ public class ShellOptions extends Options
     resultPath = parser.accepts( "resultPath", "platform path to store results of SELECT queries" )
       .withOptionalArg().defaultsTo( "results" ).describedAs( "directory" );
 
-    dotPath = parser.accepts( "dotPath", "platform path to write flow dot files" )
-      .withOptionalArg().defaultsTo( "dotFiles" ).describedAs( "directory" );
+    flowPlanPath = parser.accepts( "flowPlanPath", "platform path to write flow plan files" )
+      .withOptionalArg().defaultsTo( "flowPlanFiles" ).describedAs( "directory" );
+
+    sqlPlanPath = parser.accepts( "sqlPlanPath", "platform path to write SQL plan files" )
+      .withOptionalArg().defaultsTo( "sqlPlanPath" ).describedAs( "directory" );
 
     sqlFile = parser.accepts( "sql", "file with sql commands to execute" )
       .withRequiredArg().describedAs( "filename" );
@@ -90,11 +94,18 @@ public class ShellOptions extends Options
         .append( getMaxRows() );
       }
 
-    if( isDotPath() && getDotPath() != null )
+    if( isFlowPlanPath() && getFlowPlanPath() != null )
       {
       builder
-        .append( ";" ).append( Driver.DOT_PATH_PROP ).append( "=" )
-        .append( getDotPath() );
+        .append( ";" ).append( Driver.FLOW_PLAN_PATH ).append( "=" )
+        .append( getFlowPlanPath() );
+      }
+
+    if( isSQLPlanPath() && getSQLPlanPath() != null )
+      {
+      builder
+        .append( ";" ).append( Driver.SQL_PLAN_PATH_PROP ).append( "=" )
+        .append( getSQLPlanPath() );
       }
 
     if( getSqlFile() != null )
@@ -123,14 +134,24 @@ public class ShellOptions extends Options
     return optionSet.valueOf( resultPath );
     }
 
-  public boolean isDotPath()
+  public boolean isFlowPlanPath()
     {
-    return optionSet.has( dotPath );
+    return optionSet.has( flowPlanPath );
     }
 
-  public String getDotPath()
+  public String getFlowPlanPath()
     {
-    return optionSet.valueOf( dotPath );
+    return optionSet.valueOf( flowPlanPath );
+    }
+
+  public boolean isSQLPlanPath()
+    {
+    return optionSet.has( sqlPlanPath );
+    }
+
+  public String getSQLPlanPath()
+    {
+    return optionSet.valueOf( sqlPlanPath );
     }
 
   public String getSqlFile()

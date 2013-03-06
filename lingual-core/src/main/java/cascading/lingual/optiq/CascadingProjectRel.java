@@ -33,6 +33,8 @@ import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
+import org.eigenbase.relopt.RelOptCost;
+import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexLiteral;
@@ -72,6 +74,12 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       rowType,
       flags,
       getCollationList() );
+    }
+  @Override
+
+  public RelOptCost computeSelfCost( RelOptPlanner planner )
+    {
+    return super.computeSelfCost( planner ).multiplyBy( .1 );
     }
 
   public Branch visitChild( Stack stack )

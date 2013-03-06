@@ -35,7 +35,7 @@ public class CascadingSortRule extends RelOptRule
 
   private CascadingSortRule()
     {
-    super( new RelOptRuleOperand( SortRel.class ) );
+    super( new RelOptRuleOperand( SortRel.class ),"CascadingSortRule" );
     }
 
   @Override

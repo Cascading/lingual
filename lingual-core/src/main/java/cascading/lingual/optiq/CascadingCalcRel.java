@@ -42,6 +42,8 @@ import org.eigenbase.rel.CalcRelBase;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
+import org.eigenbase.relopt.RelOptCost;
+import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
@@ -65,6 +67,12 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
   public RelNode copy( RelTraitSet traitSet, List<RelNode> inputs )
     {
     return new CascadingCalcRel( getCluster(), getTraitSet(), sole( inputs ), getRowType(), getProgram(), getCollationList() );
+    }
+
+  @Override
+  public RelOptCost computeSelfCost( RelOptPlanner planner )
+    {
+    return super.computeSelfCost( planner ).multiplyBy( .1 );
     }
 
   @Override

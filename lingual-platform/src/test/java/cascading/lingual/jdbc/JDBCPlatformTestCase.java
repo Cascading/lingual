@@ -77,9 +77,14 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
 
   protected abstract String getDefaultSchemaPath();
 
-  protected String getDotPath()
+  protected String getFlowPlanPath()
     {
     return getRootPath() + "/jdbc/dot/" + getTestName();
+    }
+
+  protected String getSQLPlanPath()
+    {
+    return getRootPath() + "/jdbc/optiq/" + getTestName();
     }
 
   public String getConnectionString()
@@ -87,9 +92,10 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     String platformName = getPlatformName();
     String schemaPath = getDefaultSchemaPath();
     String resultPath = getResultPath();
-    String dotPath = getDotPath();
+    String flowPlanPath = getFlowPlanPath();
+    String sqlPlanPath = getSQLPlanPath();
 
-    return String.format( "%s:%s;schemas=%s;resultPath=%s;dotPath=%s", URI, platformName, schemaPath, resultPath, dotPath );
+    return String.format( "%s:%s;schemas=%s;resultPath=%s;flowPlanPath=%s;sqlPlanPath=%s", URI, platformName, schemaPath, resultPath, flowPlanPath, sqlPlanPath );
     }
 
   protected synchronized Connection getConnection() throws Exception

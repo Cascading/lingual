@@ -436,17 +436,12 @@ public abstract class PlatformBroker<Config>
 
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
-    return new LingualFlowFactory( this, createName(), branch );
+    return new LingualFlowFactory( this, createUniqueName(), branch );
     }
 
-  private String createName()
+  public String createUniqueName()
     {
-    return getTimeStamp() + "-" + Util.createUniqueID().substring( 0, 10 );
-    }
-
-  private String getTimeStamp()
-    {
-    return dateFormat.format( new Date() );
+    return dateFormat.format( new Date() ) + "-" + Util.createUniqueID().substring( 0, 10 );
     }
 
   public SchemaCatalog newInstance()

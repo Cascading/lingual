@@ -20,7 +20,7 @@
 
 package cascading.lingual.optiq;
 
-import org.eigenbase.rel.ProjectRel;
+import org.eigenbase.rel.AggregateRel;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
 import org.eigenbase.relopt.RelOptRuleOperand;
@@ -29,29 +29,27 @@ import org.eigenbase.relopt.RelTraitSet;
 /**
  *
  */
-public class CascadingProjectRule extends RelOptRule
+public class CascadingAggregateRule extends RelOptRule
   {
-  public static final CascadingProjectRule INSTANCE = new CascadingProjectRule();
+  public static final CascadingAggregateRule INSTANCE = new CascadingAggregateRule();
 
-  private CascadingProjectRule()
+  private CascadingAggregateRule()
     {
-    super( new RelOptRuleOperand( ProjectRel.class ), "CascadingProjectRule" );
+    super( new RelOptRuleOperand( AggregateRel.class ), "CascadingAggregateRule" );
     }
 
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    ProjectRel rel = (ProjectRel) call.getRels()[ 0 ];
+    AggregateRel rel = (AggregateRel) call.getRels()[ 0 ];
 
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
-    call.transformTo( new CascadingProjectRel(
+    call.transformTo( new CascadingAggregateRel(
       rel.getCluster(),
       newTraits,
       convert( rel.getChild(), newTraits ),
-      rel.getProjectExps(),
-      rel.getRowType(),
-      rel.getFlags(),
-      rel.getCollationList() ) );
+      rel.getGroupSet(),
+      rel.getAggCallList() ) );
     }
   }

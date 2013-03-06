@@ -78,19 +78,19 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       {
       LOG.error( "planner failed", exception );
 
-      if( flowHolder.dotPath != null )
+      if( flowHolder.flowPlanPath != null )
         {
-        LOG.info( "writing flow dot: {}", flowHolder.dotPath );
-        exception.writeDOT( flowHolder.dotPath );
+        LOG.info( "writing flow dot: {}", flowHolder.flowPlanPath );
+        exception.writeDOT( flowHolder.flowPlanPath );
         }
 
       throw exception;
       }
 
-    if( flowHolder.dotPath != null )
+    if( flowHolder.flowPlanPath != null )
       {
-      LOG.info( "writing flow dot: {}", flowHolder.dotPath );
-      flow.writeDOT( flowHolder.dotPath );
+      LOG.info( "writing flow dot: {}", flowHolder.flowPlanPath );
+      flow.writeDOT( flowHolder.flowPlanPath );
       }
 
     try

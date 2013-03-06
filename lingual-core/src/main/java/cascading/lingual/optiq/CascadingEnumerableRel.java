@@ -20,6 +20,9 @@
 
 package cascading.lingual.optiq;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +57,7 @@ import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +95,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return new CascadingEnumerableRel( getCluster(), traitSet, sole( inputs ) );
     }
 
+  @Override
   public BlockExpression implement( EnumerableRelImplementor implementor )
     {
     LOG.debug( "implementing enumerable" );
@@ -101,6 +106,8 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     if( platformBroker == null )
       throw new IllegalStateException( "platformBroker was null" );
+
+    writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName() );
 
     if( branch.tuples != null )
       return handleInsert( platformBroker, branch );
@@ -140,7 +147,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     FlowHolder flowHolder = new FlowHolder( getPhysType(), flowFactory, branch.isModification );
 
-    setDotPath( properties, flowFactory.getName(), flowHolder );
+    setFlowPlanPath( properties, flowFactory.getName(), flowHolder );
     setMaxRows( properties, flowHolder );
 
     int ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
@@ -161,17 +168,56 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return path + name;
     }
 
-  private void setDotPath( Properties properties, String name, FlowHolder flowHolder )
+  private void setFlowPlanPath( Properties properties, String name, FlowHolder flowHolder )
     {
-    if( !properties.containsKey( Driver.DOT_PATH_PROP ) )
+    if( !properties.containsKey( Driver.FLOW_PLAN_PATH ) )
       return;
 
-    flowHolder.dotPath = properties.getProperty( Driver.DOT_PATH_PROP );
+    flowHolder.flowPlanPath = properties.getProperty( Driver.FLOW_PLAN_PATH );
 
-    if( !flowHolder.dotPath.endsWith( "/" ) )
-      flowHolder.dotPath += "/";
+    if( !flowHolder.flowPlanPath.endsWith( "/" ) )
+      flowHolder.flowPlanPath += "/";
 
-    flowHolder.dotPath += name + ".dot";
+    flowHolder.flowPlanPath += name + ".dot";
+    }
+
+  private void writeSQLPlan( Properties properties, String name )
+    {
+    String path = getSQLPlanPath( properties, name );
+
+    if( path == null )
+      return;
+
+    PrintWriter writer;
+
+    try
+      {
+      File file = new File( path );
+
+      file.getParentFile().mkdirs();
+      writer = new PrintWriter( file );
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to write sql plan to: " + path );
+      }
+
+    ( (VolcanoPlanner) getCluster().getPlanner() ).dump( writer );
+
+    writer.close();
+    }
+
+  private String getSQLPlanPath( Properties properties, String name )
+    {
+    if( !properties.containsKey( Driver.SQL_PLAN_PATH_PROP ) )
+      return null;
+
+    String path = properties.getProperty( Driver.SQL_PLAN_PATH_PROP );
+
+    if( !path.endsWith( "/" ) )
+      path += "/";
+
+    return path += name + ".txt";
     }
 
   private void setMaxRows( Properties properties, FlowHolder flowHolder )

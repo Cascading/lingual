@@ -31,7 +31,7 @@ public class FlowHolder
   public final PhysType physType;
   public final LingualFlowFactory flowFactory;
   public final boolean isModification;
-  public String dotPath;
+  public String flowPlanPath;
   public int maxRows = Integer.MAX_VALUE;
 
   public FlowHolder( PhysType physType, LingualFlowFactory flowFactory, boolean isModification )

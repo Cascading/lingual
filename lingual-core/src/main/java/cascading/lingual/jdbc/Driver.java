@@ -48,7 +48,8 @@ import org.slf4j.LoggerFactory;
  * <li>{@code schema=[name]} - set the default schema name to use</li>
  * <li>{@code schemas=[path,path]} - URI paths to the set of schema/tables to install in the catalog</li>
  * <li>{@code resultPath=[path]} - temporary root path for result sets to be stored</li>
- * <li>{@code dotPath=[path]} - for debugging, print the corresponding SQL dot file here</li>
+ * <li>{@code flowPlanPath=[path]} - for debugging, print the corresponding SQL dot file here</li>
+ * <li>{@code sqlPlanPath=[path]} - for debugging, print the corresponding SQL plan file here</li>
  * </ul>
  * <p/>
  * For example, using Cascading local mode, and to load all the subdirectories of {@code ./employees/} as tables,
@@ -73,7 +74,8 @@ public class Driver extends UnregisteredDriver
   public static final String VERBOSE_PROP = "verbose";
   public static final String RESULT_PATH_PROP = "resultPath";
   public static final String MAX_ROWS = "maxRows";
-  public static final String DOT_PATH_PROP = "dotPath";
+  public static final String FLOW_PLAN_PATH = "flowPlanPath";
+  public static final String SQL_PLAN_PATH_PROP = "sqlPlanPath";
   public static final String COLLECTOR_CACHE_PROP = "collectorCache";
 
   static
