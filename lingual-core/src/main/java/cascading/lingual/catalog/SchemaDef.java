@@ -331,14 +331,14 @@ public class SchemaDef extends Def
     return stereotypes.renameStereotype( name, newName );
     }
 
-  public Stereotype<Protocol, Format> getStereotypeFor( Fields fields )
+  public Stereotype<Protocol, Format> findStereotypeFor( Fields fields )
     {
     Stereotype<Protocol, Format> stereotypeFor = stereotypes.getStereotypeFor( fields );
 
     if( stereotypeFor != null || getParentSchema() == null )
       return stereotypeFor;
 
-    return getParentSchema().getStereotypeFor( fields );
+    return getParentSchema().findStereotypeFor( fields );
     }
 
   public boolean hasStereotype( String name )

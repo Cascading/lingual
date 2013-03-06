@@ -54,7 +54,8 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );
 
-    execute( outputPath, "--stereotype", "emps", "--add",
+    execute( outputPath,
+      "--stereotype", "emps", "--add",
       "--columns", Joiner.on( "," ).join( EMPS_COLUMNS ),
       "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
     );
@@ -95,6 +96,6 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
     properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
 
-    return new Catalog( properties );
+    return new Catalog( System.out, System.err, properties );
     }
   }

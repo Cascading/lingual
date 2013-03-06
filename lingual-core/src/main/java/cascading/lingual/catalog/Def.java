@@ -85,6 +85,16 @@ public class Def implements Serializable
     }
 
   @Override
+  public String toString()
+    {
+    final StringBuilder sb = new StringBuilder();
+    sb.append( getClass().getSimpleName() );
+    sb.append( "{name='" ).append( name ).append( '\'' );
+    sb.append( '}' );
+    return sb.toString();
+    }
+
+  @Override
   public boolean equals( Object object )
     {
     if( this == object )

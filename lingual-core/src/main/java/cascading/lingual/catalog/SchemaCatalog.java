@@ -303,10 +303,19 @@ public abstract class SchemaCatalog implements Serializable
     if( tableName == null )
       tableName = platformBroker.createTableNameFrom( tableIdentifier );
 
-    Stereotype<Protocol, Format> stereotype = getStereoType( schemaDef.getName(), stereotypeName );
+    Stereotype<Protocol, Format> stereotype;
 
-    if( stereotype == null )
+    if( stereotypeName != null )
+      {
+      stereotype = findStereotype( schemaDef, stereotypeName );
+
+      if( stereotype == null )
+        throw new IllegalArgumentException( "stereotype does not exist: " + stereotypeName );
+      }
+    else
+      {
       stereotype = getOrCreateStereotype( schemaDef, tableIdentifier );
+      }
 
     schemaDef.addTable( tableName, tableIdentifier, stereotype, protocol, format );
 
@@ -323,12 +332,12 @@ public abstract class SchemaCatalog implements Serializable
     Fields fields = getFieldsFor( identifier );
 
     if( fields == null )
-      return schema.getStereotypeFor( Fields.UNKNOWN );
+      return schema.findStereotypeFor( Fields.UNKNOWN );
 
     String schemaName = schema.getName();
     String stereotypeName = platformBroker.createTableNameFrom( identifier );
 
-    stereotype = schema.getStereotypeFor( fields );
+    stereotype = schema.findStereotypeFor( fields );
 
     if( stereotype == null )
       {
@@ -412,10 +421,10 @@ public abstract class SchemaCatalog implements Serializable
 
   public Protocol getDefaultProtocolFor( String identifier )
     {
-    TableDef tableDef = rootSchemaDef.findTableFor( identifier );
+    TableDef table = rootSchemaDef.findTableFor( identifier );
 
-    if( tableDef != null && tableDef.getProtocol() != null )
-      return tableDef.getProtocol();
+    if( table != null && table.getProtocol() != null )
+      return table.getProtocol();
 
     return defaultProtocol;
     }
@@ -427,9 +436,9 @@ public abstract class SchemaCatalog implements Serializable
     if( tableDef != null && tableDef.getFormat() != null )
       return tableDef.getFormat();
 
-    SchemaDef schemaDef = getSchemaDef( schemaName );
+    SchemaDef schema = getSchemaDef( schemaName );
 
-    Format format = FormatProperties.findFormatFor( schemaDef, identifier );
+    Format format = FormatProperties.findFormatFor( schema, identifier );
 
     if( format == null ) // todo: grab default from scheme
       format = defaultFormat;
@@ -452,12 +461,22 @@ public abstract class SchemaCatalog implements Serializable
     return schema.getStereotypeNames();
     }
 
+  private Stereotype<Protocol, Format> findStereotype( SchemaDef schema, String stereotypeName )
+    {
+    if( schema == null )
+      return null;
+
+    Stereotype<Protocol, Format> stereotype = schema.getStereotype( stereotypeName );
+
+    if( stereotype != null )
+      return stereotype;
+
+    return findStereotype( schema.getParentSchema(), stereotypeName );
+    }
+
   public Stereotype<Protocol, Format> getStereoType( String schemaName, String stereotypeName )
     {
-    SchemaDef schema = rootSchemaDef;
-
-    if( schemaName != null )
-      schema = rootSchemaDef.getSchema( schemaName );
+    SchemaDef schema = getSchemaDef( schemaName );
 
     return schema.getStereotype( stereotypeName );
 
@@ -516,7 +535,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public Stereotype getStereoTypeFor( Fields fields )
     {
-    return rootSchemaDef.getStereotypeFor( fields );
+    return rootSchemaDef.findStereotypeFor( fields );
     }
 
   public Stereotype getStereoTypeFor( String schemaName, Fields fields )
@@ -526,7 +545,7 @@ public abstract class SchemaCatalog implements Serializable
     if( schema == null )
       throw new IllegalArgumentException( "schema does not exist: " + schemaName );
 
-    return schema.getStereotypeFor( fields );
+    return schema.findStereotypeFor( fields );
     }
 
   public Fields getFieldsFor( String identifier )
@@ -540,7 +559,7 @@ public abstract class SchemaCatalog implements Serializable
 
     Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( identifier, point.protocol, point.format, SinkMode.KEEP );
 
-    Tap tap = createTapFor( rootSchemaDef.getStereotypeFor( Fields.UNKNOWN ), resource );
+    Tap tap = createTapFor( rootSchemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
 
     if( !resourceExists( tap ) )
       return null;
