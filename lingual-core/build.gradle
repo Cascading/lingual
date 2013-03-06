@@ -79,4 +79,18 @@ dependencies {
   testRuntime group: 'log4j', name: 'log4j', version: '1.2.16'
 }
 
+jar.doFirst {
+  if( !System.properties[ 'lingual.release.final' ] )
+    file( "${buildDir}/build.number.properties" ).write( "lingual.build.number=${buildNumber}" )
+}
+
+jar {
+  into( 'cascading/lingual' ) {
+    from '../version.properties'
+
+    if( !System.properties[ 'lingual.release.final' ] )
+      from "${buildDir}/build.number.properties"
+  }
+}
+
 platformTest.enabled = false
