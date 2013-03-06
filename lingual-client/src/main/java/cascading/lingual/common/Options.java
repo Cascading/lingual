@@ -43,12 +43,14 @@ public class Options
 
   protected OptionSpecBuilder version;
   protected OptionSpec<Void> help;
+  protected OptionSpec<Void> debug;
   protected OptionSpec<String> verbose;
   protected OptionSpec<String> platform;
 
   public Options()
     {
     help = parser.accepts( "help" ).forHelp();
+    debug = parser.accepts( "debug" ); // does nothing but hold the space
     verbose = parser.accepts( "verbose" ).withOptionalArg().defaultsTo( "info" );
     version = parser.accepts( "version" );
 

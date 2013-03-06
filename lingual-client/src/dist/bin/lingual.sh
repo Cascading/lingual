@@ -42,6 +42,7 @@ else
 fi
 
 PLATFORM=local
+OPTIONS=
 
 ARGS="$@"
 
@@ -52,13 +53,15 @@ while [ -n "$1" ]
              PLATFORM=$2
              shift 2
              ;;
+         --debug)
+             OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 ${OPTIONS}"
+             shift
+             ;;
          *)  # no more options. Stop while loop
              shift
              ;;
      esac
  done
-
-OPTIONS=
 
 LINGUAL_CLASSPATH="$BASEDIR/platform/$PLATFORM/*"
 
