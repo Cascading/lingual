@@ -29,7 +29,9 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.Ref;
+import cascading.lingual.util.Version;
 import cascading.pipe.Pipe;
+import cascading.property.AppProps;
 import cascading.tap.SinkMode;
 import cascading.tuple.Fields;
 
@@ -53,6 +55,8 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       setSourceStereotype( head.name, catalog.findStereotypeFor( head.identifier ) );
 
     setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
+
+    AppProps.addApplicationFramework( getProperties(), Version.getName() + ":" + Version.getVersionString() );
     }
 
   @Override
