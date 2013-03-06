@@ -937,7 +937,7 @@ public class LingualDatabaseMetaData implements DatabaseMetaData
   @Override
   public boolean supportsSavepoints() throws SQLException
     {
-    return parent.supportsSavepoints();
+    return false;
     }
 
   @Override
