@@ -111,8 +111,12 @@ public class Shell extends Main<ShellOptions>
 
     addAll( args, "-d", Driver.class.getName() );
     addAll( args, "-u", getOptions().createJDBCUrl() );
-    addAll( args, "--incremental=true" );
     addAll( args, "--headerInterval=100" ); // 100 is default
+
+    // this breaks !tables etc,
+    // but is required if we are going to output 10B rows
+    if( getOptions().getMaxRows() == 0 )
+      addAll( args, "--incremental=true" );
 
     if( getOptions().isVerbose() )
       addAll( args, "--verbose=true" );
