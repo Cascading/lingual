@@ -44,6 +44,8 @@ import org.eigenbase.util14.ZonelessDatetime;
 )
 public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements CoercibleType
   {
+  public static final int MILLIS_PER_DAY = 86400000;
+
   protected SQLDateTimeCoercibleType( SqlTypeName sqlTypeName )
     {
     super( sqlTypeName );
@@ -92,6 +94,9 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     // no coercion, or already in canonical form
     if( to == Long.class || to == long.class || to == Object.class )
       return value;
+
+    if( to == Integer.class )
+      return ( (Long) value ).intValue();
 
     ZonelessDatetime date = createInstance();
 

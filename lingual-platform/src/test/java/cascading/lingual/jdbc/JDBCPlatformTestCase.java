@@ -27,11 +27,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.tap.TypedFieldTypeResolver;
+import cascading.lingual.type.SQLDateTimeCoercibleType;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -235,7 +237,25 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         Type type = entry.getFields().getType( entry.getFields().getPos( field ) );
 
         if( type instanceof BasicSqlType )
+          {
           value = ( (CoercibleType) type ).coerce( value, typeFactory.getJavaClass( ( (BasicSqlType) type ) ) );
+
+          // for date-time types, the canonical type (int or long) -- chosen for
+          // efficient internal processing -- is not what is returned to the
+          // end-user from JDBC (java.sql.Date etc.)
+          switch( ( (BasicSqlType) type ).getSqlTypeName() )
+            {
+            case DATE:
+              value = new java.sql.Date( ( (Integer) value ).longValue() * SQLDateTimeCoercibleType.MILLIS_PER_DAY );
+              break;
+            case TIME:
+              value = new Time( ( (Integer) value ).longValue() );
+              break;
+            case TIMESTAMP:
+              value = new java.sql.Date( ( (Long) value ).longValue() );
+              break;
+            }
+          }
 
         if( value != null )
           table.put( row++, field, value );
