@@ -34,4 +34,3 @@ dependencies {
 
   testCompile group: 'com.google.guava', name: 'guava', version: '13.0.1'
 }
-

@@ -48,7 +48,9 @@ subprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
 
-  group = 'lingual'
+  // lingual is a sub-project of cascading
+  // project name is set in settings.gradle
+  group = 'cascading'
   version = releaseVersion
 
   apply from: "${rootDir}/etc/includes.gradle"
@@ -99,5 +101,32 @@ subprojects {
 
   dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.8.2'
+  }
+
+  uploadArchives {
+
+    repositories.mavenDeployer {
+      configuration = configurations.archives
+
+      repository( url: repoUrl ) {
+        authentication( userName: repoUserName, password: repoPassword )
+      }
+
+      pom.project {
+        description 'Lingual is true SQL for Cascading and Apache Hadoop.'
+        inceptionYear '2012'
+        url 'http://cascading.org/lingual/'
+        scm {
+          url 'https://github.com/Cascading/lingual.git'
+        }
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+      }
+    }
   }
 }

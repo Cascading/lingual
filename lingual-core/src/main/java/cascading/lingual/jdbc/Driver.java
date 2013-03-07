@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@code schema=[name]} - set the default schema name to use</li>
  * <li>{@code schemas=[path,path]} - URI paths to the set of schema/tables to install in the catalog</li>
  * <li>{@code resultPath=[path]} - temporary root path for result sets to be stored</li>
- * <li>{@code flowPlanPath=[path]} - for debugging, print the corresponding SQL dot file here</li>
+ * <li>{@code flowPlanPath=[path]} - for debugging, print the corresponding Flow dot file here</li>
  * <li>{@code sqlPlanPath=[path]} - for debugging, print the corresponding SQL plan file here</li>
  * </ul>
  * <p/>

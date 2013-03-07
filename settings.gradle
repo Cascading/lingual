@@ -24,3 +24,5 @@ include 'lingual-local'
 include 'lingual-hadoop'
 include 'lingual-platform'
 include 'lingual-client'
+
+rootProject.name = 'lingual'

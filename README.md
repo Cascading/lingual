@@ -2,14 +2,14 @@
 
 Lingual is __true__ SQL for Cascading and Apache Hadoop.
 
-Lingual includes a JDBC Driver, SQL command shell, and a catalog manager for creating schemas and tables.
+Lingual includes JDBC Drivers, SQL command shell, and a catalog manager for creating schemas and tables.
 
 To use Lingual, there is no installation other than the optional command line utilities.
 
 Lingual is based on the [Cascading](http://cascading.org) distributed processing engine and
 the [Optiq](https://github.com/julianhyde/optiq) SQL parser and rule engine.
 
-See `lingual-client/docs` for details on using the included command line utilities.
+See `lingual-client/README.md` for details on using the included command line utilities.
 
 Lingual only supports `SELECT` and `INSERT INTO` statements, for example
 
@@ -20,7 +20,7 @@ Lingual only supports `SELECT` and `INSERT INTO` statements, for example
 DDL statements like `CREATE TABLE` are unsupported. See the Lingual Catalog tool for defining Schemas and Tables from
 the command line.
 
-# Installing
+# Installing the Client
 
 To install the Lingual command line tools, call:
 
@@ -32,6 +32,52 @@ local `.bashrc` file.
 To get the latest release, call:
 
     > lingual selfupdate
+
+# Using the JDBC Drivers
+
+Lingual provides two JDBC Driver jars with self contained dependencies in the [Conjars](http://conjars.org] Maven
+repository.
+
+The JDBC connection string is of the form `jdbc:lingual:[platform]`, where `[platform]` is either `local` or `hadoop`.
+
+Additional JDBC properties may be set using the form:
+
+    jdbc:lingual:[platform];[property]=[value];[property]=[value];...
+
+Where the property keys are:
+
+ * catalog=[path] - the working directory where your .lingual workspace is kept
+ * schema=[name] - set the default schema name to use
+ * schemas=[path,path] - URI paths to the set of schema/tables to install in the catalog
+ * resultPath=[path] - temporary root path for result sets to be stored
+ * flowPlanPath=[path] - for debugging, print the corresponding Flow dot file here
+ * sqlPlanPath=[path] - for debugging, print the corresponding SQL plan file here
+
+Platform is requried to help the driver distinguish between either backend when more than one JDBC Driver is in
+the CLASSPATH.
+
+To pull either of these jars, the `jdbc` Maven classifier must be used.
+
+For the `local` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-local</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+For the `hadoop` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-hadoop</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as
+would be expected.
 
 # Developing
 

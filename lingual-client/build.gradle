@@ -64,7 +64,6 @@ assembleDist << {
   copy {
     into "${distDir}/platform/hadoop"
     from project( ":lingual-hadoop" ).fatJar
-//    from project( ":lingual-hadoop" ).hadoopJar
   }
 
   copy {
