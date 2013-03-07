@@ -242,6 +242,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
+  public void testSelectDateGreater() throws Exception
+    {
+    assertTablesEqual( "sales-select-date", "select empno, sale_date, sale_time from sales.sales where sale_date > date'1993-01-01'" );
+    }
+
+  @Test
   public void testSelectGroupOrder() throws Exception
     {
     assertTablesEqual( "emps-age-order", "select age as a from sales.emps group by age order by age asc" );
