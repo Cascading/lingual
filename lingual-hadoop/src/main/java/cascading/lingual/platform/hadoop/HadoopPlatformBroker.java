@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
@@ -36,6 +37,7 @@ import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
@@ -45,6 +47,7 @@ import cascading.tap.type.FileType;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +70,25 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   public String getName()
     {
     return "hadoop";
+    }
+
+  @Override
+  public void startConnection( LingualConnection connection ) throws SQLException
+    {
+    // see https://issues.apache.org/jira/browse/HADOOP-7982
+    Thread thread = Thread.currentThread();
+    ClassLoader current = thread.getContextClassLoader();
+
+    thread.setContextClassLoader( UserGroupInformation.HadoopLoginModule.class.getClassLoader() );
+
+    try
+      {
+      super.startConnection( connection );
+      }
+    finally
+      {
+      thread.setContextClassLoader( current );
+      }
     }
 
   @Override
