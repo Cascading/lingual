@@ -28,6 +28,7 @@ import java.util.List;
 
 import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
+import cascading.lingual.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
@@ -107,6 +108,8 @@ public class Shell extends Main<ShellOptions>
 //    \  --isolation=LEVEL               set the transaction isolation level\n \
 //    \  --help                          display this message
 
+    getPrinter().print( Version.getBannerVersionString() );
+
     List<String> args = new ArrayList<String>();
 
     addAll( args, "-d", Driver.class.getName() );
@@ -123,6 +126,8 @@ public class Shell extends Main<ShellOptions>
     // but is required if we are going to output 10B rows
     if( getOptions().getMaxRows() == 0 )
       addAll( args, "--incremental=true" );
+    else
+      getPrinter().print( "only %,d rows will be displayed", getOptions().getMaxRows() );
 
     if( getOptions().isVerbose() )
       addAll( args, "--verbose=true" );

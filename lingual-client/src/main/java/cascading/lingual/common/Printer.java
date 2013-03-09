@@ -40,9 +40,9 @@ public class Printer
     return outPrintStream;
     }
 
-  public void print( String string, String... args )
+  public void print( String formatString, Object... args )
     {
-    getOutPrintStream().println( String.format( string, (Object[]) args ) );
+    getOutPrintStream().println( String.format( formatString, args ) );
     }
 
   public void print( String header, Collection<String> values )

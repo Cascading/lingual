@@ -26,6 +26,10 @@ import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 
+import cascading.flow.planner.PlatformInfo;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.util.Version;
+
 /**
  *
  */
@@ -97,13 +101,26 @@ public class LingualDatabaseMetaData implements DatabaseMetaData
   @Override
   public String getDatabaseProductName() throws SQLException
     {
-    return parent.getDatabaseProductName();
+    PlatformBroker platformBroker = connection.getPlatformBroker();
+    PlatformInfo platformInfo = platformBroker.getPlatformInfo();
+
+    return String.format( "%s [%s %s]",
+      Version.getProductName(),
+      platformInfo.name,
+      platformInfo.vendor
+    );
     }
 
   @Override
   public String getDatabaseProductVersion() throws SQLException
     {
-    return parent.getDatabaseProductVersion();
+    PlatformBroker platformBroker = connection.getPlatformBroker();
+    PlatformInfo platformInfo = platformBroker.getPlatformInfo();
+
+    return String.format( "%s [%s]",
+      Version.getProductVersion(),
+      platformInfo.version
+    );
     }
 
   @Override
