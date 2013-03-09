@@ -17,10 +17,10 @@ Lingual only supports `SELECT` and `INSERT INTO` statements, for example
 
     `insert into test.results select empno, name from sales.emps`
 
-DDL statements like `CREATE TABLE` are unsupported. See the Lingual Catalog tool for defining Schemas and Tables from
-the command line.
+DDL statements like `CREATE TABLE` are unsupported at this time. See the Lingual Catalog tool for defining Schemas
+and Tables from the command line.
 
-# Installing the Client
+# Installing the Lingual Shell and Catalog
 
 To install the Lingual command line tools, call:
 
@@ -32,6 +32,22 @@ local `.bashrc` file.
 To get the latest release, call:
 
     > lingual selfupdate
+
+You can optionally bypass the installation and just download the latest version of the Lingual client by calling:
+
+    > wget -i http://files.concurrentinc.com/lingual/1.0/lingual-client/latest.txt
+
+Note, the `install-lingual-client.sh` file is also a valid Amazon EMR bootstrap action.
+
+    elastic-mapreduce \
+      --create \
+      --instance-group master --instance-count 1 --instance-type $MASTER_INSTANCE_TYPE \
+      --instance-group core --instance-count $1 --instance-type $SLAVE_INSTANCE_TYPE \
+      --bootstrap-action s3://files.cascading.org/sdk/2.1/install-cascading-sdk.sh \
+      --bootstrap-action s3://files.concurrentinc.com/lingual/1.0/lingual-client/install-lingual-client.sh \
+      --name "Cascading Cluster - $USER" \
+      --key-pair $EMR_SSH_KEY_NAME \
+      --alive
 
 # Using the JDBC Drivers
 
