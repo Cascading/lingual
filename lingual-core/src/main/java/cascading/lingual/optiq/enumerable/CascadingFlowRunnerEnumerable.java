@@ -68,6 +68,24 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
   @Override
   public Enumerator enumerator()
     {
+    // see https://issues.apache.org/jira/browse/HADOOP-7982
+    Thread thread = Thread.currentThread();
+    ClassLoader current = thread.getContextClassLoader();
+
+    thread.setContextClassLoader( getClass().getClassLoader() );
+
+    try
+      {
+      return createEnumerator();
+      }
+    finally
+      {
+      thread.setContextClassLoader( current );
+      }
+    }
+
+  public Enumerator createEnumerator()
+    {
     Flow flow;
 
     try
@@ -132,5 +150,4 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     else
       return new FlowArrayEnumerator( flowHolder.maxRows, types, flow );
     }
-
   }

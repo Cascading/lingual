@@ -18,6 +18,8 @@ if [ $# = 0 ]; then
   echo "  selfupdate           fetch the latest version of lingual"
   echo ""
   echo "Most commands print help when invoked w/o parameters."
+  echo ""
+  echo "To set a default platform, set the LINGUAL_PLATFORM env variable."
   exit 1
 fi
 
@@ -41,7 +43,7 @@ else
   exit 1
 fi
 
-PLATFORM=local
+PLATFORM=${LINGUAL_PLATFORM:-local}
 OPTIONS=
 
 ARGS="$@"

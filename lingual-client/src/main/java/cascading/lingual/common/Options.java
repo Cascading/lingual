@@ -122,6 +122,9 @@ public class Options
 
   public String getPlatform()
     {
+    if( !optionSet.has( platform ) && System.getenv( "LINGUAL_PLATFORM" ) != null )
+      return System.getenv( "LINGUAL_PLATFORM" );
+
     return optionSet.valueOf( platform );
     }
 
