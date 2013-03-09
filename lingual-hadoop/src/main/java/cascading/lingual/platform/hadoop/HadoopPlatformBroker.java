@@ -107,7 +107,13 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     String userName = findUserName();
 
     if( jobConf.getUser() == null && userName != null )
+      {
       jobConf.setUser( userName );
+
+      // a hack for hadoop to see the user
+      // jobconf user is ignored when formulating the working user directory
+      System.setProperty( HADOOP_USER_ENV, userName );
+      }
 
     LOG.info( "using app jar: {}", jobConf.getJar() );
     LOG.info( "using user: {}", jobConf.getUser() == null ? "" : jobConf.getUser() );
@@ -186,7 +192,12 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
 
   private String findUserName()
     {
-    return System.getProperty( HADOOP_USER_PROPERTY, System.getenv( HADOOP_USER_ENV ) );
+    // HADOOP_USER_NAME
+
+    String envUser = System.getenv( HADOOP_USER_ENV );
+    String propertyUser = System.getProperty( HADOOP_USER_PROPERTY, envUser );
+
+    return getProperties().getProperty( "user", propertyUser );
     }
 
   @Override

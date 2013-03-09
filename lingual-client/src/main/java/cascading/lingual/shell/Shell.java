@@ -113,6 +113,12 @@ public class Shell extends Main<ShellOptions>
     addAll( args, "-u", getOptions().createJDBCUrl() );
     addAll( args, "--headerInterval=100" ); // 100 is default
 
+    if( getOptions().hasUsername() )
+      addAll( args, "-n", getOptions().getUsername() );
+
+    if( getOptions().hasPassword() )
+      addAll( args, "-p", getOptions().getPassword() );
+
     // this breaks !tables etc,
     // but is required if we are going to output 10B rows
     if( getOptions().getMaxRows() == 0 )

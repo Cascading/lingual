@@ -32,6 +32,8 @@ import joptsimple.OptionSpec;
  */
 public class ShellOptions extends Options
   {
+  private final OptionSpec<String> username;
+  private final OptionSpec<String> password;
   private final OptionSpec<String> schema;
   private final OptionSpec<String> schemas;
   private final OptionSpec<String> resultPath;
@@ -42,6 +44,12 @@ public class ShellOptions extends Options
 
   public ShellOptions()
     {
+    username = parser.accepts( "username", "name of remote user" )
+      .withRequiredArg();
+
+    password = parser.accepts( "password", "password of remote user" )
+      .withRequiredArg();
+
     schema = parser.accepts( "schema", "name of current schema" )
       .withRequiredArg();
 
@@ -94,14 +102,14 @@ public class ShellOptions extends Options
         .append( getMaxRows() );
       }
 
-    if( isFlowPlanPath() && getFlowPlanPath() != null )
+    if( hasFlowPlanPath() && getFlowPlanPath() != null )
       {
       builder
         .append( ";" ).append( Driver.FLOW_PLAN_PATH ).append( "=" )
         .append( getFlowPlanPath() );
       }
 
-    if( isSQLPlanPath() && getSQLPlanPath() != null )
+    if( hasSQLPlanPath() && getSQLPlanPath() != null )
       {
       builder
         .append( ";" ).append( Driver.SQL_PLAN_PATH_PROP ).append( "=" )
@@ -119,6 +127,26 @@ public class ShellOptions extends Options
 
   /////
 
+  public boolean hasUsername()
+    {
+    return optionSet.has( username );
+    }
+
+  public String getUsername()
+    {
+    return optionSet.valueOf( username );
+    }
+
+  public boolean hasPassword()
+    {
+    return optionSet.has( password );
+    }
+
+  public String getPassword()
+    {
+    return optionSet.valueOf( password );
+    }
+
   public String getSchema()
     {
     return optionSet.valueOf( schema );
@@ -134,7 +162,7 @@ public class ShellOptions extends Options
     return optionSet.valueOf( resultPath );
     }
 
-  public boolean isFlowPlanPath()
+  public boolean hasFlowPlanPath()
     {
     return optionSet.has( flowPlanPath );
     }
@@ -144,7 +172,7 @@ public class ShellOptions extends Options
     return optionSet.valueOf( flowPlanPath );
     }
 
-  public boolean isSQLPlanPath()
+  public boolean hasSQLPlanPath()
     {
     return optionSet.has( sqlPlanPath );
     }

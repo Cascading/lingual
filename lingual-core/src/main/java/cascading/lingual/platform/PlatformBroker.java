@@ -268,10 +268,15 @@ public abstract class PlatformBroker<Config>
     {
     String catalogPath = getFullCatalogPath();
 
+    LOG.info( "reading catalog from: {}", catalogPath );
+
     InputStream inputStream = getInputStream( catalogPath );
 
     if( inputStream == null )
+      {
+      LOG.debug( "catalog not found at: {}", catalogPath );
       return null;
+      }
 
     if( saveAsBinary )
       return readAsObjectAndClose( catalogPath, inputStream );
