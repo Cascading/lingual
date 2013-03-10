@@ -51,7 +51,7 @@ Note, the `install-lingual-client.sh` file is also a valid Amazon EMR bootstrap 
 
 # Using the JDBC Drivers
 
-Lingual provides two JDBC Driver jars with self contained dependencies in the [Conjars](http://conjars.org] Maven
+Lingual provides two JDBC Driver jars with self contained dependencies in the [Conjars](http://conjars.org) Maven
 repository.
 
 The JDBC connection string is of the form `jdbc:lingual:[platform]`, where `[platform]` is either `local` or `hadoop`.
