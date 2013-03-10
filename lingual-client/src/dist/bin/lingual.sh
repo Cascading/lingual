@@ -5,7 +5,7 @@ BINDIR=`dirname $0`
 BASEDIR=`dirname ${BINDIR}`
 
 if [ "$1" = "selfupdate" ]; then
-  curl http://@location@/lingual/@majorVersion@/lingual-client/install-lingual-client.sh | sh
+  curl http://@location@/lingual/@majorVersion@/lingual-client/install-lingual-client.sh | bash
   exit 0
 fi
 
