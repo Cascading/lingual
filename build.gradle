@@ -22,7 +22,7 @@ apply from: 'etc/version.gradle'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
-ext.cascadingVersion = '2.2.+'
+ext.cascadingVersion = '2.2.0-wip-20'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars

@@ -44,6 +44,8 @@ import cascading.tap.SinkMode;
 import cascading.tap.TapException;
 import cascading.tap.hadoop.Hfs;
 import cascading.tap.type.FileType;
+import cascading.tuple.hadoop.BigDecimalSerialization;
+import cascading.tuple.hadoop.TupleSerializationProps;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -97,7 +99,11 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( jobConf != null )
       return jobConf;
 
-    jobConf = HadoopUtil.createJobConf( getProperties(), new JobConf() );
+    Properties properties = new Properties( getProperties() );
+
+    TupleSerializationProps.addSerialization( properties, BigDecimalSerialization.class.getName() );
+
+    jobConf = HadoopUtil.createJobConf( properties, new JobConf() );
 
     String appJar = findAppJar();
 
@@ -124,14 +130,14 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       {
       LOG.info( "loading override properties from: {}", url.toString() );
 
-      Properties properties = loadPropertiesFrom( url );
+      Properties overrideProperties = loadPropertiesFrom( url );
 
-      for( String propertyName : properties.stringPropertyNames() )
-        jobConf.set( propertyName, properties.getProperty( propertyName ) );
-
-      if( LOG.isDebugEnabled() )
-        LOG.debug( HadoopUtil.createProperties( jobConf ).toString() );
+      for( String propertyName : overrideProperties.stringPropertyNames() )
+        jobConf.set( propertyName, overrideProperties.getProperty( propertyName ) );
       }
+
+    if( LOG.isDebugEnabled() )
+      LOG.debug( "job conf properties: {}", HadoopUtil.createProperties( jobConf ) );
 
     return jobConf;
     }
