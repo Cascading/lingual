@@ -75,8 +75,8 @@ public class JdbcExample
     ResultSet resultSet =
       statement.executeQuery(
         "select *\n"
-          + "from \"EXAMPLE\".\"SALES_FACT_1997\" as s\n"
-          + "join \"EXAMPLE\".\"EMPLOYEE\" as e\n"
+          + "from \"example\".\"sales_fact_1997\" as s\n"
+          + "join \"example\".\"employee\" as e\n"
           + "on e.\"EMPID\" = s.\"CUST_ID\"" );
 
     while( resultSet.next() )
