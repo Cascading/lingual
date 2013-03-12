@@ -22,8 +22,6 @@ package cascading.lingual.platform;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.sql.SQLException;
@@ -73,8 +71,6 @@ public abstract class PlatformBroker<Config>
   private SchemaCatalog catalog;
 
   private Map<String, TupleEntryCollector> collectorCache;
-
-  private boolean saveAsBinary = false;
 
   protected PlatformBroker()
     {
@@ -193,10 +189,7 @@ public abstract class PlatformBroker<Config>
     String catalogPath = getFullCatalogPath();
     OutputStream outputStream = getOutputStream( catalogPath );
 
-    if( saveAsBinary )
-      writeAsObjectAndClose( catalogPath, outputStream );
-    else
-      writeAsJsonAndClose( catalogPath, outputStream );
+    writeAsJsonAndClose( catalogPath, outputStream );
     }
 
   public String getFullMetadataPath()
@@ -211,22 +204,6 @@ public abstract class PlatformBroker<Config>
     String catalogPath = getStringProperty( CATALOG_PROP );
 
     return makeFullCatalogFilePath( catalogPath );
-    }
-
-  private void writeAsObjectAndClose( String catalogPath, OutputStream outputStream )
-    {
-    try
-      {
-      ObjectOutputStream objectOutputStream = new ObjectOutputStream( outputStream );
-
-      objectOutputStream.writeObject( getCatalog() );
-
-      objectOutputStream.close();
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to write path: " + catalogPath, exception );
-      }
     }
 
   private void writeAsJsonAndClose( String catalogPath, OutputStream outputStream )
@@ -278,31 +255,7 @@ public abstract class PlatformBroker<Config>
       return null;
       }
 
-    if( saveAsBinary )
-      return readAsObjectAndClose( catalogPath, inputStream );
-    else
-      return readAsJsonAndClose( catalogPath, inputStream );
-    }
-
-  private SchemaCatalog readAsObjectAndClose( String catalogPath, InputStream inputStream )
-    {
-    try
-      {
-      ObjectInputStream objectInputStream = new ObjectInputStream( inputStream );
-      SchemaCatalog schemaCatalog = (SchemaCatalog) objectInputStream.readObject();
-
-      objectInputStream.close();
-
-      return schemaCatalog;
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to read path: " + catalogPath, exception );
-      }
-    catch( ClassNotFoundException exception )
-      {
-      throw new RuntimeException( "unable to read path: " + catalogPath, exception );
-      }
+    return readAsJsonAndClose( catalogPath, inputStream );
     }
 
   private SchemaCatalog readAsJsonAndClose( String catalogPath, InputStream inputStream )
