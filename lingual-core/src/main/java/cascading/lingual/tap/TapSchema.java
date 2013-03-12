@@ -25,6 +25,7 @@ import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import net.hydromatic.linq4j.expressions.Expression;
+import net.hydromatic.optiq.impl.TableInSchemaImpl;
 import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,6 @@ public class TapSchema extends MapSchema
     LOG.info( "adding table on schema: {}, table: {}, fields: {}, identifier: {}",
       new Object[]{getName(), table.getName(), table.getFields(), table.getIdentifier()} );
 
-    addTable( table.getName(), table );
+    addTable( new TableInSchemaImpl( this, table.getName(), TableType.TABLE, table ) );
     }
   }
