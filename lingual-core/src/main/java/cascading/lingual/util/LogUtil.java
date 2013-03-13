@@ -20,10 +20,6 @@
 
 package cascading.lingual.util;
 
-import java.lang.reflect.Method;
-
-import cascading.CascadingException;
-
 /**
  *
  */
@@ -43,18 +39,17 @@ public class LogUtil
     {
     Object loggerObject = getLoggerObject( loader, log );
 
-    Object levelObject = invokeStaticMethod( loader, "org.apache.log4j.Level", "toLevel",
+    Object levelObject = Reflection.invokeStaticMethod( loader, "org.apache.log4j.Level", "toLevel",
       new Object[]{level}, new Class[]{String.class} );
 
-    invokeInstanceMethod( loggerObject, "setLevel",
-      new Object[]{levelObject}, new Class[]{levelObject.getClass()} );
+    Reflection.invokeInstanceMethod( loggerObject, "setLevel", levelObject, levelObject.getClass() );
     }
 
   public static String getLogLevel( ClassLoader loader, String log )
     {
     Object loggerObject = getLoggerObject( loader, log );
 
-    Object level = invokeInstanceMethod( loggerObject, "getLevel", new Object[]{}, new Class[]{} );
+    Object level = Reflection.invokeInstanceMethod( loggerObject, "getLevel" );
 
     if( level == null )
       return "";
@@ -65,55 +60,9 @@ public class LogUtil
   private static Object getLoggerObject( ClassLoader loader, String log )
     {
     if( log == null || log.isEmpty() )
-      return invokeStaticMethod( loader, "org.apache.log4j.Logger", "getRootLogger", null, null );
+      return Reflection.invokeStaticMethod( loader, "org.apache.log4j.Logger", "getRootLogger", null, null );
 
-    return invokeStaticMethod( loader, "org.apache.log4j.Logger", "getLogger",
+    return Reflection.invokeStaticMethod( loader, "org.apache.log4j.Logger", "getLogger",
       new Object[]{log}, new Class[]{String.class} );
-    }
-
-  public static Object invokeStaticMethod( ClassLoader loader, String typeString, String methodName, Object[] parameters, Class[] parameterTypes )
-    {
-    try
-      {
-      Class type = loader.loadClass( typeString );
-
-      return invokeStaticMethod( type, methodName, parameters, parameterTypes );
-      }
-    catch( ClassNotFoundException exception )
-      {
-      throw new CascadingException( "unable to load class: " + typeString, exception );
-      }
-    }
-
-  public static Object invokeStaticMethod( Class type, String methodName, Object[] parameters, Class[] parameterTypes )
-    {
-    try
-      {
-      Method method = type.getDeclaredMethod( methodName, parameterTypes );
-
-      method.setAccessible( true );
-
-      return method.invoke( null, parameters );
-      }
-    catch( Exception exception )
-      {
-      throw new CascadingException( "unable to invoke static method: " + type.getName() + "." + methodName, exception );
-      }
-    }
-
-  public static Object invokeInstanceMethod( Object target, String methodName, Object[] parameters, Class[] parameterTypes )
-    {
-    try
-      {
-      Method method = target.getClass().getMethod( methodName, parameterTypes );
-
-      method.setAccessible( true );
-
-      return method.invoke( target, parameters );
-      }
-    catch( Exception exception )
-      {
-      throw new CascadingException( "unable to invoke instance method: " + target.getClass().getName() + "." + methodName, exception );
-      }
     }
   }

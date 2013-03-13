@@ -35,16 +35,19 @@ import java.util.Properties;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
+import cascading.lingual.catalog.CatalogManager;
+import cascading.lingual.catalog.FileCatalogManager;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.json.JSONFactory;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
+import cascading.lingual.util.Reflection;
+import cascading.management.CascadingServices;
 import cascading.operation.DebugLevel;
+import cascading.provider.ServiceLoader;
 import cascading.tap.Tap;
 import cascading.tap.type.FileType;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +71,10 @@ public abstract class PlatformBroker<Config>
   private static SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMdd-HHmmss" );
 
   private Properties properties;
+
+  private CascadingServices cascadingServices;
+  private CatalogManager catalogManager;
+
   private SchemaCatalog catalog;
 
   private Map<String, TupleEntryCollector> collectorCache;
@@ -92,6 +99,14 @@ public abstract class PlatformBroker<Config>
   public abstract String getName();
 
   public abstract Config getConfig();
+
+  public CascadingServices getCascadingServices()
+    {
+    if( cascadingServices == null )
+      cascadingServices = new CascadingServices( getProperties() );
+
+    return cascadingServices;
+    }
 
   public void startConnection( LingualConnection connection ) throws SQLException
     {
@@ -184,14 +199,6 @@ public abstract class PlatformBroker<Config>
     return false;
     }
 
-  public void writeCatalog()
-    {
-    String catalogPath = getFullCatalogPath();
-    OutputStream outputStream = getOutputStream( catalogPath );
-
-    writeAsJsonAndClose( catalogPath, outputStream );
-    }
-
   public String getFullMetadataPath()
     {
     String catalogPath = getStringProperty( CATALOG_PROP );
@@ -206,28 +213,17 @@ public abstract class PlatformBroker<Config>
     return makeFullCatalogFilePath( catalogPath );
     }
 
-  private void writeAsJsonAndClose( String catalogPath, OutputStream outputStream )
+  public void writeCatalog()
     {
-    ObjectMapper mapper = getObjectMapper();
-
-    try
-      {
-      mapper.writer().withDefaultPrettyPrinter().writeValue( outputStream, getCatalog() );
-
-      outputStream.close();
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to write path: " + catalogPath, exception );
-      }
+    getCatalogManager().writeCatalog( getCatalog() );
     }
 
   private synchronized SchemaCatalog loadCatalog()
     {
-    catalog = readCatalog();
+    catalog = getCatalogManager().readCatalog();
 
     if( catalog == null )
-      catalog = newInstance();
+      catalog = newCatalogInstance();
 
     // schema and tables beyond here are not persisted in the catalog
     // they are transient to the session
@@ -241,46 +237,26 @@ public abstract class PlatformBroker<Config>
     return catalog;
     }
 
-  private SchemaCatalog readCatalog()
+  protected synchronized CatalogManager getCatalogManager()
     {
-    String catalogPath = getFullCatalogPath();
+    if( catalogManager != null )
+      return catalogManager;
 
-    LOG.info( "reading catalog from: {}", catalogPath );
+    catalogManager = loadCatalogManagerPlugin();
 
-    InputStream inputStream = getInputStream( catalogPath );
+    if( catalogManager == null )
+      catalogManager = new FileCatalogManager( this );
 
-    if( inputStream == null )
-      {
-      LOG.debug( "catalog not found at: {}", catalogPath );
-      return null;
-      }
-
-    return readAsJsonAndClose( catalogPath, inputStream );
+    return catalogManager;
     }
 
-  private SchemaCatalog readAsJsonAndClose( String catalogPath, InputStream inputStream )
+  private CatalogManager loadCatalogManagerPlugin()
     {
-    ObjectMapper mapper = getObjectMapper();
+    // getServiceUtil is a private method, this allows for an impl to be loaded from an internal classloader
+    ServiceLoader loader = Reflection.invokeInstanceMethod( getCascadingServices(), "getServiceUtil" );
+    Properties defaultProperties = Reflection.getStaticField( getCascadingServices().getClass(), "defaultProperties" );
 
-    try
-      {
-      SchemaCatalog schemaCatalog = mapper.readValue( inputStream, getCatalogClass() );
-
-      inputStream.close();
-
-      schemaCatalog.setPlatformBroker( this );
-
-      return schemaCatalog;
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to read path: " + catalogPath, exception );
-      }
-    }
-
-  private ObjectMapper getObjectMapper()
-    {
-    return JSONFactory.getObjectMapper();
+    return (CatalogManager) loader.loadServiceFrom( defaultProperties, getProperties(), CatalogManager.CATALOG_SERVICE_CLASS_PROPERTY );
     }
 
   private String makeFullMetadataFilePath( String catalogPath )
@@ -321,9 +297,9 @@ public abstract class PlatformBroker<Config>
 
   public abstract boolean createPath( String path );
 
-  protected abstract InputStream getInputStream( String path );
+  public abstract InputStream getInputStream( String path );
 
-  protected abstract OutputStream getOutputStream( String path );
+  public abstract OutputStream getOutputStream( String path );
 
   public String createSchemaNameFrom( String identifier )
     {
@@ -368,7 +344,7 @@ public abstract class PlatformBroker<Config>
     return properties.getProperty( propertyName );
     }
 
-  protected abstract Class<? extends SchemaCatalog> getCatalogClass();
+  public abstract Class<? extends SchemaCatalog> getCatalogClass();
 
   public String[] getChildIdentifiers( String identifier ) throws IOException
     {
@@ -402,7 +378,7 @@ public abstract class PlatformBroker<Config>
     return dateFormat.format( new Date() ) + "-" + Util.createUniqueID().substring( 0, 10 );
     }
 
-  public SchemaCatalog newInstance()
+  public SchemaCatalog newCatalogInstance()
     {
     try
       {

@@ -127,7 +127,7 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  protected InputStream getInputStream( String path )
+  public InputStream getInputStream( String path )
     {
     if( path == null || path.isEmpty() )
       return null;
@@ -148,7 +148,7 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  protected OutputStream getOutputStream( String path )
+  public OutputStream getOutputStream( String path )
     {
     if( path == null || path.isEmpty() )
       return null;

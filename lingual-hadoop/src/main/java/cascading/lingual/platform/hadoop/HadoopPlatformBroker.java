@@ -295,7 +295,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
-  protected InputStream getInputStream( String path )
+  public InputStream getInputStream( String path )
     {
     if( path == null || path.isEmpty() )
       return null;
@@ -316,7 +316,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
-  protected OutputStream getOutputStream( String stringPath )
+  public OutputStream getOutputStream( String stringPath )
     {
     if( stringPath == null || stringPath.isEmpty() )
       return null;
