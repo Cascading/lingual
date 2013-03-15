@@ -44,7 +44,7 @@ import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.rex.RexNode;
 
-import static cascading.lingual.optiq.RelUtil.getFieldsFor;
+import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
 
 /** Join implemented in Cascading. */
 public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
@@ -93,12 +93,12 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Pipe rightPipe = new Pipe( "rhs", rhsBranch.current );
     rightPipe = stack.addDebug( this, rightPipe, "rhs" );
 
-    Fields lhsGroup = getFieldsFor( leftKeys, left.getRowType() );
-    Fields rhsGroup = getFieldsFor( rightKeys, right.getRowType() );
+    Fields lhsGroup = createTypedFieldsFor( getCluster(), leftKeys, left.getRowType() );
+    Fields rhsGroup = createTypedFieldsFor( getCluster(), rightKeys, right.getRowType() );
 
     Joiner joiner = getJoiner();
 
-    Fields declaredFields = RelUtil.getTypedFieldsFor( this );
+    Fields declaredFields = RelUtil.createTypedFieldsFor( this );
 
     // need to parse lhs rhs fields from condition
     Pipe coGroup = new CoGroup( leftPipe, lhsGroup, rightPipe, rhsGroup, declaredFields, joiner );

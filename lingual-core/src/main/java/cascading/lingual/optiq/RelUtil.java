@@ -37,66 +37,58 @@ import org.eigenbase.rex.RexSlot;
  */
 public class RelUtil
   {
-  public static Fields getFieldsFor( List<Integer> keys, RelDataType rowType )
+  public static Fields createTypedFieldsFor( RelOptCluster cluster, List<Integer> keys, RelDataType rowType )
     {
-    Fields fields = new Fields();
+    Fields fields = Fields.NONE;
 
     for( Integer key : keys )
-      fields = fields.append( new Fields( rowType.getFieldList().get( key ).getName() ) );
+      fields = fields.append( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ) ) );
 
     return fields;
     }
 
-  public static Fields getFieldsFor( RelNode relNode )
-    {
-    RelDataTypeField[] typeFields = relNode.getRowType().getFields();
-    Fields fields = new Fields();
-
-    for( RelDataTypeField typeField : typeFields )
-      fields = fields.append( new Fields( typeField.getName() ) );
-
-    return fields;
-    }
-
-  public static Fields getTypedFieldsFor( RelNode relNode )
+  public static Fields createTypedFieldsFor( RelNode relNode )
     {
     RelDataType rowType = relNode.getRowType();
     RelOptCluster cluster = relNode.getCluster();
 
-    return getTypedFields( cluster, rowType );
+    return createTypedFields( cluster, rowType );
     }
 
-  public static Fields getTypedFields( RelOptCluster cluster, RelDataType rowType )
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType )
     {
-    RelDataTypeField[] typeFields = rowType.getFields();
-    Fields fields = new Fields();
+    Fields fields = Fields.NONE;
 
-    for( RelDataTypeField typeField : typeFields )
-      {
-      String name = typeField.getName();
-      Class type = getJavaType( cluster, typeField.getType() );
+    for( RelDataTypeField typeField : rowType.getFields() )
+      fields = fields.append( createTypedFieldsFor( cluster, typeField ) );
 
-      fields = fields.append( new Fields( name, type ) );
-      }
     return fields;
     }
 
-  public static Fields getTypedFields( RelOptCluster cluster, RelDataType inputRowType, Iterable<Integer> fieldList )
+  public static Fields createTypedFieldsFor( RelOptCluster cluster, RelDataTypeField typeField )
     {
-    List<Fields> argFields = new ArrayList<Fields>();
+    String name = typeField.getName();
+    Class type = getJavaType( cluster, typeField.getType() );
+
+    return new Fields( name, type );
+    }
+
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, Iterable<Integer> fieldList )
+    {
+    List<Fields> fields = new ArrayList<Fields>();
 
     for( Integer index : fieldList )
       {
-      RelDataTypeField relDataTypeField = inputRowType.getFieldList().get( index );
+      RelDataTypeField relDataTypeField = rowType.getFieldList().get( index );
 
-      String argName = relDataTypeField.getName();
-      Class argType = getJavaType( cluster, relDataTypeField.getType() );
+      String fieldName = relDataTypeField.getName();
+      Class fieldType = getJavaType( cluster, relDataTypeField.getType() );
 
-      argFields.add( new Fields( argName, argType ) );
+      fields.add( new Fields( fieldName, fieldType ) );
       }
 
     // hides duplicate names
-    return Fields.join( argFields.toArray( new Fields[ argFields.size() ] ) );
+    return Fields.join( fields.toArray( new Fields[ fields.size() ] ) );
     }
 
   public static Class getJavaType( RelOptCluster cluster, RelDataType dataType )
@@ -124,7 +116,7 @@ public class RelUtil
 
   public static Fields createTypedFields( RelOptCluster cluster, RelDataType inputRowType, RexNode[] rexNodes )
     {
-    Fields fields = new Fields();
+    Fields fields = Fields.NONE;
     List<RelDataTypeField> fieldList = inputRowType.getFieldList();
 
     for( RexNode exp : rexNodes )

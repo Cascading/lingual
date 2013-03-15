@@ -50,8 +50,8 @@ import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.util.Util;
 
-import static cascading.lingual.optiq.RelUtil.getTypedFields;
-import static cascading.lingual.optiq.RelUtil.getTypedFieldsFor;
+import static cascading.lingual.optiq.RelUtil.createTypedFields;
+import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
 
 /**
  *
@@ -84,7 +84,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     // assumption here is if aggCalls is empty, we are performing a DISTINCT on the group set
     if( isDistinct() )
       {
-      Pipe current = new Unique( branch.current, getTypedFieldsFor( this ) );
+      Pipe current = new Unique( branch.current, createTypedFieldsFor( this ) );
 
       current = stack.addDebug( this, current );
 
@@ -94,7 +94,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     RelDataType inputRowType = getInput( 0 ).getRowType();
 
     Pipe previous = branch.current;
-    Fields groupFields = getTypedFields( getCluster(), inputRowType, Util.toIter( getGroupSet() ) );
+    Fields groupFields = createTypedFields( getCluster(), inputRowType, Util.toIter( getGroupSet() ) );
 
     List<AggregateCall> distincts = new ArrayList<AggregateCall>();
     List<AggregateCall> concurrents = new ArrayList<AggregateCall>();
@@ -192,7 +192,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     for( AggregateCall aggCall : distincts )
       {
       String aggregationName = aggCall.getAggregation().getName();
-      Fields argFields = getTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
+      Fields argFields = createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;
@@ -238,7 +238,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     for( AggregateCall aggCall : concurrents )
       {
       String aggregationName = aggCall.getAggregation().getName();
-      Fields argFields = getTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
+      Fields argFields = createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;

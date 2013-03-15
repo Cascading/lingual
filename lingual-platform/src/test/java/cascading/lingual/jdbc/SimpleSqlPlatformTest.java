@@ -252,4 +252,10 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     assertTablesEqual( "emps-age-order", "select age as a from sales.emps group by age order by age asc" );
     }
+
+  @Test
+  public void testCountSome() throws Exception
+    {
+    assertTablesEqual( "emps-count-some", "select count(*) from sales.emps where city = 'Vancouver'" );
+    }
   }

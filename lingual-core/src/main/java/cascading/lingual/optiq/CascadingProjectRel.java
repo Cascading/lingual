@@ -94,7 +94,7 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       Comparable value = rexLiteral.getValue();
 
       // insert the literal value into the stream, likely upstream to a wildcard aggregation
-      Fields fields = RelUtil.getFieldsFor( this ).applyType( 0, javaType );
+      Fields fields = RelUtil.createTypedFieldsFor( this ).applyType( 0, javaType );
       Pipe pipe = new Each( branch.current, new Insert( fields, value ), Fields.RESULTS );
 
       pipe = stack.addDebug( this, pipe );
@@ -102,8 +102,8 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       return new Branch( pipe, branch );
       }
 
-    Fields currentFields = RelUtil.getTypedFieldsFor( this );
-    Fields childFields = RelUtil.getTypedFieldsFor( getChild() );
+    Fields currentFields = RelUtil.createTypedFieldsFor( this );
+    Fields childFields = RelUtil.createTypedFieldsFor( getChild() );
     Fields narrowChildFields = RelUtil.createTypedFields( getChild(), exps );
 
     Pipe current = branch.current;

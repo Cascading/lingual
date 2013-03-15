@@ -25,10 +25,10 @@ import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.operation.Filter;
+import cascading.operation.Insert;
 import cascading.operation.expression.ScriptFilter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
@@ -44,12 +44,18 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
-import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeField;
+import org.eigenbase.rex.RexLiteral;
+import org.eigenbase.rex.RexLocalRef;
 import org.eigenbase.rex.RexProgram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cascading.lingual.optiq.RelUtil.createTypedFields;
+import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
+import static org.eigenbase.relopt.RelOptUtil.getFieldNames;
 
 /**
  *
@@ -80,11 +86,7 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
     {
     Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
     Pipe pipe = branch.current;
-
-    JavaTypeFactory typeFactory = (JavaTypeFactory) getCluster().getTypeFactory();
-
-    RelDataType inputRowType = getChild().getRowType();
-    Fields fields = RelUtil.createTypedFields( getChild(), getProgram().getExprList() );
+    Fields fields = createTypedFields( getChild(), getProgram().getExprList() );
 
     final List<Expression> parameters = new ArrayList<Expression>();
 
@@ -93,12 +95,9 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
 
     BlockBuilder statements = new BlockBuilder();
 
-    List<String> fieldNameList = RelOptUtil.getFieldNameList( inputRowType );
-    String[] fieldNames = fieldNameList.toArray( new String[ fieldNameList.size() ] );
-
     Expression condition = RexToLixTranslator.translateCondition(
       program,
-      typeFactory,
+      (JavaTypeFactory) getCluster().getTypeFactory(),
       statements,
       new RexToLixTranslator.InputGetter()
       {
@@ -113,6 +112,8 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
 
     if( !isConstantTrue )
       {
+      // create a filter to remove records that doesn't meet the expression
+
       Expression nullToFalse = Expressions.call( CascadingCalcRel.class, "falseIfNull", condition );
       Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
 
@@ -122,26 +123,46 @@ public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
 
       LOG.debug( "calc expression: {}", expression );
 
-      Filter expressionFilter = new ScriptFilter( expression, fieldNames, fields.getTypesClasses() );
+      Filter expressionFilter = new ScriptFilter( expression, getFieldNames( getChild().getRowType() ), fields.getTypesClasses() );
       pipe = new Each( pipe, fields, expressionFilter );
       }
 
-    boolean isProjection = program.projectsIdentity( false );
+    // should we keep all the fields in their natural order
+    boolean projectsAllInputFields = program.projectsIdentity( false );
 
-    // TODO: Each( ..., filter, ... ) should accept an output selector in the future
-    if( !isProjection )
+    // we need to narrow/order the input fields
+    if( !projectsAllInputFields )
       {
-      Fields projectedFields = RelUtil.createTypedFields( getCluster(), program.getInputRowType(), program.getProjectList() );
+      Fields outgoingFields = createTypedFields( getCluster(), program.getOutputRowType() );
 
-      pipe = new Retain( pipe, projectedFields );
+      List<RexLocalRef> projectList = program.getProjectList();
+      Fields constantFields = Fields.NONE;
+      List<Object> constantValues = new ArrayList<Object>();
 
-      Fields renameFields = RelUtil.getTypedFields( getCluster(), program.getOutputRowType() );
+      // simply accumulate constant values that compose the output columns
+      for( int i = 0; i < projectList.size(); i++ )
+        {
+        RexLocalRef ref = projectList.get( i );
 
-      if( !renameFields.equals( projectedFields ) )
-        pipe = new Rename( pipe, projectedFields, renameFields );
+        if( !program.isConstant( ref ) )
+          continue;
+
+        RelDataTypeField relDataTypeField = program.getOutputRowType().getFields()[ i ];
+        constantFields = constantFields.append( createTypedFieldsFor( getCluster(), relDataTypeField ) );
+
+        RexLiteral node = (RexLiteral) program.getExprList().get( ref.getIndex() );
+        constantValues.add( node.getValue2() );
+        }
+
+      // if no constant values, simply narrow the pipe
+      // otherwise insert the values and narrow the pipe
+      if( constantValues.isEmpty() )
+        pipe = new Retain( pipe, outgoingFields );
+      else
+        pipe = new Each( pipe, new Insert( constantFields, constantValues.toArray( new Object[ 0 ] ) ), outgoingFields );
       }
 
-    if( !isConstantTrue || !isProjection )
+    if( !isConstantTrue || !projectsAllInputFields )
       pipe = stack.addDebug( this, pipe );
 
     return new Branch( pipe, branch );

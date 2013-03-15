@@ -112,4 +112,5 @@ public class SQLDateCoercibleType extends SQLDateTimeCoercibleType
 
     throw new CascadingException( "unknown type coercion requested, from: " + Util.getTypeName( from ) + " to: " + Util.getTypeName( to ) );
     }
+
   }
