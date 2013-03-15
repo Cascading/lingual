@@ -23,6 +23,12 @@ package cascading.lingual.jdbc;
 import cascading.tuple.Fields;
 import org.junit.Test;
 
+/**
+ * This test class maintains a representative set of test statements, it is not comprehensive, which is handled
+ * by an external test suite.
+ *
+ * Use this class to test and submit issues by forking, adding the test, and making a pull request.
+ */
 public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   {
   protected String getDefaultSchemaPath()
@@ -257,5 +263,11 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testCountSome() throws Exception
     {
     assertTablesEqual( "emps-count-some", "select count(*) from sales.emps where city = 'Vancouver'" );
+    }
+
+  @Test
+  public void testSelectFilterAs() throws Exception
+    {
+    assertTablesEqual( "emps-filter-one-as", "select name as n, empno from sales.emps where empno = 120" );
     }
   }

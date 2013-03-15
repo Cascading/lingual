@@ -30,6 +30,7 @@ import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexProgram;
 import org.eigenbase.rex.RexSlot;
 
 /**
@@ -114,10 +115,10 @@ public class RelUtil
     return createTypedFields( cluster, inputRowType, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
     }
 
-  public static Fields createTypedFields( RelOptCluster cluster, RelDataType inputRowType, RexNode[] rexNodes )
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, RexNode[] rexNodes )
     {
     Fields fields = Fields.NONE;
-    List<RelDataTypeField> fieldList = inputRowType.getFieldList();
+    List<RelDataTypeField> fieldList = rowType.getFieldList();
 
     for( RexNode exp : rexNodes )
       {
@@ -125,10 +126,28 @@ public class RelUtil
         continue;
 
       RelDataTypeField dataTypeField = fieldList.get( ( (RexSlot) exp ).getIndex() );
-      String name = dataTypeField.getName();
-      RelDataType dataType = dataTypeField.getType();
-      Class type = getJavaType( cluster, dataType );
-      fields = fields.append( new Fields( name, type ) );
+
+      fields = fields.append( createTypedFieldsFor( cluster, dataTypeField ) );
+      }
+
+    return fields;
+    }
+
+  static Fields getRetainedProjectedTypeFields( RelOptCluster cluster, RexProgram program )
+    {
+    List<? extends RexNode> rexNodes = program.getProjectList();
+    List<RelDataTypeField> fieldList = program.getInputRowType().getFieldList();
+
+    Fields fields = Fields.NONE;
+
+    for( RexNode exp : rexNodes )
+      {
+      if( !( exp instanceof RexSlot ) || program.isConstant( exp ) )
+        continue;
+
+      RelDataTypeField dataTypeField = fieldList.get( ( (RexSlot) exp ).getIndex() );
+
+      fields = fields.append( createTypedFieldsFor( cluster, dataTypeField ) );
       }
 
     return fields;
