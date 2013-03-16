@@ -21,8 +21,9 @@
 package cascading.lingual.optiq.enumerable;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.optiq.meta.ValuesHolder;
 import cascading.tuple.Tuple;
@@ -42,25 +43,28 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingValueInsertEnumerable.class );
 
-  static final List<ValuesHolder> HOLDERS = new ArrayList<ValuesHolder>();
+  static long holdersCount = 0;
+  static final Map<Long, ValuesHolder> holders = new HashMap<Long, ValuesHolder>();
 
   protected final ValuesHolder valuesHolder;
 
-  public static synchronized int addHolder( ValuesHolder valuesHolder )
+  public static synchronized long addHolder( ValuesHolder flowHolder )
     {
-    HOLDERS.add( valuesHolder );
+    long count = holdersCount++;
 
-    return HOLDERS.size() - 1;
+    holders.put( count, flowHolder );
+
+    return count;
     }
 
-  public static synchronized ValuesHolder getHolder( int index )
+  public static synchronized ValuesHolder popHolder( long index )
     {
-    return HOLDERS.get( index );
+    return holders.remove( index );
     }
 
-  public CascadingValueInsertEnumerable( int x )
+  public CascadingValueInsertEnumerable( long index )
     {
-    valuesHolder = getHolder( x );
+    valuesHolder = popHolder( index );
     }
 
   @Override

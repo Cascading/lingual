@@ -125,7 +125,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     Tap tap = schemaCatalog.createTapFor( branch.tail.identifier, SinkMode.KEEP );
     ValuesHolder holder = new ValuesHolder( cache, flowProcess, tap, tuples );
 
-    int ordinal = CascadingValueInsertEnumerable.addHolder( holder );
+    long ordinal = CascadingValueInsertEnumerable.addHolder( holder );
 
     Constructor<CascadingValueInsertEnumerable> constructor = getConstructorFor( CascadingValueInsertEnumerable.class );
 
@@ -150,7 +150,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     setFlowPlanPath( properties, flowFactory.getName(), flowHolder );
     setMaxRows( properties, flowHolder );
 
-    int ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
+    long ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
 
     Constructor<CascadingFlowRunnerEnumerable> constructor = getConstructorFor( CascadingFlowRunnerEnumerable.class );
 
@@ -234,7 +234,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     try
       {
-      constructor = type.getConstructor( int.class );
+      constructor = type.getConstructor( long.class );
       }
     catch( NoSuchMethodException exception )
       {

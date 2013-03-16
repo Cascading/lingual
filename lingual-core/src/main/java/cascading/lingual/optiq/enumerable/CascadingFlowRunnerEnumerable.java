@@ -21,8 +21,8 @@
 package cascading.lingual.optiq.enumerable;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowStep;
@@ -44,25 +44,28 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingFlowRunnerEnumerable.class );
 
-  static final List<FlowHolder> HOLDERS = new ArrayList<FlowHolder>();
+  static long holdersCount = 0;
+  static final Map<Long, FlowHolder> holders = new HashMap<Long, FlowHolder>();
 
   protected final FlowHolder flowHolder;
 
-  public static synchronized int addHolder( FlowHolder flowHolder )
+  public static synchronized long addHolder( FlowHolder flowHolder )
     {
-    HOLDERS.add( flowHolder );
+    long count = holdersCount++;
 
-    return HOLDERS.size() - 1;
+    holders.put( count, flowHolder );
+
+    return count;
     }
 
-  public static synchronized FlowHolder getHolder( int index )
+  public static synchronized FlowHolder popHolder( long index )
     {
-    return HOLDERS.get( index );
+    return holders.remove( index );
     }
 
-  public CascadingFlowRunnerEnumerable( int x )
+  public CascadingFlowRunnerEnumerable( long index )
     {
-    flowHolder = getHolder( x );
+    flowHolder = popHolder( index );
     }
 
   @Override
