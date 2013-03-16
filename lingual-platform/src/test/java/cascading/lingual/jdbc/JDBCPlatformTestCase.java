@@ -128,10 +128,15 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   @Override
   public void tearDown() throws Exception
     {
-    super.tearDown();
-
-    if( connection != null )
-      connection.close();
+    try
+      {
+      if( connection != null )
+        connection.close();
+      }
+    finally
+      {
+      super.tearDown();
+      }
     }
 
   protected void setResultsTo( String schemaName, String tableName, Fields fields ) throws Exception
