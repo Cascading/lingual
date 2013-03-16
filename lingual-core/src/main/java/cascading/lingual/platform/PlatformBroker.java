@@ -110,9 +110,6 @@ public abstract class PlatformBroker<Config>
 
   public void startConnection( LingualConnection connection ) throws SQLException
     {
-    if( !connection.getAutoCommit() )
-      enableCollectorCache();
-
     getCatalog().addSchemasTo( connection );
     }
 

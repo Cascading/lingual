@@ -89,8 +89,7 @@ public abstract class LingualConnection implements Connection
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
 
-    if( isCollectorCacheEnabled() )
-      setAutoCommit( false );
+    setAutoCommit( !isCollectorCacheEnabled() ); // this forces the default to true
 
     platformBroker.startConnection( this );
     }
