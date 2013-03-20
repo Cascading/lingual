@@ -81,10 +81,14 @@ class LingualStatement implements Statement
       LOG.error( "failed with: {}", exception.getMessage(), exception );
       throw exception;
       }
-    catch( Throwable exception )
+    catch( OutOfMemoryError error )
       {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
-      Throwables.propagate( exception );
+      throw error;
+      }
+    catch( Throwable throwable )
+      {
+      LOG.error( "failed with: {}", throwable.getMessage(), throwable );
+      Throwables.propagate( throwable );
       }
 
     return null;
