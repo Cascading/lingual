@@ -77,6 +77,10 @@ public class TableTarget extends CRUDTarget
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    return catalog.getTableNames( getOptions().getSchemaName() );
+    String schemaName = getOptions().getSchemaName();
+
+    verifySchema( catalog, schemaName );
+
+    return catalog.getTableNames( schemaName );
     }
   }

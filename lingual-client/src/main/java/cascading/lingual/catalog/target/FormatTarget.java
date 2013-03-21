@@ -75,6 +75,7 @@ public class FormatTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
 
     String schemaName = getOptions().getSchemaName();
+
     if( schemaName != null && !schemaName.isEmpty() )
       return catalog.getFormatNames( getOptions().getSchemaName() );
     else
