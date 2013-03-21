@@ -53,6 +53,12 @@ public class DDLTarget extends Target
     String formatName = getOptions().getFormatName();
     String protocolName = getOptions().getProtocolName();
 
+    if( schemaName == null )
+      throw new IllegalArgumentException( "schema name must be specified as target schema to process DDL" );
+
+    if( !catalog.getSchemaNames().contains( schemaName ) )
+      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
+
     LOG.info( "loading ddl from: {}", getOptions().getDDL() );
 
     DDLParser parser = new DDLParser( catalog, schemaName, formatName, protocolName );
