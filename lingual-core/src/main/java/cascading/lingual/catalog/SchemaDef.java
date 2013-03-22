@@ -32,6 +32,7 @@ import cascading.lingual.util.MultiProperties;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -48,16 +49,10 @@ import com.google.common.collect.Collections2;
 public class SchemaDef extends Def
   {
   @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final Stereotypes<Protocol, Format> stereotypes = new Stereotypes<Protocol, Format>();
+  private Protocol defaultProtocol;
 
   @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final InsensitiveMap<SchemaDef> childSchemas = new InsensitiveMap<SchemaDef>();
-
-  @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final InsensitiveMap<TableDef> childTables = new InsensitiveMap<TableDef>();
+  private Format defaultFormat;
 
   @JsonProperty
   private final MultiProperties<Protocol> protocolProperties = new MultiProperties<Protocol>();
@@ -65,28 +60,88 @@ public class SchemaDef extends Def
   @JsonProperty
   private final MultiProperties<Format> formatProperties = new MultiProperties<Format>();
 
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final Stereotypes<Protocol, Format> stereotypes = new Stereotypes<Protocol, Format>();
+
+  @JsonProperty
+  @JsonManagedReference
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final InsensitiveMap<SchemaDef> childSchemas = new InsensitiveMap<SchemaDef>();
+
+  @JsonProperty
+  @JsonManagedReference
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final InsensitiveMap<TableDef> childTables = new InsensitiveMap<TableDef>();
+
   public SchemaDef()
     {
     }
 
-  public SchemaDef( SchemaDef parentSchema, String name )
+  public SchemaDef( Protocol defaultProtocol, Format defaultFormat )
     {
-    super( parentSchema, name );
+    this.defaultProtocol = defaultProtocol;
+    this.defaultFormat = defaultFormat;
     }
 
-  public SchemaDef( SchemaDef parentSchema, String name, String identifier )
+  public SchemaDef( SchemaDef parentSchema, String name, Protocol defaultProtocol, Format defaultFormat )
+    {
+    super( parentSchema, name );
+    this.defaultProtocol = defaultProtocol;
+    this.defaultFormat = defaultFormat;
+    }
+
+  public SchemaDef( SchemaDef parentSchema, String name, Protocol defaultProtocol, Format defaultFormat, String identifier )
     {
     super( parentSchema, name, identifier );
+    this.defaultProtocol = defaultProtocol;
+    this.defaultFormat = defaultFormat;
     }
 
   public SchemaDef copyWith( String name )
     {
-    return new SchemaDef( parentSchema, name, identifier );
+    return new SchemaDef( parentSchema, name, defaultProtocol, defaultFormat, identifier );
     }
 
   public boolean isRoot()
     {
     return getParentSchema() == null;
+    }
+
+  public Protocol getDefaultProtocol()
+    {
+    return defaultProtocol;
+    }
+
+  public Protocol findDefaultProtocol()
+    {
+    if( getDefaultProtocol() != null )
+      return getDefaultProtocol();
+
+    return getParentSchema().findDefaultProtocol();
+    }
+
+  public void setDefaultProtocol( Protocol defaultProtocol )
+    {
+    this.defaultProtocol = defaultProtocol;
+    }
+
+  public Format getDefaultFormat()
+    {
+    return defaultFormat;
+    }
+
+  public Format findDefaultFormat()
+    {
+    if( getDefaultFormat() != null )
+      return getDefaultFormat();
+
+    return getParentSchema().findDefaultFormat();
+    }
+
+  public void setDefaultFormat( Format defaultFormat )
+    {
+    this.defaultFormat = defaultFormat;
     }
 
   public void addProtocolProperties( Protocol protocol, Map<String, List<String>> properties )
@@ -187,22 +242,22 @@ public class SchemaDef extends Def
     } );
     }
 
-  public boolean addSchema( String name )
+  public boolean addSchema( String name, Protocol protocol, Format format )
     {
     if( childSchemas.containsKey( name ) )
       return false;
 
-    childSchemas.put( name, new SchemaDef( this, name ) );
+    childSchemas.put( name, new SchemaDef( this, name, protocol, format ) );
 
     return true;
     }
 
-  public boolean addSchema( String name, String identifier )
+  public boolean addSchema( String name, Protocol protocol, Format format, String identifier )
     {
     if( childSchemas.containsKey( name ) )
       return false;
 
-    childSchemas.put( name, new SchemaDef( this, name, identifier ) );
+    childSchemas.put( name, new SchemaDef( this, name, protocol, format, identifier ) );
 
     return true;
     }
@@ -222,16 +277,6 @@ public class SchemaDef extends Def
     childSchemas.put( newName, schemaDef.copyWith( newName ) );
 
     return true;
-    }
-
-  public SchemaDef getOrAddSchema( String name )
-    {
-    SchemaDef schema = getSchema( name );
-
-    if( schema == null )
-      addSchema( name );
-
-    return getSchema( name );
     }
 
   public SchemaDef getSchema( String name )

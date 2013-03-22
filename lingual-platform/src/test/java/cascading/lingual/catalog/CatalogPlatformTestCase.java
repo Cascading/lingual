@@ -26,6 +26,7 @@ import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
+import cascading.tuple.Fields;
 import org.junit.Test;
 
 /**
@@ -53,9 +54,9 @@ public class CatalogPlatformTestCase extends LingualPlatformTestCase
 
     SchemaCatalog catalog = broker.getCatalog();
 
-    catalog.addSchemaDef( "test" );
+    catalog.addSchemaDef( "test", null, null );
 
-    catalog.createTableDefFor( "test", null, DEPTS_TABLE, null, null, null );
+    catalog.createTableDefFor( "test", null, DEPTS_TABLE, (Fields) null, null, null );
 
     assertEquals( "SALES", catalog.createSchemaDefAndTableDefsFor( SALES_SCHEMA ) );
 

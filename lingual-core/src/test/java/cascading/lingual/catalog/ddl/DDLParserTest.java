@@ -98,6 +98,8 @@ public class DDLParserTest extends TestCase
     {
     TestSchemaCatalog catalog = new TestSchemaCatalog( Protocol.getProtocol( "file" ), Format.getFormat( "csv" ) );
 
+    catalog.createSchemaDef( "test", null, null, null );
+
     DDLParser parser = new DDLParser( catalog, "test", "test", "file", "csv" );
 
     parser.apply( new File( file ) );
@@ -106,7 +108,7 @@ public class DDLParserTest extends TestCase
 
     assertTrue( Sets.difference( tables, expectedTables ).size() == 0 );
 
-    catalog.addFormat( "test", Format.getFormat( "xml" ), Arrays.asList("xml") );
+    catalog.addFormat( "test", Format.getFormat( "xml" ), Arrays.asList( "xml" ) );
     catalog.addProtocol( "test", Protocol.getProtocol( "jdbc" ), Arrays.asList( "jdbc" ) );
 
     String jsonFirst = writeObject( catalog );

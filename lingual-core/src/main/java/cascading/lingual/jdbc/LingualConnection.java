@@ -38,6 +38,7 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
@@ -128,8 +129,13 @@ public abstract class LingualConnection implements Connection
 
   public void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws SQLException
     {
-    platformBroker.getCatalog().createSchemaDefAndTableDefsFor( schemaName, tableName, identifier, fields, protocolName, formatName );
-    platformBroker.getCatalog().addSchemasTo( this );
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    if( catalog.getSchemaDef( schemaName ) == null )
+      catalog.addSchemaDef( schemaName, protocolName, formatName );
+
+    catalog.createTableDefFor( schemaName, tableName, identifier, fields, protocolName, formatName );
+    catalog.addSchemasTo( this );
     }
 
   // Connection methods

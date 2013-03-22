@@ -87,9 +87,25 @@ public class TableDef extends Def
     return format;
     }
 
+  protected Protocol getActualProtocol()
+    {
+    if( protocol != null )
+      return protocol;
+
+    return getParentSchema().findDefaultProtocol();
+    }
+
+  private Format getActualFormat()
+    {
+    if( format != null )
+      return format;
+
+    return getParentSchema().findDefaultFormat();
+    }
+
   public Resource<Protocol, Format, SinkMode> getResourceWith( SinkMode sinkMode )
     {
-    return new Resource<Protocol, Format, SinkMode>( identifier, protocol, format, sinkMode );
+    return new Resource<Protocol, Format, SinkMode>( identifier, getActualProtocol(), getActualFormat(), sinkMode );
     }
 
   @Override

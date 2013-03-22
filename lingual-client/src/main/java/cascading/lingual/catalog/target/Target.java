@@ -62,7 +62,7 @@ public abstract class Target
     if( schemaName == null )
       throw new IllegalArgumentException( "schema name must be specified" );
 
-    if( !catalog.getSchemaNames().contains( schemaName ) )
+    if( !catalog.getSchemaNames().contains( schemaName.toLowerCase() ) )
       throw new IllegalArgumentException( "schema does not exist: " + schemaName );
     }
   }

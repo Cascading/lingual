@@ -90,7 +90,16 @@ public class Reflection
     {
     try
       {
-      Method method = target.getClass().getDeclaredMethod( methodName, parameterTypes );
+      Method method;
+
+      try
+        {
+        method = target.getClass().getMethod( methodName, parameterTypes );
+        }
+      catch( NoSuchMethodException exception )
+        {
+        method = target.getClass().getDeclaredMethod( methodName, parameterTypes );
+        }
 
       method.setAccessible( true );
 

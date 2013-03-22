@@ -50,14 +50,14 @@ public class DDLTarget extends Target
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    String formatName = getOptions().getFormatName();
     String protocolName = getOptions().getProtocolName();
+    String formatName = getOptions().getFormatName();
 
     verifySchema( catalog, schemaName );
 
     LOG.info( "loading ddl from: {}", getOptions().getDDL() );
 
-    DDLParser parser = new DDLParser( catalog, schemaName, formatName, protocolName );
+    DDLParser parser = new DDLParser( catalog, schemaName, protocolName, formatName );
 
     try
       {

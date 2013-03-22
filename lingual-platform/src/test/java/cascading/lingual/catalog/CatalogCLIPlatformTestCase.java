@@ -27,6 +27,7 @@ import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
+import cascading.lingual.util.LogUtil;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     getPlatform().remoteRemove( outputPath, true );
 
-//    LogUtil.setLogLevel( "off" );
+    LogUtil.setLogLevel( "debug" );
 
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );
@@ -62,6 +63,7 @@ public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
 
     execute( outputPath, "--stereotype" );
 
+    execute( outputPath, "--schema", "adhoc", "--add" );
     execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", EMPS_TABLE,
       "--stereotype", "emps"
     );

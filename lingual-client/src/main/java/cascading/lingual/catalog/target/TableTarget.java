@@ -69,8 +69,9 @@ public class TableTarget extends CRUDTarget
     String stereotypeName = getOptions().getStereotypeName();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
     Format format = Format.getFormat( getOptions().getFormatName() );
+    String schemaName = getOptions().getSchemaName();
 
-    return catalog.createTableDefFor( getOptions().getSchemaName(), tableName, addURI, stereotypeName, protocol, format );
+    return catalog.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format );
     }
 
   @Override

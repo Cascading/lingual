@@ -77,9 +77,6 @@ public class DDLParser
     this.schemaPath = schemaPath == null ? getSchemaIdentifier( catalog, schemaName ) : schemaPath;
     this.protocol = Protocol.getProtocol( protocol );
     this.format = Format.getFormat( format );
-
-    if( this.schemaPath == null )
-      throw new IllegalArgumentException( "schemaPath must not be null" );
     }
 
   private String getSchemaIdentifier( SchemaCatalog catalog, String schemaName )
@@ -87,9 +84,14 @@ public class DDLParser
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
 
     if( schemaDef == null )
-      return null;
+      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
 
-    return schemaDef.getIdentifier();
+    String identifier = schemaDef.getIdentifier();
+
+    if( identifier != null )
+      return identifier;
+
+    return schemaName;
     }
 
   public void apply( File file ) throws IOException
@@ -133,9 +135,9 @@ public class DDLParser
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
 
     if( schemaDef == null )
-      catalog.createSchemaDef( schemaName, schemaPath );
-    else if( !schemaPath.equals( schemaDef.getIdentifier() ) )
-      throw new IllegalStateException( "schema already exists with identifier: " + schemaPath );
+      throw new IllegalStateException( "schema does not exist: " + schemaName );
+    else if( schemaDef.getIdentifier() != null && !schemaPath.equals( schemaDef.getIdentifier() ) )
+      throw new IllegalStateException( "schema already exists with identifier: " + schemaDef.getIdentifier() );
     }
 
   private String createTableIdentifier( String name )
@@ -286,7 +288,7 @@ public class DDLParser
       case DECIMAL:
         return BigDecimal.class;
       case BOOLEAN:
-        return isNullable ? Boolean.class: boolean.class;
+        return isNullable ? Boolean.class : boolean.class;
       case BINARY:
       case VARBINARY:
         return ByteString.class;

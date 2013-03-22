@@ -65,10 +65,12 @@ public class SchemaTarget extends CRUDTarget
     String addURI = getOptions().getAddOrUpdateURI();
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
+    String protocol = getOptions().getProtocolName();
+    String format = getOptions().getFormatName();
 
     if( addURI == null )
       {
-      boolean success = catalog.addSchemaDef( schemaName );
+      boolean success = catalog.addSchemaDef( schemaName, protocol, format );
 
       if( success )
         return schemaName;
@@ -76,7 +78,7 @@ public class SchemaTarget extends CRUDTarget
       return null;
       }
 
-    return catalog.createSchemaDefAndTableDefsFor( schemaName, addURI );
+    return catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI );
     }
 
   @Override
