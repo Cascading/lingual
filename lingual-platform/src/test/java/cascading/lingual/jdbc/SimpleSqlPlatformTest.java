@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * This test class maintains a representative set of test statements, it is not comprehensive, which is handled
  * by an external test suite.
- *
+ * <p/>
  * Use this class to test and submit issues by forking, adding the test, and making a pull request.
  */
 public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
@@ -269,5 +269,25 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testSelectFilterAs() throws Exception
     {
     assertTablesEqual( "emps-filter-one-as", "select name as n, empno from sales.emps where empno = 120" );
+    }
+
+  @Test
+  public void testInnerJoinIn() throws Exception
+    {
+    assertTablesEqual( "emps-depts-join-inner-in", "select * from sales.emps join sales.depts on emps.deptno = depts.deptno and emps.city in ('Vancouver','San Francisco')" );
+    }
+
+  @Test
+  public void testInnerJoinInnerJoin() throws Exception
+    {
+    assertTablesEqual( "emps-depts-sales-join-inner", "select * from sales.emps, sales.depts, sales.sales " +
+      "where emps.deptno = depts.deptno and emps.empno = sales.empno" );
+    }
+
+  @Test
+  public void testInnerJoinInnerJoinIn() throws Exception
+    {
+    assertTablesEqual( "emps-depts-sales-join-inner-in", "select * from sales.emps, sales.depts, sales.sales " +
+      "where emps.deptno = depts.deptno and emps.empno = sales.empno and emps.city in ('Vancouver','San Francisco')" );
     }
   }

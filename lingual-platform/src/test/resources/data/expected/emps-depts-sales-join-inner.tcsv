@@ -1,0 +1,4 @@
+EMPNO:int,NAME:string,DEPTNO:Integer,GENDER:string,CITY:string,EMPID:int,AGE:int,SLACKER:boolean,MANAGER:boolean,JOINEDAT:date,DEPTNO0:int,NAME0:string,EMPNO0:int,ITEM:string,SALE_DATE:date,SALE_TIME:time
+100,Fred,10,,,30,25,true,false,1996-08-03,10,Sales,100,Anvil,1996-08-03,00:00:00
+110,Eric,20,M,San Francisco,3,80,false,false,2001-01-01,20,Marketing,110,Rubber Band,9999-01-01,00:00:00
+110,Eric,20,M,San Francisco,3,80,false,false,2001-01-01,20,Marketing,110,Wild Cat,1995-12-01,00:00:00

@@ -20,11 +20,24 @@
 
 package cascading.lingual.optiq;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eigenbase.rel.JoinRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
 import org.eigenbase.relopt.RelOptRuleOperand;
+import org.eigenbase.relopt.RelOptUtil;
+import org.eigenbase.relopt.RelTraitSet;
+import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeField;
+import org.eigenbase.rex.RexBuilder;
+import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexUtil;
+import org.eigenbase.sql.fun.SqlStdOperatorTable;
+import org.eigenbase.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,16 +75,72 @@ public class CascadingJoinRule extends RelOptRule
       return;
       }
 
-    call.transformTo(
-      new CascadingJoinRel(
-        join.getCluster(),
-        join.getCluster().getEmptyTraitSet().plus( Cascading.CONVENTION ),
+    // split into equi join
+    final List<RexNode> leftExprs = new ArrayList<RexNode>();
+    final List<RexNode> rightExprs = new ArrayList<RexNode>();
+
+    RexNode remainder =
+      RelOptUtil.splitJoinCondition(
+        Collections.<RelDataTypeField>emptyList(),
         left,
         right,
         join.getCondition(),
-        join.getJoinType(),
-        join.getVariablesStopped(),
-        0 ) );
+        leftExprs,
+        rightExprs,
+        new ArrayList<Integer>(),
+        null );
+
+    if( remainder != null )
+      {
+      LOG.warn( "cannot handle non-equi join" );
+      return;
+      }
+
+    final List<Integer> leftKeys = new ArrayList<Integer>();
+    final List<Integer> rightKeys = new ArrayList<Integer>();
+    final List<Integer> outputProj = new ArrayList<Integer>();
+    final RelNode[] inputRels = {left, right};
+
+    RelOptUtil.projectJoinInputs(
+      inputRels,
+      leftExprs,
+      rightExprs,
+      0,
+      leftKeys,
+      rightKeys,
+      outputProj );
+
+    final RelNode newLeft = inputRels[ 0 ];
+    final RelNode newRight = inputRels[ 1 ];
+    final RelTraitSet traits = join.getCluster().getEmptyTraitSet().plus( Cascading.CONVENTION );
+    final RexNode newCondition = createCondition( join.getCluster().getRexBuilder(), newLeft, leftKeys, newRight, rightKeys );
+
+    final CascadingJoinRel newJoin = new CascadingJoinRel( join.getCluster(), traits, convert( newLeft, traits ),
+      convert( newRight, traits ), newCondition, join.getJoinType(), join.getVariablesStopped(), 0 );
+
+    final RelNode newRel = convert( RelOptUtil.createProjectJoinRel( outputProj, newJoin ), traits );
+
+    call.transformTo( newRel );
+    }
+
+  private RexNode createCondition( RexBuilder builder,
+                                   RelNode left,
+                                   List<Integer> leftKeys,
+                                   RelNode right,
+                                   List<Integer> rightKeys )
+    {
+    final List<RelDataType> leftTypes = RelOptUtil.getFieldTypeList( left.getRowType() );
+    final List<RelDataType> rightTypes = RelOptUtil.getFieldTypeList( right.getRowType() );
+    final List<RexNode> exprs = new ArrayList<RexNode>();
+
+    for( Pair<Integer, Integer> pair : Pair.zip( leftKeys, rightKeys ) )
+      exprs.add(
+        builder.makeCall(
+          SqlStdOperatorTable.equalsOperator,
+          builder.makeInputRef( leftTypes.get( pair.left ), pair.left ),
+          builder.makeInputRef( rightTypes.get( pair.right ), pair.right + leftTypes.size() ) ) );
+
+    return RexUtil.andRexNodeList( builder, exprs );
     }
   }
 

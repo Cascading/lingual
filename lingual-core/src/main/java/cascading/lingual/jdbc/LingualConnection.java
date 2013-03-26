@@ -53,7 +53,7 @@ import static cascading.lingual.jdbc.Driver.*;
 /**
  *
  */
-public abstract class LingualConnection implements Connection
+public abstract class LingualConnection implements OptiqConnection
   {
   private static final Logger LOG = LoggerFactory.getLogger( LingualConnection.class );
 

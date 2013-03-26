@@ -89,12 +89,14 @@ public class CascadingUnionRel extends UnionRelBase implements CascadingRelNode
       pipes[ i ] = stack.addDebug( this, pipes[ i ], i );
       }
 
+    String name = stack.getNameFor( GroupBy.class, pipes );
+
     Pipe pipe;
 
     if( !all )
-      pipe = new Unique( pipes, Fields.ALL );
+      pipe = new Unique( name, pipes, Fields.ALL );
     else
-      pipe = new GroupBy( pipes, Fields.ALL );
+      pipe = new GroupBy( name, pipes, Fields.ALL );
 
     pipe = stack.addDebug( this, pipe );
 

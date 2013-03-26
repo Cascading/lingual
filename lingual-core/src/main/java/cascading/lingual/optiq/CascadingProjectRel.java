@@ -20,25 +20,22 @@
 
 package cascading.lingual.optiq;
 
+import java.util.Arrays;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
-import cascading.operation.Insert;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.pipe.assembly.Rename;
-import cascading.pipe.assembly.Retain;
-import cascading.tuple.Fields;
 import org.eigenbase.rel.ProjectRelBase;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.rex.RexLiteral;
 import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexProgram;
+import org.eigenbase.util.Pair;
 
 /**
  *
@@ -75,6 +72,7 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
       flags,
       getCollationList() );
     }
+
   @Override
 
   public RelOptCost computeSelfCost( RelOptPlanner planner )
@@ -82,40 +80,15 @@ public class CascadingProjectRel extends ProjectRelBase implements CascadingRelN
     return super.computeSelfCost( planner ).multiplyBy( .1 );
     }
 
+  protected List<Pair<String, RexNode>> projects()
+    {
+    return Pair.zip( RelOptUtil.getFieldNameList( getRowType() ), Arrays.asList( exps ) );
+    }
+
   public Branch visitChild( Stack stack )
     {
-    Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
+    RexProgram program = CalcProjectUtil.createRexProgram( this );
 
-    // todo: skip this project - find rule to collapse this
-    if( exps.length == 1 && exps[ 0 ] instanceof RexLiteral )
-      {
-      RexLiteral rexLiteral = (RexLiteral) exps[ 0 ];
-      Class javaType = RelUtil.getJavaType( getCluster(), rexLiteral.getType() );
-      Comparable value = rexLiteral.getValue();
-
-      // insert the literal value into the stream, likely upstream to a wildcard aggregation
-      Fields fields = RelUtil.createTypedFieldsFor( this ).applyType( 0, javaType );
-      Pipe pipe = new Each( branch.current, new Insert( fields, value ), Fields.RESULTS );
-
-      pipe = stack.addDebug( this, pipe );
-
-      return new Branch( pipe, branch );
-      }
-
-    Fields currentFields = RelUtil.createTypedFieldsFor( this );
-    Fields childFields = RelUtil.createTypedFieldsFor( getChild() );
-    Fields narrowChildFields = RelUtil.createTypedFields( getChild(), exps );
-
-    Pipe current = branch.current;
-
-    if( childFields.size() > narrowChildFields.size() )
-      current = new Retain( current, narrowChildFields );
-
-    if( !currentFields.equals( narrowChildFields ) )
-      current = new Rename( current, narrowChildFields, currentFields );
-
-    current = stack.addDebug( this, current );
-
-    return new Branch( current, branch );
+    return CalcProjectUtil.resolveBranch( stack, this, program );
     }
   }

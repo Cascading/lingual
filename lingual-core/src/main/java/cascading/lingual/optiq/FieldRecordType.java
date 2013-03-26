@@ -20,11 +20,11 @@
 
 package cascading.lingual.optiq;
 
+import java.util.List;
+
 import cascading.tuple.Fields;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.reltype.RelRecordType;
-
-import java.util.List;
 
 /**
  *

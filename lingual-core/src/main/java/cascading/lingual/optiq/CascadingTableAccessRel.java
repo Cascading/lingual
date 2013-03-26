@@ -20,6 +20,9 @@
 
 package cascading.lingual.optiq;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
@@ -28,9 +31,6 @@ import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.relopt.volcano.AbstractConverter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -86,21 +86,22 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     return getTable().unwrap( TapTable.class ).getPlatformBroker();
     }
 
+  // todo: remove
   private static final Map<String, Double> TABLE_ROW_COUNTS =
     new HashMap<String, Double>()
-      {
-        {
-        put("time_by_day", 730d);
-        put("inventory_fact_1997", 4070d);
-        put("sales_fact_1997", 86837d);
-        put("customer", 10281d);
-        put("product", 1560d);
-        put("product_class", 110d);
-        put("promotion", 1864d);
-        put("store", 25d);
-        put("warehouse", 24d);
-        }
-      };
+    {
+    {
+    put( "time_by_day", 730d );
+    put( "inventory_fact_1997", 4070d );
+    put( "sales_fact_1997", 86837d );
+    put( "customer", 10281d );
+    put( "product", 1560d );
+    put( "product_class", 110d );
+    put( "promotion", 1864d );
+    put( "store", 25d );
+    put( "warehouse", 24d );
+    }
+    };
 
   @Override
   public double getRows()

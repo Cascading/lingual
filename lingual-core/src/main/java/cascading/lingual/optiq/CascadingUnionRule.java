@@ -67,7 +67,7 @@ public class CascadingUnionRule extends RelOptRule
         union.getCluster(),
         union.getCluster().getEmptyTraitSet().plus( Cascading.CONVENTION ),
         inputs,
-        !union.isDistinct()
+        union.all
       ) );
     }
   }

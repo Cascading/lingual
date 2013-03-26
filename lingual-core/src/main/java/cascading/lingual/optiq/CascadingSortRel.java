@@ -68,7 +68,8 @@ public class CascadingSortRel extends SortRel implements CascadingRelNode
     Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
     Fields fields = createFields();
 
-    Pipe current = new GroupBy( branch.current, fields );
+    String name = stack.getNameFor( GroupBy.class, branch.current );
+    Pipe current = new GroupBy( name, branch.current, fields );
 
     current = stack.addDebug( this, current );
 

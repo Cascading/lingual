@@ -23,7 +23,7 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.AggregateRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
-import org.eigenbase.relopt.CallingConvention;
+import org.eigenbase.relopt.Convention;
 
 import static cascading.lingual.optiq.Cascading.CONVENTION;
 
@@ -36,7 +36,7 @@ public class CascadingAggregateConverterRule extends ConverterRule
 
   public CascadingAggregateConverterRule()
     {
-    super( AggregateRel.class, CallingConvention.NONE, CONVENTION, "CascadingAggregateConverterRule" );
+    super( AggregateRel.class, Convention.NONE, CONVENTION, "CascadingAggregateConverterRule" );
     }
 
   @Override

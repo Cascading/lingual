@@ -159,6 +159,7 @@ public class LingualPreparedStatement extends LingualStatement implements Prepar
     }
 
   @Override
+  @Deprecated
   public void setUnicodeStream( int parameterIndex, InputStream x, int length ) throws SQLException
     {
     parent.setUnicodeStream( parameterIndex, x, length );

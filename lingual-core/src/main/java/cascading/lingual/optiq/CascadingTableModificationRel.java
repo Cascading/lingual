@@ -26,7 +26,7 @@ import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
-import org.eigenbase.oj.stmt.OJPreparingStmt;
+import net.hydromatic.optiq.prepare.Prepare;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableModificationRelBase;
 import org.eigenbase.relopt.RelOptCluster;
@@ -40,7 +40,7 @@ import org.eigenbase.relopt.RelTraitSet;
 public class CascadingTableModificationRel extends TableModificationRelBase implements CascadingRelNode
   {
   public CascadingTableModificationRel( RelOptCluster cluster, RelTraitSet traits, RelOptTable table,
-                                        OJPreparingStmt.CatalogReader catalogReader, RelNode child,
+                                        Prepare.CatalogReader catalogReader, RelNode child,
                                         Operation operation, List<String> updateColumnList, boolean flattened )
     {
     super( cluster, traits, table, catalogReader, child, operation, updateColumnList, flattened );

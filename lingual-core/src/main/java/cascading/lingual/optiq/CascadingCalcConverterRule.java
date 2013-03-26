@@ -26,7 +26,7 @@ import org.eigenbase.rel.CalcRel;
 import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
-import org.eigenbase.relopt.CallingConvention;
+import org.eigenbase.relopt.Convention;
 import org.eigenbase.rex.RexMultisetUtil;
 
 /**
@@ -38,7 +38,7 @@ public class CascadingCalcConverterRule extends ConverterRule
 
   public CascadingCalcConverterRule()
     {
-    super( CalcRel.class, CallingConvention.NONE, Cascading.CONVENTION, "CascadingCalcConverterRule" );
+    super( CalcRel.class, Convention.NONE, Cascading.CONVENTION, "CascadingCalcConverterRule" );
     }
 
   @Override

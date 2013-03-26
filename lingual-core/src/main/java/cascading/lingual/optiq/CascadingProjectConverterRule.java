@@ -23,7 +23,7 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.ProjectRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.convert.ConverterRule;
-import org.eigenbase.relopt.CallingConvention;
+import org.eigenbase.relopt.Convention;
 
 import static cascading.lingual.optiq.Cascading.CONVENTION;
 
@@ -36,7 +36,7 @@ public class CascadingProjectConverterRule extends ConverterRule
 
   public CascadingProjectConverterRule()
     {
-    super( ProjectRel.class, CallingConvention.NONE, CONVENTION, "CascadingProjectConverterRule" );
+    super( ProjectRel.class, Convention.NONE, CONVENTION, "CascadingProjectConverterRule" );
     }
 
   @Override

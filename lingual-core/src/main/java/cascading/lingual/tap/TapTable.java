@@ -36,8 +36,10 @@ import net.hydromatic.linq4j.QueryProvider;
 import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.ModifiableTable;
 import net.hydromatic.optiq.MutableSchema;
+import net.hydromatic.optiq.Statistic;
+import net.hydromatic.optiq.Statistics;
 import net.hydromatic.optiq.TranslatableTable;
-import org.eigenbase.oj.stmt.OJPreparingStmt;
+import net.hydromatic.optiq.prepare.Prepare;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableModificationRelBase;
 import org.eigenbase.relopt.RelOptCluster;
@@ -99,6 +101,11 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
     return parentTableSchema;
     }
 
+  public Statistic getStatistic()
+    {
+    return Statistics.UNKNOWN;
+    }
+
   public RelNode toRel( RelOptTable.ToRelContext context, RelOptTable table )
     {
     RelOptCluster cluster = context.getCluster();
@@ -113,7 +120,7 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
 
   public TableModificationRelBase toModificationRel( RelOptCluster cluster,
                                                      RelOptTable table,
-                                                     OJPreparingStmt.CatalogReader catalogReader,
+                                                     Prepare.CatalogReader catalogReader,
                                                      RelNode input,
                                                      TableModificationRelBase.Operation operation,
                                                      List updateColumnList,

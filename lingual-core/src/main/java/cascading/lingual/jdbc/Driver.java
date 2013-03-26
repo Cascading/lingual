@@ -29,6 +29,7 @@ import java.util.Properties;
 import cascading.lingual.util.LogUtil;
 import cascading.lingual.util.Version;
 import net.hydromatic.optiq.jdbc.DriverVersion;
+import net.hydromatic.optiq.jdbc.OptiqConnection;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
 import org.eigenbase.util14.ConnectStringParser;
 import org.slf4j.Logger;
@@ -118,7 +119,7 @@ public class Driver extends UnregisteredDriver
     }
 
   @Override
-  public Connection connect( String url, Properties info ) throws SQLException
+  public OptiqConnection connect( String url, Properties info ) throws SQLException
     {
     Connection connection = super.connect( url, info );
 

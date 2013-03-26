@@ -23,7 +23,7 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.TableModificationRel;
 import org.eigenbase.rel.convert.ConverterRule;
-import org.eigenbase.relopt.CallingConvention;
+import org.eigenbase.relopt.Convention;
 
 import static cascading.lingual.optiq.Cascading.CONVENTION;
 
@@ -36,7 +36,7 @@ public class CascadingTableModificationConverterRule extends ConverterRule
 
   public CascadingTableModificationConverterRule()
     {
-    super( TableModificationRel.class, CallingConvention.NONE, CONVENTION, "CascadingTableModificationConverterRule" );
+    super( TableModificationRel.class, Convention.NONE, CONVENTION, "CascadingTableModificationConverterRule" );
     }
 
   @Override

@@ -97,28 +97,23 @@ public class RelUtil
     return (Class) ( (JavaTypeFactory) cluster.getTypeFactory() ).getJavaClass( dataType );
     }
 
-  static Fields createTypedFields( RelNode relNode, List<? extends RexNode> rexNodes )
+  static Fields createProjectedTypedFields( RelNode childNode, List<? extends RexNode> rexNodes )
     {
-    return createTypedFields( relNode, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
+    return createProjectedTypedFields( childNode, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
     }
 
-  static Fields createTypedFields( RelNode relNode, RexNode[] rexNodes )
+  static Fields createProjectedTypedFields( RelNode childNode, RexNode[] rexNodes )
     {
-    RelOptCluster cluster = relNode.getCluster();
-    RelDataType inputRowType = relNode.getRowType();
+    RelOptCluster cluster = childNode.getCluster();
+    RelDataType inputRowType = childNode.getRowType();
 
-    return createTypedFields( cluster, inputRowType, rexNodes );
+    return createProjectedTypedFields( cluster, inputRowType, rexNodes );
     }
 
-  public static Fields createTypedFields( RelOptCluster cluster, RelDataType inputRowType, List<? extends RexNode> rexNodes )
-    {
-    return createTypedFields( cluster, inputRowType, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
-    }
-
-  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, RexNode[] rexNodes )
+  public static Fields createProjectedTypedFields( RelOptCluster cluster, RelDataType incomingRowType, RexNode[] rexNodes )
     {
     Fields fields = Fields.NONE;
-    List<RelDataTypeField> fieldList = rowType.getFieldList();
+    List<RelDataTypeField> fieldList = incomingRowType.getFieldList();
 
     for( RexNode exp : rexNodes )
       {
@@ -133,11 +128,8 @@ public class RelUtil
     return fields;
     }
 
-  static Fields getRetainedProjectedTypeFields( RelOptCluster cluster, RexProgram program )
+  static Fields createRetainedProjectedTypeFields( RelOptCluster cluster, RelDataType inputRowType, RexProgram program, List<? extends RexNode> rexNodes )
     {
-    List<? extends RexNode> rexNodes = program.getProjectList();
-    List<RelDataTypeField> fieldList = program.getInputRowType().getFieldList();
-
     Fields fields = Fields.NONE;
 
     for( RexNode exp : rexNodes )
@@ -145,7 +137,7 @@ public class RelUtil
       if( !( exp instanceof RexSlot ) || program.isConstant( exp ) )
         continue;
 
-      RelDataTypeField dataTypeField = fieldList.get( ( (RexSlot) exp ).getIndex() );
+      RelDataTypeField dataTypeField = inputRowType.getFieldList().get( ( (RexSlot) exp ).getIndex() );
 
       fields = fields.append( createTypedFieldsFor( cluster, dataTypeField ) );
       }

@@ -50,9 +50,6 @@ import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.util.Util;
 
-import static cascading.lingual.optiq.RelUtil.createTypedFields;
-import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
-
 /**
  *
  */
@@ -82,9 +79,9 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     Branch branch = ( (CascadingRelNode) child ).visitChild( stack );
 
     // assumption here is if aggCalls is empty, we are performing a DISTINCT on the group set
-    if( isDistinct() )
+    if( getAggCallList().isEmpty() )
       {
-      Pipe current = new Unique( branch.current, createTypedFieldsFor( this ) );
+      Pipe current = new Unique( branch.current, RelUtil.createTypedFieldsFor( this ) );
 
       current = stack.addDebug( this, current );
 
@@ -94,7 +91,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     RelDataType inputRowType = getInput( 0 ).getRowType();
 
     Pipe previous = branch.current;
-    Fields groupFields = createTypedFields( getCluster(), inputRowType, Util.toIter( getGroupSet() ) );
+    Fields groupFields = RelUtil.createTypedFields( getCluster(), inputRowType, Util.toIter( getGroupSet() ) );
 
     List<AggregateCall> distincts = new ArrayList<AggregateCall>();
     List<AggregateCall> concurrents = new ArrayList<AggregateCall>();
@@ -116,12 +113,14 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     Fields declaredFields = createDeclaredFields( groupFields, distincts, concurrentAggregates );
     Fields[] groupFieldsArray = createGroupingFields( groupFields, pipes );
 
+    String name = stack.getNameFor( groupFields.isNone() ? HashJoin.class : CoGroup.class, pipes );
+
     Pipe join;
 
     if( groupFields.isNone() ) // not grouping, just appending tuples into a single row
-      join = new HashJoin( pipes, groupFieldsArray, declaredFields, new InnerJoin() );
+      join = new HashJoin( name, pipes, groupFieldsArray, declaredFields, new InnerJoin() );
     else
-      join = new CoGroup( pipes, groupFieldsArray, declaredFields, new InnerJoin() );
+      join = new CoGroup( name, pipes, groupFieldsArray, declaredFields, new InnerJoin() );
 
     join = stack.addDebug( this, join );
 
@@ -192,7 +191,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     for( AggregateCall aggCall : distincts )
       {
       String aggregationName = aggCall.getAggregation().getName();
-      Fields argFields = createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
+      Fields argFields = RelUtil.createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;
@@ -238,7 +237,7 @@ public class CascadingAggregateRel extends AggregateRelBase implements Cascading
     for( AggregateCall aggCall : concurrents )
       {
       String aggregationName = aggCall.getAggregation().getName();
-      Fields argFields = createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
+      Fields argFields = RelUtil.createTypedFields( getCluster(), inputRowType, aggCall.getArgList() );
 
       if( argFields.equals( Fields.NONE ) )
         argFields = Fields.ALL;

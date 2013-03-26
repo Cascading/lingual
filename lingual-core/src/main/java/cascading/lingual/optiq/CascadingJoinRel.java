@@ -51,24 +51,37 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
   {
   /** Whether a hash join. 0 = not, 1 = hash join builds on the left, 2 = hash join builds on the right. */
   private final int hash;
+  private final List<Integer> leftKeys = new ArrayList<Integer>();
+  private final List<Integer> rightKeys = new ArrayList<Integer>();
 
   public CascadingJoinRel( RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right, RexNode condition, JoinRelType joinType, Set<String> variablesStopped, int hash )
     {
     super( cluster, traits, left, right, condition, joinType, variablesStopped );
     this.hash = hash;
+
+    RexNode remaining = RelOptUtil.splitJoinCondition( left, right, condition, leftKeys, rightKeys );
+
+      // Rule should have checked "isEqui" before firing. Something went wrong.
+    if( !remaining.isAlwaysTrue() )
+      throw new AssertionError( "not equi-join condition: " + remaining );
     }
 
   @Override
   public RelOptCost computeSelfCost( RelOptPlanner planner )
     {
-    return super.computeSelfCost( planner ).multiplyBy( .1 );
+    final RelOptCost cost = super.computeSelfCost( planner );
+
+    if( leftKeys.size() == 0 ) // cartesian product. make artificially expensive.
+      return cost.multiplyBy( 10d );
+
+    return cost.multiplyBy( .1 );
     }
 
   @Override
   public RelOptPlanWriter explainTerms( RelOptPlanWriter pw )
     {
     return super.explainTerms( pw )
-        .item( "hash", hash );
+      .item( "hash", hash );
     }
 
   @Override
@@ -79,11 +92,6 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
 
   public Branch visitChild( Stack stack )
     {
-    final List<Integer> leftKeys = new ArrayList<Integer>();
-    final List<Integer> rightKeys = new ArrayList<Integer>();
-
-    RelOptUtil.splitJoinCondition( left, right, condition, leftKeys, rightKeys );
-
     Branch lhsBranch = ( (CascadingRelNode) left ).visitChild( stack );
     Branch rhsBranch = ( (CascadingRelNode) right ).visitChild( stack );
 
@@ -101,7 +109,8 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Fields declaredFields = RelUtil.createTypedFieldsFor( this );
 
     // need to parse lhs rhs fields from condition
-    Pipe coGroup = new CoGroup( leftPipe, lhsGroup, rightPipe, rhsGroup, declaredFields, joiner );
+    String name = stack.getNameFor( CoGroup.class, leftPipe, rightPipe );
+    Pipe coGroup = new CoGroup( name, leftPipe, lhsGroup, rightPipe, rhsGroup, declaredFields, joiner );
 
     coGroup = stack.addDebug( this, coGroup );
 

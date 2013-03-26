@@ -29,7 +29,6 @@ import org.eigenbase.rel.RelNode;
  */
 interface CascadingRelNode extends RelNode
   {
-
   /**
    * Called after the best plan has been found. Converts this node, and
    * its children, into an assembly. Implementor holds state.
