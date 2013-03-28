@@ -18,24 +18,17 @@
  * limitations under the License.
  */
 
-package cascading.lingual.tap.hadoop;
+package cascading.lingual.tap;
 
-import cascading.lingual.tap.TypedDelimitedParser;
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.tuple.Fields;
+import cascading.scheme.util.DelimitedParser;
 
 /**
  *
  */
-public class TypedTextDelimited extends TextDelimited
+public class TypedDelimitedParser extends DelimitedParser
   {
-  public TypedTextDelimited( String delimiter, String quote )
+  public TypedDelimitedParser( String delimiter, String quote )
     {
-    super( new TypedDelimitedParser( delimiter, quote ) );
-    }
-
-  public TypedTextDelimited( Fields fields, String delimiter, String quote )
-    {
-    super( fields, true, new TypedDelimitedParser( delimiter, quote ) );
+    super( delimiter, quote, null, true, true, new TypedFieldTypeResolver() );
     }
   }

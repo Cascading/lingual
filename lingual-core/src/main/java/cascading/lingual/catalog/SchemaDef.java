@@ -36,6 +36,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -48,6 +50,8 @@ import com.google.common.collect.Collections2;
 )
 public class SchemaDef extends Def
   {
+  private static final Logger LOG = LoggerFactory.getLogger( SchemaDef.class );
+
   @JsonProperty
   private Protocol defaultProtocol;
 
@@ -329,7 +333,9 @@ public class SchemaDef extends Def
   public void addTable( String name, String identifier, Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
     if( childTables.containsKey( name ) )
-      throw new IllegalArgumentException( "table named: " + name + " already exists" );
+      throw new IllegalArgumentException( "table named: " + childTables.get( name ).getName() + " already exists in schema: " + getName() );
+
+    LOG.debug( "adding table: {}, to schema: {}", name, getName() );
 
     childTables.put( name, new TableDef( this, name, identifier, stereotype, protocol, format ) );
     }

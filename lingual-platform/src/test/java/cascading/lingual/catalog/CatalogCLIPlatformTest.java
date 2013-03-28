@@ -35,7 +35,7 @@ import org.junit.Test;
 /**
  *
  */
-public class CatalogCLIPlatformTestCase extends LingualPlatformTestCase
+public class CatalogCLIPlatformTest extends LingualPlatformTestCase
   {
   @Override
   public void setUp() throws Exception

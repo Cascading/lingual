@@ -21,7 +21,6 @@
 package cascading.lingual;
 
 import cascading.PlatformTestCase;
-import cascading.tuple.Fields;
 import org.apache.log4j.Level;
 
 /**
@@ -34,20 +33,15 @@ public class LingualPlatformTestCase extends PlatformTestCase
   public static final String SALES_SCHEMA = DATA_PATH + SALES_SCHEMA_NAME + "/";
   public static final String DEPTS_TABLE = SALES_SCHEMA + "depts.tcsv";
   public static final String EMPS_TABLE = SALES_SCHEMA + "emps.tcsv";
+  public static final String SALES_TABLE = SALES_SCHEMA + "sales.tcsv";
 
   public static final String[] EMPS_COLUMNS = new String[]{
     "EMPNO", "NAME", "DEPTNO", "GENDER", "CITY", "EMPID", "AGE", "SLACKER", "MANAGER"
   };
 
-  public static String[] EMPS_COLUMN_TYPES = new String[]{
+  public static final String[] EMPS_COLUMN_TYPES = new String[]{
     "int", "string", "int", "string", "string", "int", "int", "boolean", "boolean"
   };
-
-  public static Class[] EMPS_TYPES = new Class[]{
-    int.class, String.class, int.class, String.class, String.class, int.class, int.class, boolean.class, boolean.class
-  };
-
-  public static Fields EMPS_FIELDS = new Fields( EMPS_COLUMNS );
 
   public static void enableLogging( String log, String level )
     {

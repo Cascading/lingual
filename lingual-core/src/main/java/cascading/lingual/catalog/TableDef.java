@@ -95,7 +95,7 @@ public class TableDef extends Def
     return getParentSchema().findDefaultProtocol();
     }
 
-  private Format getActualFormat()
+  protected Format getActualFormat()
     {
     if( format != null )
       return format;

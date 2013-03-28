@@ -32,7 +32,7 @@ import org.junit.Test;
 /**
  *
  */
-public class CatalogPlatformTestCase extends LingualPlatformTestCase
+public class CatalogPlatformTest extends LingualPlatformTestCase
   {
   @Test
   public void testPlatformBroker()
@@ -45,12 +45,16 @@ public class CatalogPlatformTestCase extends LingualPlatformTestCase
     properties.setProperty( PlatformBroker.META_DATA_PATH_PROP, "_lingual" );
     properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.json" );
 
+    PlatformBrokerFactory.instance().reloadBrokers();
+
     PlatformBroker broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
 
     String catalogFilePath = PlatformBroker.makePath( "/", brokerDataPath, "_lingual", "catalog.json" );
 
     if( broker.pathExists( catalogFilePath ) )
       broker.deletePath( catalogFilePath );
+
+    assertFalse( "catalog loaded", broker.catalogLoaded() );
 
     SchemaCatalog catalog = broker.getCatalog();
 

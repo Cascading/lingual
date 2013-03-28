@@ -184,32 +184,6 @@ public abstract class SchemaCatalog implements Serializable
     return getRootSchemaDef().renameSchema( schemaName, newName );
     }
 
-  public void createTableDefFor( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName )
-    {
-    SchemaDef schemaDef = rootSchemaDef.getSchema( schemaName );
-
-    if( schemaDef == null )
-      throw new IllegalStateException( "no schema for: " + schemaName );
-
-    Protocol protocol;
-
-    if( protocolName == null )
-      protocol = getDefaultProtocolFor( identifier );
-    else
-      protocol = Protocol.getProtocol( protocolName );
-
-    Format format;
-
-    if( formatName == null )
-      format = getDefaultFormatFor( schemaName, identifier );
-    else
-      format = Format.getFormat( formatName );
-
-    Stereotype<Protocol, Format> stereotype = createStereotype( schemaDef, tableName, fields, protocol );
-
-    schemaDef.addTable( tableName, identifier, stereotype, protocol, format );
-    }
-
   public String createSchemaDefAndTableDefsFor( String schemaIdentifier )
     {
     return createSchemaDefAndTableDefsFor( null, null, null, schemaIdentifier );
@@ -217,8 +191,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createSchemaDefAndTableDefsFor( String schemaName, String protocolName, String formatName, String schemaIdentifier )
     {
-    if( platformBroker != null )
-      schemaIdentifier = platformBroker.getFullPath( schemaIdentifier );
+    schemaIdentifier = getFullPath( schemaIdentifier );
 
     LOG.debug( "using schema full path: {}", schemaIdentifier );
 
@@ -237,7 +210,7 @@ public abstract class SchemaCatalog implements Serializable
     LOG.debug( "schema {} has {} children", schemaName, childIdentifiers.length );
 
     for( String identifier : childIdentifiers )
-      createTableDefFor( schemaDef, null, identifier, null, null, null );
+      createTableDefFor( schemaDef, null, identifier, null, null, null, null );
 
     return schemaName;
     }
@@ -266,7 +239,21 @@ public abstract class SchemaCatalog implements Serializable
 
   public void createTableDefFor( String identifier )
     {
-    createTableDefFor( getRootSchemaDef(), null, identifier, null, null, null );
+    createTableDefFor( getRootSchemaDef(), null, identifier, null, null, null, null );
+    }
+
+  public void createTableDefFor( String schemaName, String tableName, String tableIdentifier, Fields fields, String protocolName, String formatName )
+    {
+    tableIdentifier = getFullPath( tableIdentifier );
+
+    Point<Protocol, Format> point = getPointFor( tableIdentifier, schemaName, Protocol.getProtocol( protocolName ), Format.getFormat( formatName ) );
+
+    SchemaDef schemaDef = rootSchemaDef.getSchema( schemaName );
+
+    if( schemaDef == null )
+      throw new IllegalStateException( "no schema for: " + schemaName );
+
+    createTableDefFor( schemaDef, tableName, tableIdentifier, null, fields, point.protocol, point.format );
     }
 
   public boolean removeTableDef( String schemaName, String tableName )
@@ -286,46 +273,51 @@ public abstract class SchemaCatalog implements Serializable
     if( schemaDef == null )
       throw new IllegalStateException( "schema does not exist: " + schemaName );
 
-    return createTableDefFor( schemaDef, tableName, identifier, stereotypeName, protocol, format );
+    return createTableDefFor( schemaDef, tableName, identifier, stereotypeName, null, protocol, format );
     }
 
-  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String tableIdentifier, String stereotypeName, Protocol protocol, Format format )
+  protected String createTableDefFor( SchemaDef schemaDef, String tableName, String tableIdentifier, String stereotypeName, Fields fields, Protocol protocol, Format format )
     {
-    if( platformBroker != null )
-      tableIdentifier = platformBroker.getFullPath( tableIdentifier );
+    tableIdentifier = getFullPath( tableIdentifier );
 
     LOG.debug( "using table full path: {}", tableIdentifier );
 
     if( tableName == null )
       tableName = platformBroker.createTableNameFrom( tableIdentifier );
 
-    Stereotype<Protocol, Format> stereotype;
+    Stereotype<Protocol, Format> stereotype = null;
 
     if( stereotypeName != null )
-      {
       stereotype = findStereotype( schemaDef, stereotypeName );
 
-      if( stereotype == null )
-        throw new IllegalArgumentException( "stereotype does not exist: " + stereotypeName );
-      }
-    else
-      {
-      stereotype = getOrCreateStereotype( schemaDef, tableIdentifier );
-      }
+    if( stereotype == null )
+      stereotype = findOrCreateStereotype( schemaDef, fields, tableIdentifier );
+
+    if( stereotype == null )
+      throw new IllegalArgumentException( "stereotype does not exist: " + stereotypeName );
 
     schemaDef.addTable( tableName, tableIdentifier, stereotype, protocol, format );
 
     return tableName;
     }
 
-  private Stereotype<Protocol, Format> getOrCreateStereotype( SchemaDef schema, String identifier )
+  private String getFullPath( String identifier )
+    {
+    if( platformBroker == null )
+      return identifier;
+
+    return platformBroker.getFullPath( identifier );
+    }
+
+  private Stereotype<Protocol, Format> findOrCreateStereotype( SchemaDef schema, Fields fields, String identifier )
     {
     Stereotype<Protocol, Format> stereotype = findStereotypeFor( identifier );
 
     if( stereotype != null )
       return stereotype;
 
-    Fields fields = getFieldsFor( identifier );
+    if( fields == null )
+      fields = getFieldsFor( identifier );
 
     if( fields == null )
       return schema.findStereotypeFor( Fields.UNKNOWN );
@@ -336,11 +328,7 @@ public abstract class SchemaCatalog implements Serializable
     stereotype = schema.findStereotypeFor( fields );
 
     if( stereotype == null )
-      {
-      Point<Protocol, Format> point = getPointFor( identifier, schemaName, null, null );
-
-      return createStereotype( schema, stereotypeName, fields, point.protocol );
-      }
+      stereotype = createStereotype( schema, stereotypeName, fields, getPointFor( identifier, schemaName ).protocol );
 
     return stereotype;
     }
@@ -392,6 +380,11 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getSchema( schemaName ).getProtocolNames();
     }
 
+  protected Point<Protocol, Format> getPointFor( String identifier, String schemaName )
+    {
+    return getPointFor( identifier, schemaName, null, null );
+    }
+
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
     {
     if( idPointMap.containsKey( identifier ) )
@@ -407,7 +400,7 @@ public abstract class SchemaCatalog implements Serializable
   private Point<Protocol, Format> createPointFor( String schemaName, String identifier, Protocol protocol, Format format )
     {
     if( protocol == null )
-      protocol = getDefaultProtocolFor( identifier );
+      protocol = getDefaultProtocolFor( schemaName, identifier );
 
     if( format == null )
       format = getDefaultFormatFor( schemaName, identifier );
@@ -415,14 +408,21 @@ public abstract class SchemaCatalog implements Serializable
     return new Point<Protocol, Format>( protocol, format );
     }
 
-  public Protocol getDefaultProtocolFor( String identifier )
+  public Protocol getDefaultProtocolFor( String schemaName, String identifier )
     {
     TableDef table = rootSchemaDef.findTableFor( identifier );
 
     if( table != null && table.getProtocol() != null )
-      return table.getProtocol();
+      return table.getActualProtocol();
 
-    return rootSchemaDef.getDefaultProtocol();
+    SchemaDef schemaDef = getSchemaDef( schemaName );
+
+    Protocol protocol = ProtocolProperties.findProtocolFor( schemaDef, identifier );
+
+    if( protocol == null && schemaDef != null )
+      protocol = schemaDef.findDefaultProtocol();
+
+    return protocol;
     }
 
   public Format getDefaultFormatFor( String schemaName, String identifier )
@@ -431,7 +431,7 @@ public abstract class SchemaCatalog implements Serializable
 
     // return declared format by given table
     if( tableDef != null && tableDef.getFormat() != null )
-      return tableDef.getFormat();
+      return tableDef.getActualFormat();
 
     SchemaDef schemaDef = getSchemaDef( schemaName );
 
@@ -469,13 +469,6 @@ public abstract class SchemaCatalog implements Serializable
       return stereotype;
 
     return findStereotype( schema.getParentSchema(), stereotypeName );
-    }
-
-  public Stereotype<Protocol, Format> getStereoType( String schemaName, String stereotypeName )
-    {
-    SchemaDef schema = getSchemaDef( schemaName );
-
-    return schema.getStereotype( stereotypeName );
     }
 
   public boolean removeStereotype( String schemaName, String stereotypeName )

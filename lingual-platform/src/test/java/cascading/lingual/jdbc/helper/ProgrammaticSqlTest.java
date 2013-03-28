@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import cascading.lingual.jdbc.JDBCPlatformTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -107,6 +108,7 @@ public class ProgrammaticSqlTest extends JDBCPlatformTestCase
     return buf.toString();
     }
 
+  @Ignore // remove to use locally, turned off on CI server
   @Test
   public void testFoo() throws Exception
     {
