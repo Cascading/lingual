@@ -42,6 +42,8 @@ test {
 
 task platformTest( type: Test, dependsOn: test ) {
 
+  forkEvery = 1 // static fields on the platform test get munged otherwise
+
   if( System.properties[ 'platformTest.single' ] ) // test a single class from the command line
     include "**/${System.properties[ 'platformTest.single' ]}.class"
   else

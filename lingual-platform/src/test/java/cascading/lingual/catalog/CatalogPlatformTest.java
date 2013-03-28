@@ -74,6 +74,7 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
 
     assertTrue( catalog.getSchemaNames().contains( "SALES" ) );
     assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "EMPS" ) );
+    assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "DEPTS" ) );
 
     assertTrue( catalog.getSchemaNames().contains( "test" ) );
     assertTrue( catalog.getSchemaDef( "test" ).getChildTableNames().contains( "DEPTS" ) );
