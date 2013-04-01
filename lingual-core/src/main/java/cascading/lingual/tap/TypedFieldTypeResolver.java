@@ -23,7 +23,6 @@ package cascading.lingual.tap;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import cascading.lingual.type.SqlTypeMap;
 import cascading.lingual.type.TypeMap;
 import cascading.scheme.util.FieldTypeResolver;
 
@@ -34,12 +33,6 @@ public class TypedFieldTypeResolver implements FieldTypeResolver
   {
   private final TypeMap typeMap;
   private final Type defaultType;
-
-  public TypedFieldTypeResolver()
-    {
-    typeMap = new SqlTypeMap();
-    defaultType = String.class;
-    }
 
   public TypedFieldTypeResolver( TypeMap typeMap, Type defaultType )
     {

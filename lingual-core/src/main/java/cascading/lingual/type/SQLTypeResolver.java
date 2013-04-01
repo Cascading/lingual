@@ -18,24 +18,17 @@
  * limitations under the License.
  */
 
-package cascading.lingual.tap.hadoop;
+package cascading.lingual.type;
 
-import cascading.lingual.tap.SQLTypedDelimitedParser;
-import cascading.scheme.hadoop.TextDelimited;
-import cascading.tuple.Fields;
+import cascading.lingual.tap.TypedFieldTypeResolver;
 
 /**
  *
  */
-public class TypedTextDelimited extends TextDelimited
+public class SQLTypeResolver extends TypedFieldTypeResolver
   {
-  public TypedTextDelimited( String delimiter, String quote )
+  public SQLTypeResolver()
     {
-    super( new SQLTypedDelimitedParser( delimiter, quote ) );
-    }
-
-  public TypedTextDelimited( Fields fields, String delimiter, String quote )
-    {
-    super( fields, true, new SQLTypedDelimitedParser( delimiter, quote ) );
+    super( new SqlTypeMap(), String.class );
     }
   }

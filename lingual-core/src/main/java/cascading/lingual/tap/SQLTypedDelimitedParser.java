@@ -20,15 +20,16 @@
 
 package cascading.lingual.tap;
 
+import cascading.lingual.type.SQLTypeResolver;
 import cascading.scheme.util.DelimitedParser;
 
 /**
  *
  */
-public class TypedDelimitedParser extends DelimitedParser
+public class SQLTypedDelimitedParser extends DelimitedParser
   {
-  public TypedDelimitedParser( String delimiter, String quote )
+  public SQLTypedDelimitedParser( String delimiter, String quote )
     {
-    super( delimiter, quote, null, true, true, new TypedFieldTypeResolver() );
+    super( delimiter, quote, new SQLTypeResolver() );
     }
   }

@@ -32,8 +32,8 @@ import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.platform.PlatformBrokerFactory;
-import cascading.lingual.tap.TypedFieldTypeResolver;
 import cascading.lingual.type.SQLDateTimeCoercibleType;
+import cascading.lingual.type.SQLTypeResolver;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -146,7 +146,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
 
   protected TupleEntryIterator getTable( String tableName ) throws IOException
     {
-    Tap tap = getPlatform().getDelimitedFile( ",", "\"", new TypedFieldTypeResolver(), TEST_ROOT + tableName + ".tcsv", SinkMode.KEEP );
+    Tap tap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), TEST_ROOT + tableName + ".tcsv", SinkMode.KEEP );
 
     tap.retrieveSourceFields( getPlatform().getFlowProcess() );
 

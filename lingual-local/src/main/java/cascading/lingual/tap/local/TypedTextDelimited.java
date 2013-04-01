@@ -20,7 +20,7 @@
 
 package cascading.lingual.tap.local;
 
-import cascading.lingual.tap.TypedDelimitedParser;
+import cascading.lingual.tap.SQLTypedDelimitedParser;
 import cascading.scheme.local.TextDelimited;
 import cascading.tuple.Fields;
 
@@ -31,11 +31,11 @@ public class TypedTextDelimited extends TextDelimited
   {
   public TypedTextDelimited( String delimiter, String quote )
     {
-    super( new TypedDelimitedParser( delimiter, quote ) );
+    super( new SQLTypedDelimitedParser( delimiter, quote ) );
     }
 
   public TypedTextDelimited( Fields fields, String delimiter, String quote )
     {
-    super( fields, true, new TypedDelimitedParser( delimiter, quote ) );
+    super( fields, true, new SQLTypedDelimitedParser( delimiter, quote ) );
     }
   }
