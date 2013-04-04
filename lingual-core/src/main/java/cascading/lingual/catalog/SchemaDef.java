@@ -219,14 +219,7 @@ public class SchemaDef extends Def
 
   public Collection<String> getChildSchemaNames()
     {
-    return Collections2.transform( getChildSchemas(), new Function<SchemaDef, String>()
-    {
-    @Override
-    public String apply( SchemaDef input )
-      {
-      return input.getName();
-      }
-    } );
+    return childSchemas.keySet();
     }
 
   public Collection<TableDef> getChildTables()
@@ -236,14 +229,7 @@ public class SchemaDef extends Def
 
   public Collection<String> getChildTableNames()
     {
-    return Collections2.transform( getChildTables(), new Function<TableDef, String>()
-    {
-    @Override
-    public String apply( TableDef input )
-      {
-      return input.getName();
-      }
-    } );
+    return childTables.keySet();
     }
 
   public boolean addSchema( String name, Protocol protocol, Format format )
