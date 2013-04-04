@@ -205,6 +205,9 @@ public abstract class SchemaCatalog implements Serializable
     else if( !schemaIdentifier.equalsIgnoreCase( schemaDef.getIdentifier() ) )
       throw new IllegalArgumentException( "schema exists: " + schemaName + ", with differing identifier: " + schemaIdentifier );
 
+    if( !platformBroker.pathExists( schemaIdentifier ) )
+      return schemaName;
+
     String[] childIdentifiers = getChildIdentifiers( schemaIdentifier );
 
     LOG.debug( "schema {} has {} children", schemaName, childIdentifiers.length );
