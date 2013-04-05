@@ -22,9 +22,9 @@ def bindVersion = "wip-+"
 def bindChanging = false
 
 def linq4jVersion = '0.1'
-def linq4jChanging = true // build versioning not implemented yet
+def linq4jChanging = false
 def optiqVersion = '0.3'
-def optiqChanging = true // build versioning not implemented yet
+def optiqChanging = false
 
 // set the following property in $root/gradle.properties to use local installs of bind
 // systemProp.bind.release.local=true
@@ -42,6 +42,12 @@ if( System.properties[ 'optiq.release.local' ] )
   linq4jChanging = true
   optiqVersion = "${optiqVersion}-SNAPSHOT"
   optiqChanging = true
+}
+
+if( System.properties[ 'optiq.release.test' ] )
+{
+  linq4jVersion = "${linq4jVersion}-wip-+"
+  optiqVersion = "${optiqVersion}-wip-+"
 }
 
 dependencies {
