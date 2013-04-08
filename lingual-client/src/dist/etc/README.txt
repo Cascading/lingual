@@ -4,6 +4,10 @@ Lingual is true SQL for Cascading and Apache Hadoop.
 
 Lingual includes a JDBC Driver, SQL command shell, and a catalog manager for creating schemas and tables.
 
+For more information, visit:
+
+ http://www.cascading.org/lingual/
+
 To use Lingual, there is no installation other than the optional command line utilities.
 
 Lingual is based on the Cascading (http://cascading.org) distributed processing engine and
