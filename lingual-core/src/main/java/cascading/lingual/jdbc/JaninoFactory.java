@@ -30,7 +30,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.hydromatic.optiq.jdbc.OptiqConnection;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.Scanner;
@@ -38,7 +37,7 @@ import org.codehaus.janino.Scanner;
 /** Implements {@link Factory} by generating a non-abstract derived class. */
 public class JaninoFactory implements Factory
   {
-  public OptiqConnection createConnection( Connection connection, Properties connectionProperties ) throws SQLException
+  public Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException
     {
     try
       {

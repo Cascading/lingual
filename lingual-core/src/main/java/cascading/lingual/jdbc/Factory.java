@@ -24,10 +24,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.hydromatic.optiq.jdbc.OptiqConnection;
-
 /** Creates Connections etc. for the driver. */
 interface Factory
   {
-  OptiqConnection createConnection( Connection connection, Properties connectionProperties ) throws SQLException;
+  Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException;
   }
