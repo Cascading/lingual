@@ -37,7 +37,7 @@ import org.eigenbase.rex.RexProgramBuilder;
 /**
  *
  */
-public class ProgramUtil
+class ProgramUtil
   {
   public static boolean hasFunctions( RexProgram program )
     {

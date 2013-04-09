@@ -31,12 +31,12 @@ import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
-import cascading.lingual.optiq.CascadingEnumerableRel;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
 import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.platform.LingualFlowFactory;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.util.Optiq;
 import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
@@ -120,7 +120,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
-    CascadingEnumerableRel.writeSQLPlan( platformBroker.getProperties(), flowFactory.getName(), getVolcanoPlanner() );
+    Optiq.writeSQLPlan( platformBroker.getProperties(), flowFactory.getName(), getVolcanoPlanner() );
 
     for( Ref head : branch.heads.keySet() )
       flowFactory.addSource( head.name, head.identifier );

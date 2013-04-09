@@ -29,7 +29,7 @@ import org.eigenbase.relopt.RelTraitSet;
 /**
  *
  */
-public class CascadingProjectRule extends RelOptRule
+class CascadingProjectRule extends RelOptRule
   {
   public static final CascadingProjectRule INSTANCE = new CascadingProjectRule();
 

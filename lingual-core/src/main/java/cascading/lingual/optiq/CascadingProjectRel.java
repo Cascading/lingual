@@ -40,7 +40,7 @@ import org.eigenbase.util.Pair;
 /**
  *
  */
-public class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
+class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
   {
   /**
    * Creates a Project.

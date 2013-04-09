@@ -28,7 +28,7 @@ import org.eigenbase.relopt.volcano.AbstractConverter;
 /**
  *
  */
-public class CascadingEnumerableConverterRule extends ConverterRule
+class CascadingEnumerableConverterRule extends ConverterRule
   {
   public static final CascadingEnumerableConverterRule ARRAY_INSTANCE = new CascadingEnumerableConverterRule( EnumerableConvention.ARRAY );
   public static final CascadingEnumerableConverterRule CUSTOM_INSTANCE = new CascadingEnumerableConverterRule( EnumerableConvention.CUSTOM );

@@ -29,7 +29,7 @@ import org.eigenbase.relopt.RelTraitSet;
 /**
  *
  */
-public class CascadingSortRule extends RelOptRule
+class CascadingSortRule extends RelOptRule
   {
   public static final CascadingSortRule INSTANCE = new CascadingSortRule();
 

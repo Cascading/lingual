@@ -29,7 +29,7 @@ import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /** Rule that converts a VALUES relational expression to Cascading convention. */
-public class CascadingValuesRule extends RelOptRule
+class CascadingValuesRule extends RelOptRule
   {
   public static final CascadingValuesRule INSTANCE = new CascadingValuesRule();
 

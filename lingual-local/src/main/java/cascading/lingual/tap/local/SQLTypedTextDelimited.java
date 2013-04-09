@@ -25,16 +25,19 @@ import cascading.scheme.local.TextDelimited;
 import cascading.tuple.Fields;
 
 /**
- *
+ * Class SQLTypedTextDelimited is an implementation of {@link TextDelimited} that
+ * can resolve header information into field names and column types.
+ * <p/>
+ * It uses {@link cascading.lingual.type.SQLTypeResolver} to perform the mapping.
  */
-public class TypedTextDelimited extends TextDelimited
+public class SQLTypedTextDelimited extends TextDelimited
   {
-  public TypedTextDelimited( String delimiter, String quote )
+  public SQLTypedTextDelimited( String delimiter, String quote )
     {
     super( new SQLTypedDelimitedParser( delimiter, quote ) );
     }
 
-  public TypedTextDelimited( Fields fields, String delimiter, String quote )
+  public SQLTypedTextDelimited( Fields fields, String delimiter, String quote )
     {
     super( fields, true, new SQLTypedDelimitedParser( delimiter, quote ) );
     }

@@ -34,9 +34,7 @@ import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
+/** Class TapSchema is an implementation of the Optiq {@link MapSchema} base class. */
 public class TapSchema extends MapSchema
   {
   private static final Logger LOG = LoggerFactory.getLogger( TapSchema.class );

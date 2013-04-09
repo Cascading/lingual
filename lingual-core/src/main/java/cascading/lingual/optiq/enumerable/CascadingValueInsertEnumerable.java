@@ -28,10 +28,10 @@ import java.util.Map;
 import cascading.flow.FlowProcess;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.TableDef;
-import cascading.lingual.optiq.CascadingEnumerableRel;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.ValuesHolder;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.util.Optiq;
 import cascading.tap.SinkMode;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
@@ -96,7 +96,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     PlatformBroker platformBroker = getPlatformBroker();
     Branch branch = getBranch();
 
-    CascadingEnumerableRel.writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName(), getVolcanoPlanner() );
+    Optiq.writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName(), getVolcanoPlanner() );
 
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();

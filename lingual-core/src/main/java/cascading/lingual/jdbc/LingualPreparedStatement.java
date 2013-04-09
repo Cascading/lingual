@@ -45,7 +45,7 @@ import java.util.Properties;
 /**
  *
  */
-public class LingualPreparedStatement extends LingualStatement implements PreparedStatement
+class LingualPreparedStatement extends LingualStatement implements PreparedStatement
   {
   private final PreparedStatement parent;
 

@@ -34,7 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Class PlatformBrokerFactory is responsible for dynamically looking up available {@link PlatformBroker} instances
+ * from the current {@code CLASSPATH}.
  */
 public class PlatformBrokerFactory
   {

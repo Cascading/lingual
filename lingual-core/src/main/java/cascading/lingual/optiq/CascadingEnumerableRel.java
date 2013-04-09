@@ -20,14 +20,9 @@
 
 package cascading.lingual.optiq;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.util.List;
-import java.util.Properties;
 
-import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
 import cascading.lingual.optiq.enumerable.CascadingValueInsertEnumerable;
 import cascading.lingual.optiq.meta.Branch;
@@ -55,7 +50,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
+class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingEnumerableRel.class );
 
@@ -123,45 +118,6 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     Constructor<CascadingFlowRunnerEnumerable> constructor = getConstructorFor( CascadingFlowRunnerEnumerable.class );
 
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
-    }
-
-  public static void writeSQLPlan( Properties properties, String name, VolcanoPlanner planner )
-    {
-    String path = getSQLPlanPath( properties, name );
-
-    if( path == null )
-      return;
-
-    PrintWriter writer;
-
-    try
-      {
-      File file = new File( path );
-
-      file.getParentFile().mkdirs();
-      writer = new PrintWriter( file );
-      }
-    catch( IOException exception )
-      {
-      throw new RuntimeException( "unable to write sql plan to: " + path );
-      }
-
-    planner.dump( writer );
-
-    writer.close();
-    }
-
-  private static String getSQLPlanPath( Properties properties, String name )
-    {
-    if( !properties.containsKey( Driver.SQL_PLAN_PATH_PROP ) )
-      return null;
-
-    String path = properties.getProperty( Driver.SQL_PLAN_PATH_PROP );
-
-    if( !path.endsWith( "/" ) )
-      path += "/";
-
-    return path += name + ".txt";
     }
 
   private <T> Constructor<T> getConstructorFor( Class<T> type )

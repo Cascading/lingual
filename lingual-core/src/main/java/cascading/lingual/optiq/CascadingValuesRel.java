@@ -34,7 +34,7 @@ import org.eigenbase.rex.RexLiteral;
  * Implementation of VALUES operator, that returns a constant set of tuples,
  * in Cascading convention.
  */
-public class CascadingValuesRel extends ValuesRelBase implements CascadingRelNode
+class CascadingValuesRel extends ValuesRelBase implements CascadingRelNode
   {
   public CascadingValuesRel(
     RelOptCluster cluster,

@@ -24,12 +24,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import cascading.lingual.util.Util;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
 
+import static cascading.lingual.util.MiscCollection.makeInternedCache;
+
+/**
+ * Class Format is an enhanced "enum" type that allows for runtime membership used for defining new "formats"
+ * used during table and identifier runtime resolution.
+ */
 public class Format implements Serializable
   {
   private static final Function<String, Format> factory = new Function<String, Format>()
@@ -41,7 +46,7 @@ public class Format implements Serializable
     }
   };
 
-  private static final LoadingCache<String, Format> cache = Util.makeInternedCache( factory );
+  private static final LoadingCache<String, Format> cache = makeInternedCache( factory );
 
   @JsonCreator
   public static Format getFormat( String name )

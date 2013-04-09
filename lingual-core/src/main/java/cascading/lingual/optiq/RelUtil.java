@@ -29,14 +29,11 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
-import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexProgram;
-import org.eigenbase.rex.RexSlot;
 
 /**
  *
  */
-public class RelUtil
+class RelUtil
   {
   public static Fields createTypedFieldsFor( RelOptCluster cluster, List<Integer> keys, RelDataType rowType )
     {
@@ -95,53 +92,5 @@ public class RelUtil
   public static Class getJavaType( RelOptCluster cluster, RelDataType dataType )
     {
     return (Class) ( (JavaTypeFactory) cluster.getTypeFactory() ).getJavaClass( dataType );
-    }
-
-  static Fields createProjectedTypedFields( RelNode childNode, List<? extends RexNode> rexNodes )
-    {
-    return createProjectedTypedFields( childNode, rexNodes.toArray( new RexNode[ rexNodes.size() ] ) );
-    }
-
-  static Fields createProjectedTypedFields( RelNode childNode, RexNode[] rexNodes )
-    {
-    RelOptCluster cluster = childNode.getCluster();
-    RelDataType inputRowType = childNode.getRowType();
-
-    return createProjectedTypedFields( cluster, inputRowType, rexNodes );
-    }
-
-  public static Fields createProjectedTypedFields( RelOptCluster cluster, RelDataType incomingRowType, RexNode[] rexNodes )
-    {
-    Fields fields = Fields.NONE;
-    List<RelDataTypeField> fieldList = incomingRowType.getFieldList();
-
-    for( RexNode exp : rexNodes )
-      {
-      if( !( exp instanceof RexSlot ) )
-        continue;
-
-      RelDataTypeField dataTypeField = fieldList.get( ( (RexSlot) exp ).getIndex() );
-
-      fields = fields.append( createTypedFieldsFor( cluster, dataTypeField ) );
-      }
-
-    return fields;
-    }
-
-  static Fields createRetainedProjectedTypeFields( RelOptCluster cluster, RelDataType inputRowType, RexProgram program, List<? extends RexNode> rexNodes )
-    {
-    Fields fields = Fields.NONE;
-
-    for( RexNode exp : rexNodes )
-      {
-      if( !( exp instanceof RexSlot ) || program.isConstant( exp ) )
-        continue;
-
-      RelDataTypeField dataTypeField = inputRowType.getFieldList().get( ( (RexSlot) exp ).getIndex() );
-
-      fields = fields.append( createTypedFieldsFor( cluster, dataTypeField ) );
-      }
-
-    return fields;
     }
   }

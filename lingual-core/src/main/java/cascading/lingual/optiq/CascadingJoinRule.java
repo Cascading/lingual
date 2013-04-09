@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Rule that converts a logical join rel to a cascading join rel. */
-public class CascadingJoinRule extends RelOptRule
+class CascadingJoinRule extends RelOptRule
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingJoinRule.class );
 

@@ -30,7 +30,7 @@ import org.eigenbase.relopt.RelTraitSet;
 /**
  *
  */
-public class CascadingAggregateRule extends RelOptRule
+class CascadingAggregateRule extends RelOptRule
   {
   public static final CascadingAggregateRule INSTANCE = new CascadingAggregateRule();
 

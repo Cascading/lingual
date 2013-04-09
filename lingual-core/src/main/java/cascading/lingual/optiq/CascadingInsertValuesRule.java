@@ -36,7 +36,7 @@ import static cascading.lingual.optiq.Cascading.CONVENTION;
 /**
  *
  */
-public class CascadingInsertValuesRule extends RelOptRule
+class CascadingInsertValuesRule extends RelOptRule
   {
   public static final CascadingInsertValuesRule INSTANCE = new CascadingInsertValuesRule();
 

@@ -47,7 +47,7 @@ import org.eigenbase.rex.RexNode;
 import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
 
 /** Join implemented in Cascading. */
-public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
+class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
   {
   /** Whether a hash join. 0 = not, 1 = hash join builds on the left, 2 = hash join builds on the right. */
   private final int hash;
@@ -61,7 +61,7 @@ public class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
 
     RexNode remaining = RelOptUtil.splitJoinCondition( left, right, condition, leftKeys, rightKeys );
 
-      // Rule should have checked "isEqui" before firing. Something went wrong.
+    // Rule should have checked "isEqui" before firing. Something went wrong.
     if( !remaining.isAlwaysTrue() )
       throw new AssertionError( "not equi-join condition: " + remaining );
     }

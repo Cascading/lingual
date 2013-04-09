@@ -32,7 +32,7 @@ import org.eigenbase.rex.RexNode;
 /**
  *
  */
-public class CascadingFilterRel extends FilterRelBase implements CascadingRelNode
+class CascadingFilterRel extends FilterRelBase implements CascadingRelNode
   {
   public CascadingFilterRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode condition )
     {

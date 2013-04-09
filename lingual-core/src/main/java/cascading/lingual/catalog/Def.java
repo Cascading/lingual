@@ -25,9 +25,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- *
- */
+/** Class Def is the base class for all schema and table related meta-data. */
 public class Def implements Serializable
   {
   @JsonBackReference

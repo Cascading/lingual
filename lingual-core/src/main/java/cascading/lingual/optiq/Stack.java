@@ -38,7 +38,7 @@ import cascading.pipe.Splice;
  * Contains state while tree of relational expressions is being traversed
  * to build a Cascading assembly.
  */
-public class Stack
+class Stack
   {
   Map<Class<? extends Splice>, Integer> spliceCounts = new HashMap<Class<? extends Splice>, Integer>();
 

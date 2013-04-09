@@ -42,7 +42,7 @@ import org.eigenbase.rex.RexNode;
 /**
  *
  */
-public class CascadingSortRel extends SortRel implements CascadingRelNode
+class CascadingSortRel extends SortRel implements CascadingRelNode
   {
   public CascadingSortRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, List<RelFieldCollation> collations )
     {

@@ -25,9 +25,7 @@ import java.lang.reflect.Method;
 
 import cascading.CascadingException;
 
-/**
- *
- */
+/** Reflection is a reflection utility helper. */
 public class Reflection
   {
   public static Object invokeStaticMethod( ClassLoader loader, String typeString, String methodName, Object[] parameters, Class[] parameterTypes )

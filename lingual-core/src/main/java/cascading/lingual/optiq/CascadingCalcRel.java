@@ -36,7 +36,7 @@ import org.eigenbase.rex.RexProgram;
 /**
  *
  */
-public class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
+class CascadingCalcRel extends CalcRelBase implements CascadingRelNode
   {
   public CascadingCalcRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RelDataType rowType, RexProgram program, List<RelCollation> collationList )
     {

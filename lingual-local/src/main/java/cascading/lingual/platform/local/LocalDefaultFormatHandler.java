@@ -23,7 +23,7 @@ package cascading.lingual.platform.local;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.platform.LingualFormatHandler;
-import cascading.lingual.tap.local.TypedTextDelimited;
+import cascading.lingual.tap.local.SQLTypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
 import cascading.tuple.Fields;
@@ -82,7 +82,7 @@ public class LocalDefaultFormatHandler extends LingualFormatHandler
     @Override
     public Scheme apply( Fields fields )
       {
-      return new TypedTextDelimited( fields, ",", "\"" );
+      return new SQLTypedTextDelimited( fields, ",", "\"" );
       }
     } );
 
@@ -91,7 +91,7 @@ public class LocalDefaultFormatHandler extends LingualFormatHandler
     @Override
     public Scheme apply( Fields fields )
       {
-      return new TypedTextDelimited( fields, "\t", "\"" );
+      return new SQLTypedTextDelimited( fields, "\t", "\"" );
       }
     } );
     }

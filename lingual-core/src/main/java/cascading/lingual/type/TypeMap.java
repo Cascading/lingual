@@ -28,7 +28,10 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 /**
+ * Class TypeMap is used by the {@link cascading.lingual.tap.TypedFieldTypeResolver} class to resolve type
+ * information from a file during runtime.
  *
+ * @see SQLTypeMap
  */
 public class TypeMap implements Serializable
   {

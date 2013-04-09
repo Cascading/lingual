@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import com.google.common.base.Throwables;
 
-import static cascading.lingual.util.LogUtil.setLogLevel;
+import static cascading.lingual.util.Logging.setLogLevel;
 
 /**
  *

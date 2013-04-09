@@ -29,7 +29,7 @@ import org.eigenbase.reltype.RelRecordType;
 /**
  *
  */
-public class FieldRecordType extends RelRecordType
+class FieldRecordType extends RelRecordType
   {
   private final Fields fields;
 

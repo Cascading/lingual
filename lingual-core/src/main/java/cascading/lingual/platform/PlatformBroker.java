@@ -54,7 +54,12 @@ import org.slf4j.LoggerFactory;
 import static cascading.lingual.jdbc.Driver.*;
 
 /**
- *
+ * Class PlatformBroker is the base class of all platform specific implementations.
+ * <p/>
+ * An instance of a PlatformBroker is created for the requested platform, where all implementations
+ * encapsulate necessary specific services.
+ * <p/>
+ * PlatformBroker instances are returned by the {@link PlatformBrokerFactory}.
  */
 public abstract class PlatformBroker<Config>
   {

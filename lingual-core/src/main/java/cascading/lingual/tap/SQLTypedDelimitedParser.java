@@ -24,7 +24,10 @@ import cascading.lingual.type.SQLTypeResolver;
 import cascading.scheme.util.DelimitedParser;
 
 /**
- *
+ * Class SQLTypedDelimitedParser is an implementation of {@link DelimitedParser} that can resolve
+ * text file header information into field names and SQL based type information.
+ * <p/>
+ * It uses the {@link SQLTypeResolver} class.
  */
 public class SQLTypedDelimitedParser extends DelimitedParser
   {

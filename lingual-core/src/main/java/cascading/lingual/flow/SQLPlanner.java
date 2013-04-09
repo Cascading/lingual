@@ -38,7 +38,7 @@ import net.hydromatic.optiq.prepare.OptiqPrepareImpl;
  * <p/>
  * SQLPlanner uses available meta-data from a partially initialized Flow instance created by the current
  * {@link cascading.flow.planner.FlowPlanner} for the given platform. Specifically, internal "table" meta-data
- * is created from source and sink Tap instances provided by the current {@link FowDef}.
+ * is created from source and sink Tap instances provided by the current {@link cascading.flow.FlowDef}.
  * <p/>
  * Currently table names as expected in the given SQL statement are expected to match the source and sink names, if
  * the SQL names have a schema, {@link #setDefaultSchema(String)} must be called, or it must be prepended to the

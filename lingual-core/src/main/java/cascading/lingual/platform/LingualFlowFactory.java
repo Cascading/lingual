@@ -36,7 +36,10 @@ import cascading.tap.SinkMode;
 import cascading.tuple.Fields;
 
 /**
- *
+ * Class LingualFlowFactory is an implementation of the {@link FlowFactory} base class.
+ * <p/>
+ * This FlowFactory can dynamically resolve source and sink taps across any platform and return a {@link Flow} for
+ * that platform without any coupling to a given platform implementation.
  */
 public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   {

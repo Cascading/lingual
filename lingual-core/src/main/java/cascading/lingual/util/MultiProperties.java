@@ -32,9 +32,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-/**
- *
- */
+/** Class MultiProperties is a simple version of a nested multi-map, that is, a Map of MultiMap instances. */
 public class MultiProperties<K> implements Serializable
   {
   @JsonIgnore

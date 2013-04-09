@@ -24,14 +24,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import cascading.lingual.util.Util;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
 
+import static cascading.lingual.util.MiscCollection.makeInternedCache;
+
 /**
- *
+ * Class Protocol is an enhanced "enum" type that allows for runtime membership used for defining new "protocols"
+ * used during table and identifier runtime resolution.
  */
 public class Protocol implements Serializable
   {
@@ -44,7 +46,7 @@ public class Protocol implements Serializable
     }
   };
 
-  private static final LoadingCache<String, Protocol> cache = Util.makeInternedCache( factory );
+  private static final LoadingCache<String, Protocol> cache = makeInternedCache( factory );
 
   @JsonCreator
   public static Protocol getProtocol( String name )

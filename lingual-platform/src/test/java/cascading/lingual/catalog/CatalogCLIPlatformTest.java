@@ -27,7 +27,7 @@ import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
-import cascading.lingual.util.LogUtil;
+import cascading.lingual.util.Logging;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class CatalogCLIPlatformTest extends LingualPlatformTestCase
 
     getPlatform().remoteRemove( outputPath, true );
 
-    LogUtil.setLogLevel( "debug" );
+    Logging.setLogLevel( "debug" );
 
     execute( outputPath, "--init" );
     execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );

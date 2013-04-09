@@ -36,7 +36,7 @@ import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelTraitSet;
 
 /** Join implemented in Cascading. */
-public class CascadingUnionRel extends UnionRelBase implements CascadingRelNode
+class CascadingUnionRel extends UnionRelBase implements CascadingRelNode
   {
   public CascadingUnionRel( RelOptCluster cluster, RelTraitSet traits, List<RelNode> inputs, boolean all )
     {

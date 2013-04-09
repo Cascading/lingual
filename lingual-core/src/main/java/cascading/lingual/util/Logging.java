@@ -20,14 +20,12 @@
 
 package cascading.lingual.util;
 
-/**
- *
- */
-public class LogUtil
+/** LogUtil is an internal utility class for setting log levels. */
+public class Logging
   {
   public static void setLogLevel( String level )
     {
-    setLogLevel( LogUtil.class.getClassLoader(), "cascading", level );
+    setLogLevel( Logging.class.getClassLoader(), "cascading", level );
     }
 
   public static void setLogLevel( Class type, String log, String level )

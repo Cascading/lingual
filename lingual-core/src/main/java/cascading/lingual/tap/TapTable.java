@@ -48,9 +48,7 @@ import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 
-/**
- *
- */
+/** Class TapTable is an implementation of the Optiq {@link ModifiableTable} interface. */
 public class TapTable extends BaseQueryable implements TranslatableTable, ModifiableTable
   {
   private static FieldTypeFactory typeFactory = new FieldTypeFactory();

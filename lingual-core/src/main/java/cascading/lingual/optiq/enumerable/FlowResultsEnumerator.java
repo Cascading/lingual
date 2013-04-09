@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public abstract class FlowResultsEnumerator<Result> implements Enumerator<Result>
+abstract class FlowResultsEnumerator<Result> implements Enumerator<Result>
   {
   protected final static Tuple DUMMY = new Tuple();
 

@@ -28,7 +28,7 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
-import cascading.lingual.type.SqlTypeMap;
+import cascading.lingual.type.SQLTypeMap;
 import cascading.lingual.type.TypeMap;
 import cascading.tuple.Fields;
 
@@ -37,7 +37,7 @@ import cascading.tuple.Fields;
  */
 public class StereotypeTarget extends CRUDTarget
   {
-  TypeMap typeMap = new SqlTypeMap();
+  TypeMap typeMap = new SQLTypeMap();
 
   public StereotypeTarget( Printer printer, CatalogOptions options )
     {

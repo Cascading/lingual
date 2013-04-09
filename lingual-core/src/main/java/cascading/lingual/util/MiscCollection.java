@@ -33,7 +33,7 @@ import com.google.common.collect.Interners;
 /**
  *
  */
-public class Util
+public class MiscCollection
   {
   public static <A, B> Map<B, A> invert( Map<A, B> map )
     {

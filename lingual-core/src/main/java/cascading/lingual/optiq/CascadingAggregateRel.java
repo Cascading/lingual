@@ -53,7 +53,7 @@ import org.eigenbase.util.Util;
 /**
  *
  */
-public class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
+class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
   {
   public CascadingAggregateRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode child, BitSet groupSet, List<AggregateCall> aggCallList )
     {

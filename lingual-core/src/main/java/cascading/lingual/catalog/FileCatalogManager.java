@@ -31,7 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Class FileCatalogManager can read and write the a meta-data catalog as JSON to an Input/Output stream provided
+ * by the underlying platform.
  */
 public class FileCatalogManager extends CatalogManager
   {

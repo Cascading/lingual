@@ -27,9 +27,7 @@ import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- *
- */
+/** Class TableDef manages all "table" related meta-data. */
 @JsonAutoDetect(
   fieldVisibility = JsonAutoDetect.Visibility.ANY,
   getterVisibility = JsonAutoDetect.Visibility.NONE,

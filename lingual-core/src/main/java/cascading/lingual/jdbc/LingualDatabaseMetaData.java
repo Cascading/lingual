@@ -33,7 +33,7 @@ import cascading.lingual.util.Version;
 /**
  *
  */
-public class LingualDatabaseMetaData implements DatabaseMetaData
+class LingualDatabaseMetaData implements DatabaseMetaData
   {
   private final LingualConnection connection;
   private final DatabaseMetaData parent;

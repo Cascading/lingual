@@ -36,7 +36,7 @@ import org.eigenbase.rex.RexLiteral;
 /**
  *
  */
-public class CascadingInsertValuesRel extends AbstractRelNode implements CascadingRelNode
+class CascadingInsertValuesRel extends AbstractRelNode implements CascadingRelNode
   {
   private final RelOptTable table;
   private final List<List<RexLiteral>> tuples;

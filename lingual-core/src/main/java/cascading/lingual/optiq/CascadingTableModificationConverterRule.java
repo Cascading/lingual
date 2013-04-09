@@ -30,7 +30,7 @@ import static cascading.lingual.optiq.Cascading.CONVENTION;
 /**
  *
  */
-public class CascadingTableModificationConverterRule extends ConverterRule
+class CascadingTableModificationConverterRule extends ConverterRule
   {
   public static final CascadingTableModificationConverterRule INSTANCE = new CascadingTableModificationConverterRule();
 

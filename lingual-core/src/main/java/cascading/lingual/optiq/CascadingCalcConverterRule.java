@@ -32,7 +32,7 @@ import org.eigenbase.rex.RexMultisetUtil;
 /**
  *
  */
-public class CascadingCalcConverterRule extends ConverterRule
+class CascadingCalcConverterRule extends ConverterRule
   {
   public static final CascadingCalcConverterRule INSTANCE = new CascadingCalcConverterRule();
 

@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class CalcProjectUtil
+class CalcProjectUtil
   {
   private static final Logger LOG = LoggerFactory.getLogger( CalcProjectUtil.class );
 
@@ -160,7 +160,7 @@ public class CalcProjectUtil
       return pipe;
 
     // create a filter to remove records that don't meet the expression
-    Expression nullToFalse = Expressions.call( CalcProjectUtil.class, "falseIfNull", condition );
+    Expression nullToFalse = Expressions.call( Functions.class, "falseIfNull", condition );
     Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
 
     statements.add( Expressions.return_( null, not ) );
@@ -254,21 +254,5 @@ public class CalcProjectUtil
       }
 
     return builder.getProgram( false ); // todo: optimizer causes issues
-    }
-
-  /**
-   * called by the above expression
-   *
-   * @param result Boolean value
-   * @return False if input is false or null
-   */
-  public static boolean falseIfNull( Boolean result )
-    {
-    return result == null ? false : result;
-    }
-
-  public static boolean falseIfNull( boolean result )
-    {
-    return result;
     }
   }

@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Rule that converts a logical join rel to a cascading join rel. */
-public class CascadingUnionRule extends RelOptRule
+class CascadingUnionRule extends RelOptRule
   {
   private static final Logger LOG = LoggerFactory.getLogger( CascadingUnionRule.class );
 

@@ -35,7 +35,7 @@ import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.Scanner;
 
 /** Implements {@link Factory} by generating a non-abstract derived class. */
-public class JaninoFactory implements Factory
+class JaninoFactory implements Factory
   {
   public Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException
     {

@@ -29,7 +29,7 @@ import org.eigenbase.relopt.RelTraitSet;
 /**
  *
  */
-public class CascadingFilterRule extends RelOptRule
+class CascadingFilterRule extends RelOptRule
   {
   public static final CascadingFilterRule INSTANCE = new CascadingFilterRule();
 

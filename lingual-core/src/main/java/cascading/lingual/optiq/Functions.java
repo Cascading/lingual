@@ -18,35 +18,24 @@
  * limitations under the License.
  */
 
-package cascading.lingual.type;
+package cascading.lingual.optiq;
 
-/**
- *
- */
-public class SqlTypeMap extends TypeMap
+/** An internal reflection helper. */
+public class Functions
   {
-  public SqlTypeMap()
+  /**
+   * called by the above expression
+   *
+   * @param result Boolean value
+   * @return False if input is false or null
+   */
+  public static boolean falseIfNull( Boolean result )
     {
-    put( "string", String.class );
+    return result == null ? false : result;
+    }
 
-    // primitives
-    put( "boolean", Boolean.TYPE );
-    put( "int", Integer.TYPE );
-    put( "short", Short.TYPE );
-    put( "long", Long.TYPE );
-    put( "float", Float.TYPE );
-    put( "byte", Byte.TYPE );
-
-    // objects
-    put( "Boolean", Boolean.class );
-    put( "Integer", Integer.class );
-    put( "Short", Short.class );
-    put( "Long", Long.class );
-    put( "Float", Float.class );
-    put( "Byte", Byte.class );
-
-    put( "date", new SQLDateCoercibleType() );
-    put( "time", new SQLTimeCoercibleType() );
-    put( "timestamp", new SQLTimestampCoercibleType() );
+  public static boolean falseIfNull( boolean result )
+    {
+    return result;
     }
   }

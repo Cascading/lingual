@@ -39,9 +39,7 @@ import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
+/** Class SchemaDef manages all "schema" related meta-data. */
 @JsonAutoDetect(
   fieldVisibility = JsonAutoDetect.Visibility.ANY,
   getterVisibility = JsonAutoDetect.Visibility.NONE,

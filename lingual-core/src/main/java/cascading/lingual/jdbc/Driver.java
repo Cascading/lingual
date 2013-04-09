@@ -26,7 +26,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import cascading.lingual.util.LogUtil;
+import cascading.lingual.util.Logging;
 import cascading.lingual.util.Version;
 import net.hydromatic.optiq.jdbc.DriverVersion;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
@@ -128,7 +128,7 @@ public class Driver extends UnregisteredDriver
     Properties connectionProperties = parseConnectionProperties( url, info );
 
     if( connectionProperties.contains( VERBOSE_PROP ) )
-      LogUtil.setLogLevel( connectionProperties.getProperty( VERBOSE_PROP, "info" ) );
+      Logging.setLogLevel( connectionProperties.getProperty( VERBOSE_PROP, "info" ) );
 
     return factory.createConnection( connection, connectionProperties );
     }

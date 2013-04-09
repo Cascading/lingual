@@ -51,7 +51,9 @@ import org.slf4j.LoggerFactory;
 import static cascading.lingual.jdbc.Driver.*;
 
 /**
- *
+ * Class LingualConnection is the base class for all Driver connection instances.
+ * <p/>
+ * This class is dynamically sub-classed to support the available JDBC version in the current JVM.
  */
 public abstract class LingualConnection implements Connection
   {
