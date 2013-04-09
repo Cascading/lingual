@@ -18,24 +18,18 @@
  * limitations under the License.
  */
 
-package cascading.lingual.optiq.meta;
+package cascading.lingual.flow;
 
-import net.hydromatic.optiq.rules.java.PhysType;
-import org.eigenbase.relopt.volcano.VolcanoPlanner;
+import cascading.bind.catalog.Stereotype;
+import cascading.tuple.Fields;
 
 /**
  *
  */
-public class FlowHolder
+class SimpleStereotype extends Stereotype
   {
-  public final PhysType physType;
-  public final Branch branch;
-  public final VolcanoPlanner planner;
-
-  public FlowHolder( PhysType physType, Branch branch, VolcanoPlanner planner )
+  public SimpleStereotype( String name, Fields fields )
     {
-    this.physType = physType;
-    this.branch = branch;
-    this.planner = planner;
+    super( new Object(), name, fields );
     }
   }

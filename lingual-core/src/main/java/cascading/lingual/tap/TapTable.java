@@ -58,21 +58,33 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
   private final PlatformBroker platformBroker;
   private final MutableSchema parentTableSchema;
   private final TableDef tableDef;
+  private final boolean useFullName;
   private final RelDataType rowType;
 
   public TapTable( PlatformBroker platformBroker, QueryProvider provider, TapSchema parentSchema, TableDef tableDef )
+    {
+    this( platformBroker, provider, parentSchema, tableDef, false );
+    }
+
+  public TapTable( PlatformBroker platformBroker, QueryProvider provider, TapSchema parentSchema, TableDef tableDef, boolean useFullName )
     {
     super( provider, Object.class, null );
 
     this.platformBroker = platformBroker;
     this.parentTableSchema = parentSchema;
     this.tableDef = tableDef;
+    this.useFullName = useFullName;
     this.rowType = typeFactory.createFieldsType( getFields() );
     }
 
   public PlatformBroker getPlatformBroker()
     {
     return platformBroker;
+    }
+
+  public boolean isUseFullName()
+    {
+    return useFullName;
     }
 
   @Override

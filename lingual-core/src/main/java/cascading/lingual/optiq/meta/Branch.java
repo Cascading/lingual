@@ -25,6 +25,7 @@ import java.util.Map;
 
 import cascading.lingual.platform.PlatformBroker;
 import cascading.pipe.Pipe;
+import cascading.util.Util;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public class Branch
   public List<List<RexLiteral>> tuples;
   public Map<Ref, Pipe> heads;
   public Pipe current;
-  public Ref tail;
+  public String[] resultName;
   public boolean isModification = false;
 
   public Branch( PlatformBroker platformBroker, Map<Ref, Pipe> heads, String name, String identifier )
@@ -65,14 +66,14 @@ public class Branch
       }
     }
 
-  public Branch( PlatformBroker platformBroker, Branch branch, String name, String identifier )
+  public Branch( PlatformBroker platformBroker, Branch branch, String name, String[] resultName )
     {
-    LOG.debug( "adding branch tail: {}, for: {}", name, identifier );
+    LOG.debug( "adding branch tail: {}, for table: {}", name, Util.join( resultName, "." ) );
 
     this.platformBroker = platformBroker;
     this.heads = branch.heads;
     this.current = new Pipe( name, branch.current );
-    this.tail = new Ref( name, identifier );
+    this.resultName = resultName;
     this.isModification = true;
     this.tuples = branch.tuples;
     }
@@ -93,13 +94,13 @@ public class Branch
       }
     }
 
-  public Branch( PlatformBroker platformBroker, String name, String identifier, List<List<RexLiteral>> tuples )
+  public Branch( PlatformBroker platformBroker, String[] resultName, List<List<RexLiteral>> tuples )
     {
     LOG.debug( "adding values insertion" );
 
     this.platformBroker = platformBroker;
     this.tuples = tuples;
-    this.tail = new Ref( name, identifier );
+    this.resultName = resultName;
     this.isModification = true;
     }
 

@@ -25,13 +25,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cascading.flow.FlowProcess;
+import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.TableDef;
+import cascading.lingual.optiq.CascadingEnumerableRel;
+import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.ValuesHolder;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.tap.SinkMode;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
 import net.hydromatic.linq4j.Linq4j;
+import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,28 +75,53 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     valuesHolder = popHolder( index );
     }
 
+  public Branch getBranch()
+    {
+    return valuesHolder.branch;
+    }
+
+  public PlatformBroker getPlatformBroker()
+    {
+    return valuesHolder.branch.platformBroker;
+    }
+
+  public VolcanoPlanner getVolcanoPlanner()
+    {
+    return valuesHolder.planner;
+    }
+
   @Override
   public Enumerator enumerator()
     {
+    PlatformBroker platformBroker = getPlatformBroker();
+    Branch branch = getBranch();
+
+    CascadingEnumerableRel.writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName(), getVolcanoPlanner() );
+
+    FlowProcess flowProcess = platformBroker.getFlowProcess();
+    SchemaCatalog schemaCatalog = platformBroker.getCatalog();
+    Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
+
+    TableDef tableDef = platformBroker.getCatalog().resolveTableDef( branch.resultName );
+    String identifier = tableDef.getIdentifier();
+
     TupleEntryCollector collector;
 
     try
       {
-      String identifier = valuesHolder.tap.getIdentifier();
-
-      if( valuesHolder.cache != null && valuesHolder.cache.containsKey( identifier ) )
+      if( cache != null && cache.containsKey( identifier ) )
         {
         LOG.debug( "inserting into (cached): {}", identifier );
-        collector = valuesHolder.cache.get( identifier );
+        collector = cache.get( identifier );
         }
       else
         {
         LOG.debug( "inserting into: {}", identifier );
-        collector = valuesHolder.tap.openForWrite( valuesHolder.flowProcess );
+        collector = schemaCatalog.createTapFor( identifier, SinkMode.KEEP ).openForWrite( flowProcess );
         }
 
-      if( valuesHolder.cache != null )
-        valuesHolder.cache.put( identifier, collector );
+      if( cache != null )
+        cache.put( identifier, collector );
       }
     catch( IOException exception )
       {
@@ -97,9 +130,10 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       throw new RuntimeException( "open for write failed", exception );
       }
 
+    List<List<RexLiteral>> tuples = branch.tuples;
     long rowCount = 0;
 
-    for( List<RexLiteral> values : valuesHolder.values )
+    for( List<RexLiteral> values : tuples )
       {
       Tuple tuple = Tuple.size( values.size() );
 

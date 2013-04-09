@@ -26,6 +26,7 @@ import java.util.Map;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
+import cascading.util.Util;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
@@ -78,12 +79,29 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public Branch visitChild( Stack stack )
     {
-    return new Branch( getPlatformBroker(), stack.heads, name, identifier );
+    String pipeName = isUseFullName() ? getQualifiedName() : name;
+
+    return new Branch( getPlatformBroker(), stack.heads, pipeName, identifier );
+    }
+
+  private String getQualifiedName()
+    {
+    return Util.join( table.getQualifiedName(), "." );
     }
 
   public PlatformBroker getPlatformBroker()
     {
-    return getTable().unwrap( TapTable.class ).getPlatformBroker();
+    return getTapTable().getPlatformBroker();
+    }
+
+  public boolean isUseFullName()
+    {
+    return getTapTable().isUseFullName();
+    }
+
+  private TapTable getTapTable()
+    {
+    return getTable().unwrap( TapTable.class );
     }
 
   // todo: remove

@@ -43,7 +43,7 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.hydromatic.optiq.MutableSchema;
+import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -338,12 +338,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public void addSchemasTo( LingualConnection connection ) throws SQLException
     {
-    MutableSchema rootSchema = connection.getRootSchema();
+    MapSchema rootSchema = (MapSchema) connection.getRootSchema();
 
     addSchemas( connection, rootSchema, rootSchemaDef );
     }
 
-  private void addSchemas( LingualConnection connection, MutableSchema currentSchema, SchemaDef currentSchemaDef )
+  private void addSchemas( LingualConnection connection, MapSchema currentSchema, SchemaDef currentSchemaDef )
     {
     Collection<SchemaDef> schemaDefs = currentSchemaDef.getChildSchemas();
 
@@ -353,7 +353,7 @@ public abstract class SchemaCatalog implements Serializable
 
       if( childSchema == null )
         {
-        childSchema = new TapSchema( connection, childSchemaDef );
+        childSchema = new TapSchema( currentSchema, connection, childSchemaDef );
         currentSchema.addSchema( childSchemaDef.getName(), childSchema );
         }
 

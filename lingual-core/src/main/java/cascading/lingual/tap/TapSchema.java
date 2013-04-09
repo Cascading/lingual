@@ -24,8 +24,12 @@ import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
+import net.hydromatic.linq4j.QueryProvider;
 import net.hydromatic.linq4j.expressions.Expression;
+import net.hydromatic.linq4j.expressions.Expressions;
+import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.impl.TableInSchemaImpl;
+import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,23 +41,55 @@ public class TapSchema extends MapSchema
   {
   private static final Logger LOG = LoggerFactory.getLogger( TapSchema.class );
 
-  private final LingualConnection connection;
-  private final PlatformBroker platformBroker;
-  private final String name;
-  private final String identifier;
+  private LingualConnection connection;
+  private PlatformBroker platformBroker;
+  private MapSchema parent;
+  private String name;
+  private String identifier;
 
-  public TapSchema( LingualConnection connection, SchemaDef schemaDef )
+  private static Expression makeExpression( String name, MutableSchema rootSchema )
     {
-    this( connection, schemaDef.getName(), schemaDef.getIdentifier() );
+    return rootSchema.getSubSchemaExpression( name, Object.class );
     }
 
-  public TapSchema( LingualConnection connection, String name, String identifier )
+  public TapSchema( QueryProvider queryProvider, JavaTypeFactory typeFactory )
     {
-    super( connection.getParent(), connection.getTypeFactory(), makeExpression( connection, name ) );
+    super( queryProvider, typeFactory, Expressions.parameter( Object.class, "root" ) );
+    }
+
+  public TapSchema( TapSchema parent, String name )
+    {
+    super( parent.getQueryProvider(), parent.typeFactory, makeExpression( name, parent ) );
+    this.parent = parent;
+    this.name = name;
+    }
+
+  public TapSchema( MapSchema parent, LingualConnection connection, SchemaDef schemaDef )
+    {
+    this( parent, connection, schemaDef.getName(), schemaDef.getIdentifier() );
+    }
+
+  public TapSchema( MapSchema parent, LingualConnection connection, String name, String identifier )
+    {
+    super( connection.getParent(), connection.getTypeFactory(), makeExpression( name, connection.getRootSchema() ) );
+    this.parent = parent;
     this.connection = connection;
     this.platformBroker = connection.getPlatformBroker();
     this.name = name;
     this.identifier = identifier;
+    }
+
+  public String getFullName()
+    {
+    if( parent == null )
+      return null;
+
+    String parentName = parent instanceof TapSchema ? ( (TapSchema) parent ).getFullName() : null;
+
+    if( parentName == null )
+      return getName();
+
+    return parentName + '.' + getName();
     }
 
   public String getName()
@@ -66,11 +102,6 @@ public class TapSchema extends MapSchema
     return identifier;
     }
 
-  private static Expression makeExpression( LingualConnection connection, String name )
-    {
-    return connection.getRootSchema().getSubSchemaExpression( name, Object.class );
-    }
-
   public void addTapTablesFor( SchemaDef schemaDef )
     {
     for( TableDef tableDef : schemaDef.getChildTables() )
@@ -79,16 +110,21 @@ public class TapSchema extends MapSchema
 
   public void addTapTableFor( TableDef tableDef )
     {
+    addTapTableFor( tableDef, false );
+    }
+
+  public void addTapTableFor( TableDef tableDef, boolean useFullName )
+    {
     TapTable found = (TapTable) getTable( tableDef.getName(), Object.class );
 
     if( found != null )
       LOG.info( "replacing table on schema: {}, table: {}, fields: {}, identifier: {}",
-        new Object[]{getName(), found.getName(), found.getFields(), found.getIdentifier()} );
+        new Object[]{getFullName(), found.getName(), found.getFields(), found.getIdentifier()} );
 
-    TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef );
+    TapTable table = new TapTable( platformBroker, getQueryProvider(), this, tableDef, useFullName );
 
     LOG.info( "adding table on schema: {}, table: {}, fields: {}, identifier: {}",
-      new Object[]{getName(), table.getName(), table.getFields(), table.getIdentifier()} );
+      new Object[]{getFullName(), table.getName(), table.getFields(), table.getIdentifier()} );
 
     addTable( new TableInSchemaImpl( this, table.getName(), TableType.TABLE, table ) );
     }

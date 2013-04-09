@@ -23,17 +23,26 @@ package cascading.lingual.optiq.enumerable;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
+import cascading.lingual.catalog.TableDef;
+import cascading.lingual.jdbc.Driver;
+import cascading.lingual.optiq.CascadingEnumerableRel;
+import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
+import cascading.lingual.optiq.meta.Ref;
+import cascading.lingual.platform.LingualFlowFactory;
+import cascading.lingual.platform.PlatformBroker;
 import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
 import net.hydromatic.linq4j.Linq4j;
+import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +77,21 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     flowHolder = popHolder( index );
     }
 
+  public Branch getBranch()
+    {
+    return flowHolder.branch;
+    }
+
+  public PlatformBroker getPlatformBroker()
+    {
+    return flowHolder.branch.platformBroker;
+    }
+
+  public VolcanoPlanner getVolcanoPlanner()
+    {
+    return flowHolder.planner;
+    }
+
   @Override
   public Enumerator enumerator()
     {
@@ -89,29 +113,53 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
   public Enumerator createEnumerator()
     {
+    PlatformBroker platformBroker = getPlatformBroker();
+    Branch branch = getBranch();
+
+    Properties properties = platformBroker.getProperties();
+
+    LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
+
+    CascadingEnumerableRel.writeSQLPlan( platformBroker.getProperties(), flowFactory.getName(), getVolcanoPlanner() );
+
+    for( Ref head : branch.heads.keySet() )
+      flowFactory.addSource( head.name, head.identifier );
+
+    if( branch.resultName != null )
+      {
+      TableDef tableDef = platformBroker.getCatalog().resolveTableDef( branch.resultName );
+      flowFactory.addSink( tableDef.getName(), tableDef.getIdentifier() );
+      }
+    else
+      {
+      flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
+      }
+
+    String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
+
     Flow flow;
 
     try
       {
-      flow = flowHolder.flowFactory.create();
+      flow = flowFactory.create();
       }
     catch( PlannerException exception )
       {
       LOG.error( "planner failed", exception );
 
-      if( flowHolder.flowPlanPath != null )
+      if( flowPlanPath != null )
         {
-        LOG.info( "writing flow dot: {}", flowHolder.flowPlanPath );
-        exception.writeDOT( flowHolder.flowPlanPath );
+        LOG.info( "writing flow dot: {}", flowPlanPath );
+        exception.writeDOT( flowPlanPath );
         }
 
       throw exception;
       }
 
-    if( flowHolder.flowPlanPath != null )
+    if( flowPlanPath != null )
       {
-      LOG.info( "writing flow dot: {}", flowHolder.flowPlanPath );
-      flow.writeDOT( flowHolder.flowPlanPath );
+      LOG.info( "writing flow dot: {}", flowPlanPath );
+      flow.writeDOT( flowPlanPath );
       }
 
     try
@@ -134,7 +182,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
 
-    if( flowHolder.isModification )
+    if( branch.isModification )
       {
       FlowStep flowStep = (FlowStep) flow.getFlowSteps().get( flow.getFlowSteps().size() - 1 );
       long rowCount = flowStep.getFlowStepStats().getCounterValue( StepCounters.Tuples_Written );
@@ -148,9 +196,45 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     for( int i = 0; i < size; i++ )
       types[ i ] = flowHolder.physType.fieldClass( i );
 
+    int maxRows = getMaxRows( properties );
+
     if( size == 1 )
-      return new FlowObjectEnumerator( flowHolder.maxRows, types, flow );
+      return new FlowObjectEnumerator( maxRows, types, flow );
     else
-      return new FlowArrayEnumerator( flowHolder.maxRows, types, flow );
+      return new FlowArrayEnumerator( maxRows, types, flow );
+    }
+
+  private String getResultPath( PlatformBroker platformBroker, Properties properties, String name )
+    {
+    String path = platformBroker.getTempPath();
+    path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
+
+    if( !path.endsWith( "/" ) )
+      path += "/";
+
+    return path + name;
+    }
+
+  private String setFlowPlanPath( Properties properties, String name )
+    {
+    if( !properties.containsKey( Driver.FLOW_PLAN_PATH ) )
+      return null;
+
+    String flowPlanPath = properties.getProperty( Driver.FLOW_PLAN_PATH );
+
+    if( !flowPlanPath.endsWith( "/" ) )
+      flowPlanPath += "/";
+
+    flowPlanPath += name + ".dot";
+
+    return flowPlanPath;
+    }
+
+  private int getMaxRows( Properties properties )
+    {
+    if( !properties.containsKey( Driver.MAX_ROWS ) )
+      return Integer.MAX_VALUE;
+
+    return Integer.parseInt( properties.getProperty( Driver.MAX_ROWS ) );
     }
   }

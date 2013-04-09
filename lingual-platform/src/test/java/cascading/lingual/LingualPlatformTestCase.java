@@ -31,9 +31,14 @@ public class LingualPlatformTestCase extends PlatformTestCase
   public static final String DATA_PATH = System.getProperty( "test.data.path", "../lingual-platform/src/test/resources/data/" );
   public static final String SALES_SCHEMA_NAME = "sales";
   public static final String SALES_SCHEMA = DATA_PATH + SALES_SCHEMA_NAME + "/";
-  public static final String DEPTS_TABLE = SALES_SCHEMA + "depts.tcsv";
-  public static final String EMPS_TABLE = SALES_SCHEMA + "emps.tcsv";
-  public static final String SALES_TABLE = SALES_SCHEMA + "sales.tcsv";
+  public static final String SALES_DEPTS_TABLE = SALES_SCHEMA + "depts.tcsv";
+  public static final String SALES_EMPS_TABLE = SALES_SCHEMA + "emps.tcsv";
+  public static final String SALES_SALES_TABLE = SALES_SCHEMA + "sales.tcsv";
+
+  public static final String SIMPLE_SCHEMA_NAME = "simple";
+  public static final String SIMPLE_SCHEMA = DATA_PATH + SIMPLE_SCHEMA_NAME + "/";
+  public static final String SIMPLE_EMPLOYEE_TABLE = SIMPLE_SCHEMA + "employee.tcsv";
+  public static final String SIMPLE_SALES_FACT_TABLE = SIMPLE_SCHEMA + "sales_fact_1997.tcsv";
 
   public static final String[] EMPS_COLUMNS = new String[]{
     "EMPNO", "NAME", "DEPTNO", "GENDER", "CITY", "EMPID", "AGE", "SLACKER", "MANAGER"

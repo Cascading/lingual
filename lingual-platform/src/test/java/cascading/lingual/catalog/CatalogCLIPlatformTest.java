@@ -64,7 +64,7 @@ public class CatalogCLIPlatformTest extends LingualPlatformTestCase
     execute( outputPath, "--stereotype" );
 
     execute( outputPath, "--schema", "adhoc", "--add" );
-    execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", EMPS_TABLE,
+    execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", SALES_EMPS_TABLE,
       "--stereotype", "emps"
     );
     execute( outputPath, "--schema", "adhoc", "--table" );
@@ -73,7 +73,7 @@ public class CatalogCLIPlatformTest extends LingualPlatformTestCase
     execute( outputPath, "--schema", "adhoc", "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
     execute( outputPath, "--schema", "adhoc", "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
 
-    execute( outputPath, "--schema", "adhoc", "--table", "remote", "--add", EMPS_TABLE,
+    execute( outputPath, "--schema", "adhoc", "--table", "remote", "--add", SALES_EMPS_TABLE,
       "--stereotype", "emps",
       "--format", "table", "--protocol", "jdbc"
     );

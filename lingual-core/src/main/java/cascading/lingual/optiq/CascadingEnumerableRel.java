@@ -25,23 +25,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import cascading.flow.FlowProcess;
-import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
 import cascading.lingual.optiq.enumerable.CascadingValueInsertEnumerable;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
-import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.optiq.meta.ValuesHolder;
-import cascading.lingual.platform.LingualFlowFactory;
-import cascading.lingual.platform.PlatformBroker;
-import cascading.tap.SinkMode;
-import cascading.tap.Tap;
-import cascading.tuple.TupleEntryCollector;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
@@ -58,7 +49,6 @@ import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
-import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +64,9 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
     {
     super( cluster, traitSet, input );
+
     assert getConvention() instanceof EnumerableConvention;
+
     physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), (EnumerableConvention) getConvention() );
     }
 
@@ -102,28 +94,18 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     CascadingRelNode input = (CascadingRelNode) getChild();
     Branch branch = input.visitChild( new Stack() );
-    PlatformBroker platformBroker = branch.platformBroker;
 
-    if( platformBroker == null )
-      throw new IllegalStateException( "platformBroker was null" );
-
-    writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName() );
+    VolcanoPlanner planner = (VolcanoPlanner) getCluster().getPlanner();
 
     if( branch.tuples != null )
-      return handleInsert( platformBroker, branch );
+      return handleInsert( branch, planner );
     else
-      return handleFlow( platformBroker, branch );
+      return handleFlow( branch, planner );
     }
 
-  private BlockExpression handleInsert( PlatformBroker platformBroker, Branch branch )
+  private BlockExpression handleInsert( Branch branch, VolcanoPlanner planner )
     {
-    FlowProcess flowProcess = platformBroker.getFlowProcess();
-    SchemaCatalog schemaCatalog = platformBroker.getCatalog();
-    Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
-
-    List<List<RexLiteral>> tuples = branch.tuples;
-    Tap tap = schemaCatalog.createTapFor( branch.tail.identifier, SinkMode.KEEP );
-    ValuesHolder holder = new ValuesHolder( cache, flowProcess, tap, tuples );
+    ValuesHolder holder = new ValuesHolder( branch, planner );
 
     long ordinal = CascadingValueInsertEnumerable.addHolder( holder );
 
@@ -132,23 +114,9 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
-  private BlockExpression handleFlow( PlatformBroker platformBroker, Branch branch )
+  private BlockExpression handleFlow( Branch branch, VolcanoPlanner planner )
     {
-    Properties properties = platformBroker.getProperties();
-    LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
-
-    for( Ref head : branch.heads.keySet() )
-      flowFactory.addSource( head.name, head.identifier );
-
-    if( branch.tail != null )
-      flowFactory.addSink( branch.tail.name, branch.tail.identifier );
-    else
-      flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
-
-    FlowHolder flowHolder = new FlowHolder( getPhysType(), flowFactory, branch.isModification );
-
-    setFlowPlanPath( properties, flowFactory.getName(), flowHolder );
-    setMaxRows( properties, flowHolder );
+    FlowHolder flowHolder = new FlowHolder( getPhysType(), branch, planner );
 
     long ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
 
@@ -157,31 +125,7 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
-  private String getResultPath( PlatformBroker platformBroker, Properties properties, String name )
-    {
-    String path = platformBroker.getTempPath();
-    path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
-
-    if( !path.endsWith( "/" ) )
-      path += "/";
-
-    return path + name;
-    }
-
-  private void setFlowPlanPath( Properties properties, String name, FlowHolder flowHolder )
-    {
-    if( !properties.containsKey( Driver.FLOW_PLAN_PATH ) )
-      return;
-
-    flowHolder.flowPlanPath = properties.getProperty( Driver.FLOW_PLAN_PATH );
-
-    if( !flowHolder.flowPlanPath.endsWith( "/" ) )
-      flowHolder.flowPlanPath += "/";
-
-    flowHolder.flowPlanPath += name + ".dot";
-    }
-
-  private void writeSQLPlan( Properties properties, String name )
+  public static void writeSQLPlan( Properties properties, String name, VolcanoPlanner planner )
     {
     String path = getSQLPlanPath( properties, name );
 
@@ -202,12 +146,12 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
       throw new RuntimeException( "unable to write sql plan to: " + path );
       }
 
-    ( (VolcanoPlanner) getCluster().getPlanner() ).dump( writer );
+    planner.dump( writer );
 
     writer.close();
     }
 
-  private String getSQLPlanPath( Properties properties, String name )
+  private static String getSQLPlanPath( Properties properties, String name )
     {
     if( !properties.containsKey( Driver.SQL_PLAN_PATH_PROP ) )
       return null;
@@ -218,14 +162,6 @@ public class CascadingEnumerableRel extends SingleRel implements EnumerableRel
       path += "/";
 
     return path += name + ".txt";
-    }
-
-  private void setMaxRows( Properties properties, FlowHolder flowHolder )
-    {
-    if( !properties.containsKey( Driver.MAX_ROWS ) )
-      return;
-
-    flowHolder.maxRows = Integer.parseInt( properties.getProperty( Driver.MAX_ROWS ) );
     }
 
   private <T> Constructor<T> getConstructorFor( Class<T> type )
