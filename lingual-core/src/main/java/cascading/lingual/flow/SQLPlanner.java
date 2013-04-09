@@ -98,11 +98,13 @@ public class SQLPlanner implements AssemblyPlanner
     }
 
   @Override
-  public List<Pipe> resolveTails( FlowDef flowDef, Flow flow, List<Pipe> tails )
+  public List<Pipe> resolveTails( Context context )
     {
     if( getSql() == null )
       throw new IllegalStateException( "a sql statement must be provided" );
 
+    Flow flow = context.getFlow();
+    List<Pipe> tails = context.getTails();
     LingualContext lingualContext = new LingualContext( this, flow );
 
     OptiqPrepareImpl prepare = new OptiqPrepareImpl();
