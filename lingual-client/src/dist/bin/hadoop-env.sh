@@ -14,7 +14,13 @@ elif [ -d ${HADOOP_HOME}/conf ]; then
   HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HADOOP_HOME}/conf
 fi
 
+# hadoop 0.20.205+
 for f in ${HADOOP_HOME}/hadoop-core-*.jar; do
+  HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
+done
+
+# hadoop 0.20.2
+for f in ${HADOOP_HOME}/hadoop-*-core.jar; do
   HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
 done
 

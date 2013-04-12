@@ -49,7 +49,6 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,19 +76,25 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public void startConnection( LingualConnection connection ) throws SQLException
     {
-    // see https://issues.apache.org/jira/browse/HADOOP-7982
-    Thread thread = Thread.currentThread();
-    ClassLoader current = thread.getContextClassLoader();
-
-    thread.setContextClassLoader( UserGroupInformation.HadoopLoginModule.class.getClassLoader() );
-
-    try
+    if( classExists( "org.apache.hadoop.security.UserGroupInformation$HadoopLoginModule" ) )
       {
-      super.startConnection( connection );
-      }
-    finally
-      {
-      thread.setContextClassLoader( current );
+      // see https://issues.apache.org/jira/browse/HADOOP-7982
+      Thread thread = Thread.currentThread();
+      ClassLoader current = thread.getContextClassLoader();
+
+      Class ugi = getClass( "org.apache.hadoop.security.UserGroupInformation$HadoopLoginModule" );
+
+      if( ugi != null )
+        thread.setContextClassLoader( ugi.getClassLoader() );
+
+      try
+        {
+        super.startConnection( connection );
+        }
+      finally
+        {
+        thread.setContextClassLoader( current );
+        }
       }
     }
 
@@ -184,6 +189,31 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     return jarPath;
     }
 
+  private boolean classExists( String classname )
+    {
+    try
+      {
+      return Class.forName( classname, false, this.getClass().getClassLoader() ) != null;
+      }
+    catch( ClassNotFoundException classNotFound )
+      {
+      return false;
+      }
+    }
+
+  private Class getClass( String classname )
+    {
+    try
+      {
+      return Class.forName( classname );
+      }
+    catch( ClassNotFoundException classNotFound )
+      {
+      LOG.error( "could not load class {} that was supposed to be on the classpath", classname );
+      return null;
+      }
+    }
+
   private String decode( String jarPath )
     {
     try
@@ -199,11 +229,17 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   private String findUserName()
     {
     // HADOOP_USER_NAME
-
     String envUser = System.getenv( HADOOP_USER_ENV );
     String propertyUser = System.getProperty( HADOOP_USER_PROPERTY, envUser );
+    String user = getProperties().getProperty( "user", propertyUser );
 
-    return getProperties().getProperty( "user", propertyUser );
+    if( user == null || user.isEmpty() )
+      {
+      LOG.info( "user not supplied, using OS user" );
+      user = System.getProperty( "user.name", "" );
+      }
+
+    return user;
     }
 
   @Override
