@@ -29,8 +29,6 @@ ext.cascadingVersion = '2.2.0-+'
 if( System.properties[ 'lingual.release.local' ] )
   cascadingVersion = '2.2.0-wip-dev'
 
-ext.hadoopVersion = '1.0.4'
-
 buildscript {
   repositories {
     mavenCentral()
