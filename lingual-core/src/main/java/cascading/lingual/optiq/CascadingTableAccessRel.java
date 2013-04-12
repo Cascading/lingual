@@ -27,6 +27,7 @@ import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
 import cascading.util.Util;
+import net.hydromatic.optiq.rules.java.JavaRules;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
@@ -57,9 +58,11 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public static void registerRules( RelOptPlanner planner )
     {
+    // Name of rule is backwards. Will fix in Optiq shortly, and this line will break. Sorry. Just fix it.
+    planner.removeRule( JavaRules.ENUMERABLE_CUSTOM_TO_ARRAY_RULE );
+
     // handles actual flow planning
     planner.addRule( CascadingEnumerableConverterRule.ARRAY_INSTANCE );
-    planner.addRule( CascadingEnumerableConverterRule.CUSTOM_INSTANCE );
 
     planner.addRule( CascadingTableModificationConverterRule.INSTANCE );
     planner.addRule( CascadingAggregateConverterRule.INSTANCE );

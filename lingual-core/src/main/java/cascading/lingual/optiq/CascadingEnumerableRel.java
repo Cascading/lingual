@@ -60,7 +60,8 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     {
     super( cluster, traitSet, input );
 
-    assert getConvention() instanceof EnumerableConvention;
+    if( getConvention() != EnumerableConvention.ARRAY )
+      throw new IllegalStateException( "unsupported convention " + getConvention() );
 
     physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), (EnumerableConvention) getConvention() );
     }
