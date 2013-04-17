@@ -76,25 +76,25 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public void startConnection( LingualConnection connection ) throws SQLException
     {
+    Thread thread = Thread.currentThread();
+    ClassLoader current = thread.getContextClassLoader();
+
+    // see https://issues.apache.org/jira/browse/HADOOP-7982
     if( classExists( "org.apache.hadoop.security.UserGroupInformation$HadoopLoginModule" ) )
       {
-      // see https://issues.apache.org/jira/browse/HADOOP-7982
-      Thread thread = Thread.currentThread();
-      ClassLoader current = thread.getContextClassLoader();
-
       Class ugi = getClass( "org.apache.hadoop.security.UserGroupInformation$HadoopLoginModule" );
 
       if( ugi != null )
         thread.setContextClassLoader( ugi.getClassLoader() );
+      }
 
-      try
-        {
-        super.startConnection( connection );
-        }
-      finally
-        {
-        thread.setContextClassLoader( current );
-        }
+    try
+      {
+      super.startConnection( connection );
+      }
+    finally
+      {
+      thread.setContextClassLoader( current );
       }
     }
 
