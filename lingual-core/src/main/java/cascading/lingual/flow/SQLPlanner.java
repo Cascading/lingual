@@ -55,7 +55,7 @@ public class SQLPlanner implements AssemblyPlanner
   {
   protected String sql;
   protected String defaultSchema;
-  protected String sinkName;
+  protected String tailName;
 
   public SQLPlanner()
     {
@@ -73,14 +73,14 @@ public class SQLPlanner implements AssemblyPlanner
     return this;
     }
 
-  public String getSinkName()
+  public String getTailName()
     {
-    return sinkName;
+    return tailName;
     }
 
-  public SQLPlanner setSinkName( String sinkName )
+  public SQLPlanner setTailName( String tailName )
     {
-    this.sinkName = sinkName;
+    this.tailName = tailName;
 
     return this;
     }
@@ -104,7 +104,6 @@ public class SQLPlanner implements AssemblyPlanner
       throw new IllegalStateException( "a sql statement must be provided" );
 
     Flow flow = context.getFlow();
-    List<Pipe> tails = context.getTails();
     LingualContext lingualContext = new LingualContext( this, flow );
 
     OptiqPrepareImpl prepare = new OptiqPrepareImpl();
@@ -115,12 +114,12 @@ public class SQLPlanner implements AssemblyPlanner
 
     String name;
 
-    if( getSinkName() != null )
-      name = getSinkName();
+    if( getTailName() != null )
+      name = getTailName();
     else if( flow.getSinks().size() == 1 )
       name = (String) flow.getSinkNames().get( 0 );
     else
-      throw new IllegalStateException( "too man tails to choose from, found: " + tails.size() + ", use setSinkName" );
+      throw new IllegalStateException( "too many sinks to choose from, found: " + flow.getSinks().size() + ", use setTailName to match tail pipe with sink Tap" );
 
     current = new Pipe( name, current ); // bind the tail to the sink name
 
