@@ -21,23 +21,21 @@
 dependencies {
   compile project( ':lingual-local' )
 
-  compile fileTree( dir: 'lib', includes: ['*.jar'] )
-
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 }
 
-jar {
-  description = "Assembles a Hadoop-ready JAR file"
-  doFirst {
-    into( 'lib' ) {
-      from configurations.compile
-    }
-  }
-
-  manifest {
-    attributes( "Main-Class": "cascading.lingual.examples.foodmart.JdbcExample" )
-  }
-}
+//jar {
+//  description = "Assembles a Hadoop-ready JAR file"
+//  doFirst {
+//    into( 'lib' ) {
+//      from configurations.compile
+//    }
+//  }
+//
+//  manifest {
+//    attributes( "Main-Class": "cascading.lingual.examples.foodmart.JdbcExample" )
+//  }
+//}
 
 uploadArchives.enabled = false
 
