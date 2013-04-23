@@ -27,7 +27,6 @@ import cascading.util.Version;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import joptsimple.OptionSpecBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class Options
   protected OptionParser parser = new OptionParser();
   protected OptionSet optionSet;
 
-  protected OptionSpecBuilder version;
+  protected OptionSpec<Void> version;
   protected OptionSpec<Void> help;
   protected OptionSpec<Void> debug;
   protected OptionSpec<String> verbose;
