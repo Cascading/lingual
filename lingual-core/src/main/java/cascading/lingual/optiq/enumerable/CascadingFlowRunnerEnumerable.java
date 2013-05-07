@@ -199,9 +199,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     int maxRows = getMaxRows( properties );
 
     if( size == 1 )
-      return new FlowObjectEnumerator( maxRows, types, flow );
+      return new TapObjectEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     else
-      return new FlowArrayEnumerator( maxRows, types, flow );
+      return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     }
 
   private String getResultPath( PlatformBroker platformBroker, Properties properties, String name )

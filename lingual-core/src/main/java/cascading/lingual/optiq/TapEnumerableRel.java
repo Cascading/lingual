@@ -23,11 +23,10 @@ package cascading.lingual.optiq;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
-import cascading.lingual.optiq.enumerable.CascadingValueInsertEnumerable;
-import cascading.lingual.optiq.meta.Branch;
-import cascading.lingual.optiq.meta.FlowHolder;
-import cascading.lingual.optiq.meta.ValuesHolder;
+import cascading.lingual.optiq.enumerable.CascadingTapEnumerable;
+import cascading.lingual.optiq.meta.TableHolder;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.tap.TapTable;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
@@ -38,32 +37,38 @@ import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
 import net.hydromatic.optiq.rules.java.PhysType;
 import net.hydromatic.optiq.rules.java.PhysTypeImpl;
 import org.eigenbase.rel.RelNode;
-import org.eigenbase.rel.SingleRel;
+import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
+import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Relational expression that reads from a Cascading tap and returns in
+ * enumerable format.
  */
-class CascadingEnumerableRel extends SingleRel implements EnumerableRel
+class TapEnumerableRel extends TableAccessRelBase implements EnumerableRel
   {
-  private static final Logger LOG = LoggerFactory.getLogger( CascadingEnumerableRel.class );
+  private static final Logger LOG = LoggerFactory.getLogger( TapEnumerableRel.class );
 
-  private PhysType physType;
+  private final String name;
+  private final String identifier;
+  private final PhysType physType;
 
-  public CascadingEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelNode input )
+  public TapEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelOptTable table, String name, String identifier )
     {
-    super( cluster, traitSet, input );
+    super( cluster, traitSet, table );
+    this.name = name;
+    this.identifier = identifier;
 
     if( getConvention() != EnumerableConvention.ARRAY )
       throw new IllegalStateException( "unsupported convention " + getConvention() );
 
-    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), input.getRowType(), (EnumerableConvention) getConvention() );
+    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), table.getRowType(), (EnumerableConvention) getConvention() );
     }
 
   public PhysType getPhysType()
@@ -80,7 +85,8 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
   @Override
   public RelNode copy( RelTraitSet traitSet, List<RelNode> inputs )
     {
-    return new CascadingEnumerableRel( getCluster(), traitSet, sole( inputs ) );
+    assert inputs.isEmpty();
+    return new TapEnumerableRel( getCluster(), traitSet, table, name, identifier );
     }
 
   @Override
@@ -88,52 +94,22 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     {
     LOG.debug( "implementing enumerable" );
 
-    CascadingRelNode input = (CascadingRelNode) getChild();
-    Branch branch = input.visitChild( new Stack() );
-
     VolcanoPlanner planner = (VolcanoPlanner) getCluster().getPlanner();
 
-    if( branch.tuples != null )
-      return handleInsert( branch, planner );
-    else
-      return handleFlow( branch, planner );
-    }
-
-  private BlockExpression handleInsert( Branch branch, VolcanoPlanner planner )
-    {
-    ValuesHolder holder = new ValuesHolder( branch, planner );
-
-    long ordinal = CascadingValueInsertEnumerable.addHolder( holder );
-
-    Constructor<CascadingValueInsertEnumerable> constructor = getConstructorFor( CascadingValueInsertEnumerable.class );
+    TableHolder tableHolder = new TableHolder( getPhysType(), identifier, getPlatformBroker(), planner );
+    long ordinal = CascadingTapEnumerable.addHolder( tableHolder );
+    Constructor<CascadingTapEnumerable> constructor = CascadingEnumerableRel.getConstructorFor( CascadingTapEnumerable.class );
 
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
-  private BlockExpression handleFlow( Branch branch, VolcanoPlanner planner )
+  private PlatformBroker getPlatformBroker()
     {
-    FlowHolder flowHolder = new FlowHolder( getPhysType(), branch, planner );
-
-    long ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
-
-    Constructor<CascadingFlowRunnerEnumerable> constructor = getConstructorFor( CascadingFlowRunnerEnumerable.class );
-
-    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    return getTapTable().getPlatformBroker();
     }
 
-  static <T> Constructor<T> getConstructorFor( Class<T> type )
+  private TapTable getTapTable()
     {
-    Constructor<T> constructor;
-
-    try
-      {
-      constructor = type.getConstructor( long.class );
-      }
-    catch( NoSuchMethodException exception )
-      {
-      throw new RuntimeException( exception );
-      }
-
-    return constructor;
+    return getTable().unwrap( TapTable.class );
     }
   }

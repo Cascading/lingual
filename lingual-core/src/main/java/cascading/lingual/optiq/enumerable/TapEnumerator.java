@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 
-import cascading.flow.Flow;
+import cascading.flow.FlowProcess;
+import cascading.tap.Tap;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import com.google.common.collect.Iterators;
@@ -35,36 +36,38 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-abstract class FlowResultsEnumerator<Result> implements Enumerator<Result>
+abstract class TapEnumerator<Result> implements Enumerator<Result>
   {
   protected final static Tuple DUMMY = new Tuple();
 
-  private static final Logger LOG = LoggerFactory.getLogger( FlowObjectEnumerator.class );
+  private static final Logger LOG = LoggerFactory.getLogger( TapObjectEnumerator.class );
   final int maxRows;
   final Type[] types;
-  final Flow flow;
+  final Tap tap;
+  final FlowProcess flowProcess;
   Iterator<TupleEntry> iterator;
   Tuple current;
 
-  protected FlowResultsEnumerator( int maxRows, Type[] types, Flow flow )
+  protected TapEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap )
     {
     this.maxRows = maxRows; // defaults Integer.MAX_VALUE
     this.types = types;
-    this.flow = flow;
-    this.iterator = openIterator( flow );
+    this.flowProcess = flowProcess;
+    this.tap = tap;
+    this.iterator = openIterator( this.flowProcess, this.tap );
     }
 
-  protected Iterator<TupleEntry> openIterator( Flow flow )
+  protected Iterator<TupleEntry> openIterator( FlowProcess flowProcess, Tap tap )
     {
     try
       {
       if( maxRows != Integer.MAX_VALUE )
         {
         LOG.debug( "using connection properties maxRows: {}", maxRows );
-        return Iterators.limit( flow.openSink(), maxRows );
+        return Iterators.limit( tap.openForRead( flowProcess ), maxRows );
         }
 
-      return flow.openSink();
+      return tap.openForRead( flowProcess );
       }
     catch( IOException exception )
       {
@@ -96,7 +99,7 @@ abstract class FlowResultsEnumerator<Result> implements Enumerator<Result>
 
   public void reset()
     {
-    iterator = openIterator( flow );
+    iterator = openIterator( flowProcess, tap );
     current = DUMMY;
     }
   }

@@ -40,8 +40,8 @@ import org.eigenbase.relopt.volcano.AbstractConverter;
  */
 public class CascadingTableAccessRel extends TableAccessRelBase implements CascadingRelNode
   {
-  private final String name;
-  private final String identifier;
+  final String name;
+  final String identifier;
 
   public CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, String name, String identifier )
     {

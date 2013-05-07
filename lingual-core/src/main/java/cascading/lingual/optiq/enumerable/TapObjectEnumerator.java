@@ -23,17 +23,17 @@ package cascading.lingual.optiq.enumerable;
 import java.lang.reflect.Type;
 import java.util.NoSuchElementException;
 
-import cascading.flow.Flow;
+import cascading.flow.FlowProcess;
+import cascading.tap.Tap;
 
 /**
  *
  */
-class FlowObjectEnumerator extends FlowResultsEnumerator<Object>
+class TapObjectEnumerator extends TapEnumerator<Object>
   {
-
-  public FlowObjectEnumerator( int maxRows, Type[] types, Flow flow )
+  public TapObjectEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap )
     {
-    super( maxRows, types, flow );
+    super( maxRows, types, flowProcess, tap );
     }
 
   @Override

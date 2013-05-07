@@ -18,30 +18,27 @@
  * limitations under the License.
  */
 
-package cascading.lingual.optiq.enumerable;
+package cascading.lingual.optiq.meta;
 
-import java.lang.reflect.Type;
-import java.util.NoSuchElementException;
-
-import cascading.flow.Flow;
-import cascading.tuple.Tuple;
+import cascading.lingual.platform.PlatformBroker;
+import net.hydromatic.optiq.rules.java.PhysType;
+import org.eigenbase.relopt.volcano.VolcanoPlanner;
 
 /**
  *
  */
-class FlowArrayEnumerator extends FlowResultsEnumerator<Object[]>
+public class TableHolder
   {
-  public FlowArrayEnumerator( int maxRows, Type[] types, Flow flow )
-    {
-    super( maxRows, types, flow );
-    }
+  public final PhysType physType;
+  public final String identifier;
+  public final PlatformBroker platformBroker;
+  public final VolcanoPlanner planner;
 
-  @Override
-  public Object[] current()
+  public TableHolder( PhysType physType, String identifier, PlatformBroker platformBroker, VolcanoPlanner planner )
     {
-    if( current == DUMMY )
-      throw new NoSuchElementException();
-
-    return Tuple.elements( current ).toArray( new Object[ current.size() ] );
+    this.physType = physType;
+    this.identifier = identifier;
+    this.platformBroker = platformBroker;
+    this.planner = planner;
     }
   }

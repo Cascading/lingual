@@ -23,12 +23,24 @@ package cascading.lingual.jdbc;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
+import cascading.lingual.optiq.EnumerableTapRule;
 import cascading.lingual.util.Logging;
 import cascading.lingual.util.Version;
+import net.hydromatic.linq4j.function.Function0;
 import net.hydromatic.optiq.jdbc.DriverVersion;
+import net.hydromatic.optiq.jdbc.OptiqPrepare;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
+import net.hydromatic.optiq.prepare.OptiqPrepareImpl;
+import net.hydromatic.optiq.rules.java.JavaRules;
+import org.eigenbase.rel.rules.ProjectToCalcRule;
+import org.eigenbase.rel.rules.TableAccessRule;
+import org.eigenbase.relopt.ConventionTraitDef;
+import org.eigenbase.relopt.RelOptPlanner;
+import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.util14.ConnectStringParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +129,18 @@ public class Driver extends UnregisteredDriver
     }
 
   @Override
+  protected Function0<OptiqPrepare> createPrepareFactory()
+    {
+    return new Function0<OptiqPrepare>()
+    {
+    public OptiqPrepare apply()
+      {
+      return new LingualPrepare();
+      }
+    };
+    }
+
+  @Override
   public Connection connect( String url, Properties info ) throws SQLException
     {
     Connection connection = super.connect( url, info );
@@ -171,6 +195,47 @@ public class Driver extends UnregisteredDriver
       {
       LOG.error( "Error while instantiating driver factory", e );
       return null;
+      }
+    }
+
+  /** Refine the query-preparation process for Lingual. */
+  private static class LingualPrepare extends OptiqPrepareImpl
+    {
+    @Override
+    protected List<Function0<RelOptPlanner>> createPlannerFactories()
+      {
+      return Arrays.asList(
+        new Function0<RelOptPlanner>()
+        {
+        public RelOptPlanner apply()
+          {
+          return createTapPlanner();
+          }
+        },
+        new Function0<RelOptPlanner>()
+        {
+        public RelOptPlanner apply()
+          {
+          return createPlanner();
+          }
+        }
+      );
+      }
+
+    /**
+     * Creates a simple planner that can plan "select * from myTable" but not
+     * much more.
+     */
+    protected RelOptPlanner createTapPlanner()
+      {
+      final VolcanoPlanner planner = new VolcanoPlanner();
+      planner.addRelTraitDef( ConventionTraitDef.instance );
+      planner.addRule( TableAccessRule.instance );
+      planner.addRule( JavaRules.ENUMERABLE_CALC_RULE );
+      planner.addRule( ProjectToCalcRule.instance );
+      planner.addRule( EnumerableTapRule.INSTANCE );
+      planner.setLocked( true ); // prevent further rules being added
+      return planner;
       }
     }
   }
