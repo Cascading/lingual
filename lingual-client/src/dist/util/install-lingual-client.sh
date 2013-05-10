@@ -76,7 +76,9 @@ do
   shift
 done
 
-if [ "$IS_MASTER" = "false" && "$INSTALL_ON_SLAVES" = "false" ]; then
+if [ ! $IS_MASTER ] && [ ! $INSTALL_ON_SLAVES ] 
+then
+  echo "This is neither the master nor the slaves. Nothing to install."
   exit 0
 fi
 
@@ -89,7 +91,8 @@ UNARCHIVED=$TMPDIR/unarchived/
 [ -d "${UNARCHIVED}" ] && rm -rf ${UNARCHIVED}
 
 # find latest lingual client
-wget -S -T 10 -t 5 ${LATEST} -O ${REDIR}
+LATEST_LINGUAL_CLIENT=`curl --connect-timeout 10 --retry 5 ${LATEST}`
+echo ${LATEST_LINGUAL_CLIENT} > ${REDIR}
 
 [ -f ${LINGUAL_HOME}/latest ] && LINGUAL_CURRENT=`cat ${LINGUAL_HOME}/latest`
 # force update if on dev releases
@@ -99,7 +102,7 @@ if [ "`cat $REDIR`" = "${LINGUAL_CURRENT/wip-dev/}" ]; then
 fi
 
 # download latest
-wget -S -T 10 -t 5 -i ${REDIR} -O ${ARCHIVE}
+curl --connect-timeout 10 --retry 5 -o ${ARCHIVE} ${LATEST_LINGUAL_CLIENT} 
 
 # unpack into /usr/local/<lingual home>
 mkdir -p ${UNARCHIVED}
