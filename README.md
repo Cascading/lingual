@@ -99,6 +99,14 @@ For the `hadoop` mode platform:
 Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as
 would be expected.
 
+# Reporting Issues
+
+The best way to report an issue is to add a new test to `SimpleSqlPlatformTest` along with the expected result set
+and submit a pull request on GitHub.
+
+Failing that, feel free to open an [issue](https://github.com/Cascading/lingual/issues) on the [Cascading/Ligual](https://github.com/Cascading/lingual)
+project site or mail the [mailing list](https://groups.google.com/forum/?fromgroups#!forum/lingual-user).
+
 # Developing
 
 Running:
