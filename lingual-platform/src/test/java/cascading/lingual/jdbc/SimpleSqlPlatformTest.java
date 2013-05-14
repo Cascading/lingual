@@ -290,4 +290,11 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-sales-join-inner-in", "select * from sales.emps, sales.depts, sales.sales " +
       "where emps.deptno = depts.deptno and emps.empno = sales.empno and emps.city in ('Vancouver','San Francisco')" );
     }
+
+  @Test
+  public void testSumCountDistinctCityJoinGroupBy() throws Exception
+    {
+    assertTablesEqual( "emps-depts-sum-count-groupby",
+      "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno" );
+    }
   }

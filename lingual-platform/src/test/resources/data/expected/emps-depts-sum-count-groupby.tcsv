@@ -1,0 +1,3 @@
+DEPTNO:Integer,S1:int,C1:long
+10,25,0
+20,85,1

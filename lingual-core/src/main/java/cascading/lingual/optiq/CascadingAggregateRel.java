@@ -78,10 +78,12 @@ class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
     RelNode child = getChild();
     Branch branch = ( (CascadingRelNode) child ).visitChild( stack );
 
+    Fields outgoingFields = RelUtil.createTypedFieldsFor( this );
+
     // assumption here is if aggCalls is empty, we are performing a DISTINCT on the group set
     if( getAggCallList().isEmpty() )
       {
-      Pipe current = new Unique( branch.current, RelUtil.createTypedFieldsFor( this ) );
+      Pipe current = new Unique( branch.current, outgoingFields );
 
       current = stack.addDebug( this, current );
 
@@ -121,6 +123,8 @@ class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
       join = new HashJoin( name, pipes, groupFieldsArray, declaredFields, new InnerJoin() );
     else
       join = new CoGroup( name, pipes, groupFieldsArray, declaredFields, new InnerJoin() );
+
+    join = new Retain( join, outgoingFields );
 
     join = stack.addDebug( this, join );
 
@@ -171,14 +175,16 @@ class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
     {
     List<Fields> declaredFieldsList = new ArrayList<Fields>();
 
-    declaredFieldsList.add( groupFields );
-
     if( concurrentAggregates != null )
+      {
+      declaredFieldsList.add( groupFields );
+
       Collections.addAll( declaredFieldsList, concurrentAggregates.getFieldDeclarations() );
+      }
 
-    Collections.addAll( declaredFieldsList, makeFieldsFor( distincts ) );
+    Collections.addAll( declaredFieldsList, makeFieldsFor( groupFields, distincts ) );
 
-    return Fields.join( declaredFieldsList.toArray( new Fields[ declaredFieldsList.size() ] ) );
+    return Fields.join( true, declaredFieldsList.toArray( new Fields[ declaredFieldsList.size() ] ) );
     }
 
   private Pipe[] createDistinctAggregates( Stack stack, RelDataType inputRowType, Pipe previous, Fields groupFields, List<AggregateCall> distincts )
@@ -273,12 +279,12 @@ class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
     return distincts;
     }
 
-  private Fields[] makeFieldsFor( List<AggregateCall> aggCalls )
+  private Fields[] makeFieldsFor( Fields groupFields, List<AggregateCall> aggCalls )
     {
     Fields[] fields = new Fields[ aggCalls.size() ];
 
     for( int i = 0; i < aggCalls.size(); i++ )
-      fields[ i ] = makeFieldsFor( aggCalls.get( i ) );
+      fields[ i ] = groupFields.append( makeFieldsFor( aggCalls.get( i ) ) );
 
     return fields;
     }

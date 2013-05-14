@@ -71,7 +71,7 @@ class CascadingJoinRule extends RelOptRule
 
     if( !join.getVariablesStopped().isEmpty() )
       {
-      LOG.warn( "variables stopped not supported by this rule" );
+      LOG.debug( "variables stopped not supported by this rule" );
       return;
       }
 
@@ -92,7 +92,7 @@ class CascadingJoinRule extends RelOptRule
 
     if( remainder != null )
       {
-      LOG.warn( "cannot handle non-equi join" );
+      LOG.debug( "cannot handle non-equi join" );
       return;
       }
 
