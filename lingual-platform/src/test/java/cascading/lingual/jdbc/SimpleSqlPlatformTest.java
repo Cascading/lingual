@@ -297,4 +297,18 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-sum-count-groupby",
       "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno" );
     }
+  
+  @Test
+  public void testInnerJoinCouldNotResolveOutgoingValue() throws Exception
+    {
+    String query = "SELECT n1.city " +
+    		"FROM sales.emps AS t0 " +
+    		"INNER JOIN sales.emps AS n1 " +
+    		"ON (n1.gender = 'M' AND n1.empno = t0.empno)" +
+    		"WHERE t0.gender = 'M' " +
+    		"AND t0.city = 'Vancouver'"; 
+    
+    assertTablesEqual( "emps-depts-inner-join-could-not-resolve", query );
+    }
+  
   }
