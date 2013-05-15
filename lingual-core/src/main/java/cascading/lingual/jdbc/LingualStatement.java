@@ -362,6 +362,16 @@ class LingualStatement implements Statement
     return parent.isPoolable();
     }
 
+  public void closeOnCompletion() throws SQLException
+    {
+    throw new UnsupportedOperationException( "This JDK 1.7 feature is not supported" );
+    }
+
+  public boolean isCloseOnCompletion() throws SQLException
+    {
+    throw new UnsupportedOperationException( "This JDK 1.7 feature is  not supported" );
+    }
+
   @Override
   public <T> T unwrap( Class<T> iface ) throws SQLException
     {

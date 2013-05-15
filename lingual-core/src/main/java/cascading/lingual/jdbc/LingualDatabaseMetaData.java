@@ -1089,6 +1089,20 @@ class LingualDatabaseMetaData implements DatabaseMetaData
     return parent.getFunctionColumns( catalog, schemaPattern, functionNamePattern, columnNamePattern );
     }
 
+  public ResultSet getPseudoColumns( String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern ) throws SQLException
+    {
+    // Dummied out to allow compiling against JDK 1.7
+    // can't cast this to OptiqDatabaseMetaData since that class is private. As of Optiq 0.3.3 even if we could cast it the method just returns an empty ResultSet
+    throw new UnsupportedOperationException( "JDBC feature for JDK 1.7 not yet supported." );
+    }
+
+  public boolean generatedKeyAlwaysReturned() throws SQLException
+    {
+    // Dummied out to allow compiling against JDK 1.7
+    // can't cast this to OptiqDatabaseMetaData since class is private. As of Optiq 0.3.3 even if we could cast it the method just throws an exception anyway
+    throw new UnsupportedOperationException( "JDBC feature for JDK 1.7 not yet supported." );
+    }
+
   @Override
   public <T> T unwrap( Class<T> iface ) throws SQLException
     {
