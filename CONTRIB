@@ -1,0 +1,21 @@
+How to create a pull request
+
+1. Create commit about an issue
+
+2. Fetch last version of upstream
+
+> git fetch upstream
+
+3. Checkout and branch wip-1.0 upstream branch
+
+> git checkout -b upstream upstream/wip-1.0
+
+4. Merge last commit with local upstream branch
+
+> git cherry-pick <SHA-1>
+
+5. Push my changes to github
+
+> git push origin upstream
+
+6. Open a pull request on github
