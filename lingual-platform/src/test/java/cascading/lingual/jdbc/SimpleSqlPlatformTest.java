@@ -297,4 +297,32 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-sum-count-groupby",
       "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno" );
     }
+  
+  @Test
+  public void testPlannerArrayNotImplemented() throws Exception
+    {
+    String query = "SELECT p0.city, p1.city, p1.empno, p0.empno " +
+      "FROM sales.emps AS p0 " +
+      "INNER JOIN sales.emps AS p1 ON (p1.gender = 'M' ) " +
+      "LEFT JOIN sales.emps AS p2 ON (p2.gender = 'M' " +
+      "AND p2.empno = p1.empno " +
+      "AND ( NOT(CASE WHEN (p0.age IS NOT NULL OR p2.age IS NOT NULL ) " +
+      "THEN p0.age IS NOT NULL " +
+      "AND p2.age IS NOT NULL " +
+      "AND p0.age = p2.age " +
+      "AND p0.city = p2.city " +
+      "WHEN (p0.name IS NULL " +
+      "OR p0.name = 'Bob' ) " +
+      "AND (p2.name IS NULL " +
+      "OR p2.name = 'Bob' ) " +
+      "THEN p0.city = p2.city " +
+      "WHEN p0.name = p2.name " +
+      "AND p0.city = p2.city " +
+      "THEN  1=1  END))) " +
+      "WHERE p0.gender = 'M' " +
+      "AND p2.city IS NULL"; 
+    
+    assertTablesEqual( "emps-planner-array-not-implemented", query );
+    }
+  
   }
