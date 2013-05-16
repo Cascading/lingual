@@ -30,7 +30,7 @@ dependencies {
   providedCompile project( ':lingual-core' )
 
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4'
-  compile group: 'sqlline', name: 'sqlline', version: '1_0_2'
+  compile group: 'sqlline', name: 'sqlline', version: '1.0.9'
 
   runtime group: 'jline', name: 'jline', version: '1.0'
 
