@@ -174,12 +174,34 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     return getConnection().createStatement().executeUpdate( sql );
     }
 
+  protected void assertTableValuesEqual( String tableName, String sqlQuery ) throws Exception
+    {
+    TupleEntryIterator entryIterator = getTable( tableName );
+    Table expectedTable = createTable( entryIterator, true );
+
+    assertTableValuesEqual( expectedTable, sqlQuery );
+    }
+
   protected void assertTablesEqual( String tableName, String sqlQuery ) throws Exception
     {
     TupleEntryIterator entryIterator = getTable( tableName );
     Table expectedTable = createTable( entryIterator );
 
     assertTablesEqual( expectedTable, sqlQuery );
+    }
+
+  protected void assertExecutes( String sqlQuery ) throws Exception
+    {
+    ResultSet result = executeSql( sqlQuery );
+    Table resultTable = createTable( result );
+    }
+
+  protected void assertTableValuesEqual( Table expectedTable, String sqlQuery ) throws Exception
+    {
+    ResultSet result = executeSql( sqlQuery );
+    Table resultTable = createTable( result, true );
+
+    assertEquals( expectedTable, resultTable );
     }
 
   protected void assertTablesEqual( Table expectedTable, String sqlQuery ) throws Exception
@@ -226,11 +248,15 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
 
   private Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator )
     {
+    return createTable( entryIterator, false );
+    }
+
+  private Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator, boolean useOrdinal )
+    {
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     JavaTypeFactory typeFactory = getTypeFactory();
     int row = 0;
-
     while( entryIterator.hasNext() )
       {
       TupleEntry entry = entryIterator.next();
@@ -239,7 +265,8 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         {
         // we must coerce into the actual sql type returned by the result-set
         Object value = entry.getObject( field );
-        Type type = entry.getFields().getType( entry.getFields().getPos( field ) );
+        int columnPos = entry.getFields().getPos( field );
+        Type type = entry.getFields().getType( columnPos );
 
         if( type instanceof BasicSqlType )
           {
@@ -262,6 +289,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
             }
           }
 
+        if( useOrdinal )
+          field = columnPos;
+
         if( value != null )
           table.put( row++, field, value );
         }
@@ -271,6 +301,19 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     }
 
   protected Table<Integer, Comparable, Object> createTable( ResultSet resultSet ) throws SQLException
+    {
+    return createTable( resultSet, false );
+    }
+
+  /**
+   * Create table.
+   *
+   * @param resultSet  the result set
+   * @param useOrdinal the use ordinal
+   * @return the table
+   * @throws SQLException the sQL exception
+   */
+  protected Table<Integer, Comparable, Object> createTable( ResultSet resultSet, boolean useOrdinal ) throws SQLException
     {
     ResultSetMetaData metaData = resultSet.getMetaData();
     int columnCount = metaData.getColumnCount();
@@ -285,8 +328,10 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         {
         Object value = resultSet.getObject( i + 1 );
 
+        Comparable columnLabel = useOrdinal ? i : metaData.getColumnLabel( i + 1 );
+
         if( value != null )
-          table.put( row++, metaData.getColumnLabel( i + 1 ), value );
+          table.put( row++, columnLabel, value );
         }
       }
 

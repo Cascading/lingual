@@ -20,8 +20,11 @@
 
 package cascading.lingual.optiq;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -67,6 +70,22 @@ class ProgramUtil
     return false;
     }
 
+  public static <K, V> List<K> leftSlice( final List<? extends Map.Entry<K, V>> pairs )
+    {
+    return new AbstractList<K>()
+    {
+    public K get( int index )
+      {
+      return pairs.get( index ).getKey();
+      }
+
+    public int size()
+      {
+      return pairs.size();
+      }
+    };
+    }
+
   public static boolean isOnlyRename( RexProgram program )
     {
     RelDataType inputProjects = getInputProjectsRowType( program );
@@ -75,10 +94,17 @@ class ProgramUtil
     List<RelDataTypeField> inputList = inputProjects.getFieldList();
     List<RelDataTypeField> outputList = outputProjects.getFieldList();
 
-    if( inputList.size() != outputList.size() )
+    final int size = inputList.size();
+    if( size != outputList.size() )
       return false;
 
-    for( int i = 0; i < inputList.size(); i++ )
+    if( new HashSet<String>( leftSlice( inputList ) ).size() != size )
+      return false;
+
+    if( new HashSet<String>( leftSlice( outputList ) ).size() != size )
+      return false;
+
+    for( int i = 0; i < size; i++ )
       {
       RelDataTypeField input = inputList.get( i );
       RelDataTypeField output = outputList.get( i );
@@ -86,6 +112,25 @@ class ProgramUtil
       if( !input.getName().equals( output.getName() ) )
         return true;
       }
+
+    return false;
+    }
+
+  public static boolean isComplex( RexProgram program )
+    {
+    RelDataType inputProjects = getInputProjectsRowType( program );
+    RelDataType outputProjects = getOutputProjectsRowType( program );
+
+    List<RelDataTypeField> inputList = inputProjects.getFieldList();
+    List<RelDataTypeField> outputList = outputProjects.getFieldList();
+
+    final int size = inputList.size();
+
+    if( new HashSet<String>( leftSlice( inputList ) ).size() != size )
+      return true;
+
+    if( new HashSet<String>( leftSlice( outputList ) ).size() != size )
+      return true;
 
     return false;
     }

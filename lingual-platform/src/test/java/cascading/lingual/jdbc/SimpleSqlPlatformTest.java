@@ -297,4 +297,28 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-sum-count-groupby",
       "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno" );
     }
+
+  @Test
+  public void testSelectDuplicateColumns() throws Exception
+    {
+    assertTableValuesEqual( "sales-select-duplicate-columns", "select empno, empno from sales.sales where empno < 110" );
+    }
+
+  @Test
+  public void testSelectDuplicateColumnsAs() throws Exception
+    {
+    assertTableValuesEqual( "sales-select-duplicate-columns-as", "select empno, sale_date as empno from sales.sales" );
+    }
+
+  @Test
+  public void testSelectDuplicateColumnsAsFilter() throws Exception
+    {
+    assertTableValuesEqual( "sales-select-duplicate-columns-as-filter", "select empno, sale_date as empno from sales.sales where empno < 110" );
+    }
+
+  @Test
+  public void testSelectDuplicateColumnsAsAliasFilter() throws Exception
+    {
+    assertTablesEqual( "sales-select-duplicate-columns-as-alias-filter", "select empno, empno as x from sales.sales where empno < 110" );
+    }
   }
