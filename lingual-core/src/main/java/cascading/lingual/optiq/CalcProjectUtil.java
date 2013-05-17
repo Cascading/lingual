@@ -110,7 +110,7 @@ class CalcProjectUtil
       if( hasConstants )
         pipe = addConstants( node, program, pipe );
 
-      if( isRenameDuplicate ) // are renaming into an existing field [city0->city]
+      if( isRenameDuplicate && !( hasFunctions || hasConstants ) ) // are renaming into an existing field [city0->city]
         pipe = addDiscard( cluster, program, pipe );
 
       if( isRename )
