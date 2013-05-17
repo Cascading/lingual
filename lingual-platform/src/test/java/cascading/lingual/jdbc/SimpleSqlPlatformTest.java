@@ -328,4 +328,13 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-values-join", "select empno, desc from sales.emps, (SELECT * FROM (VALUES (10, 'SameName')) AS t (id, desc)) as sn" +
       " where emps.deptno = sn.id and sn.desc = 'SameName' group by empno, desc" );
     }
+
+  @Test
+  public void testSelfJoin() throws Exception
+    {
+    String query = "SELECT n1.city FROM sales.emps AS t0 INNER JOIN sales.emps AS n1 ON (n1.gender = 'M' AND n1.empno = t0.empno)" +
+      "WHERE t0.gender = 'M' AND t0.city = 'Vancouver'";
+
+    assertTablesEqual( "emps-depts-self-join", query );
+    }
   }
