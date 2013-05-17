@@ -32,6 +32,7 @@ import cascading.operation.expression.ScriptFilter;
 import cascading.operation.expression.ScriptTupleFunction;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
@@ -57,6 +58,9 @@ import org.eigenbase.util.Permutation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static cascading.lingual.optiq.ProgramUtil.getInputProjectsRowType;
+import static cascading.lingual.optiq.ProgramUtil.getOutputProjectsRowType;
+
 /**
  *
  */
@@ -74,6 +78,9 @@ class CalcProjectUtil
     Pipe pipe = branch.current;
     RelOptCluster cluster = node.getCluster();
 
+    Fields incomingFields = RelUtil.createTypedFields( cluster, child.getRowType() );
+    Fields outgoingFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
+
     boolean isPermutation = program.isPermutation();
     Permutation permutation = program.getPermutation();
 
@@ -82,27 +89,36 @@ class CalcProjectUtil
 
     boolean isFilter = program.getCondition() != null;
     boolean isRename = ProgramUtil.isOnlyRename( program );
+    boolean isRenameDuplicate = isRename && isRenameDuplicate( cluster, incomingFields, program );
     boolean isComplex = ProgramUtil.isComplex( program );
     boolean onlyProjectsNarrow = ProgramUtil.isOnlyProjectsNarrow( program );
     boolean hasConstants = ProgramUtil.hasConstants( program );
     boolean hasFunctions = ProgramUtil.hasFunctions( program );
 
-    Fields outgoingFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
-
     if( isFilter )
       pipe = addFilter( cluster, program, pipe );
 
-    if( isComplex || hasFunctions )
-      pipe = addFunction( cluster, program, pipe, !isComplex );
+    if( isComplex )
+      {
+      pipe = addFunction( cluster, program, pipe, false );
+      }
+    else
+      {
+      if( hasFunctions )
+        pipe = addFunction( cluster, program, pipe, true );
 
-    if( hasConstants && !isComplex )
-      pipe = addConstants( node, program, pipe );
+      if( hasConstants )
+        pipe = addConstants( node, program, pipe );
 
-    if( isRename && !isComplex )
-      pipe = addRename( cluster, program, pipe );
+      if( isRenameDuplicate ) // are renaming into an existing field [city0->city]
+        pipe = addDiscard( cluster, program, pipe );
 
-    if( onlyProjectsNarrow && !isComplex )
-      outgoingFields = getNarrowFields( cluster, program );
+      if( isRename )
+        pipe = addRename( cluster, program, pipe );
+
+      if( onlyProjectsNarrow ) // discard constants etc
+        outgoingFields = getNarrowFields( cluster, program );
+      }
 
     pipe = new Retain( pipe, outgoingFields );
 
@@ -111,9 +127,25 @@ class CalcProjectUtil
     return new Branch( pipe, branch );
     }
 
+  private static boolean isRenameDuplicate( RelOptCluster cluster, Fields incomingFields, RexProgram program )
+    {
+    RelDataType outputProjects = getOutputProjectsRowType( program );
+    Fields outputFields = RelUtil.createTypedFields( cluster, outputProjects );
+
+    return incomingFields.contains( outputFields );
+    }
+
+  private static Pipe addDiscard( RelOptCluster cluster, RexProgram program, Pipe pipe )
+    {
+    RelDataType outputProjects = getOutputProjectsRowType( program );
+    Fields outputFields = RelUtil.createTypedFields( cluster, outputProjects );
+
+    return new Discard( pipe, outputFields );
+    }
+
   private static Pipe addRename( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    RelDataType inputProjects = ProgramUtil.getInputProjectsRowType( program );
+    RelDataType inputProjects = getInputProjectsRowType( program );
     Fields incomingFields = RelUtil.createTypedFields( cluster, inputProjects );
 
     Fields renameFields = getNarrowFields( cluster, program );
@@ -123,7 +155,8 @@ class CalcProjectUtil
 
   private static Fields getNarrowFields( RelOptCluster cluster, RexProgram program )
     {
-    RelDataType outputProjectsRowType = ProgramUtil.getOutputProjectsRowType( program );
+    RelDataType outputProjectsRowType = getOutputProjectsRowType( program );
+
     return RelUtil.createTypedFields( cluster, outputProjectsRowType );
     }
 
