@@ -171,5 +171,5 @@ task javadocDist( type: Copy, dependsOn: javadocAll ) {
   from javadocAll.destinationDir
   into "${s3Upload.source}/javadoc/"
 
-  dependsOn javadocDist
+  s3Upload.dependsOn javadocDist
 }
