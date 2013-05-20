@@ -1,6 +1,6 @@
 # Overview
 
-Lingual is __true__ SQL for Cascading and Apache Hadoop.
+[Lingual](http://www.cascading.org/lingual/) is __true__ SQL for Cascading and Apache Hadoop.
 
 Lingual includes JDBC Drivers, SQL command shell, and a catalog manager for creating schemas and tables.
 
@@ -23,6 +23,8 @@ Lingual only supports `SELECT` and `INSERT INTO` statements, for example
 
 DDL statements like `CREATE TABLE` are unsupported at this time. See the Lingual Catalog tool for defining Schemas
 and Tables from the command line.
+
+For more information, visit: http://www.cascading.org/lingual/
 
 # Installing the Lingual Shell and Catalog
 
