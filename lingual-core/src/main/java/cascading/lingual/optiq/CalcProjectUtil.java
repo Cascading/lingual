@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.optiq.ProgramUtil.getInputProjectsRowType;
 import static cascading.lingual.optiq.ProgramUtil.getOutputProjectsRowType;
+import static cascading.lingual.optiq.RelUtil.createPermutationFields;
 
 /**
  *
@@ -79,14 +80,10 @@ class CalcProjectUtil
     RelOptCluster cluster = node.getCluster();
 
     Fields incomingFields = RelUtil.createTypedFields( cluster, child.getRowType() );
-    Fields outgoingFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
+    Fields resultFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
 
     boolean isPermutation = program.isPermutation();
     Permutation permutation = program.getPermutation();
-
-    if( isPermutation && !permutation.isIdentity() )
-      throw new UnsupportedOperationException( "reordering is not currently supported" );
-
     boolean isFilter = program.getCondition() != null;
     boolean isRename = ProgramUtil.isOnlyRename( program );
     boolean isRenameDuplicate = isRename && isRenameDuplicate( cluster, incomingFields, program );
@@ -95,32 +92,44 @@ class CalcProjectUtil
     boolean hasConstants = ProgramUtil.hasConstants( program );
     boolean hasFunctions = ProgramUtil.hasFunctions( program );
 
-    if( isFilter )
-      pipe = addFilter( cluster, program, pipe );
-
-    if( isComplex )
+    if( isPermutation && !permutation.isIdentity() )
       {
-      pipe = addFunction( cluster, program, pipe, false );
+      if( hasConstants || hasFunctions )
+        throw new IllegalStateException( "permutation projection has constant and function transforms" );
+
+      Fields permutationFields = createPermutationFields( incomingFields, permutation );
+
+      pipe = new Rename( pipe, permutationFields, resultFields );
       }
     else
       {
-      if( hasFunctions )
-        pipe = addFunction( cluster, program, pipe, true );
+      if( isFilter )
+        pipe = addFilter( cluster, program, pipe );
 
-      if( hasConstants )
-        pipe = addConstants( node, program, pipe );
+      if( isComplex )
+        {
+        pipe = addFunction( cluster, program, pipe, false );
+        }
+      else
+        {
+        if( hasFunctions )
+          pipe = addFunction( cluster, program, pipe, true );
 
-      if( isRenameDuplicate && !( hasFunctions || hasConstants ) ) // are renaming into an existing field [city0->city]
-        pipe = addDiscard( cluster, program, pipe );
+        if( hasConstants )
+          pipe = addConstants( node, program, pipe );
 
-      if( isRename )
-        pipe = addRename( cluster, program, pipe );
+        if( isRenameDuplicate && !( hasFunctions || hasConstants ) ) // are renaming into an existing field [city0->city]
+          pipe = addDiscard( cluster, program, pipe );
 
-      if( onlyProjectsNarrow ) // discard constants etc
-        outgoingFields = getNarrowFields( cluster, program );
+        if( isRename )
+          pipe = addRename( cluster, program, pipe );
+
+        if( onlyProjectsNarrow ) // discard constants etc
+          resultFields = getNarrowFields( cluster, program );
+        }
       }
 
-    pipe = new Retain( pipe, outgoingFields );
+    pipe = new Retain( pipe, resultFields );
 
     pipe = stack.addDebug( node, pipe );
 

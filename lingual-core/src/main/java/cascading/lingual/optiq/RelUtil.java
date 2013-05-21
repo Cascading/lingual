@@ -29,6 +29,7 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
+import org.eigenbase.util.Permutation;
 
 /**
  *
@@ -92,5 +93,15 @@ class RelUtil
   public static Class getJavaType( RelOptCluster cluster, RelDataType dataType )
     {
     return (Class) ( (JavaTypeFactory) cluster.getTypeFactory() ).getJavaClass( dataType );
+    }
+
+  static Fields createPermutationFields( Fields incomingFields, Permutation permutation )
+    {
+    Fields arguments = Fields.NONE;
+
+    for( int i = 0; i < permutation.getTargetCount(); i++ )
+      arguments = arguments.append( new Fields( incomingFields.get( permutation.getTarget( i ) ) ) );
+
+    return arguments;
     }
   }
