@@ -64,6 +64,7 @@ public class DDLParser
   private final String schemaPath;
   private final Protocol protocol;
   private final Format format;
+  private final String defaultExtension;
 
   public DDLParser( SchemaCatalog catalog, String schemaName, String protocol, String format )
     {
@@ -72,11 +73,17 @@ public class DDLParser
 
   public DDLParser( SchemaCatalog catalog, String schemaName, String schemaPath, String protocol, String format )
     {
+    this( catalog, schemaName, schemaPath, protocol, format, null );
+    }
+
+  public DDLParser( SchemaCatalog catalog, String schemaName, String schemaPath, String protocol, String format, String defaultExtension )
+    {
     this.catalog = catalog;
     this.schemaName = schemaName;
     this.schemaPath = schemaPath == null ? getSchemaIdentifier( catalog, schemaName ) : schemaPath;
     this.protocol = Protocol.getProtocol( protocol );
     this.format = Format.getFormat( format );
+    this.defaultExtension = defaultExtension;
     }
 
   private String getSchemaIdentifier( SchemaCatalog catalog, String schemaName )
@@ -142,7 +149,12 @@ public class DDLParser
 
   private String createTableIdentifier( String name )
     {
-    return getSchemaIdentifier( catalog, schemaName ) + "/" + name;
+    String result = getSchemaIdentifier( catalog, schemaName ) + "/" + name;
+
+    if( defaultExtension != null )
+      result += "." + defaultExtension;
+
+    return result;
     }
 
   public List<DDLTable> parse( InputStream inputStream ) throws IOException
