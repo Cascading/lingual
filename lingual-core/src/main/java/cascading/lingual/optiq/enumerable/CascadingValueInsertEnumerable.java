@@ -33,7 +33,6 @@ import cascading.lingual.optiq.meta.ValuesHolder;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Optiq;
 import cascading.tap.SinkMode;
-import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
@@ -43,6 +42,9 @@ import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cascading.lingual.optiq.enumerable.EnumerableUtil.createTupleFrom;
+import static cascading.lingual.util.Misc.createUniqueName;
 
 /**
  *
@@ -94,15 +96,32 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
   public Enumerator enumerator()
     {
     PlatformBroker platformBroker = getPlatformBroker();
+    Optiq.writeSQLPlan( platformBroker.getProperties(), createUniqueName(), getVolcanoPlanner() );
+
     Branch branch = getBranch();
+    TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch.resultName );
 
-    Optiq.writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName(), getVolcanoPlanner() );
+    long rowCount = 0;
 
+    for( List<RexLiteral> values : branch.tuples )
+      {
+      collector.add( createTupleFrom( values ) );
+
+      rowCount++;
+      }
+
+    LOG.debug( "inserted {} rows", rowCount );
+
+    return new Linq4j().singletonEnumerable( rowCount ).enumerator();
+    }
+
+  private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, String[] resultName )
+    {
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();
     Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
 
-    TableDef tableDef = platformBroker.getCatalog().resolveTableDef( branch.resultName );
+    TableDef tableDef = platformBroker.getCatalog().resolveTableDef( resultName );
     String identifier = tableDef.getIdentifier();
 
     TupleEntryCollector collector;
@@ -130,23 +149,6 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       throw new RuntimeException( "open for write failed", exception );
       }
 
-    List<List<RexLiteral>> tuples = branch.tuples;
-    long rowCount = 0;
-
-    for( List<RexLiteral> values : tuples )
-      {
-      Tuple tuple = Tuple.size( values.size() );
-
-      for( int i = 0; i < values.size(); i++ )
-        tuple.set( i, values.get( i ).getValue2() ); // seem to come out canonical, so bypassing using TupleEntry to set
-
-      collector.add( tuple );
-
-      rowCount++;
-      }
-
-    LOG.debug( "inserted {} rows", rowCount );
-
-    return new Linq4j().singletonEnumerable( rowCount ).enumerator();
+    return collector;
     }
   }

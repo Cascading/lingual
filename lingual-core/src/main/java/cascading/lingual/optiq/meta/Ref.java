@@ -20,6 +20,11 @@
 
 package cascading.lingual.optiq.meta;
 
+import java.util.List;
+
+import cascading.tuple.Fields;
+import org.eigenbase.rex.RexLiteral;
+
 /**
  *
  */
@@ -27,11 +32,23 @@ public class Ref
   {
   public final String name;
   public final String identifier;
+  public final Fields fields;
+  public final List<List<RexLiteral>> tuples;
 
   public Ref( String name, String identifier )
     {
     this.name = name;
     this.identifier = identifier;
+    this.tuples = null;
+    this.fields = null;
+    }
+
+  public Ref( String name, Fields fields, List<List<RexLiteral>> tuples )
+    {
+    this.name = name;
+    this.identifier = null;
+    this.fields = fields;
+    this.tuples = tuples;
     }
 
   @Override
@@ -42,11 +59,15 @@ public class Ref
     if( object == null || getClass() != object.getClass() )
       return false;
 
-    Ref head = (Ref) object;
+    Ref ref = (Ref) object;
 
-    if( identifier != null ? !identifier.equals( head.identifier ) : head.identifier != null )
+    if( fields != null ? !fields.equals( ref.fields ) : ref.fields != null )
       return false;
-    if( name != null ? !name.equals( head.name ) : head.name != null )
+    if( identifier != null ? !identifier.equals( ref.identifier ) : ref.identifier != null )
+      return false;
+    if( name != null ? !name.equals( ref.name ) : ref.name != null )
+      return false;
+    if( tuples != null ? !tuples.equals( ref.tuples ) : ref.tuples != null )
       return false;
 
     return true;
@@ -57,6 +78,8 @@ public class Ref
     {
     int result = name != null ? name.hashCode() : 0;
     result = 31 * result + ( identifier != null ? identifier.hashCode() : 0 );
+    result = 31 * result + ( fields != null ? fields.hashCode() : 0 );
+    result = 31 * result + ( tuples != null ? tuples.hashCode() : 0 );
     return result;
     }
   }

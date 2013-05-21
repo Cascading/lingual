@@ -20,6 +20,7 @@
 
 package cascading.lingual.platform;
 
+import cascading.bind.catalog.Stereotype;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -47,6 +48,13 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   private Pipe tail;
   private SchemaCatalog catalog;
 
+  /**
+   * Instantiates a new Lingual flow factory.
+   *
+   * @param platformBroker the platform broker
+   * @param name           the name
+   * @param branch         the branch
+   */
   public LingualFlowFactory( PlatformBroker platformBroker, String name, Branch branch )
     {
     super( platformBroker.getProperties(), platformBroker.getCatalog().getProtocolHandlers(), name );
@@ -55,7 +63,16 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     this.tail = branch.current;
 
     for( Ref head : branch.heads.keySet() )
-      setSourceStereotype( head.name, catalog.findStereotypeFor( head.identifier ) );
+      {
+      Stereotype<Protocol, Format> stereotypeFor;
+
+      if( head.identifier == null )
+        stereotypeFor = catalog.getRootSchemaDef().getStereotype( head.name );
+      else
+        stereotypeFor = catalog.findStereotypeFor( head.identifier );
+
+      setSourceStereotype( head.name, stereotypeFor );
+      }
 
     setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
 

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import cascading.lingual.platform.PlatformBroker;
 import cascading.pipe.Pipe;
+import cascading.tuple.Fields;
 import cascading.util.Util;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
@@ -87,9 +88,9 @@ public class Branch
 
     for( Branch branch : branches )
       {
-      if( platformBroker == null )
+      if( platformBroker == null && branch.platformBroker != null )
         platformBroker = branch.platformBroker;
-      else if( platformBroker != branch.platformBroker )
+      else if( platformBroker != branch.platformBroker && branch.platformBroker != null )
         throw new IllegalStateException( "diff instances of properties found in branches" );
       }
     }
@@ -104,10 +105,27 @@ public class Branch
     this.isModification = true;
     }
 
-  public Branch( List<List<RexLiteral>> tuples )
+  public Branch( Map<Ref, Pipe> heads, String name, Fields fields, List<List<RexLiteral>> tuples )
     {
     LOG.debug( "adding values" );
 
+    this.heads = heads;
     this.tuples = tuples;
+
+    Ref head = new Ref( name, fields, tuples );
+
+    if( this.heads.containsKey( head ) )
+      {
+      LOG.debug( "re-using branch head: {}", name );
+
+      this.current = this.heads.get( head );
+      }
+    else
+      {
+      LOG.debug( "adding branch head: {}", name );
+
+      this.current = new Pipe( name );
+      this.heads.put( head, this.current );
+      }
     }
   }

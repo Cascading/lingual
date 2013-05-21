@@ -442,7 +442,8 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       }
     }
 
-  protected String getFileSeparator()
+  @Override
+  public String getFileSeparator()
     {
     return "/";
     }

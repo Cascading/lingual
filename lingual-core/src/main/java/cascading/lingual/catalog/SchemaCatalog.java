@@ -271,7 +271,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
-    SchemaDef schemaDef = getRootSchemaDef().getSchema( schemaName );
+    SchemaDef schemaDef;
+
+    if( schemaName == null )
+      schemaDef = getRootSchemaDef();
+    else
+      schemaDef = getRootSchemaDef().getSchema( schemaName );
 
     if( schemaDef == null )
       throw new IllegalStateException( "schema does not exist: " + schemaName );
@@ -587,6 +592,11 @@ public abstract class SchemaCatalog implements Serializable
     if( tableDef == null )
       throw new IllegalArgumentException( "no table for identifier: " + identifier );
 
+    return createTapFor( tableDef, sinkMode );
+    }
+
+  public Tap createTapFor( TableDef tableDef, SinkMode sinkMode )
+    {
     Protocol protocol = tableDef.getActualProtocol();
 
     ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( protocol );

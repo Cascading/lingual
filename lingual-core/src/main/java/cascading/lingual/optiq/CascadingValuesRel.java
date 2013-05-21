@@ -23,12 +23,15 @@ package cascading.lingual.optiq;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
+import cascading.tuple.Fields;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.ValuesRelBase;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexLiteral;
+
+import static cascading.lingual.util.Misc.createUniqueName;
 
 /**
  * Implementation of VALUES operator, that returns a constant set of tuples,
@@ -57,6 +60,9 @@ class CascadingValuesRel extends ValuesRelBase implements CascadingRelNode
 
   public Branch visitChild( Stack stack )
     {
-    return new Branch( tuples );
+    String pipeName = createUniqueName();
+    Fields fields = RelUtil.createTypedFieldsFor( this );
+
+    return new Branch( stack.heads, pipeName, fields, tuples );
     }
   }

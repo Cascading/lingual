@@ -321,4 +321,11 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     assertTablesEqual( "sales-select-duplicate-columns-as-alias-filter", "select empno, empno as x from sales.sales where empno < 110" );
     }
+
+  @Test
+  public void testInnerJoinValues() throws Exception
+    {
+    assertTablesEqual( "emps-values-join", "select empno, desc from sales.emps, (SELECT * FROM (VALUES (10, 'SameName')) AS t (id, desc)) as sn" +
+      " where emps.deptno = sn.id and sn.desc = 'SameName' group by empno, desc" );
+    }
   }

@@ -173,21 +173,22 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
   @Override
   public String getTempPath()
     {
-    String tempdir = System.getenv( "TEMPDIR" );
+    String tempDir = System.getenv( "TEMPDIR" );
 
-    if( tempdir == null || tempdir.isEmpty() )
-      tempdir = System.getenv( "TMPDIR" );
+    if( tempDir == null || tempDir.isEmpty() )
+      tempDir = System.getenv( "TMPDIR" );
 
-    if( tempdir == null || tempdir.isEmpty() )
+    if( tempDir == null || tempDir.isEmpty() )
       {
       LOG.warn( "neither TEMPDIR or TMPDIR is set, using '/tmp' as the temporary data path" );
-      tempdir = "/tmp/";
+      tempDir = "/tmp/";
       }
 
-    return tempdir;
+    return getFullPath( tempDir );
     }
 
-  protected String getFileSeparator()
+  @Override
+  public String getFileSeparator()
     {
     return File.separator;
     }

@@ -30,6 +30,7 @@ import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.meta.TableHolder;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.util.Misc;
 import cascading.lingual.util.Optiq;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -95,7 +96,7 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     PlatformBroker platformBroker = getPlatformBroker();
     Properties properties = platformBroker.getProperties();
 
-    Optiq.writeSQLPlan( platformBroker.getProperties(), platformBroker.createUniqueName(), getVolcanoPlanner() );
+    Optiq.writeSQLPlan( platformBroker.getProperties(), Misc.createUniqueName(), getVolcanoPlanner() );
 
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();

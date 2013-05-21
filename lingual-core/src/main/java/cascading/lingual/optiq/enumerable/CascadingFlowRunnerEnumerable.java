@@ -20,15 +20,21 @@
 
 package cascading.lingual.optiq.enumerable;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.meta.Branch;
@@ -37,12 +43,15 @@ import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.platform.LingualFlowFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Optiq;
+import cascading.tap.SinkMode;
+import cascading.tuple.TupleEntryCollector;
 import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
 import net.hydromatic.linq4j.Linq4j;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
+import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,25 +114,35 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       {
       return createEnumerator();
       }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "failed opening tap", exception );
+      }
     finally
       {
       thread.setContextClassLoader( current );
       }
     }
 
-  public Enumerator createEnumerator()
+  public Enumerator createEnumerator() throws IOException
     {
     PlatformBroker platformBroker = getPlatformBroker();
     Branch branch = getBranch();
 
     Properties properties = platformBroker.getProperties();
 
+    for( Ref head : branch.heads.keySet() )
+      {
+      if( head.tuples != null )
+        writeValuesTuple( platformBroker, head );
+      }
+
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
 
-    Optiq.writeSQLPlan( platformBroker.getProperties(), flowFactory.getName(), getVolcanoPlanner() );
+    Optiq.writeSQLPlan( properties, flowFactory.getName(), getVolcanoPlanner() );
 
     for( Ref head : branch.heads.keySet() )
-      flowFactory.addSource( head.name, head.identifier );
+      flowFactory.addSource( head.name, getIdentifierFor( platformBroker, head ) );
 
     if( branch.resultName != null )
       {
@@ -132,7 +151,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       }
     else
       {
-      flowFactory.addSink( branch.current.getName(), getResultPath( platformBroker, properties, flowFactory.getName() ) );
+      flowFactory.addSink( branch.current.getName(), platformBroker.getResultPath( flowFactory.getName() ) );
       }
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
@@ -204,15 +223,45 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     }
 
-  private String getResultPath( PlatformBroker platformBroker, Properties properties, String name )
+  private String getIdentifierFor( PlatformBroker platformBroker, Ref head )
     {
-    String path = platformBroker.getTempPath();
-    path = properties.getProperty( Driver.RESULT_PATH_PROP, path );
+    String identifier = head.identifier;
 
-    if( !path.endsWith( "/" ) )
-      path += "/";
+    if( identifier == null )
+      identifier = platformBroker.getTempPath( head.name );
 
-    return path + name;
+    return identifier;
+    }
+
+  private void writeValuesTuple( PlatformBroker platformBroker, Ref head ) throws IOException
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String identifier = getIdentifierFor( platformBroker, head );
+
+    createTableFor( catalog, head, identifier );
+
+    TupleEntryCollector collector = catalog.createTapFor( identifier, SinkMode.KEEP ).openForWrite( platformBroker.getFlowProcess() );
+
+    for( List<RexLiteral> values : head.tuples )
+      collector.add( EnumerableUtil.createTupleFrom( values ) );
+
+    collector.close();
+    }
+
+  private void createTableFor( SchemaCatalog catalog, Ref head, String identifier )
+    {
+    String stereotypeName = head.name;
+    Stereotype stereotype = catalog.getStereoTypeFor( null, head.fields );
+
+    if( stereotype != null )
+      stereotypeName = stereotype.getName();
+    else
+      catalog.createStereotype( null, stereotypeName, head.fields );
+
+    Protocol protocol = catalog.getRootSchemaDef().getDefaultProtocol();
+    Format format = catalog.getRootSchemaDef().getDefaultFormat();
+
+    catalog.createTableDefFor( null, head.name, identifier, stereotypeName, protocol, format );
     }
 
   private String setFlowPlanPath( Properties properties, String name )

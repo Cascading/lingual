@@ -25,9 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -38,6 +36,7 @@ import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.CatalogManager;
 import cascading.lingual.catalog.FileCatalogManager;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.util.Reflection;
@@ -52,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.jdbc.Driver.*;
+import static cascading.lingual.util.Misc.createUniqueName;
 
 /**
  * Class PlatformBroker is the base class of all platform specific implementations.
@@ -72,8 +72,6 @@ public abstract class PlatformBroker<Config>
   public static final String CATALOG_FILE = "catalog";
 
   public static final String PLANNER_DEBUG = "lingual.planner.debug";
-
-  private static SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyyMMdd-HHmmss" );
 
   private Properties properties;
 
@@ -276,6 +274,28 @@ public abstract class PlatformBroker<Config>
     return getFullPath( makePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile ) );
     }
 
+  public String getResultPath( String name )
+    {
+    String path = getTempPath();
+
+    path = getProperties().getProperty( Driver.RESULT_PATH_PROP, path );
+
+    if( !path.endsWith( "/" ) )
+      path += "/";
+
+    return getFullPath( path + name );
+    }
+
+  public String getTempPath( String name )
+    {
+    String path = getTempPath();
+
+    if( !path.endsWith( "/" ) )
+      path += "/";
+
+    return getFullPath( path + name );
+    }
+
   public static String makePath( String fileSeparator, String rootPath, String... elements )
     {
     if( rootPath == null )
@@ -287,7 +307,7 @@ public abstract class PlatformBroker<Config>
     return rootPath + Util.join( elements, fileSeparator );
     }
 
-  protected abstract String getFileSeparator();
+  public abstract String getFileSeparator();
 
   public abstract String getTempPath();
 
@@ -373,11 +393,6 @@ public abstract class PlatformBroker<Config>
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
     return new LingualFlowFactory( this, createUniqueName(), branch );
-    }
-
-  public String createUniqueName()
-    {
-    return dateFormat.format( new Date() ) + "-" + Util.createUniqueID().substring( 0, 10 );
     }
 
   public SchemaCatalog newCatalogInstance()

@@ -106,7 +106,7 @@ public class DDLParser
     for( DDLTable command : commands )
       {
       String name = command.name;
-      DDLColumn[] DDLColumns = command.ddlColumns;
+      DDLColumn[] ddlColumns = command.ddlColumns;
 
       switch( command.ddlAction )
         {
@@ -116,7 +116,7 @@ public class DDLParser
           break;
         case CREATE:
           String stereotypeName = name;
-          Fields fields = toFields( DDLColumns );
+          Fields fields = toFields( ddlColumns );
           Stereotype stereotype = catalog.getStereoTypeFor( schemaName, fields );
 
           if( stereotype != null )
