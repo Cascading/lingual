@@ -58,9 +58,9 @@ import org.eigenbase.util.Permutation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static cascading.lingual.optiq.ProgramUtil.getInputProjectsRowType;
-import static cascading.lingual.optiq.ProgramUtil.getOutputProjectsRowType;
+import static cascading.lingual.optiq.ProgramUtil.*;
 import static cascading.lingual.optiq.RelUtil.createPermutationFields;
+import static cascading.lingual.optiq.RelUtil.createTypedFields;
 
 /**
  *
@@ -79,8 +79,18 @@ class CalcProjectUtil
     Pipe pipe = branch.current;
     RelOptCluster cluster = node.getCluster();
 
-    Fields incomingFields = RelUtil.createTypedFields( cluster, child.getRowType() );
-    Fields resultFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
+    ///////////////////////
+    // commented out code is for debugging, would leave in put some code
+    // fails if these methods are called in all cases
+    Fields incomingFields = createTypedFields( cluster, child.getRowType() );
+//    Fields outgoingFields = createTypedFields( cluster, node.getRowType() );
+
+//    Fields argumentFields = createTypedFields( cluster, program.getInputRowType() );
+    Fields resultFields = createTypedFields( cluster, program.getOutputRowType() );
+
+//    Fields inputProjects = createTypedFields( cluster, getInputProjectsRowType( program ) );
+//    Fields outputProjects = createTypedFields( cluster, getOutputProjectsRowType( program ) );
+    ///////////////////////
 
     boolean isPermutation = program.isPermutation();
     Permutation permutation = program.getPermutation();
@@ -138,16 +148,24 @@ class CalcProjectUtil
 
   private static boolean isRenameDuplicate( RelOptCluster cluster, Fields incomingFields, RexProgram program )
     {
-    RelDataType outputProjects = getOutputProjectsRowType( program );
-    Fields outputFields = RelUtil.createTypedFields( cluster, outputProjects );
+    RelDataType outputProjects = removeIdentity( program );
+    Fields outputFields = createTypedFields( cluster, outputProjects );
 
-    return incomingFields.contains( outputFields );
+    for( Comparable outputField : outputFields )
+      {
+      if( incomingFields.contains( new Fields( outputField ) ) )
+        return true;
+      }
+
+    return false;
     }
 
   private static Pipe addDiscard( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    RelDataType outputProjects = getOutputProjectsRowType( program );
-    Fields outputFields = RelUtil.createTypedFields( cluster, outputProjects );
+    RelDataType argumentFields = program.getInputRowType();
+    RelDataType outputProjects = removeIdentity( program );
+    RelDataType duplicatesRowType = getDuplicatesRowType( argumentFields, outputProjects );
+    Fields outputFields = createTypedFields( cluster, duplicatesRowType );
 
     return new Discard( pipe, outputFields );
     }
@@ -155,7 +173,7 @@ class CalcProjectUtil
   private static Pipe addRename( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
     RelDataType inputProjects = getInputProjectsRowType( program );
-    Fields incomingFields = RelUtil.createTypedFields( cluster, inputProjects );
+    Fields incomingFields = createTypedFields( cluster, inputProjects );
 
     Fields renameFields = getNarrowFields( cluster, program );
 
@@ -166,13 +184,13 @@ class CalcProjectUtil
     {
     RelDataType outputProjectsRowType = getOutputProjectsRowType( program );
 
-    return RelUtil.createTypedFields( cluster, outputProjectsRowType );
+    return createTypedFields( cluster, outputProjectsRowType );
     }
 
   private static Pipe addConstants( CascadingRelNode node, RexProgram program, Pipe pipe )
     {
     RelDataType constantsRowType = ProgramUtil.getOutputConstantsRowType( program );
-    Fields constantFields = RelUtil.createTypedFields( node.getCluster(), constantsRowType );
+    Fields constantFields = createTypedFields( node.getCluster(), constantsRowType );
     List<RexLiteral> constantsLiterals = ProgramUtil.getOutputConstantsLiterals( program );
     List<Object> values = ProgramUtil.asValues2( constantsLiterals );
 
@@ -181,7 +199,7 @@ class CalcProjectUtil
 
   private static Pipe addFilter( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    final Fields incomingFields = RelUtil.createTypedFields( cluster, program.getInputRowType() );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
 
     BlockBuilder statements = new BlockBuilder();
 
@@ -221,7 +239,7 @@ class CalcProjectUtil
 
   private static Pipe addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe, boolean narrow )
     {
-    final Fields incomingFields = RelUtil.createTypedFields( cluster, program.getInputRowType() );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
 
     // only project the result of any expressions
     if( narrow )
@@ -250,7 +268,7 @@ class CalcProjectUtil
     BlockExpression block = statements.toBlock();
     String expression = Expressions.toString( block );
 
-    Fields outgoingFields = RelUtil.createTypedFields( cluster, program.getOutputRowType() );
+    Fields outgoingFields = createTypedFields( cluster, program.getOutputRowType() );
 
     LOG.debug( "function parameters: {}", incomingFields );
     LOG.debug( "function results: {}", outgoingFields );

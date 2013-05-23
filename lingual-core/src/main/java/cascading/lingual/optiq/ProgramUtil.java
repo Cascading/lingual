@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
@@ -148,6 +149,43 @@ class ProgramUtil
       }
 
     return true;
+    }
+
+  public static RelDataType removeIdentity( RexProgram program )
+    {
+    RelDataType inputProjects = getInputProjectsRowType( program );
+    RelDataType outputProjects = getOutputProjectsRowType( program );
+
+    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
+
+    for( int i = 0; i < inputProjects.getFieldCount(); i++ )
+      {
+      RelDataTypeField inputField = inputProjects.getFields()[ i ];
+      RelDataTypeField outputField = outputProjects.getFields()[ i ];
+
+      if( !inputField.getKey().equals( outputField.getKey() ) )
+        fields.add( outputField );
+      }
+
+    return new RelRecordType( fields );
+    }
+
+  public static RelDataType getDuplicatesRowType( RelDataType inputRowType, RelDataType outputRowType )
+    {
+    Set<String> outputNames = new HashSet<String>();
+
+    for( RelDataTypeField field : outputRowType.getFields() )
+      outputNames.add( field.getKey() );
+
+    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
+
+    for( RelDataTypeField typeField : inputRowType.getFields() )
+      {
+      if( outputNames.contains( typeField.getKey() ) )
+        fields.add( typeField );
+      }
+
+    return new RelRecordType( fields );
     }
 
   public static RelDataType getInputProjectsRowType( RexProgram program )
