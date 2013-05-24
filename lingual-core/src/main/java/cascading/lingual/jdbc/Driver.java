@@ -88,6 +88,7 @@ public class Driver extends UnregisteredDriver
   public static final String FLOW_PLAN_PATH = "flowPlanPath";
   public static final String SQL_PLAN_PATH_PROP = "sqlPlanPath";
   public static final String COLLECTOR_CACHE_PROP = "collectorCache";
+  public static final String PLANNER_DEBUG = "plannerDebug";
 
   static
     {

@@ -172,6 +172,7 @@ class CalcProjectUtil
 
   private static Pipe addRename( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
+    // todo: remove identity renames
     RelDataType inputProjects = getInputProjectsRowType( program );
     Fields incomingFields = createTypedFields( cluster, inputProjects );
 

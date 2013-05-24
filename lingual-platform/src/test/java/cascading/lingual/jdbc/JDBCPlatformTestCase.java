@@ -34,6 +34,7 @@ import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.type.SQLDateTimeCoercibleType;
 import cascading.lingual.type.SQLTypeResolver;
+import cascading.operation.DebugLevel;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -69,6 +70,11 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     enableLogging( "cascading.lingual", "debug" );
     }
 
+  protected String getPlannerDebug()
+    {
+    return DebugLevel.NONE.toString();
+    }
+
   protected String getResultPath()
     {
     if( resultPath == null )
@@ -96,8 +102,9 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     String resultPath = getResultPath();
     String flowPlanPath = getFlowPlanPath();
     String sqlPlanPath = getSQLPlanPath();
+    String plannerDebug = getPlannerDebug();
 
-    return String.format( "%s:%s;schemas=%s;resultPath=%s;flowPlanPath=%s;sqlPlanPath=%s", URI, platformName, schemaPath, resultPath, flowPlanPath, sqlPlanPath );
+    return String.format( "%s:%s;schemas=%s;resultPath=%s;flowPlanPath=%s;sqlPlanPath=%s;plannerDebug=%s", URI, platformName, schemaPath, resultPath, flowPlanPath, sqlPlanPath, plannerDebug );
     }
 
   protected synchronized Connection getConnection() throws Exception

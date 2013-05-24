@@ -71,8 +71,6 @@ public abstract class PlatformBroker<Config>
   public static final String CATALOG_FILE_PROP = "lingual.catalog.name";
   public static final String CATALOG_FILE = "catalog";
 
-  public static final String PLANNER_DEBUG = "lingual.planner.debug";
-
   private Properties properties;
 
   private CascadingServices cascadingServices;
@@ -168,7 +166,7 @@ public abstract class PlatformBroker<Config>
 
   public DebugLevel getDebugLevel()
     {
-    String plannerVerbose = getProperties().getProperty( PLANNER_DEBUG, DebugLevel.NONE.toString() );
+    String plannerVerbose = getProperties().getProperty( Driver.PLANNER_DEBUG, DebugLevel.NONE.toString() );
 
     return DebugLevel.valueOf( plannerVerbose.toUpperCase() );
     }
