@@ -337,4 +337,15 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
 
     assertTablesEqual( "emps-depts-self-join", query );
     }
+  
+  @Test
+  public void testSelfJoin2() throws Exception
+    {
+    String query = "SELECT n1.name, t0.name FROM sales.emps AS t0 INNER JOIN sales.emps AS n1 ON (n1.gender = 'M') " +
+      "WHERE n1.empno = t0.empno";
+
+    // TODO: create correct expected results
+    assertTablesEqual( "emps-depts-self-join", query );
+    }
+  
   }
