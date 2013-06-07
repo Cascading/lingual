@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Version;
+import net.hydromatic.optiq.jdbc.Helper;
 
 /**
  *
@@ -1091,9 +1092,7 @@ class LingualDatabaseMetaData implements DatabaseMetaData
 
   public ResultSet getPseudoColumns( String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern ) throws SQLException
     {
-    // Dummied out to allow compiling against JDK 1.7
-    // can't cast this to OptiqDatabaseMetaData since that class is private. As of Optiq 0.3.3 even if we could cast it the method just returns an empty ResultSet
-    throw new UnsupportedOperationException( "JDBC feature for JDK 1.7 not yet supported." );
+    return Helper.INSTANCE.createEmptyResultSet( connection.getParent() );
     }
 
   public boolean generatedKeyAlwaysReturned() throws SQLException

@@ -30,9 +30,9 @@ dependencies {
   providedCompile project( ':lingual-core' )
 
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4'
-  compile group: 'sqlline', name: 'sqlline', version: '1.0.9'
+  compile group: 'sqlline', name: 'sqlline', version: '1.0.10'
 
-  runtime group: 'jline', name: 'jline', version: '1.0'
+  runtime group: 'jline', name: 'jline', version: '2.0.10'
 
   providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
 }
