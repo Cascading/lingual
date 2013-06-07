@@ -23,7 +23,6 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.SortRel;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /**
@@ -35,7 +34,7 @@ class CascadingSortRule extends RelOptRule
 
   private CascadingSortRule()
     {
-    super( new RelOptRuleOperand( SortRel.class ), "CascadingSortRule" );
+    super( any( SortRel.class ), "CascadingSortRule" );
     }
 
   @Override

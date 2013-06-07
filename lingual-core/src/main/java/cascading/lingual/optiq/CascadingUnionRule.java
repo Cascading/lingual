@@ -27,7 +27,6 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.UnionRel;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +40,11 @@ class CascadingUnionRule extends RelOptRule
   public CascadingUnionRule()
     {
     super(
-      new RelOptRuleOperand(
+      some(
         UnionRel.class,
-        new RelOptRuleOperand( RelNode.class, Cascading.CONVENTION ),
-        new RelOptRuleOperand( RelNode.class, Cascading.CONVENTION ) ),
-      "cascading groubpy merge" );
+        any( RelNode.class, Cascading.CONVENTION ),
+        any( RelNode.class, Cascading.CONVENTION ) ),
+      "cascading groupby merge" );
     }
 
   @Override

@@ -28,7 +28,6 @@ import org.eigenbase.rel.JoinRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
@@ -52,9 +51,9 @@ class CascadingJoinRule extends RelOptRule
   public CascadingJoinRule()
     {
     super(
-      new RelOptRuleOperand( JoinRel.class,
-        new RelOptRuleOperand( RelNode.class, Cascading.CONVENTION ),
-        new RelOptRuleOperand( RelNode.class, Cascading.CONVENTION ) ),
+      some( JoinRel.class,
+        any( RelNode.class, Cascading.CONVENTION ),
+        any( RelNode.class, Cascading.CONVENTION ) ),
       "cascading cogroup join" );
     }
 

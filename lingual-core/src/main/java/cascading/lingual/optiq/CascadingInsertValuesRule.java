@@ -25,7 +25,6 @@ import java.util.List;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelOptTable;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
@@ -43,9 +42,9 @@ class CascadingInsertValuesRule extends RelOptRule
   private CascadingInsertValuesRule()
     {
     super(
-      new RelOptRuleOperand( CascadingTableModificationRel.class, CONVENTION,
-        new RelOptRuleOperand( CascadingCalcRel.class, CONVENTION,
-          new RelOptRuleOperand( CascadingValuesRel.class, CONVENTION
+      some( CascadingTableModificationRel.class, CONVENTION,
+        some( CascadingCalcRel.class, CONVENTION,
+          leaf( CascadingValuesRel.class, CONVENTION
           )
         )
       ),

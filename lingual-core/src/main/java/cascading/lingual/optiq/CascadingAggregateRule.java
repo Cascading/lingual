@@ -24,7 +24,6 @@ import org.eigenbase.rel.AggregateRel;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /**
@@ -36,7 +35,7 @@ class CascadingAggregateRule extends RelOptRule
 
   private CascadingAggregateRule()
     {
-    super( new RelOptRuleOperand( AggregateRel.class, new RelOptRuleOperand( RelNode.class, RelOptRuleOperand.Dummy.ANY ) ), "CascadingAggregateRule" );
+    super( some( AggregateRel.class, any( RelNode.class ) ), "CascadingAggregateRule" );
     }
 
   @Override

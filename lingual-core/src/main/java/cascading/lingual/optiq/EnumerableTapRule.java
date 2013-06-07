@@ -23,7 +23,6 @@ package cascading.lingual.optiq;
 import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 
 /**
  * Rule that converts a Cascading Tap into an enumerable.
@@ -39,7 +38,7 @@ public class EnumerableTapRule extends RelOptRule
 
   private EnumerableTapRule()
     {
-    super( new RelOptRuleOperand( CascadingTableAccessRel.class ), "EnumerableTapRule" );
+    super( leaf( CascadingTableAccessRel.class ), "EnumerableTapRule" );
     }
 
   @Override

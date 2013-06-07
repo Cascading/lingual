@@ -23,7 +23,6 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.FilterRel;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /**
@@ -35,7 +34,7 @@ class CascadingFilterRule extends RelOptRule
 
   private CascadingFilterRule()
     {
-    super( new RelOptRuleOperand( FilterRel.class ) );
+    super( any( FilterRel.class ) );
     }
 
   @Override

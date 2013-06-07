@@ -25,7 +25,6 @@ import org.eigenbase.rel.convert.ConverterRel;
 import org.eigenbase.relopt.Convention;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /** Rule that converts a VALUES relational expression to Cascading convention. */
@@ -36,10 +35,10 @@ class CascadingValuesRule extends RelOptRule
   private CascadingValuesRule()
     {
     super(
-      new RelOptRuleOperand(
+      some(
         ConverterRel.class,
         Cascading.CONVENTION,
-        new RelOptRuleOperand(
+        leaf(
           ValuesRel.class, Convention.NONE ) ),
       "CascadingValuesRule" );
     }

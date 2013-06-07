@@ -23,7 +23,6 @@ package cascading.lingual.optiq;
 import org.eigenbase.rel.ProjectRel;
 import org.eigenbase.relopt.RelOptRule;
 import org.eigenbase.relopt.RelOptRuleCall;
-import org.eigenbase.relopt.RelOptRuleOperand;
 import org.eigenbase.relopt.RelTraitSet;
 
 /**
@@ -35,7 +34,7 @@ class CascadingProjectRule extends RelOptRule
 
   private CascadingProjectRule()
     {
-    super( new RelOptRuleOperand( ProjectRel.class ), "CascadingProjectRule" );
+    super( any( ProjectRel.class ), "CascadingProjectRule" );
     }
 
   @Override
