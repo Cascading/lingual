@@ -27,6 +27,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Properties;
 
+import cascading.flow.Flow;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,6 +170,17 @@ class LingualStatement implements Statement
   public void cancel() throws SQLException
     {
     parent.cancel();
+    try {
+      String flowId = ((LingualConnection)parent).getPlatformBroker().getFlowProcess().getID();
+
+      //FlowDef flowDef = null;
+      //AssemblyPlanner.Context context = flowDef.getAssemblyPlanners();
+
+      Flow flow = null;
+      flow.stop();
+    } catch (ClassCastException cce) {
+      LOG.error( "unable to cast {} to lingual connection", parent.getClass().getName(), cce );
+    }
     }
 
   @Override
