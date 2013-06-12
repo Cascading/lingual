@@ -21,6 +21,7 @@
 package cascading.lingual.optiq;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import cascading.operation.expression.ScriptFilter;
 import cascading.operation.expression.ScriptTupleFunction;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.pipe.Splice;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
@@ -241,6 +243,9 @@ class CalcProjectUtil
   private static Pipe addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe, boolean narrow )
     {
     final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
+    final Fields declaredFields = pipe.getPrevious()[ 0 ] instanceof Splice
+        ? ((Splice) pipe.getPrevious()[ 0 ] ).getDeclaredFields()
+        : null;
 
     // only project the result of any expressions
     if( narrow )
@@ -256,7 +261,11 @@ class CalcProjectUtil
       {
       public Expression field( BlockBuilder list, int index )
         {
-        return Expressions.parameter( incomingFields.getType( index ), incomingFields.get( index ).toString() );
+          final Type type = incomingFields.getType( index );
+          final String name = declaredFields != null
+              ? declaredFields.get(index).toString()
+              : incomingFields.get( index).toString();
+          return Expressions.parameter( type, name );
         }
       } );
 
