@@ -23,13 +23,16 @@ package cascading.lingual.platform;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 
+import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
@@ -47,6 +50,7 @@ import cascading.tap.Tap;
 import cascading.tap.type.FileType;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
+import com.google.common.collect.MapMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +75,8 @@ public abstract class PlatformBroker<Config>
   public static final String CATALOG_FILE_PROP = "lingual.catalog.name";
   public static final String CATALOG_FILE = "catalog";
 
+  private static final String PLACEHOKDER_FLOW_VALUE = "flvu";
+
   private Properties properties;
 
   private CascadingServices cascadingServices;
@@ -79,6 +85,10 @@ public abstract class PlatformBroker<Config>
   private SchemaCatalog catalog;
 
   private Map<String, TupleEntryCollector> collectorCache;
+
+  //private Map<String, Flow> flows = new MapMaker().weakValues().<String,Flow>makeMap();
+  private WeakReference<Flow> currentFlow;
+
 
   protected PlatformBroker()
     {
@@ -303,6 +313,16 @@ public abstract class PlatformBroker<Config>
       rootPath += fileSeparator;
 
     return rootPath + Util.join( elements, fileSeparator );
+    }
+
+  public void trackFlow( Flow flow )
+    {
+    currentFlow = new WeakReference<Flow>( flow );
+    }
+
+  public Flow getCurrentFlow()
+    {
+    return currentFlow.get();
     }
 
   public abstract String getFileSeparator();

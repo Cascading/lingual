@@ -149,13 +149,13 @@ public abstract class LingualConnection implements Connection
   @Override
   public Statement createStatement() throws SQLException
     {
-    return new LingualStatement( properties, parent.createStatement() );
+    return new LingualStatement( properties, parent.createStatement(), platformBroker );
     }
 
   @Override
   public PreparedStatement prepareStatement( String sql ) throws SQLException
     {
-    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ) );
+    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ), platformBroker );
     }
 
   @Override

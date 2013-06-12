@@ -28,6 +28,7 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import cascading.flow.Flow;
+import cascading.lingual.platform.PlatformBroker;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +42,16 @@ class LingualStatement implements Statement
 
   private final Properties properties;
   private final Statement parent;
+  protected final PlatformBroker platformBroker;
 
   private int maxRows;
   private int maxFieldSize;
 
-  public LingualStatement( Properties properties, Statement parent )
+  public LingualStatement( Properties properties, Statement parent, PlatformBroker platformBroker )
     {
     this.properties = properties;
     this.parent = parent;
-
+    this.platformBroker = platformBroker;
     setMaxRows();
     }
 
@@ -170,17 +172,7 @@ class LingualStatement implements Statement
   public void cancel() throws SQLException
     {
     parent.cancel();
-    try {
-      String flowId = ((LingualConnection)parent).getPlatformBroker().getFlowProcess().getID();
-
-      //FlowDef flowDef = null;
-      //AssemblyPlanner.Context context = flowDef.getAssemblyPlanners();
-
-      Flow flow = null;
-      flow.stop();
-    } catch (ClassCastException cce) {
-      LOG.error( "unable to cast {} to lingual connection", parent.getClass().getName(), cce );
-    }
+    platformBroker.getCurrentFlow().stop();
     }
 
   @Override
