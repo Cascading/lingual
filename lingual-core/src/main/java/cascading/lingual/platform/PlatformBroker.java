@@ -75,8 +75,6 @@ public abstract class PlatformBroker<Config>
   public static final String CATALOG_FILE_PROP = "lingual.catalog.name";
   public static final String CATALOG_FILE = "catalog";
 
-  private static final String PLACEHOKDER_FLOW_VALUE = "flvu";
-
   private Properties properties;
 
   private CascadingServices cascadingServices;
@@ -86,7 +84,6 @@ public abstract class PlatformBroker<Config>
 
   private Map<String, TupleEntryCollector> collectorCache;
 
-  //private Map<String, Flow> flows = new MapMaker().weakValues().<String,Flow>makeMap();
   private WeakReference<Flow> currentFlow;
 
 
