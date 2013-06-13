@@ -28,7 +28,6 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import cascading.flow.Flow;
-import cascading.lingual.platform.PlatformBroker;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,22 +35,22 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-class LingualStatement implements Statement
+public class LingualStatement implements Statement
   {
   private static final Logger LOG = LoggerFactory.getLogger( LingualStatement.class );
 
   private final Properties properties;
   private final Statement parent;
-  protected final PlatformBroker platformBroker;
+  private final LingualConnection lingualConnection;
 
   private int maxRows;
   private int maxFieldSize;
 
-  public LingualStatement( Properties properties, Statement parent, PlatformBroker platformBroker )
+  public LingualStatement( Properties properties, Statement parent, LingualConnection lingualConnection )
     {
     this.properties = properties;
     this.parent = parent;
-    this.platformBroker = platformBroker;
+    this.lingualConnection = lingualConnection;
     setMaxRows();
     }
 
@@ -172,7 +171,9 @@ class LingualStatement implements Statement
   public void cancel() throws SQLException
     {
     parent.cancel();
-    platformBroker.getCurrentFlow().stop();
+    Flow flow = lingualConnection.getCurrentFlow();
+    if( null != flow )
+      flow.stop();
     }
 
   @Override
@@ -387,4 +388,5 @@ class LingualStatement implements Statement
     {
     return parent.isWrapperFor( iface );
     }
+
   }

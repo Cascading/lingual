@@ -30,9 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.WeakHashMap;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
@@ -50,7 +48,6 @@ import cascading.tap.Tap;
 import cascading.tap.type.FileType;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
-import com.google.common.collect.MapMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +81,7 @@ public abstract class PlatformBroker<Config>
 
   private Map<String, TupleEntryCollector> collectorCache;
 
-  private WeakReference<Flow> currentFlow;
+  private WeakReference<LingualConnection> defaultConnection;
 
 
   protected PlatformBroker()
@@ -119,11 +116,13 @@ public abstract class PlatformBroker<Config>
   public void startConnection( LingualConnection connection ) throws SQLException
     {
     getCatalog().addSchemasTo( connection );
+    defaultConnection = new WeakReference<LingualConnection>( connection );
     }
 
   public synchronized void closeConnection( LingualConnection connection )
     {
     closeCollectorCache();
+    defaultConnection.clear();
     }
 
   public synchronized void enableCollectorCache()
@@ -312,16 +311,6 @@ public abstract class PlatformBroker<Config>
     return rootPath + Util.join( elements, fileSeparator );
     }
 
-  public void trackFlow( Flow flow )
-    {
-    currentFlow = new WeakReference<Flow>( flow );
-    }
-
-  public Flow getCurrentFlow()
-    {
-    return currentFlow.get();
-    }
-
   public abstract String getFileSeparator();
 
   public abstract String getTempPath();
@@ -407,7 +396,8 @@ public abstract class PlatformBroker<Config>
 
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
-    return new LingualFlowFactory( this, createUniqueName(), branch );
+    LingualConnection lingualConnection = defaultConnection.get();
+    return new LingualFlowFactory( this, lingualConnection, createUniqueName(), branch );
     }
 
   public SchemaCatalog newCatalogInstance()
@@ -447,4 +437,6 @@ public abstract class PlatformBroker<Config>
 
     return identifier;
     }
+
+
   }

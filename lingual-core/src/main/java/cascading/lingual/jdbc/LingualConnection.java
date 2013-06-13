@@ -35,9 +35,12 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import cascading.flow.Flow;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
@@ -57,6 +60,8 @@ import static cascading.lingual.jdbc.Driver.*;
  */
 public abstract class LingualConnection implements Connection
   {
+
+
   private static final Logger LOG = LoggerFactory.getLogger( LingualConnection.class );
 
   private static FieldTypeFactory typeFactory = new FieldTypeFactory();
@@ -64,6 +69,9 @@ public abstract class LingualConnection implements Connection
   private OptiqConnection parent;
   private Properties properties;
   private PlatformBroker platformBroker;
+
+  // see JavaDoc on LingualConnectionFlowListener for why this is a Collection.
+  private Set<Flow> trackedFlows = new HashSet<Flow>();
 
   protected LingualConnection( Connection parent, Properties properties ) throws SQLException
     {
@@ -140,6 +148,27 @@ public abstract class LingualConnection implements Connection
     catalog.addSchemasTo( this );
     }
 
+  public void trackFlow( Flow flow )
+    {
+    trackedFlows.add( flow );
+    }
+
+  public void untrackFlow( Flow flow )
+    {
+    trackedFlows.remove( flow );
+    }
+
+  public Flow getCurrentFlow()
+    {
+    // see JavaDoc on LingualConnectionFlowListener for why this behavior exists
+    Flow retVal = null;
+    if( trackedFlows.size() == 1 )
+      retVal = trackedFlows.iterator().next();
+    else
+      LOG.error( "Unable to determine single current flow. Found {} flows.", trackedFlows.size() );
+    return retVal;
+    }
+
   // Connection methods
   public void setSchema( String schema ) throws SQLException
     {
@@ -149,13 +178,13 @@ public abstract class LingualConnection implements Connection
   @Override
   public Statement createStatement() throws SQLException
     {
-    return new LingualStatement( properties, parent.createStatement(), platformBroker );
+    return new LingualStatement( properties, parent.createStatement(), this );
     }
 
   @Override
   public PreparedStatement prepareStatement( String sql ) throws SQLException
     {
-    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ), platformBroker );
+    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ), this );
     }
 
   @Override

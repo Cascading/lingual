@@ -42,8 +42,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Properties;
 
-import cascading.lingual.platform.PlatformBroker;
-
 /**
  *
  */
@@ -51,10 +49,9 @@ class LingualPreparedStatement extends LingualStatement implements PreparedState
   {
   private final PreparedStatement parent;
 
-  public LingualPreparedStatement( Properties properties, PreparedStatement parent, PlatformBroker platformBroker )
+  public LingualPreparedStatement( Properties properties, PreparedStatement parent, LingualConnection lingualConnection )
     {
-    super( properties, parent, platformBroker );
-
+    super( properties, parent, lingualConnection );
     this.parent = parent;
     }
 
