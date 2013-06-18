@@ -23,9 +23,8 @@ package cascading.lingual.type;
 /**
  * SQLTypeMap is an implementation of {@link TypeMap} for resolving string based type information
  * into its corresponding Java SQL type.
- *
+ * <p/>
  * SQLTypeMap is used by the {@link SQLTypeResolver}.
- *
  */
 public class SQLTypeMap extends TypeMap
   {

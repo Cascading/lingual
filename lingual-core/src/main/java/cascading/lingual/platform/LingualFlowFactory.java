@@ -105,8 +105,11 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       .setName( getName() )
       .addTails( tail )
       .setDebugLevel( platformBroker.getDebugLevel() );
-    Flow retVal = createFlowFrom( flowDef, tail );
-    retVal.addListener( new LingualConnectionFlowListener( lingualConnection ) );
-    return retVal;
+
+    Flow flow = createFlowFrom( flowDef, tail );
+
+    flow.addListener( new LingualConnectionFlowListener( lingualConnection ) );
+
+    return flow;
     }
   }

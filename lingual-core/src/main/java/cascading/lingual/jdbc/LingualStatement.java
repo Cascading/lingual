@@ -170,10 +170,17 @@ public class LingualStatement implements Statement
   @Override
   public void cancel() throws SQLException
     {
-    parent.cancel();
-    Flow flow = lingualConnection.getCurrentFlow();
-    if( null != flow )
-      flow.stop();
+    try
+      {
+      parent.cancel();
+      }
+    finally
+      {
+      Flow flow = lingualConnection.getCurrentFlow();
+
+      if( flow != null )
+        flow.stop();
+      }
     }
 
   @Override

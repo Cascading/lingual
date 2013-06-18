@@ -1,22 +1,21 @@
 /*
- * Copyright (c) 2007-2009 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
  * This file is part of the Cascading project.
  *
- * Cascading is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Cascading is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU General Public License
- * along with Cascading.  If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package cascading.lingual.platform;
@@ -27,16 +26,18 @@ import cascading.flow.FlowListener;
 import cascading.lingual.jdbc.LingualConnection;
 
 /**
- *
  * Used to manage the {@link LingualConnection} list of what flows are running at a given time.
+ * <p/>
  * The Lingual/Cascading notions for {@link Flow}, {@link cascading.lingual.jdbc.LingualStatement} and
  * {@link LingualConnection} do not map precisely to JDBC notions of the same hence this workaround.
+ * <p/>
  * In JDBC there can be only one {@link java.sql.Statement} active for a {@link java.sql.Connection}
  * at a given instant. While Optiq and Lingual honor this in practice with one {@link Flow}
  * to {@link cascading.lingual.jdbc.LingualStatement} to {@link LingualConnection} the class structure allows
  * for a hypothetical case where {@link cascading.lingual.jdbc.LingualConnection#createStatement()} and similar methods
  * can be called multiple times and then each return value has {@link cascading.lingual.jdbc.LingualStatement#execute(String)}
- * called.<br></br>
+ * called.
+ * <p/>
  * Since Lingual defers {@link Flow} creation until statement execution, we can't know for
  * sure that there's only one Hadoop Flow tied to a LingualConnection. Rather than risk a case where we cancel the
  * wrong flow when {@link cascading.lingual.jdbc.LingualStatement#cancel()} is called this class keeps a
@@ -45,12 +46,12 @@ import cascading.lingual.jdbc.LingualConnection;
  */
 public class LingualConnectionFlowListener implements FlowListener
   {
-
   private final LingualConnection lingualConnection;
 
-  public LingualConnectionFlowListener( LingualConnection lingualConnection ) {
+  public LingualConnectionFlowListener( LingualConnection lingualConnection )
+    {
     this.lingualConnection = lingualConnection;
-  }
+    }
 
   @Override
   public void onStarting( Flow flow )
@@ -61,13 +62,13 @@ public class LingualConnectionFlowListener implements FlowListener
   @Override
   public void onStopping( Flow flow )
     {
-    lingualConnection.untrackFlow( flow );
+    lingualConnection.unTrackFlow( flow );
     }
 
   @Override
   public void onCompleted( Flow flow )
     {
-    lingualConnection.untrackFlow( flow );
+    lingualConnection.unTrackFlow( flow );
     }
 
   @Override

@@ -437,6 +437,4 @@ public abstract class PlatformBroker<Config>
 
     return identifier;
     }
-
-
   }

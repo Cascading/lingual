@@ -60,8 +60,6 @@ import static cascading.lingual.jdbc.Driver.*;
  */
 public abstract class LingualConnection implements Connection
   {
-
-
   private static final Logger LOG = LoggerFactory.getLogger( LingualConnection.class );
 
   private static FieldTypeFactory typeFactory = new FieldTypeFactory();
@@ -153,7 +151,7 @@ public abstract class LingualConnection implements Connection
     trackedFlows.add( flow );
     }
 
-  public void untrackFlow( Flow flow )
+  public void unTrackFlow( Flow flow )
     {
     trackedFlows.remove( flow );
     }
@@ -161,12 +159,12 @@ public abstract class LingualConnection implements Connection
   public Flow getCurrentFlow()
     {
     // see JavaDoc on LingualConnectionFlowListener for why this behavior exists
-    Flow retVal = null;
     if( trackedFlows.size() == 1 )
-      retVal = trackedFlows.iterator().next();
-    else
-      LOG.error( "Unable to determine single current flow. Found {} flows.", trackedFlows.size() );
-    return retVal;
+      return trackedFlows.iterator().next();
+
+    LOG.error( "unable to determine single current flow. found {} flows.", trackedFlows.size() );
+
+    return null;
     }
 
   // Connection methods
