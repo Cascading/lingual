@@ -1,0 +1,6 @@
+EMPNO:int,NAME:string,CITY:string
+100,"Fred",
+120,"Wilma",
+110,"John",Vancouver
+130,"Alice",Vancouver
+110,"Eric",San Francisco
