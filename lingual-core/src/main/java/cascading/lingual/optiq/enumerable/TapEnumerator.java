@@ -102,4 +102,9 @@ abstract class TapEnumerator<Result> implements Enumerator<Result>
     iterator = openIterator( flowProcess, tap );
     current = DUMMY;
     }
+
+  public void close()
+    {
+    // REVIEW:
+    }
   }
