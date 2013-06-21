@@ -70,7 +70,7 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       Stereotype<Protocol, Format> stereotypeFor;
 
       if( head.identifier == null )
-        stereotypeFor = catalog.getRootSchemaDef().getStereotype( head.name );
+        stereotypeFor = catalog.getRootSchemaDef().findStereotypeFor( head.fields ); // do not use head name
       else
         stereotypeFor = catalog.findStereotypeFor( head.identifier );
 
