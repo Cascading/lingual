@@ -1,0 +1,4 @@
+NAME:string,EMPNO:int,DEPTNO:int
+"Fred",100,10
+"Eric",110,20
+"John",110,40

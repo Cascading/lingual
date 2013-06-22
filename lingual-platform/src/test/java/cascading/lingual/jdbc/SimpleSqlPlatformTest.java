@@ -364,4 +364,34 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
 
     assertTablesEqual( "emps-depts-self-join", query );
     }
+
+  @Ignore("not implemented yet")
+  @Test
+  public void testJoinedSubquery() throws Exception
+    {
+    String query = "select name, empno, emps.deptno from sales.emps, " +
+      "( select deptno, min( JOINEDAT ) as min_date from sales.emps group by deptno ) min_dept_date " +
+      "where joinedat = min_dept_date.min_date";
+
+    assertTablesEqual( "emps-joined-subquery", query );
+    }
+
+  @Ignore("not implemented yet")
+  @Test
+  public void testCorrelatedSubquery() throws Exception
+    {
+    String query = "select name, empno, emps_outer.deptno from sales.emps as emps_outer " +
+      "where joinedat = ( select min( joinedat ) from sales.emps where deptno = emps_outer.deptno )";
+
+    assertTablesEqual( "emps-correlated-subquery", query );
+    }
+
+  @Ignore("not implemented yet")
+  @Test
+  public void testRankOver() throws Exception
+    {
+    String query = "select name, empno, rank() over ( partition by deptno order by joinedat ) as r from sales.emps";
+
+    assertTablesEqual( "emps-rank-over", query );
+    }
   }

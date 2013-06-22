@@ -1,0 +1,6 @@
+NAME:string,EMPNO:int,R:int
+"Fred",100,1
+"Eric",110,1
+"John",110,1
+"Wilma",120,2
+"Alice",130,2
