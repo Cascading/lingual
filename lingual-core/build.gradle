@@ -21,9 +21,9 @@
 def bindVersion = "+"
 def bindChanging = false
 
-def linq4jVersion = '0.1.4'
+def linq4jVersion = '0.1.5'
 def linq4jChanging = false
-def optiqVersion = '0.4.4'
+def optiqVersion = '0.4.5'
 def optiqChanging = false
 
 // set the following property in $root/gradle.properties to use local installs of bind

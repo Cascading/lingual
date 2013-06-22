@@ -20,13 +20,14 @@
 
 package cascading.lingual.optiq;
 
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
+import net.hydromatic.linq4j.function.Functions;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SortRel;
@@ -93,8 +94,14 @@ class CascadingSortRel extends SortRel implements CascadingRelNode
 
     for( RelFieldCollation collation : collations )
       {
-      if( collation.getDirection() == RelFieldCollation.Direction.Descending )
-        fields.setComparator( collation.getFieldIndex(), Collections.reverseOrder() );
+      String name = inputRowType.getFieldList().get( collation.getFieldIndex() ).getName();
+      boolean isDescending = collation.getDirection() == RelFieldCollation.Direction.Descending;
+      boolean isNullsFirst = collation.nullDirection == RelFieldCollation.NullDirection.FIRST;
+
+      Comparator<Comparable> comparator = Functions.nullsComparator( isNullsFirst, isDescending );
+
+      if( comparator != null )
+        fields.setComparator( name, comparator );
       }
 
     return fields;

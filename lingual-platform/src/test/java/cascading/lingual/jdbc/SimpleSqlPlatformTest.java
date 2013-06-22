@@ -103,18 +103,16 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-select-ordered-city-nulls-first", "select empno, name, city from sales.emps order by city nulls first" );
     }
 
-  @Ignore("https://www.pivotaltracker.com/s/projects/289933/stories/52002235")
   @Test
   public void testSelectOrderByDescNullsFirst() throws Exception
     {
     assertTablesEqual( "emps-select-ordered-city-desc-nulls-first", "select empno, name, city from sales.emps order by city desc nulls first" );
     }
 
-  @Ignore("https://www.pivotaltracker.com/s/projects/289933/stories/52002097")
   @Test
   public void testSelectOrderByNullsLast() throws Exception
     {
-    assertTablesEqual( "emps-select-ordered-city-nulls-last", "select empno, name from sales.emps order by city nulls last" );
+    assertTablesEqual( "emps-select-ordered-city-nulls-last", "select empno, name, city from sales.emps order by city nulls last" );
     }
 
   @Test
