@@ -363,7 +363,6 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-self-join", query );
     }
 
-  @Ignore("not implemented yet")
   @Test
   public void testJoinedSubquery() throws Exception
     {

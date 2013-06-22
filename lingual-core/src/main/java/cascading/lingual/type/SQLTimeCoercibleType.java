@@ -53,6 +53,12 @@ public class SQLTimeCoercibleType extends SQLDateTimeCoercibleType
     }
 
   @Override
+  public Class getCanonicalType()
+    {
+    return Integer.class;
+    }
+
+  @Override
   public Object canonical( Object value )
     {
     if( value == null )

@@ -52,29 +52,6 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     }
 
   @Override
-  public int hashCode()
-    {
-    return typeName.hashCode();
-    }
-
-  @Override
-  public boolean equals( Object object )
-    {
-    if( this == object )
-      return true;
-
-    if( !( object instanceof SQLDateTimeCoercibleType ) )
-      return false;
-
-    SQLDateTimeCoercibleType that = (SQLDateTimeCoercibleType) object;
-
-    if( typeName != that.typeName )
-      return false;
-
-    return true;
-    }
-
-  @Override
   public Object canonical( Object value )
     {
     if( value == null )
@@ -138,6 +115,29 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
   @Override
   public boolean isNullable()
     {
+    return true;
+    }
+
+  @Override
+  public int hashCode()
+    {
+    return typeName.hashCode();
+    }
+
+  @Override
+  public boolean equals( Object object )
+    {
+    if( this == object )
+      return true;
+
+    if( !( object instanceof SQLDateTimeCoercibleType ) )
+      return false;
+
+    SQLDateTimeCoercibleType that = (SQLDateTimeCoercibleType) object;
+
+    if( typeName != that.typeName )
+      return false;
+
     return true;
     }
   }

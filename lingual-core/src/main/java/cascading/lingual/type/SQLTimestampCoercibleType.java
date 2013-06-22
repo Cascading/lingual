@@ -36,6 +36,12 @@ public class SQLTimestampCoercibleType extends SQLDateTimeCoercibleType
     super( SqlTypeName.TIMESTAMP );
     }
 
+  @Override
+  public Class getCanonicalType()
+    {
+    return Long.class;
+    }
+
   protected ZonelessDatetime parse( String value )
     {
     return ZonelessTimestamp.parse( value );
