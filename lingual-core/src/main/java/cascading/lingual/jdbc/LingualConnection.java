@@ -76,7 +76,30 @@ public abstract class LingualConnection implements Connection
     this.parent = parent.unwrap( OptiqConnection.class );
     this.properties = properties;
 
-    initialize();
+    // log errors fully here in case the calling platform does a poor job of error reporting.
+    try
+      {
+      initialize();
+      }
+    catch( SQLException sqlException )
+      {
+      String providerError = String.format( "connection failed: %s ( provider %s error code %d).", sqlException.getMessage(), parent.getMetaData().getDatabaseProductName(), sqlException.getErrorCode() );
+      LOG.error( providerError );
+      LOG.error( "\tconnection URL: " + parent.getMetaData().getURL() );
+      if( platformBroker != null )
+        {
+        LOG.error( "\tread catalog from: " + platformBroker.getFullCatalogPath() );
+        if( platformBroker.getCatalog() != null && platformBroker.getCatalog().getRootSchemaDef() != null )
+          LOG.error( "\tused root schema from: " + platformBroker.getCatalog().getRootSchemaDef().getIdentifier() );
+        else
+          LOG.error( "\teither catalog or root schema not set." );
+        }
+      else
+        {
+        LOG.error( "\tunable to create platform " + getStringProperty( PLATFORM_PROP ) + ": {}", sqlException.getMessage() );
+        }
+      throw sqlException;
+      }
     }
 
   private void initialize() throws SQLException
@@ -95,8 +118,15 @@ public abstract class LingualConnection implements Connection
       setSchema( schemaName );
       LOG.info( "using schema: {}", schemaName );
       }
+    else
+      {
+      LOG.info( "using default schema." );
+      }
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
+
+    if( platformBroker == null )
+      throw new SQLException( "no platform broker for " + platformName );
 
     setAutoCommit( !isCollectorCacheEnabled() ); // this forces the default to true
 

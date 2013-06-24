@@ -81,7 +81,7 @@ public class FileCatalogManager extends CatalogManager
 
     if( inputStream == null )
       {
-      LOG.debug( "catalog not found at: {}", catalogPath );
+      LOG.info( "catalog not found at: {}", catalogPath );
       return null;
       }
 

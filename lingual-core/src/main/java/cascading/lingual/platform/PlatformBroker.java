@@ -404,6 +404,7 @@ public abstract class PlatformBroker<Config>
     {
     try
       {
+      LOG.info( "creating new SchemaCatalog at {}", getFullCatalogPath() );
       SchemaCatalog schemaCatalog = getCatalogClass().getConstructor().newInstance();
 
       schemaCatalog.setPlatformBroker( this );

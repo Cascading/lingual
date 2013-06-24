@@ -101,6 +101,7 @@ public class Driver extends UnregisteredDriver
     return "jdbc:lingual:";
     }
 
+  @Override
   protected void register()
     {
     try
@@ -109,7 +110,7 @@ public class Driver extends UnregisteredDriver
       }
     catch( SQLException exception )
       {
-      LOG.error( "Error occurred while registering JDBC driver " + this + ": " + exception.toString() );
+      LOG.error( "error occurred while registering JDBC driver " + this + ": " + exception.toString() );
       }
     }
 
@@ -144,10 +145,19 @@ public class Driver extends UnregisteredDriver
   @Override
   public Connection connect( String url, Properties info ) throws SQLException
     {
+    if( !acceptsURL( url ) )
+      {
+      LOG.error( "invalid connection url {}", url );
+      return null;
+      }
+
     Connection connection = super.connect( url, info );
 
     if( connection == null )
+      {
+      LOG.error( "unable to get connection to {} with {}", url, info );
       return null;
+      }
 
     Properties connectionProperties = parseConnectionProperties( url, info );
 

@@ -360,6 +360,10 @@ public abstract class SchemaCatalog implements Serializable
         {
         childSchema = new TapSchema( currentSchema, connection, childSchemaDef );
         currentSchema.addSchema( childSchemaDef.getName(), childSchema );
+
+        String childSchemaDescription = String.format( "%s ( %s )", childSchemaDef.getName(), currentSchemaDef.getIdentifier() );
+
+        LOG.info( "added schema {} to {}", childSchemaDescription, currentSchemaDef.getName() );
         }
 
       childSchema.addTapTablesFor( childSchemaDef );

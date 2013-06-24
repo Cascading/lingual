@@ -47,29 +47,9 @@ class JaninoFactory implements Factory
         new Object[]{connection, connectionProperties}
       );
       }
-    catch( NoSuchMethodException e )
+    catch( Exception exception )
       {
-      throw new SQLException( "could not create connection", e );
-      }
-    catch( IllegalAccessException e )
-      {
-      throw new SQLException( "could not create connection", e );
-      }
-    catch( InvocationTargetException e )
-      {
-      throw new SQLException( "could not create connection", e );
-      }
-    catch( InstantiationException e )
-      {
-      throw new SQLException( "could not create connection", e );
-      }
-    catch( IOException e )
-      {
-      throw new SQLException( "could not create connection", e );
-      }
-    catch( CompileException e )
-      {
-      throw new SQLException( "could not create connection", e );
+      throw new SQLException( "could not create connection: " + exception.getMessage(), exception );
       }
     }
 
