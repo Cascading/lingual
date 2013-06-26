@@ -20,6 +20,7 @@
 
 package cascading.lingual.shell;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,7 @@ import java.util.Properties;
 import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.util.Version;
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
@@ -129,6 +131,10 @@ public class Shell extends Main<ShellOptions>
 //    \  --help                          display this message
 
     getPrinter().print( Version.getBannerVersionString() );
+
+    // sqlline doesn't handle basic dir config from command line but it does handle it from System.
+    String sqlLineDir = Joiner.on( File.separator ).join( System.getProperty( "user.home" ), ".lingual", "sqlline" );
+    System.setProperty( SqlLine.SQLLINE_BASE_DIR, sqlLineDir );
 
     List<String> args = new ArrayList<String>();
 
