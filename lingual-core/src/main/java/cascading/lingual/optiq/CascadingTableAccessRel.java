@@ -86,7 +86,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     {
     String pipeName = isUseFullName() ? getQualifiedName() : name;
 
-    return new Branch( getPlatformBroker(), stack.heads, pipeName, identifier );
+    return new Branch( getPlatformBroker(), stack.heads, pipeName, getTapTable().getTableDef() );
     }
 
   private String getQualifiedName()

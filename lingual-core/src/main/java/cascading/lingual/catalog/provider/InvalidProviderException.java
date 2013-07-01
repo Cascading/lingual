@@ -18,18 +18,20 @@
  * limitations under the License.
  */
 
-package cascading.lingual.flow;
-
-import cascading.bind.catalog.Stereotype;
-import cascading.tuple.Fields;
+package cascading.lingual.catalog.provider;
 
 /**
- *
- */
-class SimpleStereotype extends Stereotype
+*
+*/
+public class InvalidProviderException extends RuntimeException
   {
-  public SimpleStereotype( String name, Fields fields )
+  InvalidProviderException( String message, Throwable cause )
     {
-    super( new Object(), name, fields );
+    super( message, cause );
+    }
+
+  InvalidProviderException( String message )
+    {
+    super( message );
     }
   }

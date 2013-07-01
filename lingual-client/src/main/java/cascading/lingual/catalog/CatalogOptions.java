@@ -20,9 +20,12 @@
 
 package cascading.lingual.catalog;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.common.Options;
+import cascading.lingual.common.PropertiesConverter;
 import joptsimple.OptionSpec;
 
 import static java.util.Arrays.asList;
@@ -32,6 +35,8 @@ import static java.util.Arrays.asList;
  */
 public class CatalogOptions extends Options
   {
+  private final OptionSpec<String> config;
+
   private final OptionSpec<Void> init;
 
   private final OptionSpec<String> ddl;
@@ -48,14 +53,25 @@ public class CatalogOptions extends Options
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
 
+  private final OptionSpec<Map<String, String>> properties;
+
   private final OptionSpec<String> extensions;
   private final OptionSpec<String> uris;
 
   private final OptionSpec<String> columns;
   private final OptionSpec<String> types;
 
+  private final OptionSpec<String> provider;
+
+  private final OptionSpec<String> repo;
+
+  private final OptionSpec<String> validate;
+
   public CatalogOptions()
     {
+    config = parser.accepts( "config", "platform path to config properties file" )
+      .withRequiredArg();
+
     init = parser.accepts( "init", "initializes meta-data store" );
 
     uri = parser.accepts( "uri", "path to catalog location, defaults is current directory" )
@@ -90,6 +106,9 @@ public class CatalogOptions extends Options
     rename = parser.accepts( "rename", "rename the specified schema or table to given name" )
       .withRequiredArg();
 
+    properties = parser.acceptsAll( asList( "props", "properties" ), "key=value pairs" )
+      .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
+
     extensions = parser.acceptsAll( asList( "exts", "extensions" ), "file name extension to associate with format, .csv, .tsv, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
@@ -102,6 +121,14 @@ public class CatalogOptions extends Options
     types = parser.accepts( "types", "types for each column" )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
+    provider = parser.accepts( "provider", "provider definition" )
+      .withOptionalArg().describedAs( "name of provider to install" );
+
+    repo = parser.accepts( "repo", "Maven repo management" )
+      .withOptionalArg();
+
+    validate = parser.accepts( "validate", "confirms that a maven repo or provider is valid without adding it" )
+      .withOptionalArg();
     }
 
   @Override
@@ -111,6 +138,16 @@ public class CatalogOptions extends Options
     }
 
   /////
+
+  public boolean hasConfig()
+    {
+    return optionSet.has( config );
+    }
+
+  public String getConfig()
+    {
+    return optionSet.valueOf( config );
+    }
 
   public boolean isInit()
     {
@@ -129,7 +166,7 @@ public class CatalogOptions extends Options
 
   public boolean isActions()
     {
-    return optionSet.has( add ) || optionSet.has( update ) || optionSet.has( remove ) || optionSet.has( rename );
+    return optionSet.has( add ) || optionSet.has( update ) || optionSet.has( remove ) || optionSet.has( rename ) || optionSet.has( validate );
     }
 
   public String getURI()
@@ -139,7 +176,8 @@ public class CatalogOptions extends Options
 
   public boolean isList()
     {
-    return isListSchemas() || isListFormats() || isListTables() || isListStereotypes() || isListFormats() || isListProtocols();
+    return isListSchemas() || isListFormats() || isListTables() || isListStereotypes() || isListFormats()
+      || isListProtocols() || isListProviders() || isListRepos();
     }
 
   public boolean isListSchemas()
@@ -158,6 +196,7 @@ public class CatalogOptions extends Options
       && !isTableActions()
       && !isStereotypeActions()
       && !isProtocolActions()
+      && !isProviderActions()
       && !isFormatActions();
     }
 
@@ -221,6 +260,23 @@ public class CatalogOptions extends Options
     return optionSet.hasArgument( protocol ) && isActions() && !isTableActions();
     }
 
+  public boolean hasProperties()
+    {
+    return optionSet.has( properties );
+    }
+
+  public Map<String, String> getProperties()
+    {
+    List<Map<String, String>> maps = optionSet.valuesOf( properties );
+
+    Map<String, String> results = new LinkedHashMap<String, String>();
+
+    for( Map<String, String> map : maps )
+      results.putAll( map );
+
+    return results;
+    }
+
   public List<String> getExtensions()
     {
     return optionSet.valuesOf( extensions );
@@ -239,6 +295,36 @@ public class CatalogOptions extends Options
   public List<String> getTypes()
     {
     return optionSet.valuesOf( types );
+    }
+
+  public boolean isListProviders()
+    {
+    return isSetWithNoArg( provider ) && !isActions();
+    }
+
+  public boolean isProviderActions()
+    {
+    return optionSet.has( provider ) && isActions() && !isTableActions();
+    }
+
+  public String getProviderName()
+    {
+    return optionSet.valueOf( provider );
+    }
+
+  public boolean isListRepos()
+    {
+    return isSetWithNoArg( repo );
+    }
+
+  public boolean isRepoActions()
+    {
+    return optionSet.hasArgument( repo ) && isActions() && !isTableActions();
+    }
+
+  public String getRepoName()
+    {
+    return optionSet.valueOf( repo );
     }
 
   /////
@@ -286,5 +372,10 @@ public class CatalogOptions extends Options
   public String getRenameName()
     {
     return optionSet.valueOf( rename );
+    }
+
+  public boolean isValidate()
+    {
+    return optionSet.has( validate );
     }
   }

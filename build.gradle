@@ -69,10 +69,6 @@ subprojects {
     mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
   }
 
-  javadoc {
-    classpath += configurations.providedCompile
-  }
-
   task sourcesJar( type: Jar, dependsOn: classes ) {
     from sourceSets.main.allSource
     classifier = 'sources'

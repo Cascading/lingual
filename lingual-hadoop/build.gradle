@@ -26,7 +26,7 @@ configurations {
   }
 }
 
-ext.hadoopVersion = '1.0.4'
+ext.hadoopVersion = '1.1.2'
 
 if( System.properties[ 'hadoop.release.final' ] )
   hadoopVersion = System.properties[ 'hadoop.release.final' ]
@@ -34,6 +34,9 @@ if( System.properties[ 'hadoop.release.final' ] )
 dependencies {
 
   compile project( ':lingual-core' )
+
+  // included for testing from an ide
+  runtime project( ':lingual-client' )
 
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
@@ -103,6 +106,7 @@ fatJar {
 
   classifier = 'jdbc'
   exclude 'META-INF/*.DSA'
+  exclude 'META-INF/LICENSE*'
 
   metaInf() {
     from( createProps.jobProps )

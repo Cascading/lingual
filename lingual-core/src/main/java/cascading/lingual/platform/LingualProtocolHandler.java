@@ -24,16 +24,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import cascading.bind.catalog.Resource;
-import cascading.bind.catalog.Stereotype;
 import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.util.MultiProperties;
-import cascading.scheme.Scheme;
-import cascading.tap.SinkMode;
-import cascading.tap.Tap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -41,7 +39,44 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol, Format>, Serializable
   {
+  private final ProviderDef providerDef;
   private MultiProperties<Protocol> defaults = new MultiProperties<Protocol>();
+
+  protected final Logger LOG = LoggerFactory.getLogger( getClass() );
+
+  protected LingualProtocolHandler( ProviderDef providerDef )
+    {
+    this.providerDef = providerDef;
+
+    Map<Protocol, Map<String, List<String>>> protocols = providerDef.getProtocolProperties();
+
+    for( Protocol protocol : protocols.keySet() )
+      getDefaults().putProperties( protocol, protocols.get( protocol ) );
+    }
+
+  public ProviderDef getProviderDef()
+    {
+    return providerDef;
+    }
+
+  public void addProperties( Protocol protocol, Map<String, List<String>> values )
+    {
+    for( String key : values.keySet() )
+      addProperty( protocol, key, values.get( key ) );
+    }
+
+  public void addProperty( Protocol protocol, String key, List<String> values )
+    {
+    if( values == null || values.isEmpty() )
+      return;
+
+    Map<String, List<String>> defaultValues = getDefaults().getValueFor( protocol );
+
+    if( defaultValues.containsKey( key ) )
+      defaultValues.get( key ).addAll( values );
+    else
+      defaultValues.put( key, values );
+    }
 
   public MultiProperties<Protocol> getDefaults()
     {
@@ -53,22 +88,4 @@ public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol
     {
     return getDefaults().getValueFor( protocol );
     }
-
-  @Override
-  public Tap createTap( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )
-    {
-    Scheme scheme = stereotype.getSchemeFor( resource.getProtocol(), resource.getFormat() );
-
-    if( scheme == null )
-      throw new IllegalStateException( "no scheme found for protocol: " + resource.getProtocol() + ", format: " + resource.getFormat() );
-
-    Tap tap = createTapFor( resource, scheme );
-
-    if( tap == null )
-      throw new IllegalStateException( "no tap found for protocol: " + resource.getProtocol() + ", format: " + resource.getFormat() );
-
-    return tap;
-    }
-
-  protected abstract Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme );
   }

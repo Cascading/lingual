@@ -27,14 +27,17 @@ evaluationDependsOn( ':lingual-hadoop' )
 
 dependencies {
 
-  providedCompile project( ':lingual-core' )
+  compile project( ':lingual-provider' ) // not in platform/jdbc drivers
+  providedCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
 
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.4'
-  compile group: 'sqlline', name: 'sqlline', version: '1.1.2'
+  compile group: 'sqlline', name: 'sqlline', version: '1.1.3'
 
   runtime group: 'jline', name: 'jline', version: '2.0.10'
 
   providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+
+  testCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
 }
 
 task assembleDist( dependsOn: jar ) {

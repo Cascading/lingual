@@ -90,7 +90,7 @@ public class Version
   public static String getFullVersionString()
     {
     if( getVersionProperties().isEmpty() )
-      return null;
+      return "[dev]";
 
     return createReleaseVersion( getReleaseFull(), getReleaseBuild() );
     }

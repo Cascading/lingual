@@ -20,6 +20,7 @@
 
 package cascading.lingual.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -30,15 +31,36 @@ public class Reflection
   {
   public static Object invokeStaticMethod( ClassLoader loader, String typeString, String methodName, Object[] parameters, Class[] parameterTypes )
     {
+    Class type = loadClass( loader, typeString );
+
+    return invokeStaticMethod( type, methodName, parameters, parameterTypes );
+    }
+
+  public static Class<?> loadClass( ClassLoader loader, String typeString )
+    {
     try
       {
-      Class type = loader.loadClass( typeString );
-
-      return invokeStaticMethod( type, methodName, parameters, parameterTypes );
+      return loader.loadClass( typeString );
       }
     catch( ClassNotFoundException exception )
       {
       throw new CascadingException( "unable to load class: " + typeString, exception );
+      }
+    }
+
+  public static Object newInstance( Class type )
+    {
+    try
+      {
+      Constructor constructor = type.getDeclaredConstructor( null );
+
+      constructor.setAccessible( true );
+
+      return constructor.newInstance();
+      }
+    catch( Exception exception )
+      {
+      throw new CascadingException( "unable to create new instance of: " + type.getName(), exception );
       }
     }
 

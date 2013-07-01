@@ -96,6 +96,11 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
     return tableDef.getName();
     }
 
+  public TableDef getTableDef()
+    {
+    return tableDef;
+    }
+
   public String getIdentifier()
     {
     return tableDef.getIdentifier();

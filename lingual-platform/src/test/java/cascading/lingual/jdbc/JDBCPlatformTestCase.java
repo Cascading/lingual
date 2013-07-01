@@ -59,7 +59,6 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   public static final String TEST_ROOT = DATA_PATH + "expected/";
 
   private Connection connection;
-  private String resultPath;
 
   @Override
   public void setUp() throws Exception
@@ -75,25 +74,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     return DebugLevel.NONE.toString();
     }
 
-  protected String getResultPath()
-    {
-    if( resultPath == null )
-      resultPath = getOutputPath( "jdbc/results/" + getTestName() );
-
-    return resultPath;
-    }
-
   protected abstract String getDefaultSchemaPath();
-
-  protected String getFlowPlanPath()
-    {
-    return getRootPath() + "/jdbc/dot/" + getTestName();
-    }
-
-  protected String getSQLPlanPath()
-    {
-    return getRootPath() + "/jdbc/optiq/" + getTestName();
-    }
 
   public String getConnectionString()
     {
@@ -128,7 +109,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
       }
     catch( Exception exception )
       {
-      throw new RuntimeException( "cound not get connection", exception );
+      throw new RuntimeException( "could not get connection", exception );
       }
     }
 

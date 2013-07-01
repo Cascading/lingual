@@ -29,14 +29,14 @@ import java.util.Map;
  */
 public class ProtocolProperties extends SchemaProperties
   {
-  public static final String URIS = "protocol.uris";
+  public static final String URIS = "uris";
 
   public static Protocol findProtocolFor( SchemaDef schemaDef, String identifier )
     {
     if( schemaDef == null )
       return null;
 
-    Map<Protocol, List<String>> uris = schemaDef.getProtocolProperties( URIS );
+    Map<Protocol, List<String>> uris = schemaDef.getPropertyByProtocols( URIS );
 
     URI uri = URI.create( identifier );
 

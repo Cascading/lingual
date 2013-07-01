@@ -19,10 +19,11 @@
  */
 
 include 'lingual-core'
-include 'lingual-examples'
 include 'lingual-local'
 include 'lingual-hadoop'
 include 'lingual-platform'
 include 'lingual-client'
+include 'lingual-provider'
+include 'lingual-examples'
 
 rootProject.name = 'lingual'

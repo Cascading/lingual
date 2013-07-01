@@ -21,6 +21,7 @@
 package cascading.lingual.shell;
 
 import java.util.List;
+import java.util.Properties;
 
 import cascading.lingual.common.Options;
 import cascading.lingual.jdbc.Driver;
@@ -32,6 +33,7 @@ import joptsimple.OptionSpec;
  */
 public class ShellOptions extends Options
   {
+  private final OptionSpec<String> config;
   private final OptionSpec<String> username;
   private final OptionSpec<String> password;
   private final OptionSpec<String> schema;
@@ -44,6 +46,9 @@ public class ShellOptions extends Options
 
   public ShellOptions()
     {
+    config = parser.accepts( "config", "platform path to config properties file" )
+      .withRequiredArg();
+
     username = parser.accepts( "username", "name of remote user" )
       .withRequiredArg();
 
@@ -72,7 +77,7 @@ public class ShellOptions extends Options
       .withRequiredArg().ofType( Integer.TYPE ).defaultsTo( 10000 ).describedAs( "number of records" );
     }
 
-  public String createJDBCUrl()
+  public String createJDBCUrl( Properties properties )
     {
     StringBuilder builder = new StringBuilder( "jdbc:lingual:" );
 
@@ -81,40 +86,19 @@ public class ShellOptions extends Options
     if( getSchema() != null )
       builder.append( ":" ).append( getSchema() );
 
-    if( !getSchemas().isEmpty() )
-      {
-      builder
-        .append( ";" ).append( Driver.SCHEMAS_PROP ).append( "=" )
-        .append( Util.join( getSchemas(), "," ) );
-      }
+    addProperty( builder, Driver.CATALOG_PROP, properties, null ); // currently for testing
 
-    if( getResultPath() != null ) // always override
-      {
-      builder
-        .append( ";" ).append( Driver.RESULT_PATH_PROP ).append( "=" )
-        .append( getResultPath() );
-      }
+    addProperty( builder, Driver.SCHEMAS_PROP, properties, Util.join( getSchemas(), "," ) );
 
-    if( getMaxRows() != 0 ) // always override
-      {
-      builder
-        .append( ";" ).append( Driver.MAX_ROWS ).append( "=" )
-        .append( getMaxRows() );
-      }
+    addProperty( builder, Driver.RESULT_PATH_PROP, properties, getResultPath() );
 
-    if( hasFlowPlanPath() && getFlowPlanPath() != null )
-      {
-      builder
-        .append( ";" ).append( Driver.FLOW_PLAN_PATH ).append( "=" )
-        .append( getFlowPlanPath() );
-      }
+    addProperty( builder, Driver.MAX_ROWS, properties, stringOrNull( getMaxRows() ) );
 
-    if( hasSQLPlanPath() && getSQLPlanPath() != null )
-      {
-      builder
-        .append( ";" ).append( Driver.SQL_PLAN_PATH_PROP ).append( "=" )
-        .append( getSQLPlanPath() );
-      }
+    if( hasFlowPlanPath() )
+      addProperty( builder, Driver.FLOW_PLAN_PATH, properties, getFlowPlanPath() );
+
+    if( hasSQLPlanPath() )
+      addProperty( builder, Driver.SQL_PLAN_PATH_PROP, properties, getSQLPlanPath() );
 
     if( getSqlFile() != null )
       {
@@ -122,10 +106,51 @@ public class ShellOptions extends Options
         .append( ";" ).append( Driver.COLLECTOR_CACHE_PROP ).append( "=true" );
       }
 
+    if( hasConfig() )
+      addProperty( builder, Driver.CONFIG_PROP, properties, getConfig() );
+
     return builder.toString();
     }
 
+  private void addProperty( StringBuilder builder, String property, Properties properties, String value )
+    {
+    String actual = getProperty( property, properties, value );
+
+    if( actual != null )
+      {
+      builder
+        .append( ";" ).append( property ).append( "=" )
+        .append( actual );
+      }
+    }
+
+  private String getProperty( String property, Properties properties, String value )
+    {
+    if( value != null && !value.isEmpty() )
+      return value;
+
+    return properties.getProperty( property );
+    }
+
+  private String stringOrNull( Object value )
+    {
+    if( value == null )
+      return null;
+
+    return value.toString();
+    }
+
   /////
+
+  public boolean hasConfig()
+    {
+    return optionSet.has( config );
+    }
+
+  public String getConfig()
+    {
+    return optionSet.valueOf( config );
+    }
 
   public boolean hasUsername()
     {
@@ -187,8 +212,11 @@ public class ShellOptions extends Options
     return optionSet.valueOf( sqlFile );
     }
 
-  public int getMaxRows()
+  public Integer getMaxRows()
     {
+    if( optionSet.valueOf( maxRows ) == null || optionSet.valueOf( maxRows ) == 0 )
+      return null;
+
     return optionSet.valueOf( maxRows );
     }
 

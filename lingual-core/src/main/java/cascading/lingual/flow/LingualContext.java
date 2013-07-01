@@ -127,9 +127,10 @@ class LingualContext implements OptiqPrepare.Context
 
       name = split[ split.length - 1 ];
 
-      Stereotype stereotype = new SimpleStereotype( name, function.apply( tap ) );
+      Stereotype stereotype = new Stereotype( name, function.apply( tap ) );
       TableDef tableDef = new TableDef( currentSchemaDef, name, tap.getIdentifier(), stereotype );
 
+      currentSchemaDef.addStereotype( stereotype );
       currentTapSchema.addTapTableFor( tableDef, getDefaultSchema() == null );
       }
     }

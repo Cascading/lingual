@@ -18,11 +18,10 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.target;
+package cascading.lingual.common;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 /**

@@ -59,10 +59,11 @@ To add new table to an existing schema:
 |                     | --format name                |
 |                     | --protocol name              |
 |                     |                              |
-| --repo*             |                              | list all maven repos
+| --repo              |                              | list all maven repos
 | --repo [name]       |                              |
 |                     | --remove                     | remove maven repo
-|                     | --add [uri]                  | add maven repo
+|                     | --add [url]                  | add maven repo
+|                     | --validate [url]             | checks that a maven repo is reachable without altering the catalog
 |                     |                              |
 | --schema            |                              | lists all current schemas
 | --schema [name]     |                              |
@@ -86,19 +87,18 @@ To add new table to an existing schema:
 |                     | --remove                     |
 |                     | --rename [new name]          |
 |                     | --add [uri]*                 | uri optional, read uri for definition or use following values
+|                     | --provider [name]*           | use the given provider (optional)
 |                     | --update                     | update with given values (replaces values)
 |                     | --columns [names,.]          |
 |                     | --types [types,.]            |
 |                     | --show                       | display stereotype details
 |                     |                              |
-| --provider*         |                              | list all registered protocol and format providers
+| --provider          |                              | list all registered providers (unless --add is specified)
 | --provider [name]   |                              | regsiter a new provider
 |                     | --remove                     |
 |                     | --rename [new name]          |
-|                     | --add                        | create a new provider with the following values
-|                     | --jar [uri]                  | jar path containing Tap/Scheme provider classes
-|                     | --dependency [spec]          | maven dependency, group:name:version
-|                     |                              |
+|                     | --add [uri|spec]             | register a provider located by the uri or maven spec
+|                     | --validate                   | confirms that a provider declaration is valid
 |                     |                              |
 | --format            |                              | list all registered format names
 | --format [name]     |                              |
@@ -106,7 +106,7 @@ To add new table to an existing schema:
 |                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
 |                     | --provider [name]*           | use the given provider
 |                     | --update                     | update with given values (replaces values)
-|                     | --ext [.ext,.]               | file extension used to identify format (.csv, .tsv, etc)
+|                     | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)
 |                     | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
 |                     |                              |
 | --protocol          |                              | list all registered protocol names
@@ -117,6 +117,9 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
 |                     | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
+|                     |                              |
+| --config [file]     |                              | config properties file to use instead of .lingual/config/default.properties
+|                     |                              |
 
 __* currently unsupported__
 
@@ -128,9 +131,12 @@ Any directory can be the root namespace for a catalog
 |------------- |-----------------
 | .            | current directory
 | ./.lingual/  | all meta-data (hidden directory)
+|              |
 |   defaults   | default environment values *
 |   catalog    | catalog data file in JSON
-|   jars/      | copies of scheme jar files *
+|   providers  | provider jar files
+|   config     | config files dir, "default.properties" file from it is picked by default
+|              |
 | ./results    | local storage for all SELECT query results sets
 
 __* currently unsupported__

@@ -24,6 +24,9 @@ dependencies {
 
   compile project( ':lingual-core' )
 
+  // included for testing from an ide
+  runtime project( ':lingual-client' )
+
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
@@ -40,6 +43,7 @@ dependencies {
 fatJar {
   classifier = 'jdbc'
   exclude 'META-INF/*.DSA'
+  exclude 'META-INF/LICENSE*'
 }
 
 artifacts {

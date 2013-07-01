@@ -21,83 +21,62 @@
 package cascading.lingual.catalog;
 
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Collection;
 
-import cascading.lingual.LingualPlatformTestCase;
-import cascading.lingual.jdbc.Driver;
-import cascading.lingual.platform.PlatformBroker;
-import cascading.lingual.platform.PlatformBrokerFactory;
-import cascading.lingual.util.Logging;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ObjectArrays;
 import org.junit.Test;
 
 /**
  *
  */
-public class CatalogCLIPlatformTest extends LingualPlatformTestCase
+public class CatalogCLIPlatformTest extends CLIPlatformTestCase
   {
-  @Override
-  public void setUp() throws Exception
-    {
-    super.setUp();
-    }
+  private static final String AD_HOC_SHECMA = "adhoc";
 
   @Test
   public void testCLI() throws IOException
     {
-    String outputPath = getOutputPath( "catalogcli" );
+    initCatalog();
 
-    getPlatform().remoteRemove( outputPath, true );
+    SchemaCatalog schemaCatalog = getSchemaCatalog();
 
-    Logging.setLogLevel( "debug" );
+    catalog( "--schema", "sales", "--add", SALES_SCHEMA );
 
-    execute( outputPath, "--init" );
-    execute( outputPath, "--schema", "sales", "--add", SALES_SCHEMA );
+    Collection<String> schemaNames = schemaCatalog.getSchemaNames();
+    assertTrue( "sales schema not found in " + schemaNames.toString(), schemaNames.contains( "sales" ) );
 
-    execute( outputPath,
+    catalog(
       "--stereotype", "emps", "--add",
       "--columns", Joiner.on( "," ).join( EMPS_COLUMNS ),
       "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
     );
 
-    execute( outputPath, "--stereotype" );
+    Collection<String> stereotypeNames = schemaCatalog.getStereotypeNames();
+    assertTrue( "stereotype not added to catalog in " + stereotypeNames.toString(), stereotypeNames.contains( "emps" ) );
+    assertFalse( "bogus stereotype found in catalog of " + stereotypeNames.toString(), stereotypeNames.contains( "xx_emps" ) );
 
-    execute( outputPath, "--schema", "adhoc", "--add" );
-    execute( outputPath, "--schema", "adhoc", "--table", "local", "--add", SALES_EMPS_TABLE,
-      "--stereotype", "emps"
+    catalog( "--stereotype" );
+
+    catalog( "--schema", AD_HOC_SHECMA, "--add" );
+    catalog( "--schema", AD_HOC_SHECMA, "--table", "local", "--add", SALES_EMPS_TABLE, "--stereotype", "emps"
     );
-    execute( outputPath, "--schema", "adhoc", "--table" );
-    execute( outputPath, "--schema", "ADHOC", "--table" ); // verify case insensitivity
+    catalog( "--schema", AD_HOC_SHECMA, "--table" );
+    catalog( "--schema", "ADHOC", "--table" ); // verify case insensitivity
 
-    execute( outputPath, "--schema", "adhoc", "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
-    execute( outputPath, "--schema", "adhoc", "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
+    Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SHECMA );
+    assertTrue( AD_HOC_SHECMA + " does not contain table local in " + tableNames.toString(), tableNames.contains( "local" ) );
 
-    execute( outputPath, "--schema", "adhoc", "--table", "remote", "--add", SALES_EMPS_TABLE,
+    catalog( "--schema", AD_HOC_SHECMA, "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+
+    catalog( "--schema", AD_HOC_SHECMA, "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
+
+    catalog( "--schema", AD_HOC_SHECMA,
+      "--table", "remote", "--add", SALES_EMPS_TABLE,
       "--stereotype", "emps",
       "--format", "table", "--protocol", "jdbc"
     );
-    execute( outputPath, "--schema", "adhoc", "--table" );
+    catalog( "--schema", AD_HOC_SHECMA, "--table" );
 
-    execute( outputPath, "--schema" );
-    }
-
-  private void execute( String testName, String... args ) throws IOException
-    {
-    args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
-
-    assertTrue( "execute returned false", createCatalog( testName ).execute( args ) );
-    }
-
-  private Catalog createCatalog( String rootPath )
-    {
-    Properties properties = new Properties();
-
-    properties.setProperty( Driver.CATALOG_PROP, rootPath );
-    properties.setProperty( PlatformBroker.META_DATA_PATH_PROP, "_lingual" );
-    properties.setProperty( PlatformBroker.CATALOG_FILE_PROP, "catalog.json" );
-    properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
-
-    return new Catalog( System.out, System.err, properties );
+    catalog( "--schema" );
     }
   }

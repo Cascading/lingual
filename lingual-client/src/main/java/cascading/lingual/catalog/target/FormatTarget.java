@@ -22,12 +22,16 @@ package cascading.lingual.catalog.target;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -52,34 +56,42 @@ public class FormatTarget extends CRUDTarget
     }
 
   @Override
-  protected String performAdd( PlatformBroker platformBroker )
+  protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     Format format = Format.getFormat( getOptions().getFormatName() );
 
     if( format == null )
       throw new IllegalArgumentException( "add action must have a format name value" );
 
     String schemaName = getOptions().getSchemaName();
+    Map<String, String> properties = getOptions().getProperties();
     List<String> extensions = getOptions().getExtensions();
 
-    catalog.addFormat( schemaName, format, extensions );
+    String providerName = getOptions().getProviderName();
 
-    return format.getName();
+    if( providerName != null )
+      {
+      ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
+
+      if( providerDef == null )
+        throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
+      }
+
+    catalog.addFormat( schemaName, format, extensions, properties, providerName );
+
+    return asList( format.getName() );
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     String schemaName = getOptions().getSchemaName();
 
     if( schemaName != null && !schemaName.isEmpty() )
       return catalog.getFormatNames( getOptions().getSchemaName() );
     else
       return catalog.getFormatNames();
-
     }
   }

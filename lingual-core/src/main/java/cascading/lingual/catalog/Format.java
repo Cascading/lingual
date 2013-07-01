@@ -22,6 +22,7 @@ package cascading.lingual.catalog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -59,6 +60,9 @@ public class Format implements Serializable
 
   public static List<Format> resolveFormats( List<String> formats )
     {
+    if( formats == null )
+      return Collections.EMPTY_LIST;
+
     List<Format> results = new ArrayList<Format>();
 
     for( String format : formats )

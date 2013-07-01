@@ -23,6 +23,7 @@ package cascading.lingual.optiq.meta;
 import java.util.List;
 import java.util.Map;
 
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
@@ -45,22 +46,22 @@ public class Branch
   public String[] resultName;
   public boolean isModification = false;
 
-  public Branch( PlatformBroker platformBroker, Map<Ref, Pipe> heads, String name, String identifier )
+  public Branch( PlatformBroker platformBroker, Map<Ref, Pipe> heads, String name, TableDef tableDef )
     {
     this.platformBroker = platformBroker;
     this.heads = heads;
 
-    Ref head = new Ref( name, identifier );
+    Ref head = new Ref( name, tableDef );
 
     if( this.heads.containsKey( head ) )
       {
-      LOG.debug( "re-using branch head: {}, for: {}", name, identifier );
+      LOG.debug( "re-using branch head: {}, for: {}", name, tableDef );
 
       this.current = this.heads.get( head );
       }
     else
       {
-      LOG.debug( "adding branch head: {}, for: {}", name, identifier );
+      LOG.debug( "adding branch head: {}, for: {}", name, tableDef );
 
       this.current = new Pipe( name );
       this.heads.put( head, this.current );

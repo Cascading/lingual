@@ -20,6 +20,7 @@
 
 package cascading.lingual.platform;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,23 +32,30 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import cascading.bind.catalog.Stereotype;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.CatalogManager;
 import cascading.lingual.catalog.FileCatalogManager;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
+import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.util.Reflection;
 import cascading.management.CascadingServices;
 import cascading.operation.DebugLevel;
 import cascading.provider.ServiceLoader;
 import cascading.tap.Tap;
 import cascading.tap.type.FileType;
+import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,13 +74,28 @@ public abstract class PlatformBroker<Config>
   {
   private static final Logger LOG = LoggerFactory.getLogger( PlatformBroker.class );
 
-  public static final String META_DATA_PATH_PROP = "lingual.meta-data.path";
-  public static final String META_DATA_PATH = ".lingual";
+  public static final String META_DATA_DIR_NAME_PROP = "lingual.meta-data.path";
+  public static final String META_DATA_DIR_NAME = ".lingual"; // under path pointed to by Driver.CATALOG_ROOT_PATH_PROP
 
-  public static final String CATALOG_FILE_PROP = "lingual.catalog.name";
-  public static final String CATALOG_FILE = "catalog";
+  public static final String CATALOG_FILE_NAME_PROP = "lingual.catalog.name";
+  public static final String CATALOG_FILE_NAME = "catalog"; // .json, under META_DATA_DIR_NAME
 
-  private Properties properties;
+  public static final String PROVIDER_DIR_NAME_PROP = "lingual.providers.name";
+  public static final String PROVIDER_DIR_NAME = "providers"; // dir for provider (fat) jars installed with --provider --add
+
+  public static final String PLANNER_DEBUG_PROP = "lingual.planner.debug";
+
+  public static final String CONFIG_DIR_NAME_PROP = "lingual.config.dir";
+  public static final String CONFIG_DIR_NAME = "config";
+
+  public static final String CONFIG_FILE_NAME_PROP = "lingual.config.file";
+  public static final String CONFIG_FILE_NAME = "default.properties";
+
+  public static final String LOCAL_REPO_DIR_NAME_PROP = "lingual.local.repo.dir";
+  public static final String LOCAL_REPO_DIR_NAME = "repo"; // local maven repository for provider jars with dependencies
+  public static final String LOCAL_REPO_FULL_PATH_PROP = "lingual.local.repo.full.path";
+
+  protected Properties properties;
 
   private CascadingServices cascadingServices;
   private CatalogManager catalogManager;
@@ -82,7 +105,6 @@ public abstract class PlatformBroker<Config>
   private Map<String, TupleEntryCollector> collectorCache;
 
   private WeakReference<LingualConnection> defaultConnection;
-
 
   protected PlatformBroker()
     {
@@ -99,6 +121,11 @@ public abstract class PlatformBroker<Config>
       properties = new Properties();
 
     return properties;
+    }
+
+  private String getStringProperty( String propertyName )
+    {
+    return properties.getProperty( propertyName );
     }
 
   public abstract String getName();
@@ -195,12 +222,12 @@ public abstract class PlatformBroker<Config>
     String path = getFullMetadataPath();
 
     if( pathExists( path ) )
-      return true;
+      return false;
 
     if( !createPath( path ) )
       throw new RuntimeException( "unable to create catalog: " + path );
 
-    return false;
+    return true;
     }
 
   public String getFullMetadataPath()
@@ -215,6 +242,13 @@ public abstract class PlatformBroker<Config>
     String catalogPath = getStringProperty( CATALOG_PROP );
 
     return makeFullCatalogFilePath( catalogPath );
+    }
+
+  public String getFullProviderPath()
+    {
+    String catalogPath = getStringProperty( CATALOG_PROP );
+
+    return makeFullProviderDirPath( catalogPath );
     }
 
   public void writeCatalog()
@@ -232,10 +266,10 @@ public abstract class PlatformBroker<Config>
     // schema and tables beyond here are not persisted in the catalog
     // they are transient to the session
     // todo: wrap transient catalog data around persistent catalog data
-    if( properties.containsKey( SCHEMAS_PROP ) )
+    if( getProperties().containsKey( SCHEMAS_PROP ) )
       loadSchemas( catalog );
 
-    if( properties.containsKey( TABLES_PROP ) )
+    if( getProperties().containsKey( TABLES_PROP ) )
       loadTables( catalog );
 
     return catalog;
@@ -265,17 +299,25 @@ public abstract class PlatformBroker<Config>
 
   private String makeFullMetadataFilePath( String catalogPath )
     {
-    String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
+    String metaDataPath = properties.getProperty( META_DATA_DIR_NAME_PROP, META_DATA_DIR_NAME );
 
-    return getFullPath( makePath( getFileSeparator(), catalogPath, metaDataPath ) );
+    return getFullPath( makePath( catalogPath, metaDataPath ) );
     }
 
   private String makeFullCatalogFilePath( String catalogPath )
     {
-    String metaDataPath = properties.getProperty( META_DATA_PATH_PROP, META_DATA_PATH );
-    String metaDataFile = properties.getProperty( CATALOG_FILE_PROP, CATALOG_FILE );
+    String metaDataPath = properties.getProperty(META_DATA_DIR_NAME_PROP, META_DATA_DIR_NAME);
+    String metaDataFile = properties.getProperty( CATALOG_FILE_NAME_PROP, CATALOG_FILE_NAME );
 
-    return getFullPath( makePath( getFileSeparator(), catalogPath, metaDataPath, metaDataFile ) );
+    return getFullPath( makePath( catalogPath, metaDataPath, metaDataFile ) );
+    }
+
+  private String makeFullProviderDirPath( String catalogPath )
+    {
+    String metaDataPath = properties.getProperty(META_DATA_DIR_NAME_PROP, META_DATA_DIR_NAME);
+    String metaDataFile = properties.getProperty( PROVIDER_DIR_NAME_PROP, PROVIDER_DIR_NAME );
+
+    return getFullPath( makePath( catalogPath, metaDataPath, metaDataFile ) );
     }
 
   public String getResultPath( String name )
@@ -300,7 +342,12 @@ public abstract class PlatformBroker<Config>
     return getFullPath( path + name );
     }
 
-  public static String makePath( String fileSeparator, String rootPath, String... elements )
+  public String makePath( String rootPath, String... elements )
+    {
+    return buildPath( getFileSeparator(), rootPath, elements );
+    }
+
+  public static String buildPath( String fileSeparator, String rootPath, String... elements )
     {
     if( rootPath == null )
       rootPath = ".";
@@ -326,6 +373,43 @@ public abstract class PlatformBroker<Config>
   public abstract InputStream getInputStream( String path );
 
   public abstract OutputStream getOutputStream( String path );
+
+  public String retrieveInstallProvider( String sourcePath )
+    {
+    File sourceFile = new File( sourcePath );
+    String targetPath = makePath( getFullProviderPath(), sourceFile.getName() );
+
+    long bytesCopied;
+    OutputStream outputStream = null;
+
+    try
+      {
+      outputStream = getOutputStream( targetPath );
+      bytesCopied = FileUtils.copyFile( sourceFile, outputStream );
+      outputStream.flush();
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to install from " + sourcePath + " to " + targetPath + ":" + exception.getMessage(), exception );
+      }
+    finally
+      {
+      try
+        {
+        if( outputStream != null )
+          outputStream.close();
+        }
+      catch( IOException exception )
+        {
+        LOG.error( "error closing file {}: ", targetPath, exception );
+        }
+      }
+
+    if( bytesCopied > 0 )
+      return new File( targetPath ).getName(); // return relative path to provider install directory
+    else
+      throw new RuntimeException( "zero bytes copied from " + sourcePath + " to " + targetPath );
+    }
 
   public String createSchemaNameFrom( String identifier )
     {
@@ -365,11 +449,6 @@ public abstract class PlatformBroker<Config>
       catalog.createTableDefFor( tableIdentifier );
     }
 
-  private String getStringProperty( String propertyName )
-    {
-    return properties.getProperty( propertyName );
-    }
-
   public abstract Class<? extends SchemaCatalog> getCatalogClass();
 
   public String[] getChildIdentifiers( String identifier ) throws IOException
@@ -397,7 +476,36 @@ public abstract class PlatformBroker<Config>
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
     LingualConnection lingualConnection = defaultConnection.get();
-    return new LingualFlowFactory( this, lingualConnection, createUniqueName(), branch );
+    LingualFlowFactory lingualFlowFactory = new LingualFlowFactory( this, lingualConnection, createUniqueName(), branch.current );
+
+    for( Ref head : branch.heads.keySet() )
+      {
+      Stereotype<Protocol, Format> stereotypeFor;
+
+      if( head.tableDef == null )
+        stereotypeFor = catalog.getRootSchemaDef().findStereotypeFor( head.fields ); // do not use head name
+      else
+        stereotypeFor = head.tableDef.getStereotype();
+
+      lingualFlowFactory.setSourceStereotype( head.name, stereotypeFor );
+
+      if( head.tableDef != null )
+        {
+        lingualFlowFactory.getProtocolHandlers().addAll( catalog.getProtocolHandlers( head.tableDef ) );
+        lingualFlowFactory.getFormatHandlers().addAll( catalog.getFormatHandlersFor( head.tableDef ) );
+        }
+      }
+
+    lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
+
+    if( branch.resultName != null )
+      {
+      TableDef sinkTable = catalog.resolveTableDef( branch.resultName );
+      lingualFlowFactory.getProtocolHandlers().addAll( catalog.getProtocolHandlers( sinkTable ) );
+      lingualFlowFactory.getFormatHandlers().addAll( catalog.getFormatHandlersFor( sinkTable ) );
+      }
+
+    return lingualFlowFactory;
     }
 
   public SchemaCatalog newCatalogInstance()

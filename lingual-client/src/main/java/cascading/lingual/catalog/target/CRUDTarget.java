@@ -21,9 +21,11 @@
 package cascading.lingual.catalog.target;
 
 import java.util.Collection;
+import java.util.List;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.common.Printer;
+import cascading.lingual.common.Target;
 import cascading.lingual.platform.PlatformBroker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,10 @@ public abstract class CRUDTarget extends Target
     if( getOptions().isList() )
       return handlePrint( platformBroker );
 
+    // if they've screwed up validate and add then validate takes precendence.
+    if( getOptions().isValidate() )
+      return handleValidateDependencies( platformBroker );
+
     if( getOptions().isAdd() )
       return handleAdd( platformBroker );
 
@@ -70,14 +76,15 @@ public abstract class CRUDTarget extends Target
     {
     LOG.debug( "{}: add", name );
 
-    String name = performAdd( platformBroker );
+    List<String> names = performAdd( platformBroker );
 
-    getPrinter().print( "added %s: %s", getName(), name );
+    for( String name : names )
+      getPrinter().print( "added %s: %s", getName(), name );
 
     return true;
     }
 
-  protected abstract String performAdd( PlatformBroker platformBroker );
+  protected abstract List<String> performAdd( PlatformBroker platformBroker );
 
   protected boolean handleUpdate( PlatformBroker platformBroker )
     {
@@ -86,14 +93,15 @@ public abstract class CRUDTarget extends Target
     if( updateIsNoop() )
       return true;
 
-    String name = performUpdate( platformBroker );
+    List<String> names = performUpdate( platformBroker );
 
-    getPrinter().print( "updated %s: %s", getName(), name );
+    for( String name : names )
+      getPrinter().print( "updated %s: %s", getName(), name );
 
     return true;
     }
 
-  protected String performUpdate( PlatformBroker platformBroker )
+  protected List<String> performUpdate( PlatformBroker platformBroker )
     {
     performRemove( platformBroker );
 
@@ -142,4 +150,25 @@ public abstract class CRUDTarget extends Target
     }
 
   protected abstract Collection<String> performGetNames( PlatformBroker platformBroker );
+
+  protected boolean handleValidateDependencies( PlatformBroker platformBroker )
+    {
+    LOG.debug( "{}: validate", name );
+
+    boolean result = performValidateDependencies( platformBroker );
+
+    getPrinter().print( "%s validation returned: %b", getName(), result );
+
+    return result;
+    }
+
+  protected boolean performValidateDependencies( PlatformBroker platformBroker )
+    {
+    // only CRUD operations with external dependencies (ex. maven repo registration need to validate
+    // the external dependencies are sane.
+    // all other CRUD operations can only have syntax errors in the CLI which should be managed in Catalog
+    // and CatalogOptions.
+    return true;
+    }
+
   }

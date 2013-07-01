@@ -131,6 +131,7 @@ class JaninoFactory implements Factory
 
     Constructor constructor = targetType.getConstructor( constructorParamTypes );
 
+    // Note: that's where we instantiate <? extends LingualConnection>
     return abstractClass.cast( constructor.newInstance( constructorArgs ) );
     }
 

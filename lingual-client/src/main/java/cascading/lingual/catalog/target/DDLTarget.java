@@ -29,6 +29,7 @@ import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.ddl.DDLParser;
 import cascading.lingual.catalog.ddl.DDLTable;
 import cascading.lingual.common.Printer;
+import cascading.lingual.common.Target;
 import cascading.lingual.platform.PlatformBroker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

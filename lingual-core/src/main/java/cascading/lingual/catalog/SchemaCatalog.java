@@ -21,11 +21,19 @@
 package cascading.lingual.catalog;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import cascading.bind.catalog.Point;
 import cascading.bind.catalog.Resource;
@@ -34,18 +42,25 @@ import cascading.bind.catalog.handler.FormatHandler;
 import cascading.bind.catalog.handler.FormatHandlers;
 import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.bind.catalog.handler.ProtocolHandlers;
+import cascading.lingual.catalog.provider.ProviderDefinition;
 import cascading.lingual.jdbc.LingualConnection;
+import cascading.lingual.platform.LingualFormatHandler;
+import cascading.lingual.platform.LingualProtocolHandler;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
 import cascading.lingual.util.InsensitiveMap;
+import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cascading.lingual.catalog.provider.ProviderDefinition.getProviderDefinitions;
 
 /**
  *
@@ -63,12 +78,11 @@ public abstract class SchemaCatalog implements Serializable
   private transient PlatformBroker platformBroker;
 
   @JsonProperty
-  private SchemaDef rootSchemaDef;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final InsensitiveMap<Repo> mavenRepos = new InsensitiveMap<Repo>();
 
   @JsonProperty
-  private ProtocolHandlers<Protocol, Format> protocolHandlers;
-  @JsonProperty
-  private FormatHandlers<Protocol, Format> formatHandlers;
+  private SchemaDef rootSchemaDef;
 
   @JsonProperty
   private Map<String, Fields> nameFieldsMap = new InsensitiveMap<Fields>();
@@ -90,36 +104,94 @@ public abstract class SchemaCatalog implements Serializable
     this.platformBroker = platformBroker;
     }
 
+  public PlatformBroker getPlatformBroker()
+    {
+    return platformBroker;
+    }
+
   public void initializeNew()
     {
+    registerDefaultRepositories();
+    registerDefaultProviders();
+
     if( !rootSchemaDef.hasStereotype( "UNKNOWN" ) )
-      createStereotype( rootSchemaDef, "UNKNOWN", Fields.UNKNOWN, null );
-
-    ProtocolHandlers<Protocol, Format> protocolHandlers = getProtocolHandlers();
-
-    for( Protocol protocol : protocolHandlers.getProtocols() )
-      rootSchemaDef.addProtocolProperties( protocol, protocolHandlers.getProtocolProperties( protocol ) );
-
-    FormatHandlers<Protocol, Format> formatHandlers = getFormatHandlers();
-
-    for( Format format : formatHandlers.getFormats() )
-      rootSchemaDef.addFormatProperties( format, formatHandlers.getFormatProperties( format ) );
+      createStereotype( rootSchemaDef, "UNKNOWN", Fields.UNKNOWN );
     }
 
-  public ProtocolHandlers<Protocol, Format> getProtocolHandlers()
+  private void registerDefaultProviders()
     {
-    if( protocolHandlers == null )
-      protocolHandlers = new ProtocolHandlers<Protocol, Format>( createProtocolHandlers() );
+    for( ProviderDefinition providerDefinition : getDefaultProviderProperties() )
+      {
+      Map<String, String> properties = providerDefinition.getProperties();
 
-    return protocolHandlers;
+      rootSchemaDef.addProviderDef( providerDefinition.getProviderName(), null, properties, null );
+      }
     }
 
-  public FormatHandlers<Protocol, Format> getFormatHandlers()
+  private void registerDefaultRepositories()
     {
-    if( formatHandlers == null )
-      formatHandlers = new FormatHandlers<Protocol, Format>( createFormatHandlers() );
+    addRepo( Repo.MAVEN_CENTRAL );
+    addRepo( Repo.MAVEN_LOCAL );
+    addRepo( Repo.MAVEN_CONJARS );
+    }
 
-    return formatHandlers;
+  protected List<ProviderDefinition> getDefaultProviderProperties()
+    {
+    List<ProviderDefinition> properties = new ArrayList<ProviderDefinition>();
+
+    try
+      {
+      Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
+
+      while( resources.hasMoreElements() )
+        {
+        URL url = resources.nextElement();
+
+        LOG.debug( "loading properties from: {}", url );
+
+        Properties definitions = new Properties();
+
+        InputStream inputStream = url.openStream();
+
+        definitions.load( inputStream );
+
+        inputStream.close();
+
+        Collections.addAll( properties, getProviderDefinitions( definitions ) );
+        }
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to load default provider properties", exception );
+      }
+
+    return properties;
+    }
+
+  public ProtocolHandlers<Protocol, Format> getProtocolHandlers( Def def )
+    {
+    return new ProtocolHandlers<Protocol, Format>( createProtocolHandlers( def ) );
+    }
+
+  private List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( Def def )
+    {
+    if( def instanceof TableDef )
+      return createProtocolHandlers( def.getParentSchema() );
+
+    return createProtocolHandlers( ( (SchemaDef) def ) );
+    }
+
+  public FormatHandlers<Protocol, Format> getFormatHandlersFor( Def def )
+    {
+    return new FormatHandlers<Protocol, Format>( createFormatHandlers( def ) );
+    }
+
+  private List<FormatHandler<Protocol, Format>> createFormatHandlers( Def def )
+    {
+    if( def instanceof TableDef )
+      return createFormatHandlers( def.getParentSchema() );
+
+    return createFormatHandlers( ( (SchemaDef) def ) );
     }
 
   public SchemaDef getRootSchemaDef()
@@ -129,13 +201,21 @@ public abstract class SchemaCatalog implements Serializable
 
   public TableDef resolveTableDef( String[] names )
     {
+    if( names == null )
+      throw new IllegalArgumentException( "names array may not be null" );
+
     if( names.length == 0 )
       return null;
 
     SchemaDef current = getRootSchemaDef();
 
     for( int i = 0; i < names.length - 1; i++ )
+      {
+      if( current == null )
+        throw new IllegalArgumentException( "could not find table def at: " + Arrays.toString( names ) + " on: " + names[ i ] );
+
       current = current.getSchema( names[ i ] );
+      }
 
     return current.getTable( names[ names.length - 1 ] );
     }
@@ -145,12 +225,12 @@ public abstract class SchemaCatalog implements Serializable
     return getRootSchemaDef().getChildSchemaNames();
     }
 
-  public SchemaDef getSchemaDef( String name )
+  public SchemaDef getSchemaDef( String schemaName )
     {
-    if( name == null )
+    if( schemaName == null )
       return getRootSchemaDef();
 
-    return getRootSchemaDef().getSchema( name );
+    return getRootSchemaDef().getSchema( schemaName );
     }
 
   public boolean addSchemaDef( String name, String protocolName, String formatName )
@@ -232,12 +312,17 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getTableNames( String schemaName )
     {
-    SchemaDef schema = getSchemaDef( schemaName );
+    return getSchemaDefChecked( schemaName ).getChildTableNames();
+    }
 
-    if( schema == null )
+  private SchemaDef getSchemaDefChecked( String schemaName )
+    {
+    SchemaDef schemaDef = getSchemaDef( schemaName );
+
+    if( schemaDef == null )
       throw new IllegalArgumentException( "schema does not exist: " + schemaName );
 
-    return schema.getChildTableNames();
+    return schemaDef;
     }
 
   public void createTableDefFor( String identifier )
@@ -271,15 +356,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createTableDefFor( String schemaName, String tableName, String identifier, String stereotypeName, Protocol protocol, Format format )
     {
-    SchemaDef schemaDef;
-
-    if( schemaName == null )
-      schemaDef = getRootSchemaDef();
-    else
-      schemaDef = getRootSchemaDef().getSchema( schemaName );
-
-    if( schemaDef == null )
-      throw new IllegalStateException( "schema does not exist: " + schemaName );
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
 
     return createTableDefFor( schemaDef, tableName, identifier, stereotypeName, null, protocol, format );
     }
@@ -330,13 +407,12 @@ public abstract class SchemaCatalog implements Serializable
     if( fields == null )
       return schema.findStereotypeFor( Fields.UNKNOWN );
 
-    String schemaName = schema.getName();
     String stereotypeName = platformBroker.createTableNameFrom( identifier );
 
     stereotype = schema.findStereotypeFor( fields );
 
     if( stereotype == null )
-      stereotype = createStereotype( schema, stereotypeName, fields, getPointFor( identifier, schemaName ).protocol );
+      stereotype = createStereotype( schema, stereotypeName, fields );
 
     return stereotype;
     }
@@ -361,9 +437,16 @@ public abstract class SchemaCatalog implements Serializable
         childSchema = new TapSchema( currentSchema, connection, childSchemaDef );
         currentSchema.addSchema( childSchemaDef.getName(), childSchema );
 
-        String childSchemaDescription = String.format( "%s ( %s )", childSchemaDef.getName(), currentSchemaDef.getIdentifier() );
 
-        LOG.info( "added schema {} to {}", childSchemaDescription, currentSchemaDef.getName() );
+        String childSchemaDescription;
+        if( currentSchemaDef.getIdentifier() != null )
+          childSchemaDescription = String.format( "'%s' ( %s )", childSchemaDef.getName(), currentSchemaDef.getIdentifier() );
+        else
+          childSchemaDescription = String.format( "'%s'", childSchemaDef.getName() );
+
+        String name = currentSchemaDef.getName() == null ? "root" : currentSchemaDef.getName();
+
+        LOG.info( "added schema: {}, to: '{}'", childSchemaDescription, name );
         }
 
       childSchema.addTapTablesFor( childSchemaDef );
@@ -374,12 +457,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getFormatNames()
     {
-    return rootSchemaDef.getFormatNames();
+    return rootSchemaDef.getAllFormatNames();
     }
 
   public Collection<String> getFormatNames( String schemaName )
     {
-    return rootSchemaDef.getSchema( schemaName ).getFormatNames();
+    return rootSchemaDef.getSchema( schemaName ).getAllFormatNames();
     }
 
   public Collection<String> getProtocolNames()
@@ -392,9 +475,64 @@ public abstract class SchemaCatalog implements Serializable
     return rootSchemaDef.getSchema( schemaName ).getProtocolNames();
     }
 
-  protected Point<Protocol, Format> getPointFor( String identifier, String schemaName )
+  public Collection<String> getProviderNames()
     {
-    return getPointFor( identifier, schemaName, null, null );
+    return rootSchemaDef.getProviderNames();
+    }
+
+  public Collection<String> getProviderNames( String schemaName )
+    {
+    return getSchemaDefChecked( schemaName ).getProviderNames();
+    }
+
+  public void addProviderDef( String schemaName, ProviderDef providerDef )
+    {
+    getSchemaDefChecked( schemaName ).addProviderDef( providerDef );
+    }
+
+  public ProviderDef findProviderDefFor( String schemaName, Format format )
+    {
+    return getSchemaDefChecked( schemaName ).findProviderDefFor( format );
+    }
+
+  public ProviderDef findProviderDefFor( String schemaName, Protocol protocol )
+    {
+    return getSchemaDefChecked( schemaName ).findProviderDefFor( protocol );
+    }
+
+  public ProviderDef findProviderFor( String schemaName, String providerName )
+    {
+    return getSchemaDefChecked( schemaName ).findProviderDefFor( providerName );
+    }
+
+  public boolean removeProviderDef( String schemaName, String providerName )
+    {
+    return getSchemaDefChecked( schemaName ).removeProviderDef( providerName );
+    }
+
+  public Collection<String> getMavenRepoNames()
+    {
+    return mavenRepos.keySet();
+    }
+
+  public Collection<Repo> getMavenRepos()
+    {
+    return mavenRepos.values();
+    }
+
+  public Repo getMavenRepo( String repoName )
+    {
+    return mavenRepos.get( repoName );
+    }
+
+  public void addRepo( Repo repo )
+    {
+    mavenRepos.put( repo.getRepoName(), repo );
+    }
+
+  public void removeMavenRepo( String repoName )
+    {
+    mavenRepos.remove( repoName );
     }
 
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
@@ -462,45 +600,31 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getStereotypeNames( String schemaName )
     {
-    SchemaDef schema = getSchemaDef( schemaName );
-
-    if( schema == null )
-      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
-
-    return schema.getStereotypeNames();
+    return getSchemaDefChecked( schemaName ).getStereotypeNames();
     }
 
-  private Stereotype<Protocol, Format> findStereotype( SchemaDef schema, String stereotypeName )
+  private Stereotype<Protocol, Format> findStereotype( SchemaDef schemaDef, String stereotypeName )
     {
-    if( schema == null )
+    if( schemaDef == null )
       return null;
 
-    Stereotype<Protocol, Format> stereotype = schema.getStereotype( stereotypeName );
+    Stereotype<Protocol, Format> stereotype = schemaDef.getStereotype( stereotypeName );
 
     if( stereotype != null )
       return stereotype;
 
-    return findStereotype( schema.getParentSchema(), stereotypeName );
+    return findStereotype( schemaDef.getParentSchema(), stereotypeName );
     }
 
   public boolean removeStereotype( String schemaName, String stereotypeName )
     {
-    SchemaDef schema = rootSchemaDef;
-
-    if( schemaName != null )
-      schema = rootSchemaDef.getSchema( schemaName );
-
-    return schema.removeStereotype( stereotypeName );
+    return getSchemaDefChecked( schemaName ).removeStereotype( stereotypeName );
     }
 
   public boolean renameStereotype( String schemaName, String name, String newName )
     {
-    SchemaDef schema = rootSchemaDef;
 
-    if( schemaName != null )
-      schema = rootSchemaDef.getSchema( schemaName );
-
-    return schema.renameStereotype( name, newName );
+    return getSchemaDefChecked( schemaName ).renameStereotype( name, newName );
     }
 
   public TableDef findTableDefFor( String identifier )
@@ -510,7 +634,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public Stereotype<Protocol, Format> findStereotypeFor( String identifier )
     {
-    TableDef tableDef = findTableDefFor( identifier );
+    TableDef tableDef = findTableDefFor( identifier ); // could be more than one
 
     if( tableDef == null )
       return null;
@@ -520,16 +644,14 @@ public abstract class SchemaCatalog implements Serializable
 
   public boolean createStereotype( String schemaName, String name, Fields fields )
     {
-    SchemaDef schemaDef = getSchemaDef( schemaName );
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
 
-    return createStereotype( schemaDef, name, fields, null ) != null;
+    return createStereotype( schemaDef, name, fields ) != null;
     }
 
-  private Stereotype<Protocol, Format> createStereotype( SchemaDef schemaDef, String name, Fields fields, Protocol protocol )
+  private Stereotype<Protocol, Format> createStereotype( SchemaDef schemaDef, String name, Fields fields )
     {
-    Protocol defaultProtocol = protocol == null ? schemaDef.findDefaultProtocol() : protocol;
-
-    Stereotype<Protocol, Format> stereotype = new Stereotype<Protocol, Format>( getFormatHandlers(), defaultProtocol, name, fields );
+    Stereotype<Protocol, Format> stereotype = new Stereotype<Protocol, Format>( name, fields );
 
     schemaDef.addStereotype( stereotype );
 
@@ -543,12 +665,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public Stereotype getStereoTypeFor( String schemaName, Fields fields )
     {
-    SchemaDef schema = getSchemaDef( schemaName );
-
-    if( schema == null )
-      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
-
-    return schema.findStereotypeFor( fields );
+    return getSchemaDefChecked( schemaName ).findStereotypeFor( fields );
     }
 
   public Fields getFieldsFor( String identifier )
@@ -562,7 +679,7 @@ public abstract class SchemaCatalog implements Serializable
 
     Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( identifier, point.protocol, point.format, SinkMode.KEEP );
 
-    Tap tap = createTapFor( rootSchemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
+    Tap tap = createTapFor( rootSchemaDef, rootSchemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
 
     if( !resourceExists( tap ) )
       return null;
@@ -602,52 +719,125 @@ public abstract class SchemaCatalog implements Serializable
   public Tap createTapFor( TableDef tableDef, SinkMode sinkMode )
     {
     Protocol protocol = tableDef.getActualProtocol();
+    Format format = tableDef.getActualFormat();
 
-    ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( protocol );
+    ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers( tableDef ).findHandlerFor( protocol );
+    FormatHandler<Protocol, Format> formatHandler = getFormatHandlersFor( tableDef ).findHandlerFor( protocol, format );
 
     if( protocolHandler == null )
       throw new IllegalArgumentException( "no protocol handler for protocol: " + protocol );
 
+    if( formatHandler == null )
+      throw new IllegalArgumentException( "no format handler for format: " + format );
+
+    Scheme scheme = formatHandler.createScheme( tableDef.getStereotype(), protocol, format );
+
     Resource<Protocol, Format, SinkMode> resource = tableDef.getResourceWith( sinkMode );
 
-    return protocolHandler.createTap( tableDef.getStereotype(), resource );
+    return protocolHandler.createTap( scheme, resource );
     }
 
-  private Tap createTapFor( Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )
+  private Tap createTapFor( SchemaDef schemaDef, Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )
     {
-    ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers().findHandlerFor( resource.getProtocol() );
+    ProtocolHandler<Protocol, Format> protocolHandler = getProtocolHandlers( schemaDef ).findHandlerFor( resource.getProtocol() );
+    FormatHandler<Protocol, Format> formatHandler = getFormatHandlersFor( schemaDef ).findHandlerFor( resource.getProtocol(), resource.getFormat() );
 
-    if( protocolHandler != null )
-      return protocolHandler.createTap( stereotype, resource );
+    if( protocolHandler == null || formatHandler == null )
+      return null;
 
-    return null;
+    Scheme scheme = formatHandler.createScheme( stereotype, resource.getProtocol(), resource.getFormat() );
+
+    return protocolHandler.createTap( scheme, resource );
     }
 
   public Resource<Protocol, Format, SinkMode> getResourceFor( String identifier, SinkMode mode )
     {
     Point<Protocol, Format> point = getPointFor( identifier, null, null, null );
+
     Protocol protocol = point.protocol;
     Format format = point.format;
 
     return new Resource<Protocol, Format, SinkMode>( identifier, protocol, format, mode );
     }
 
-  protected abstract List<ProtocolHandler<Protocol, Format>> createProtocolHandlers();
-
-  protected abstract List<FormatHandler<Protocol, Format>> createFormatHandlers();
-
-  public void addFormat( String schemaName, Format format, List<String> extensions )
+  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
     {
-    SchemaDef schemaDef = getSchemaDef( schemaName );
+    Map<String, ProtocolHandler<Protocol, Format>> handlers = new HashMap<String, ProtocolHandler<Protocol, Format>>();
+    Collection<Protocol> protocols = schemaDef.getAllProtocols();
 
-    schemaDef.addFormatProperty( format, FormatProperties.EXTENSIONS, extensions );
+    for( Protocol protocol : protocols )
+      {
+      ProviderDef providerDef = schemaDef.findProviderDefFor( protocol );
+      ProtocolHandler protocolHandler = handlers.get( providerDef.getName() );
+
+      if( protocolHandler == null )
+        {
+        protocolHandler = createProtocolHandler( providerDef );
+        handlers.put( providerDef.getName(), protocolHandler );
+        }
+
+      Map<String, List<String>> protocolProperties = schemaDef.findProtocolProperties( protocol );
+
+      ( (LingualProtocolHandler) protocolHandler ).addProperties( protocol, protocolProperties );
+      }
+
+    return new ArrayList<ProtocolHandler<Protocol, Format>>( handlers.values() );
     }
 
-  public void addProtocol( String schemaName, Protocol format, List<String> uris )
+  protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
-    SchemaDef schemaDef = getSchemaDef( schemaName );
+    Map<String, FormatHandler<Protocol, Format>> handlers = new HashMap<String, FormatHandler<Protocol, Format>>();
 
-    schemaDef.addProtocolProperty( format, FormatProperties.EXTENSIONS, uris );
+    Collection<Format> formats = schemaDef.getAllFormats();
+    for( Format format : formats )
+      {
+      ProviderDef providerDef = schemaDef.findProviderDefFor( format );
+      FormatHandler formatHandler = handlers.get( providerDef.getName() );
+
+      if( formatHandler == null )
+        {
+        formatHandler = createFormatHandler( providerDef );
+        handlers.put( providerDef.getName(), formatHandler );
+        }
+
+      Map<String, List<String>> formatProperties = schemaDef.findFormatProperties( format );
+
+      ( (LingualFormatHandler) formatHandler ).addProperties( format, formatProperties );
+      }
+
+    return new ArrayList<FormatHandler<Protocol, Format>>( handlers.values() );
+    }
+
+  protected abstract ProtocolHandler createProtocolHandler( ProviderDef providerDef );
+
+  protected abstract FormatHandler createFormatHandler( ProviderDef providerDef );
+
+  public void addFormat( String schemaName, Format format, List<String> extensions, Map<String, String> properties, String providerName )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    schemaDef.addFormatProperty( format, FormatProperties.EXTENSIONS, extensions );
+    schemaDef.addFormatProperty( format, FormatProperties.PROVIDER, providerName );
+
+    if( properties == null )
+      return;
+
+    for( Map.Entry<String, String> entry : properties.entrySet() )
+      schemaDef.addFormatProperty( format, entry.getKey(), entry.getValue() );
+    }
+
+  public void addProtocol( String schemaName, Protocol protocol, List<String> uris, Map<String, String> properties, String providerName )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    schemaDef.addProtocolProperty( protocol, ProtocolProperties.URIS, uris );
+    schemaDef.addProtocolProperty( protocol, ProtocolProperties.PROVIDER, providerName );
+
+    if( properties == null )
+      return;
+
+    for( Map.Entry<String, String> entry : properties.entrySet() )
+      schemaDef.addProtocolProperty( protocol, entry.getKey(), entry.getValue() );
     }
 
   @Override
@@ -655,21 +845,20 @@ public abstract class SchemaCatalog implements Serializable
     {
     if( this == object )
       return true;
-
-    if( !( object instanceof SchemaCatalog ) )
+    if( object == null || getClass() != object.getClass() )
       return false;
 
-    SchemaCatalog catalog = (SchemaCatalog) object;
+    SchemaCatalog that = (SchemaCatalog) object;
 
-    if( formatHandlers != null ? !formatHandlers.equals( catalog.formatHandlers ) : catalog.formatHandlers != null )
+    if( idPointMap != null ? !idPointMap.equals( that.idPointMap ) : that.idPointMap != null )
       return false;
-    if( idPointMap != null ? !idPointMap.equals( catalog.idPointMap ) : catalog.idPointMap != null )
+    if( mavenRepos != null ? !mavenRepos.equals( that.mavenRepos ) : that.mavenRepos != null )
       return false;
-    if( nameFieldsMap != null ? !nameFieldsMap.equals( catalog.nameFieldsMap ) : catalog.nameFieldsMap != null )
+    if( nameFieldsMap != null ? !nameFieldsMap.equals( that.nameFieldsMap ) : that.nameFieldsMap != null )
       return false;
-    if( protocolHandlers != null ? !protocolHandlers.equals( catalog.protocolHandlers ) : catalog.protocolHandlers != null )
+    if( platformBroker != null ? !platformBroker.equals( that.platformBroker ) : that.platformBroker != null )
       return false;
-    if( rootSchemaDef != null ? !rootSchemaDef.equals( catalog.rootSchemaDef ) : catalog.rootSchemaDef != null )
+    if( rootSchemaDef != null ? !rootSchemaDef.equals( that.rootSchemaDef ) : that.rootSchemaDef != null )
       return false;
 
     return true;
@@ -678,9 +867,9 @@ public abstract class SchemaCatalog implements Serializable
   @Override
   public int hashCode()
     {
-    int result = ( rootSchemaDef != null ? rootSchemaDef.hashCode() : 0 );
-    result = 31 * result + ( protocolHandlers != null ? protocolHandlers.hashCode() : 0 );
-    result = 31 * result + ( formatHandlers != null ? formatHandlers.hashCode() : 0 );
+    int result = platformBroker != null ? platformBroker.hashCode() : 0;
+    result = 31 * result + ( mavenRepos != null ? mavenRepos.hashCode() : 0 );
+    result = 31 * result + ( rootSchemaDef != null ? rootSchemaDef.hashCode() : 0 );
     result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
     result = 31 * result + ( idPointMap != null ? idPointMap.hashCode() : 0 );
     return result;

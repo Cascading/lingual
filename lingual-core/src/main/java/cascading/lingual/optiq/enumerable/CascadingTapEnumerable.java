@@ -96,7 +96,7 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     PlatformBroker platformBroker = getPlatformBroker();
     Properties properties = platformBroker.getProperties();
 
-    Optiq.writeSQLPlan( platformBroker.getProperties(), Misc.createUniqueName(), getVolcanoPlanner() );
+    Optiq.writeSQLPlan( properties, Misc.createUniqueName(), getVolcanoPlanner() );
 
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();

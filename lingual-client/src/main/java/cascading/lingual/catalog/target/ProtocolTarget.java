@@ -22,12 +22,16 @@ package cascading.lingual.catalog.target;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -52,29 +56,40 @@ public class ProtocolTarget extends CRUDTarget
     }
 
   @Override
-  protected String performAdd( PlatformBroker platformBroker )
+  protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
 
     if( protocol == null )
       throw new IllegalArgumentException( "add action must have a protocol name value" );
 
     String schemaName = getOptions().getSchemaName();
-    List<String> extensions = getOptions().getExtensions();
 
-    catalog.addProtocol( schemaName, protocol, extensions );
+    Map<String, String> properties = getOptions().getProperties();
+    List<String> uris = getOptions().getURIs();
 
-    return protocol.getName();
+    String providerName = getOptions().getProviderName();
+
+    if( providerName != null )
+      {
+      ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
+
+      if( providerDef == null )
+        throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
+      }
+
+    catalog.addProtocol( schemaName, protocol, uris, properties, providerName );
+
+    return asList( protocol.getName() );
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     String schemaName = getOptions().getSchemaName();
+
     if( schemaName != null && !schemaName.isEmpty() )
       return catalog.getProtocolNames( getOptions().getSchemaName() );
     else

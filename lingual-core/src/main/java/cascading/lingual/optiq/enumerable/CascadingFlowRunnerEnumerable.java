@@ -23,9 +23,11 @@ package cascading.lingual.optiq.enumerable;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
@@ -34,6 +36,7 @@ import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
@@ -141,13 +144,22 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     Optiq.writeSQLPlan( properties, flowFactory.getName(), getVolcanoPlanner() );
 
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
     for( Ref head : branch.heads.keySet() )
-      flowFactory.addSource( head.name, getIdentifierFor( platformBroker, head ) );
+      {
+      String identifier = getIdentifierFor( platformBroker, head );
+      String[] jarPath = getJarPaths( catalog, identifier );
+
+      flowFactory.addSource( head.name, identifier, jarPath );
+      }
 
     if( branch.resultName != null )
       {
-      TableDef tableDef = platformBroker.getCatalog().resolveTableDef( branch.resultName );
-      flowFactory.addSink( tableDef.getName(), tableDef.getIdentifier() );
+      TableDef tableDef = catalog.resolveTableDef( branch.resultName );
+      String[] jarPath = getJarPaths( catalog, tableDef.getIdentifier() );
+
+      flowFactory.addSink( tableDef.getName(), tableDef.getIdentifier(), jarPath );
       }
     else
       {
@@ -223,9 +235,29 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     }
 
+  private String[] getJarPaths( SchemaCatalog catalog, String identifier )
+    {
+    Set<String> jars = new HashSet<String>();
+    String rootPath = getPlatformBroker().getFullProviderPath();
+
+    TableDef tableDefFor = catalog.findTableDefFor( identifier );
+
+    ProviderDef protocolProvider = tableDefFor.getProtocolProvider();
+
+    if( protocolProvider != null )
+      jars.add( getPlatformBroker().makePath( rootPath, protocolProvider.getIdentifier() ) );
+
+    ProviderDef formatProvider = tableDefFor.getFormatProvider();
+
+    if( formatProvider != null )
+      jars.add( getPlatformBroker().makePath( rootPath, formatProvider.getIdentifier() ) );
+
+    return jars.toArray( new String[ jars.size() ] );
+    }
+
   private String getIdentifierFor( PlatformBroker platformBroker, Ref head )
     {
-    String identifier = head.identifier;
+    String identifier = head.tableDef != null ? head.tableDef.getIdentifier() : null;
 
     if( identifier == null )
       identifier = platformBroker.getTempPath( head.name );

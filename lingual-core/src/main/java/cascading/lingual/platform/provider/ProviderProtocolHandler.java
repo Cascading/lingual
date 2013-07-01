@@ -18,54 +18,56 @@
  * limitations under the License.
  */
 
-package cascading.lingual.platform.local;
+package cascading.lingual.platform.provider;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import cascading.bind.catalog.Resource;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.ProviderDef;
+import cascading.lingual.catalog.provider.ProviderProxy;
 import cascading.lingual.platform.LingualProtocolHandler;
+import cascading.lingual.util.MiscCollection;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tap.local.FileTap;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 /**
  *
  */
-@JsonAutoDetect(
-  fieldVisibility = JsonAutoDetect.Visibility.NONE,
-  getterVisibility = JsonAutoDetect.Visibility.NONE,
-  setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class LocalDefaultProtocolHandler extends LingualProtocolHandler
+public class ProviderProtocolHandler extends LingualProtocolHandler
   {
-  public static final Protocol FILE = Protocol.getProtocol( "file" );
+  private final ProviderProxy providerProxy;
 
-  public LocalDefaultProtocolHandler()
+  public ProviderProtocolHandler( ProviderDef providerDef )
     {
+    super( providerDef );
+
+    this.providerProxy = new ProviderProxy( providerDef );
     }
 
   @Override
   public Collection<? extends Protocol> getProtocols()
     {
-    return Collections.singleton( FILE );
+    return getDefaults().getKeys();
     }
 
   @Override
   public boolean handles( Protocol protocol )
     {
-    return FILE.equals( protocol );
+    return getProtocols().contains( protocol );
     }
 
   @Override
-  protected Tap createTapFor( Resource<Protocol, Format, SinkMode> resource, Scheme scheme )
+  public Tap createTap( Scheme scheme, Resource<Protocol, Format, SinkMode> resource )
     {
-    if( resource.getProtocol().equals( FILE ) )
-      return new FileTap( scheme, resource.getIdentifier(), resource.getMode() );
+    Map<String,List<String>> defaultProperties = getDefaultProperties( resource.getProtocol() );
+    Properties properties = MiscCollection.asProperties( defaultProperties );
 
-    return null;
+    return providerProxy.createTap( resource, scheme, properties );
     }
   }

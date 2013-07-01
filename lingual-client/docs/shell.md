@@ -33,6 +33,8 @@ To start the shell for running queries on Apache Hadoop:
 | --flowPlanPath [dir] | where to write out the Cascading planner DOT file for debugging
 | --sqlPlanPath [dir ] | where to write out the Optiq planner plan file for debugging
 |                      |
+| --config [file]      | config properties file to use instead of .lingual/config/default.properties
+|                      |
 
 # Configuration
 

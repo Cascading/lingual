@@ -120,7 +120,7 @@ public abstract class LingualConnection implements Connection
       }
     else
       {
-      LOG.info( "using default schema." );
+      LOG.info( "using default schema" );
       }
 
     platformBroker = PlatformBrokerFactory.createPlatformBroker( platformName, properties );
@@ -192,7 +192,7 @@ public abstract class LingualConnection implements Connection
     if( trackedFlows.size() == 1 )
       return trackedFlows.iterator().next();
 
-    LOG.error( "unable to determine single current flow. found {} flows.", trackedFlows.size() );
+    LOG.error( "unable to determine single current flow. found {} flows", trackedFlows.size() );
 
     return null;
     }

@@ -27,7 +27,9 @@ import cascading.bind.catalog.handler.FormatHandler;
 import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 
 /**
  *
@@ -44,14 +46,26 @@ public class TestSchemaCatalog extends SchemaCatalog
     }
 
   @Override
-  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers()
+  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
     {
     return Collections.EMPTY_LIST;
     }
 
   @Override
-  protected List<FormatHandler<Protocol, Format>> createFormatHandlers()
+  protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
     return Collections.EMPTY_LIST;
+    }
+
+  @Override
+  protected ProtocolHandler createProtocolHandler( ProviderDef providerDef )
+    {
+    return null;
+    }
+
+  @Override
+  protected FormatHandler createFormatHandler( ProviderDef providerDef )
+    {
+    return null;
     }
   }

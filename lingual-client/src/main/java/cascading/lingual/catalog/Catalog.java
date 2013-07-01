@@ -26,7 +26,9 @@ import java.util.Properties;
 
 import cascading.lingual.catalog.target.DDLTarget;
 import cascading.lingual.catalog.target.FormatTarget;
+import cascading.lingual.catalog.target.RepoTarget;
 import cascading.lingual.catalog.target.ProtocolTarget;
+import cascading.lingual.catalog.target.ProviderTarget;
 import cascading.lingual.catalog.target.SchemaTarget;
 import cascading.lingual.catalog.target.StereotypeTarget;
 import cascading.lingual.catalog.target.TableTarget;
@@ -111,7 +113,7 @@ public class Catalog extends Main<CatalogOptions>
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), properties );
 
     if( getOptions().isInit() )
-      return metaDataPath( platformBroker );
+      return init( platformBroker );
 
     boolean doNotWrite = false;
 
@@ -129,8 +131,12 @@ public class Catalog extends Main<CatalogOptions>
         return handleFormat( platformBroker );
       else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
         return handleProtocol( platformBroker );
+      else if( getOptions().isListProviders() || getOptions().isProviderActions() )
+        return handleProvider( platformBroker );
+      else if( getOptions().isListRepos() || getOptions().isRepoActions() )
+        return handleMavenRepo( platformBroker );
 
-      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update" );
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update, --validate" );
       }
     catch( Throwable throwable )
       {
@@ -141,6 +147,7 @@ public class Catalog extends Main<CatalogOptions>
     finally
       {
       LOG.info( "catalog loaded: {}", platformBroker.catalogLoaded() );
+
       if( !doNotWrite && platformBroker.catalogLoaded() )
         platformBroker.writeCatalog();
       }
@@ -178,17 +185,30 @@ public class Catalog extends Main<CatalogOptions>
     return new ProtocolTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
-  private boolean metaDataPath( PlatformBroker platformBroker )
+  protected boolean handleProvider( PlatformBroker platformBroker )
+    {
+    return new ProviderTarget( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  protected boolean handleMavenRepo( PlatformBroker platformBroker )
+    {
+    return new RepoTarget( getPrinter(), getOptions() ).handle( platformBroker );
+    }
+
+  private boolean init( PlatformBroker platformBroker )
     {
     LOG.debug( "catalog: init" );
 
-    boolean result = platformBroker.initializeMetaData();
+    boolean success = platformBroker.initializeMetaData();
 
-    if( result )
+    if( success )
+      platformBroker.writeCatalog();
+
+    if( !success )
       getPrinter().print( "path: %s has already been initialized", platformBroker.getFullMetadataPath() );
     else
       getPrinter().print( "path: %s has been initialized", platformBroker.getFullMetadataPath() );
 
-    return !result;
+    return success;
     }
   }

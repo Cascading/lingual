@@ -21,6 +21,7 @@
 package cascading.lingual.catalog.target;
 
 import java.util.Collection;
+import java.util.List;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
@@ -28,6 +29,8 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -56,7 +59,7 @@ public class TableTarget extends CRUDTarget
     }
 
   @Override
-  protected String performAdd( PlatformBroker platformBroker )
+  protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
@@ -71,7 +74,7 @@ public class TableTarget extends CRUDTarget
     Format format = Format.getFormat( getOptions().getFormatName() );
     String schemaName = getOptions().getSchemaName();
 
-    return catalog.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format );
+    return asList( catalog.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format ) );
     }
 
   @Override

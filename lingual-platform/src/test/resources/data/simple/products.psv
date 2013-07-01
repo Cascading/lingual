@@ -1,0 +1,3 @@
+SKU:string|PRODUCT_NAME:string|PRODUCT_DESCRIPTION:string
+'ABC-123'|'Coffee Mug'|'Insulated mug with cover'
+'DEF-456'|'Coffee Beans'|'Whatever we had lying around the warehouse'

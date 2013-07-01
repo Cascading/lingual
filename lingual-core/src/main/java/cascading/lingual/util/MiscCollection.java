@@ -21,8 +21,11 @@
 package cascading.lingual.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import cascading.util.Util;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
@@ -53,5 +56,15 @@ public class MiscCollection
     );
 
     return CacheBuilder.newBuilder().build( CacheLoader.from( interner ) );
+    }
+
+  public static Properties asProperties( Map<String, List<String>> defaultProperties )
+    {
+    Properties properties = new Properties();
+
+    for( Map.Entry<String, List<String>> entry : defaultProperties.entrySet() )
+      properties.put( entry.getKey(), Util.join( entry.getValue(), "," ) );
+
+    return properties;
     }
   }

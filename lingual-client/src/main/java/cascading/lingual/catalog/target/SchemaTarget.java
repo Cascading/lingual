@@ -21,11 +21,14 @@
 package cascading.lingual.catalog.target;
 
 import java.util.Collection;
+import java.util.List;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -60,7 +63,7 @@ public class SchemaTarget extends CRUDTarget
     }
 
   @Override
-  protected String performAdd( PlatformBroker platformBroker )
+  protected List<String> performAdd( PlatformBroker platformBroker )
     {
     String addURI = getOptions().getAddOrUpdateURI();
     SchemaCatalog catalog = platformBroker.getCatalog();
@@ -73,12 +76,12 @@ public class SchemaTarget extends CRUDTarget
       boolean success = catalog.addSchemaDef( schemaName, protocol, format );
 
       if( success )
-        return schemaName;
+        return asList( schemaName );
 
       return null;
       }
 
-    return catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI );
+    return asList( catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI ) );
     }
 
   @Override

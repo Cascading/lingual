@@ -22,9 +22,11 @@ package cascading.lingual.shell;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import cascading.lingual.common.Main;
 import cascading.lingual.jdbc.Driver;
@@ -41,6 +43,15 @@ import static java.util.Collections.addAll;
 public class Shell extends Main<ShellOptions>
   {
   private static final Logger LOG = LoggerFactory.getLogger( Shell.class );
+
+  public Shell()
+    {
+    }
+
+  public Shell( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
+    {
+    super( outPrintStream, errPrintStream, properties );
+    }
 
   public static void main( String[] args ) throws IOException
     {
@@ -113,7 +124,7 @@ public class Shell extends Main<ShellOptions>
     List<String> args = new ArrayList<String>();
 
     addAll( args, "-d", Driver.class.getName() );
-    addAll( args, "-u", getOptions().createJDBCUrl() );
+    addAll( args, "-u", getOptions().createJDBCUrl( properties ) );
     addAll( args, "--headerInterval=100" ); // 100 is default
 
     if( getOptions().hasUsername() )
@@ -124,10 +135,15 @@ public class Shell extends Main<ShellOptions>
 
     // this breaks !tables etc,
     // but is required if we are going to output 10B rows
-    if( getOptions().getMaxRows() == 0 )
+    if( getOptions().getMaxRows() == null || getOptions().getMaxRows() == 0 )
+      {
       addAll( args, "--incremental=true" );
+      }
     else
+      {
+      addAll( args, "--incremental=false" ); // allows buffering
       getPrinter().print( "only %,d rows will be displayed", getOptions().getMaxRows() );
+      }
 
     if( getOptions().isVerbose() )
       addAll( args, "--verbose=true" );

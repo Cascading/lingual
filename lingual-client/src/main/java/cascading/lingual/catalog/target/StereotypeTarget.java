@@ -25,12 +25,15 @@ import java.util.Collection;
 import java.util.List;
 
 import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.type.SQLTypeMap;
 import cascading.lingual.type.TypeMap;
 import cascading.tuple.Fields;
+
+import static java.util.Arrays.asList;
 
 /**
  *
@@ -61,19 +64,28 @@ public class StereotypeTarget extends CRUDTarget
     }
 
   @Override
-  protected String performAdd( PlatformBroker platformBroker )
+  protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     String schemaName = getOptions().getSchemaName();
     String stereotypeName = getOptions().getStereotypeName();
     List<String> columns = getOptions().getColumns();
     List<String> types = getOptions().getTypes();
     Fields fields = createFields( columns, types );
 
+    String providerName = getOptions().getProviderName();
+
+    if( providerName != null )
+      {
+      ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
+
+      if( providerDef == null )
+        throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
+      }
+
     catalog.createStereotype( schemaName, stereotypeName, fields );
 
-    return stereotypeName;
+    return asList( stereotypeName );
     }
 
   @Override
@@ -82,6 +94,7 @@ public class StereotypeTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
 
     String schemaName = getOptions().getSchemaName();
+
     if( schemaName != null && !schemaName.isEmpty() )
       return catalog.getStereotypeNames( schemaName );
     else

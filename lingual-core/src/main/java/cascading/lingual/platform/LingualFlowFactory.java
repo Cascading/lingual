@@ -20,7 +20,11 @@
 
 package cascading.lingual.platform;
 
-import cascading.bind.catalog.Stereotype;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import cascading.bind.catalog.Resource;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -29,13 +33,10 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.jdbc.LingualConnection;
-import cascading.lingual.optiq.meta.Branch;
-import cascading.lingual.optiq.meta.Ref;
 import cascading.lingual.util.Version;
 import cascading.pipe.Pipe;
 import cascading.property.AppProps;
 import cascading.tap.SinkMode;
-import cascading.tuple.Fields;
 
 /**
  * Class LingualFlowFactory is an implementation of the {@link FlowFactory} base class.
@@ -49,35 +50,22 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   private Pipe tail;
   private SchemaCatalog catalog;
   private LingualConnection lingualConnection;
+  private Set<String> jars = new HashSet<String>();
 
   /**
    * Instantiates a new Lingual flow factory.
    *
    * @param platformBroker the platform broker
    * @param name           the name
-   * @param branch         the branch
+   * @param tail
    */
-  public LingualFlowFactory( PlatformBroker platformBroker, LingualConnection lingualConnection, String name, Branch branch )
+  public LingualFlowFactory( PlatformBroker platformBroker, LingualConnection lingualConnection, String name, Pipe tail )
     {
-    super( platformBroker.getProperties(), platformBroker.getCatalog().getProtocolHandlers(), name );
+    super( platformBroker.getProperties(), name );
     this.platformBroker = platformBroker;
     this.catalog = platformBroker.getCatalog();
     this.lingualConnection = lingualConnection;
-    this.tail = branch.current;
-
-    for( Ref head : branch.heads.keySet() )
-      {
-      Stereotype<Protocol, Format> stereotypeFor;
-
-      if( head.identifier == null )
-        stereotypeFor = catalog.getRootSchemaDef().findStereotypeFor( head.fields ); // do not use head name
-      else
-        stereotypeFor = catalog.findStereotypeFor( head.identifier );
-
-      setSourceStereotype( head.name, stereotypeFor );
-      }
-
-    setSinkStereotype( this.tail.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
+    this.tail = tail;
 
     AppProps.addApplicationFramework( getProperties(), Version.getName() + ":" + Version.getVersionString() );
     }
@@ -88,19 +76,33 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     return platformBroker.getFlowConnector();
     }
 
-  public void addSource( String sourceName, String path )
+  public void addSource( String sourceName, String path, String... jarPaths )
     {
-    addSourceResource( sourceName, catalog.getResourceFor( path, SinkMode.KEEP ) );
+    addJars( jarPaths );
+
+    Resource<Protocol, Format, SinkMode> resource = catalog.getResourceFor( path, SinkMode.KEEP );
+
+    addSourceResource( sourceName, resource );
     }
 
-  public void addSink( String sinkName, String path )
+  public void addSink( String sinkName, String path, String... jarPaths )
     {
-    addSinkResource( sinkName, catalog.getResourceFor( path, SinkMode.REPLACE ) );
+    addJars( jarPaths );
+
+    Resource<Protocol, Format, SinkMode> resourceFor = catalog.getResourceFor( path, SinkMode.REPLACE );
+
+    addSinkResource( sinkName, resourceFor );
+    }
+
+  private void addJars( String... jarPaths )
+    {
+    Collections.addAll( jars, jarPaths );
     }
 
   @Override
   public Flow create()
     {
+    // add jars here
     FlowDef flowDef = FlowDef.flowDef()
       .setName( getName() )
       .addTails( tail )

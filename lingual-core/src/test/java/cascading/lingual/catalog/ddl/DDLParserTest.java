@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +33,6 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.json.JSONFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
@@ -99,6 +97,7 @@ public class DDLParserTest extends TestCase
     TestSchemaCatalog catalog = new TestSchemaCatalog( Protocol.getProtocol( "file" ), Format.getFormat( "csv" ) );
 
     catalog.createSchemaDef( "test", null, null, null );
+    catalog.initializeNew();
 
     DDLParser parser = new DDLParser( catalog, "test", "test", "file", "csv" );
 
@@ -108,24 +107,21 @@ public class DDLParserTest extends TestCase
 
     assertTrue( Sets.difference( tables, expectedTables ).size() == 0 );
 
-    catalog.addFormat( "test", Format.getFormat( "xml" ), Arrays.asList( "xml" ) );
-    catalog.addProtocol( "test", Protocol.getProtocol( "jdbc" ), Arrays.asList( "jdbc" ) );
-
     String jsonFirst = writeObject( catalog );
 
-    System.out.println( jsonFirst );
+//    System.out.println( jsonFirst );
 
     TestSchemaCatalog firstRead = readCatalog( jsonFirst );
 
-    Assert.assertEquals( catalog, firstRead );
+    assertEquals( catalog, firstRead );
 
     String jsonSecond = writeObject( firstRead );
 
-    System.out.println( jsonSecond );
+//    System.out.println( jsonSecond );
 
     TestSchemaCatalog secondRead = readCatalog( jsonSecond );
 
-    Assert.assertEquals( firstRead, secondRead );
+    assertEquals( firstRead, secondRead );
     }
 
   private TestSchemaCatalog readCatalog( String json ) throws IOException

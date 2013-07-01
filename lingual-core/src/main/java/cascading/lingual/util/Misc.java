@@ -20,10 +20,14 @@
 
 package cascading.lingual.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import cascading.util.Util;
+import com.google.common.hash.Hashing;
+import com.google.common.io.Files;
 
 /**
  *
@@ -35,5 +39,17 @@ public class Misc
   public static String createUniqueName()
     {
     return dateFormat.format( new Date() ) + "-" + Util.createUniqueID().substring( 0, 10 );
+    }
+
+  public static String getHash( File file )
+    {
+    try
+      {
+      return Files.hash( file, Hashing.md5() ).toString();
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "could not get hash for: " + file.getAbsolutePath(), exception );
+      }
     }
   }

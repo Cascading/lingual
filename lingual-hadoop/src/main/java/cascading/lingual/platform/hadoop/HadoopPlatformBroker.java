@@ -396,17 +396,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       {
       URI uriScheme;
 
-      LOG.debug( "handling path: {}", stringPath );
-
       URI uri = new Path( stringPath ).toUri(); // safer URI parsing
       String schemeString = uri.getScheme();
       String authority = uri.getAuthority();
-
-      if( LOG.isDebugEnabled() )
-        {
-        LOG.debug( "found scheme: {}", schemeString );
-        LOG.debug( "found authority: {}", authority );
-        }
 
       if( schemeString != null && authority != null )
         uriScheme = new URI( schemeString + "://" + uri.getAuthority() );
@@ -414,8 +406,6 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
         uriScheme = new URI( schemeString + ":///" );
       else
         uriScheme = getDefaultFileSystemURIScheme( jobConf );
-
-      LOG.debug( "using uri scheme: {}", uriScheme );
 
       return uriScheme;
       }

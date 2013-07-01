@@ -20,6 +20,8 @@
 
 package cascading.lingual.catalog;
 
+import java.util.List;
+
 import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
 import cascading.tap.SinkMode;
@@ -36,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class TableDef extends Def
   {
   @JsonProperty
-  private Stereotype<Protocol, Format> stereotype;
+  private String stereotypeName;
   @JsonProperty
   private Protocol protocol;
   @JsonProperty
@@ -49,30 +51,45 @@ public class TableDef extends Def
   public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype<Protocol, Format> stereotype )
     {
     super( parentSchema, name, identifier );
-    this.stereotype = stereotype;
+    this.stereotypeName = stereotype.getName();
+    this.protocol = stereotype.getDefaultProtocol();
+    this.format = stereotype.getDefaultFormat();
     }
 
   public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
     {
     super( parentSchema, name, identifier );
-    this.stereotype = stereotype;
-    this.protocol = protocol;
-    this.format = format;
+    this.stereotypeName = stereotype.getName();
+    this.protocol = protocol == null ? stereotype.getDefaultProtocol() : protocol;
+    this.format = format == null ? stereotype.getDefaultFormat() : format;
+    }
+
+  public TableDef( SchemaDef parentSchema, String name, String identifier, String stereotypeName, Protocol protocol, Format format )
+    {
+    super( parentSchema, name, identifier );
+    this.stereotypeName = stereotypeName;
+    this.protocol = protocol == null ? getStereotype().getDefaultProtocol() : protocol;
+    this.format = format == null ? getStereotype().getDefaultFormat() : format;
     }
 
   public TableDef copyWith( String newName )
     {
-    return new TableDef( parentSchema, newName, identifier, stereotype );
+    return new TableDef( parentSchema, newName, identifier, stereotypeName, protocol, format );
     }
 
   public Stereotype<Protocol, Format> getStereotype()
     {
-    return stereotype;
+    return getParentSchema().findStereotypeFor( stereotypeName );
     }
 
   public Fields getFields()
     {
-    return stereotype.getFields();
+    return getStereotype().getFields();
+    }
+
+  public String getStereotypeName()
+    {
+    return stereotypeName;
     }
 
   public Protocol getProtocol()
@@ -106,6 +123,34 @@ public class TableDef extends Def
     return new Resource<Protocol, Format, SinkMode>( identifier, getActualProtocol(), getActualFormat(), sinkMode );
     }
 
+  public ProviderDef getProtocolProvider()
+    {
+    Protocol protocol = getActualProtocol();
+
+    List<String> providers = parentSchema.getProtocolProperty( protocol, ProtocolProperties.PROVIDER );
+
+    if( providers.isEmpty() )
+      return null;
+
+    String providerName = providers.get( 0 );
+
+    return parentSchema.getProviderDef( providerName );
+    }
+
+  public ProviderDef getFormatProvider()
+    {
+    Format format = getActualFormat();
+
+    List<String> providers = parentSchema.getFormatProperty( format, ProtocolProperties.PROVIDER );
+
+    if( providers.isEmpty() )
+      return null;
+
+    String providerName = providers.get( 0 );
+
+    return parentSchema.getProviderDef( providerName );
+    }
+
   @Override
   public boolean equals( Object object )
     {
@@ -122,7 +167,7 @@ public class TableDef extends Def
       return false;
     if( protocol != null ? !protocol.equals( tableDef.protocol ) : tableDef.protocol != null )
       return false;
-    if( stereotype != null ? !stereotype.equals( tableDef.stereotype ) : tableDef.stereotype != null )
+    if( stereotypeName != null ? !stereotypeName.equals( tableDef.stereotypeName ) : tableDef.stereotypeName != null )
       return false;
 
     return true;
@@ -132,7 +177,7 @@ public class TableDef extends Def
   public int hashCode()
     {
     int result = super.hashCode();
-    result = 31 * result + ( stereotype != null ? stereotype.hashCode() : 0 );
+    result = 31 * result + ( stereotypeName != null ? stereotypeName.hashCode() : 0 );
     result = 31 * result + ( protocol != null ? protocol.hashCode() : 0 );
     result = 31 * result + ( format != null ? format.hashCode() : 0 );
     return result;

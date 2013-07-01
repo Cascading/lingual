@@ -78,7 +78,8 @@ public class Driver extends UnregisteredDriver
   private final Factory factory = instantiateFactory();
 
   public static final String PLATFORM_PROP = "platform";
-  public static final String CATALOG_PROP = "catalog";
+  public static final String CATALOG_PROP = "catalog"; // root directory of catalog data
+  public static final String CONFIG_PROP = "config";
   public static final String SCHEMA_PROP = "schema";
   public static final String SCHEMAS_PROP = "schemas";
   public static final String TABLES_PROP = "tables";
@@ -172,6 +173,8 @@ public class Driver extends UnregisteredDriver
     String urlSuffix = getSuffix( url, info );
 
     return ConnectStringParser.parse( urlSuffix, info );
+    // here connectString becomes Properties, which are passed to LingualConnection (ctor -> initialize -> PlatformBrokerFactory.createPlatformBroker),
+    // and if it contains "config=<path-to-properties>", this file's content will be used by PlatformBroker for configProperties
     }
 
   private String getSuffix( String url, Properties info )

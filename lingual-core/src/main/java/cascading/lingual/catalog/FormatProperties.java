@@ -28,14 +28,14 @@ import java.util.Map;
  */
 public class FormatProperties extends SchemaProperties
   {
-  public static final String EXTENSIONS = "format.extensions";
+  public static final String EXTENSIONS = "extensions";
 
   public static Format findFormatFor( SchemaDef schemaDef, String identifier )
     {
     if( schemaDef == null )
       return null;
 
-    Map<Format, List<String>> extensions = schemaDef.getFormatProperties( EXTENSIONS );
+    Map<Format, List<String>> extensions = schemaDef.getPropertyByFormats( EXTENSIONS );
 
     String extension = identifier.replaceAll( ".*\\.([^.]+)$", ".$1" );
 

@@ -20,10 +20,16 @@
 
 package cascading.lingual.catalog;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.bind.catalog.Stereotypes;
@@ -34,8 +40,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +79,11 @@ public class SchemaDef extends Def
   @JsonManagedReference
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private final InsensitiveMap<TableDef> childTables = new InsensitiveMap<TableDef>();
+
+  @JsonProperty
+  @JsonManagedReference
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private final InsensitiveMap<ProviderDef> providers = new InsensitiveMap<ProviderDef>();
 
   public SchemaDef()
     {
@@ -148,7 +157,7 @@ public class SchemaDef extends Def
 
   public void addProtocolProperties( Protocol protocol, Map<String, List<String>> properties )
     {
-    protocolProperties.addProperties( protocol, properties );
+    protocolProperties.putProperties( protocol, properties );
     }
 
   public void addProtocolProperty( Protocol protocol, String property, String... values )
@@ -161,7 +170,30 @@ public class SchemaDef extends Def
     protocolProperties.addProperty( protocol, property, values );
     }
 
-  public Map<Protocol, List<String>> getProtocolProperties( String property )
+  public List<String> getProtocolProperty( Protocol protocol, String property )
+    {
+    List<String> result = findProtocolProperties( protocol ).get( property );
+
+    if( result == null )
+      return Collections.EMPTY_LIST;
+
+    return result;
+    }
+
+  public Map<String, List<String>> findProtocolProperties( Protocol protocol )
+    {
+    Map<String, List<String>> result = new HashMap<String, List<String>>();
+
+    if( !isRoot() )
+      result.putAll( getParentSchema().findProtocolProperties( protocol ) );
+
+    if( protocolProperties.getValueFor( protocol ) != null )
+      result.putAll( protocolProperties.getValueFor( protocol ) );
+
+    return result;
+    }
+
+  public Map<Protocol, List<String>> getPropertyByProtocols( String property )
     {
     Map<Protocol, List<String>> values = new HashMap<Protocol, List<String>>();
 
@@ -180,7 +212,7 @@ public class SchemaDef extends Def
 
   public void addFormatProperties( Format format, Map<String, List<String>> properties )
     {
-    formatProperties.addProperties( format, properties );
+    formatProperties.putProperties( format, properties );
     }
 
   public void addFormatProperty( Format format, String property, String... values )
@@ -193,7 +225,30 @@ public class SchemaDef extends Def
     formatProperties.addProperty( format, property, values );
     }
 
-  public Map<Format, List<String>> getFormatProperties( String property )
+  public List<String> getFormatProperty( Format format, String property )
+    {
+    List<String> result = findFormatProperties( format ).get( property );
+
+    if( result == null )
+      return Collections.EMPTY_LIST;
+
+    return result;
+    }
+
+  public Map<String, List<String>> findFormatProperties( Format format )
+    {
+    Map<String, List<String>> result = new HashMap<String, List<String>>();
+
+    if( !isRoot() )
+      result.putAll( getParentSchema().findFormatProperties( format ) );
+
+    if( formatProperties.getValueFor( format ) != null )
+      result.putAll( formatProperties.getValueFor( format ) );
+
+    return result;
+    }
+
+  public Map<Format, List<String>> getPropertyByFormats( String property )
     {
     Map<Format, List<String>> values = new HashMap<Format, List<String>>();
 
@@ -208,6 +263,19 @@ public class SchemaDef extends Def
       getParentSchema().populateFormatProperty( values, property );
 
     values.putAll( formatProperties.getKeyFor( property ) );
+    }
+
+  protected void registerProperties( ProviderDef providerDef )
+    {
+    Map<Format, Map<String, List<String>>> formats = providerDef.getFormatProperties();
+
+    for( Format format : formats.keySet() )
+      addFormatProperties( format, formats.get( format ) );
+
+    Map<Protocol, Map<String, List<String>>> protocols = providerDef.getProtocolProperties();
+
+    for( Protocol protocol : protocols.keySet() )
+      addProtocolProperties( protocol, protocols.get( protocol ) );
     }
 
   public Collection<SchemaDef> getChildSchemas()
@@ -366,12 +434,22 @@ public class SchemaDef extends Def
     return stereotypes.renameStereotype( name, newName );
     }
 
+  public Stereotype<Protocol, Format> findStereotypeFor( String stereotypeName )
+    {
+    Stereotype<Protocol, Format> stereotype = stereotypes.getStereotypeFor( stereotypeName );
+
+    if( stereotype != null || isRoot() )
+      return stereotype;
+
+    return getParentSchema().findStereotypeFor( stereotypeName );
+    }
+
   public Stereotype<Protocol, Format> findStereotypeFor( Fields fields )
     {
-    Stereotype<Protocol, Format> stereotypeFor = stereotypes.getStereotypeFor( fields );
+    Stereotype<Protocol, Format> stereotype = stereotypes.getStereotypeFor( fields );
 
-    if( stereotypeFor != null || getParentSchema() == null )
-      return stereotypeFor;
+    if( stereotype != null || isRoot() )
+      return stereotype;
 
     return getParentSchema().findStereotypeFor( fields );
     }
@@ -384,33 +462,147 @@ public class SchemaDef extends Def
     return stereotypes.getStereotypeFor( name ) != null;
     }
 
-  public Collection<String> getFormatNames()
+  public Collection<Protocol> getAllProtocols()
     {
-    return Collections2.transform( stereotypes.getAllFormats(), new Function<Format, String>()
+    Set<Protocol> protocols = new HashSet<Protocol>();
+
+    protocols.addAll( protocolProperties.getKeys() );
+
+    if( !isRoot() )
+      protocols.addAll( getParentSchema().getAllProtocols() );
+
+    return protocols;
+    }
+
+  public Collection<Format> getAllFormats()
     {
-    @Override
-    public String apply( Format input )
+    Set<Format> formats = new HashSet<Format>();
+
+    formats.addAll( formatProperties.getKeys() );
+
+    if( !isRoot() )
+      formats.addAll( getParentSchema().getAllFormats() );
+
+    return formats;
+    }
+
+  public Collection<String> getAllFormatNames()
+    {
+    Set<String> names = new TreeSet<String>();
+
+    for( ProviderDef providerDef : getAllProviderDefs() )
       {
-      return input.toString();
+      for( Format format : providerDef.getFormatProperties().keySet() )
+        names.add( format.toString() );
       }
-    } );
+
+    return names;
     }
 
   public Collection<String> getProtocolNames()
     {
-    return Collections2.transform( stereotypes.getAllProtocols(), new Function<Protocol, String>()
-    {
-    @Override
-    public String apply( Protocol input )
+    Set<String> names = new TreeSet<String>();
+
+    for( ProviderDef providerDef : getAllProviderDefs() )
       {
-      return input.toString();
+      for( Protocol protocol : providerDef.getProtocolProperties().keySet() )
+        names.add( protocol.toString() );
       }
-    } );
+
+    return names;
     }
 
   public Collection<String> getStereotypeNames()
     {
     return stereotypes.getStereotypeNames();
+    }
+
+  public Collection<String> getProviderNames()
+    {
+    return providers.keySet();
+    }
+
+  public boolean removeProviderDef( String providerDefName )
+    {
+    return providers.remove( providerDefName ) != null;
+    }
+
+  public void addProviderDef( String name, String jarName, Map<String, String> properties, String md5Hash )
+    {
+    addProviderDef( new ProviderDef( this, name, jarName, properties, md5Hash ) );
+    }
+
+  public void addProviderDef( ProviderDef providerDef )
+    {
+    if( providers.containsKey( providerDef.getName() ) )
+      throw new IllegalArgumentException( "provider named: " + providerDef.getName() + " already exists in schema: " + getName() );
+
+    LOG.debug( "adding provider: {}, to schema: {}", providerDef.getName(), getName() );
+
+    providers.put( providerDef.getName(), providerDef );
+
+    registerProperties( providerDef );
+    }
+
+  public List<ProviderDef> getProviderDefs()
+    {
+    return new ArrayList<ProviderDef>( providers.values() );
+    }
+
+  public List<ProviderDef> getAllProviderDefs()
+    {
+    Set<ProviderDef> providerDefs = new LinkedHashSet<ProviderDef>( providers.values() );
+
+    if( !isRoot() )
+      providerDefs.addAll( getParentSchema().getAllProviderDefs() );
+
+    return new ArrayList<ProviderDef>( providerDefs );
+    }
+
+  public ProviderDef getProviderDef( String providerDefName )
+    {
+    return providers.get( providerDefName );
+    }
+
+  public ProviderDef findProviderDefFor( String providerName )
+    {
+    if( getProviderDef( providerName ) != null )
+      return getProviderDef( providerName );
+
+    if( !isRoot() )
+      return getParentSchema().findProviderDefFor( providerName );
+
+    return null;
+    }
+
+  public ProviderDef findProviderDefFor( Protocol protocol )
+    {
+    List<String> providers = findProtocolProperties( protocol ).get( SchemaProperties.PROVIDER );
+
+    for( String providerName : providers )
+      {
+      ProviderDef providerDef = findProviderDefFor( providerName );
+
+      if( providerDef != null )
+        return providerDef;
+      }
+
+    return null;
+    }
+
+  public ProviderDef findProviderDefFor( Format format )
+    {
+    List<String> providers = findFormatProperties( format ).get( SchemaProperties.PROVIDER );
+
+    for( String providerName : providers )
+      {
+      ProviderDef providerDef = findProviderDefFor( providerName );
+
+      if( providerDef != null )
+        return providerDef;
+      }
+
+    return null;
     }
 
   @Override

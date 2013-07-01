@@ -25,4 +25,5 @@ package cascading.lingual.catalog;
  */
 public class SchemaProperties
   {
+  public static final String PROVIDER = "provider";
   }

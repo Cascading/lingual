@@ -22,6 +22,7 @@ package cascading.lingual.catalog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -59,6 +60,9 @@ public class Protocol implements Serializable
 
   public static List<Protocol> resolveProtocols( List<String> protocols )
     {
+    if( protocols == null )
+      return Collections.EMPTY_LIST;
+
     List<Protocol> results = new ArrayList<Protocol>();
 
     for( String protocol : protocols )
