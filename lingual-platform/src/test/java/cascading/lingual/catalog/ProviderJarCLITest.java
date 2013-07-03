@@ -55,5 +55,4 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     assertTrue( "unable to run query", result );
     }
-
   }

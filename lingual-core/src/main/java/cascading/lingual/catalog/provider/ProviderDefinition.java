@@ -47,6 +47,7 @@ public class ProviderDefinition
   public static final String PROVIDER_NAMED_BASE = "cascading.bind.provider.%s.";
   public static final String PROVIDER_NAME = PROVIDER_BASE + NAMES;
   public static final String PROVIDER_FACTORY_CLASS_NAME = PROVIDER_BASE + "%s.factory.classname";
+  public static final String PROVIDER_EXTENDS = PROVIDER_BASE + "%s.extends";
   public static final String PROVIDER_PLATFORMS = PROVIDER_BASE + "%s.platforms";
   public static final String PROVIDER_PROTOCOL = PROVIDER_BASE + "%s.protocol.";
   public static final String PROVIDER_FORMAT = PROVIDER_BASE + "%s.format.";
@@ -128,6 +129,11 @@ public class ProviderDefinition
     return properties.get( property( PROVIDER_FACTORY_CLASS_NAME ) );
     }
 
+  public String getExtends()
+    {
+    return properties.get( property( PROVIDER_EXTENDS ) );
+    }
+
   public Map<Protocol, Map<String, List<String>>> getDefaultProtocolProperties()
     {
     Map<Protocol, Map<String, List<String>>> map = new HashMap<Protocol, Map<String, List<String>>>();
@@ -138,7 +144,12 @@ public class ProviderDefinition
       {
       Map<String, List<String>> properties = parse( property( PROVIDER_PROTOCOL ), protocol );
 
-      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( getProviderName() ) ) );
+      String providerName = getExtends();
+
+      if( providerName == null )
+        providerName = getProviderName();
+
+      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( providerName ) ) );
       map.put( Protocol.getProtocol( protocol ), properties );
       }
 
@@ -155,7 +166,12 @@ public class ProviderDefinition
       {
       Map<String, List<String>> properties = parse( property( PROVIDER_FORMAT ), formatName );
 
-      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( getProviderName() ) ) );
+      String providerName = getExtends();
+
+      if( providerName == null )
+        providerName = getProviderName();
+
+      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( providerName ) ) );
       map.put( Format.getFormat( formatName ), properties );
       }
 

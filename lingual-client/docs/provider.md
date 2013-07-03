@@ -13,15 +13,20 @@ via the Hfs Tap. URLs (identifiers) starting with 'file:' or 'hdfs:' are automat
 
 # Creating
 
-To add new protocol or format providers, a new Jar library must be created with a 'factory' class and a
+To add new protocol or format providers, a new Jar library must be created with an optional 'factory' class and a
 `provider.properties` file defining how to find and use the factory.
+
+If a factory class is not provided, the `extends` property must be used to specify an existing provider that these
+properties will ammend.
 
 # Detail
 
     cascading.bind.provider.names=
     cascading.bind.provider.[provider_name].platforms=
 
-    cascading.bind.provider.[provider_name].factory.classname=
+    # one or the other
+    cascading.bind.provider.[provider_name].factory.classname=[classname]
+    cascading.bind.provider.[provider_name].extends=[provider_name]
 
     # define protocols differentiated by properties
     cascading.bind.provider.[provider_name].protocol.names=
@@ -30,7 +35,10 @@ To add new protocol or format providers, a new Jar library must be created with 
 
     # define formats differentiated by properties
     cascading.bind.provider.[provider_name].format.names=
-    cascading.bind.provider.[provider_name].format.[format_name].protocols= *optional*
     cascading.bind.provider.[provider_name].format.[format_name].extensions=
     cascading.bind.provider.[provider_name].format.[format_name].[property]=[value]
+
+    # optional format property specifying the protocols this format is compatible with
+    # otherwise all defined protocols in this defintion will be used
+    cascading.bind.provider.[provider_name].format.[format_name].protocols=
 
