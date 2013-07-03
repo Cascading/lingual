@@ -41,13 +41,21 @@ import cascading.tap.Tap;
  */
 public class ProviderProtocolHandler extends LingualProtocolHandler
   {
-  private final ProviderProxy providerProxy;
+  private ProviderProxy providerProxy;
 
   public ProviderProtocolHandler( ProviderDef providerDef )
     {
     super( providerDef );
 
-    this.providerProxy = new ProviderProxy( providerDef );
+    getProviderProxy();
+    }
+
+  private ProviderProxy getProviderProxy()
+    {
+    if( providerProxy == null )
+      providerProxy = new ProviderProxy( getProviderDef() );
+
+    return providerProxy;
     }
 
   @Override
@@ -65,9 +73,9 @@ public class ProviderProtocolHandler extends LingualProtocolHandler
   @Override
   public Tap createTap( Scheme scheme, Resource<Protocol, Format, SinkMode> resource )
     {
-    Map<String,List<String>> defaultProperties = getDefaultProperties( resource.getProtocol() );
+    Map<String, List<String>> defaultProperties = getDefaultProperties( resource.getProtocol() );
     Properties properties = MiscCollection.asProperties( defaultProperties );
 
-    return providerProxy.createTap( resource, scheme, properties );
+    return getProviderProxy().createTap( resource, scheme, properties );
     }
   }
