@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.util.HashMap;
 import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
@@ -41,12 +42,15 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.type.CoercibleType;
+import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import org.eigenbase.sql.type.BasicSqlType;
+
+import static com.google.common.collect.Maps.newHashMap;
 
 /**
  *
@@ -79,13 +83,19 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   public String getConnectionString()
     {
     String platformName = getPlatformName();
-    String schemaPath = getDefaultSchemaPath();
-    String resultPath = getResultPath();
-    String flowPlanPath = getFlowPlanPath();
-    String sqlPlanPath = getSQLPlanPath();
-    String plannerDebug = getPlannerDebug();
 
-    return String.format( "%s:%s;schemas=%s;resultPath=%s;flowPlanPath=%s;sqlPlanPath=%s;plannerDebug=%s", URI, platformName, schemaPath, resultPath, flowPlanPath, sqlPlanPath, plannerDebug );
+    HashMap<Object, Object> values = newHashMap();
+
+    values.put( Driver.SCHEMAS_PROP, getDefaultSchemaPath() );
+    values.put( Driver.CATALOG_PROP, getCatalogPath() );
+    values.put( Driver.RESULT_PATH_PROP, getResultPath() );
+    values.put( Driver.FLOW_PLAN_PATH, getFlowPlanPath() );
+    values.put( Driver.SQL_PLAN_PATH_PROP, getSQLPlanPath() );
+    values.put( Driver.PLANNER_DEBUG, getPlannerDebug() );
+
+    String properties = Joiner.on( ';' ).withKeyValueSeparator( "=" ).join( values );
+
+    return String.format( "%s:%s;%s", URI, platformName, properties );
     }
 
   protected synchronized Connection getConnection() throws Exception
