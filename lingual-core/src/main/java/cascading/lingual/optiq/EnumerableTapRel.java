@@ -23,6 +23,7 @@ package cascading.lingual.optiq;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.enumerable.CascadingTapEnumerable;
 import cascading.lingual.optiq.meta.TableHolder;
 import cascading.lingual.platform.PlatformBroker;
@@ -51,19 +52,15 @@ import org.slf4j.LoggerFactory;
  * Relational expression that reads from a Cascading tap and returns in
  * enumerable format.
  */
-class TapEnumerableRel extends TableAccessRelBase implements EnumerableRel
+class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
   {
-  private static final Logger LOG = LoggerFactory.getLogger( TapEnumerableRel.class );
+  private static final Logger LOG = LoggerFactory.getLogger( EnumerableTapRel.class );
 
-  private final String name;
-  private final String identifier;
   private final PhysType physType;
 
-  public TapEnumerableRel( RelOptCluster cluster, RelTraitSet traitSet, RelOptTable table, String name, String identifier )
+  public EnumerableTapRel( RelOptCluster cluster, RelTraitSet traitSet, RelOptTable table )
     {
     super( cluster, traitSet, table );
-    this.name = name;
-    this.identifier = identifier;
 
     if( getConvention() != EnumerableConvention.ARRAY )
       throw new IllegalStateException( "unsupported convention " + getConvention() );
@@ -86,7 +83,7 @@ class TapEnumerableRel extends TableAccessRelBase implements EnumerableRel
   public RelNode copy( RelTraitSet traitSet, List<RelNode> inputs )
     {
     assert inputs.isEmpty();
-    return new TapEnumerableRel( getCluster(), traitSet, table, name, identifier );
+    return new EnumerableTapRel( getCluster(), traitSet, table );
     }
 
   @Override
@@ -94,9 +91,11 @@ class TapEnumerableRel extends TableAccessRelBase implements EnumerableRel
     {
     LOG.debug( "implementing enumerable" );
 
+    TableDef tableDef = getTapTable().getTableDef();
+
     VolcanoPlanner planner = (VolcanoPlanner) getCluster().getPlanner();
 
-    TableHolder tableHolder = new TableHolder( getPhysType(), identifier, getPlatformBroker(), planner );
+    TableHolder tableHolder = new TableHolder( getPhysType(), tableDef, getPlatformBroker(), planner );
     long ordinal = CascadingTapEnumerable.addHolder( tableHolder );
     Constructor<CascadingTapEnumerable> constructor = CascadingEnumerableRel.getConstructorFor( CascadingTapEnumerable.class );
 

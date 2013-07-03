@@ -20,6 +20,7 @@
 
 package cascading.lingual.optiq.meta;
 
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.platform.PlatformBroker;
 import net.hydromatic.optiq.rules.java.PhysType;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
@@ -30,14 +31,14 @@ import org.eigenbase.relopt.volcano.VolcanoPlanner;
 public class TableHolder
   {
   public final PhysType physType;
-  public final String identifier;
+  public final TableDef tableDef;
   public final PlatformBroker platformBroker;
   public final VolcanoPlanner planner;
 
-  public TableHolder( PhysType physType, String identifier, PlatformBroker platformBroker, VolcanoPlanner planner )
+  public TableHolder( PhysType physType, TableDef tableDef, PlatformBroker platformBroker, VolcanoPlanner planner )
     {
     this.physType = physType;
-    this.identifier = identifier;
+    this.tableDef = tableDef;
     this.platformBroker = platformBroker;
     this.planner = planner;
     }

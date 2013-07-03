@@ -45,13 +45,12 @@ public class EnumerableTapRule extends RelOptRule
   public void onMatch( RelOptRuleCall call )
     {
     final CascadingTableAccessRel tableRel = (CascadingTableAccessRel) call.getRels()[ 0 ];
-    final TapEnumerableRel tapRel =
-      new TapEnumerableRel(
+    final EnumerableTapRel tapRel =
+      new EnumerableTapRel(
         tableRel.getCluster(),
         tableRel.getTraitSet().plus( EnumerableConvention.ARRAY ),
-        tableRel.getTable(),
-        tableRel.name,
-        tableRel.identifier );
+        tableRel.getTable()
+      );
 
     call.transformTo( tapRel );
     }

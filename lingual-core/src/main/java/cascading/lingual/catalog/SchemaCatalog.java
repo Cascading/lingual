@@ -381,6 +381,12 @@ public abstract class SchemaCatalog implements Serializable
     if( stereotype == null )
       throw new IllegalArgumentException( "stereotype does not exist: " + stereotypeName );
 
+    if( protocol == null )
+      protocol = getDefaultProtocolFor( schemaDef, tableIdentifier );
+
+    if( format == null )
+      format = getDefaultFormatFor( schemaDef, tableIdentifier );
+
     schemaDef.addTable( tableName, tableIdentifier, stereotype, protocol, format );
 
     return tableName;
@@ -560,12 +566,15 @@ public abstract class SchemaCatalog implements Serializable
 
   public Protocol getDefaultProtocolFor( String schemaName, String identifier )
     {
+    return getDefaultProtocolFor( getSchemaDef( schemaName ), identifier );
+    }
+
+  public Protocol getDefaultProtocolFor( SchemaDef schemaDef, String identifier )
+    {
     TableDef table = rootSchemaDef.findTableFor( identifier );
 
     if( table != null && table.getProtocol() != null )
       return table.getActualProtocol();
-
-    SchemaDef schemaDef = getSchemaDef( schemaName );
 
     Protocol protocol = ProtocolProperties.findProtocolFor( schemaDef, identifier );
 
@@ -577,13 +586,16 @@ public abstract class SchemaCatalog implements Serializable
 
   public Format getDefaultFormatFor( String schemaName, String identifier )
     {
+    return getDefaultFormatFor( getSchemaDef( schemaName ), identifier );
+    }
+
+  public Format getDefaultFormatFor( SchemaDef schemaDef, String identifier )
+    {
     TableDef tableDef = rootSchemaDef.findTableFor( identifier );
 
     // return declared format by given table
     if( tableDef != null && tableDef.getFormat() != null )
       return tableDef.getActualFormat();
-
-    SchemaDef schemaDef = getSchemaDef( schemaName );
 
     Format format = FormatProperties.findFormatFor( schemaDef, identifier );
 

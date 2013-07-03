@@ -22,7 +22,6 @@ package cascading.lingual.catalog;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -30,7 +29,6 @@ import org.junit.Test;
  */
 public class ProviderJarCLITest extends CLIPlatformTestCase
   {
-  @Ignore
   @Test
   public void testProviderWithSQLLine() throws IOException
     {
@@ -53,8 +51,9 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     catalog( "--schema", "example", "--add" );
     catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
-    // now confirm that reading this from sqlline
-    assertTrue( "unable to run query", shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() ) );
+    boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );
+
+    assertTrue( "unable to run query", result );
     }
 
   }
