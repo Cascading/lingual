@@ -29,11 +29,11 @@ import org.junit.Test;
 /**
  *
  */
-public class ValidateMavenRepoCLITest extends CLIPlatformTestCase
+public class ValidateRepoCLITest extends CLIPlatformTestCase
   {
   @Ignore
   @Test
-  public void testValidateMavenRepoCLI() throws IOException
+  public void testValidateRepoCLI() throws IOException
     {
     initCatalog();
 

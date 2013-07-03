@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
   {
+  protected static final String PROVIDER_SQL_SELECT_FILE = QUERY_FILES_PATH + "provider-select.sql";
   private static final Logger LOG = LoggerFactory.getLogger( CLIPlatformTestCase.class );
 
   public static final String TEST_META_DATA_PATH_PROP = "_lingual";

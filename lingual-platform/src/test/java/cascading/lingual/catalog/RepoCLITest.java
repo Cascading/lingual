@@ -28,10 +28,10 @@ import org.junit.Test;
 /**
  *
  */
-public class MavenCLITest extends CLIPlatformTestCase
+public class RepoCLITest extends CLIPlatformTestCase
   {
   @Test
-  public void testMavenCLI() throws IOException
+  public void testRepoCLI() throws IOException
     {
     initCatalog();
 

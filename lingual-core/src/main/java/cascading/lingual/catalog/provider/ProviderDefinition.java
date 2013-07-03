@@ -42,11 +42,12 @@ public class ProviderDefinition
   {
   public static final String CASCADING_BIND_PROVIDER_PROPERTIES = "cascading/bind/provider.properties";
 
+  public static final String NAMES = "names";
   public static final String PROVIDER_BASE = "cascading.bind.provider.";
   public static final String PROVIDER_NAMED_BASE = "cascading.bind.provider.%s.";
-  public static final String PROVIDER_NAME = PROVIDER_BASE + "names";
+  public static final String PROVIDER_NAME = PROVIDER_BASE + NAMES;
   public static final String PROVIDER_FACTORY_CLASS_NAME = PROVIDER_BASE + "%s.factory.classname";
-  public static final String PROVIDER_PLATFORMS = PROVIDER_BASE + "%s.platform";
+  public static final String PROVIDER_PLATFORMS = PROVIDER_BASE + "%s.platforms";
   public static final String PROVIDER_PROTOCOL = PROVIDER_BASE + "%s.protocol.";
   public static final String PROVIDER_FORMAT = PROVIDER_BASE + "%s.format.";
   public static final String PROVIDER_STEREOTYPE = PROVIDER_BASE + "%s.stereotype.";
@@ -130,8 +131,8 @@ public class ProviderDefinition
   public Map<Protocol, Map<String, List<String>>> getDefaultProtocolProperties()
     {
     Map<Protocol, Map<String, List<String>>> map = new HashMap<Protocol, Map<String, List<String>>>();
-    String strings = properties.get( property( PROVIDER_PROTOCOL ) + "names" );
-    List<String> protocols = asList( strings.split( "," ) );
+    String strings = properties.get( property( PROVIDER_PROTOCOL ) + NAMES );
+    List<String> protocols = ( strings == null ) ? Collections.<String>emptyList() : asList( strings.split( "," ) );
 
     for( String protocol : protocols )
       {
@@ -147,8 +148,8 @@ public class ProviderDefinition
   public Map<Format, Map<String, List<String>>> getDefaultFormatProperties()
     {
     Map<Format, Map<String, List<String>>> map = new HashMap<Format, Map<String, List<String>>>();
-    String strings = properties.get( property( PROVIDER_FORMAT ) + "names" );
-    List<String> formats = asList( strings.split( "," ) );
+    String strings = properties.get( property( PROVIDER_FORMAT ) + NAMES );
+    List<String> formats = ( strings == null ) ? Collections.<String>emptyList() : asList( strings.split( "," ) );
 
     for( String formatName : formats )
       {

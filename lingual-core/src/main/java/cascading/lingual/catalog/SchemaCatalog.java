@@ -787,8 +787,8 @@ public abstract class SchemaCatalog implements Serializable
   protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
     Map<String, FormatHandler<Protocol, Format>> handlers = new HashMap<String, FormatHandler<Protocol, Format>>();
-
     Collection<Format> formats = schemaDef.getAllFormats();
+
     for( Format format : formats )
       {
       ProviderDef providerDef = schemaDef.findProviderDefFor( format );

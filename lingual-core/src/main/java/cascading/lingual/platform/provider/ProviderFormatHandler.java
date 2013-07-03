@@ -46,14 +46,14 @@ import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 public class ProviderFormatHandler extends LingualFormatHandler
   {
   private final ProviderProxy providerProxy;
-  private final Map<Format, List<Protocol>> formatProtocols;
+//  private final Map<Format, List<Protocol>> formatProtocols;
 
   public ProviderFormatHandler( ProviderDef providerDef )
     {
     super( providerDef );
 
     this.providerProxy = new ProviderProxy( providerDef );
-    this.formatProtocols = getFormatProtocols();
+//    this.formatProtocols = getFormatProtocols();
     }
 
   public Map<Format, List<Protocol>> getFormatProtocols()
@@ -86,6 +86,8 @@ public class ProviderFormatHandler extends LingualFormatHandler
   @Override
   public boolean handles( Protocol protocol, Format format )
     {
+    Map<Format, List<Protocol>> formatProtocols = getFormatProtocols();
+
     if( !formatProtocols.containsKey( format ) )
       return false;
 

@@ -30,11 +30,6 @@ import org.junit.Test;
  */
 public class ProviderJarCLITest extends CLIPlatformTestCase
   {
-
-  private static final String PROVIDER_SQL_SELECT_FILE = QUERY_FILES_PATH + "provider_select.sql";
-  private static final String TEST_PROVIDER_JAR_NAME = "pipeprovider.jar";
-  public static final String PIPE_PROVIDER_JAR = PROVIDER_PATH + TEST_PROVIDER_JAR_NAME;
-
   @Ignore
   @Test
   public void testProviderWithSQLLine() throws IOException
@@ -43,21 +38,23 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     initCatalog();
 
-    catalog( "--provider", "--add", PIPE_PROVIDER_JAR );
+    catalog( "--provider", "--add", PROVIDER_JAR_PATH );
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
-    Format format = Format.getFormat( "bin" );
+    Format format = Format.getFormat( "tpsv" );
     ProviderDef providerDef = schemaCatalog.findProviderDefFor( null, format );
     assertNotNull( "provider not registered to format", providerDef );
 
-    Protocol protocol = Protocol.getProtocol( "memcached-binary" );
+    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
     schemaCatalog = getSchemaCatalog();
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
+    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // now confirm that reading this from sqlline
-    assertTrue( "unable to run query", shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--provider", getPlatformName() ) );
+    assertTrue( "unable to run query", shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() ) );
     }
 
   }

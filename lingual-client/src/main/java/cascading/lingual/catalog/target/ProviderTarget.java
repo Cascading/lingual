@@ -69,6 +69,9 @@ public class ProviderTarget extends CRUDTarget
       if( providerName != null && !providerDefinition.getProviderName().equals( providerName ) )
         continue;
 
+      if( !providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
+        continue;
+
       String name = providerDefinition.getProviderName();
       Map<String, String> map = providerDefinition.getProviderPropertyMap();
 
