@@ -43,7 +43,7 @@ public class ProviderCLITest extends CLIPlatformTestCase
   @Test
   public void testProviderCLI() throws IOException
     {
-    createProviderJar();
+    createProviderJar( TEST_PROPERTIES_EXTENDS_LOCATION, null );
 
     String catalogPath = getCatalogPath();
 
@@ -55,7 +55,7 @@ public class ProviderCLITest extends CLIPlatformTestCase
     int initialProviderCount = providerNames.size();
 
     // add in a provider at the root level
-    catalog( "--provider", "jarprovider", "--add", "--jar", PROVIDER_JAR_PATH );
+    catalog( "--provider", "jarprovider", "--add", "--jar", getProviderPath() );
     providerNames = schemaCatalog.getProviderNames();
     assertTrue( "On jar provider add, jarprovider not found in " + providerNames.toString(), providerNames.contains( "jarprovider" ) );
 
@@ -65,7 +65,7 @@ public class ProviderCLITest extends CLIPlatformTestCase
 
     // add in a providers at schema level
     catalog( "--schema", "providerschema", "--add" );
-    catalog( "--schema", "providerschema", "--provider", "testsubprovider", "--add", "--jar", PROVIDER_JAR_PATH );
+    catalog( "--schema", "providerschema", "--provider", "testsubprovider", "--add", "--jar", getProviderPath() );
     // schema should contain providers
     providerNames = schemaCatalog.getProviderNames( "providerschema" );
     assertTrue( "On schema add, testsubprovider not found in schema " + providerNames.toString(), providerNames.contains( "testsubprovider" ) );

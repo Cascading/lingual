@@ -27,6 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URLStreamHandlerFactory;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
@@ -191,5 +193,17 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
   public String getFileSeparator()
     {
     return File.separator;
+    }
+
+  @Override
+  protected URI toURI( String qualifiedPath )
+    {
+    return new File( qualifiedPath ).toURI();
+    }
+
+  @Override
+  protected URLStreamHandlerFactory getURLStreamHandlerFactory()
+    {
+    return null;
     }
   }

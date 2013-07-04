@@ -36,6 +36,23 @@ public class Reflection
     return invokeStaticMethod( type, methodName, parameters, parameterTypes );
     }
 
+  public static Class<?> loadClassSafe( String typeString )
+    {
+    try
+      {
+      return loadClass( typeString );
+      }
+    catch( Exception exception )
+      {
+      return null;
+      }
+    }
+
+  public static Class<?> loadClass( String typeString )
+    {
+    return loadClass( Thread.currentThread().getContextClassLoader(), typeString );
+    }
+
   public static Class<?> loadClass( ClassLoader loader, String typeString )
     {
     try
@@ -45,6 +62,21 @@ public class Reflection
     catch( ClassNotFoundException exception )
       {
       throw new CascadingException( "unable to load class: " + typeString, exception );
+      }
+    }
+
+  public static Object newInstanceSafe( Class type )
+    {
+    if( type == null )
+      return null;
+
+    try
+      {
+      return newInstance( type );
+      }
+    catch( Exception exception )
+      {
+      return null;
       }
     }
 

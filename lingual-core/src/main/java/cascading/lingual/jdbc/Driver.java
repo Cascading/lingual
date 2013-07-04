@@ -173,8 +173,6 @@ public class Driver extends UnregisteredDriver
     String urlSuffix = getSuffix( url, info );
 
     return ConnectStringParser.parse( urlSuffix, info );
-    // here connectString becomes Properties, which are passed to LingualConnection (ctor -> initialize -> PlatformBrokerFactory.createPlatformBroker),
-    // and if it contains "config=<path-to-properties>", this file's content will be used by PlatformBroker for configProperties
     }
 
   private String getSuffix( String url, Properties info )

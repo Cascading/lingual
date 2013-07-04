@@ -52,12 +52,12 @@ public class LocalCatalog extends SchemaCatalog
   @Override
   protected ProtocolHandler createProtocolHandler( ProviderDef providerDef )
     {
-    return new ProviderProtocolHandler( providerDef );
+    return new ProviderProtocolHandler( getPlatformBroker(), providerDef );
     }
 
   @Override
   protected FormatHandler createFormatHandler( ProviderDef providerDef )
     {
-    return new ProviderFormatHandler( providerDef );
+    return new ProviderFormatHandler( getPlatformBroker(), providerDef );
     }
   }

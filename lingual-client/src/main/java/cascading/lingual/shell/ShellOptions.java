@@ -109,6 +109,8 @@ public class ShellOptions extends Options
     if( hasConfig() )
       addProperty( builder, Driver.CONFIG_PROP, properties, getConfig() );
 
+    addProperty( builder, "urlProperties", properties, null );
+
     return builder.toString();
     }
 

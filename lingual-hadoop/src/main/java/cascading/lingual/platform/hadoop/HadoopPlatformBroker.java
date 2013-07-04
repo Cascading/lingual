@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLStreamHandlerFactory;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -47,6 +48,7 @@ import cascading.tap.type.FileType;
 import cascading.tuple.hadoop.BigDecimalSerialization;
 import cascading.tuple.hadoop.TupleSerializationProps;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsUrlStreamHandlerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
@@ -104,6 +106,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( jobConf != null )
       return jobConf;
 
+    // may consider providing aliases for these properties on Driver
+    // mapred.job.tracker
+    // fs.default.name
     Properties properties = new Properties( getProperties() );
 
     TupleSerializationProps.addSerialization( properties, BigDecimalSerialization.class.getName() );
@@ -249,6 +254,18 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
+  protected URI toURI( String qualifiedPath )
+    {
+    return new Path( qualifiedPath ).toUri();
+    }
+
+  @Override
+  protected URLStreamHandlerFactory getURLStreamHandlerFactory()
+    {
+    return new FsUrlStreamHandlerFactory( getConfig() );
+    }
+
+  @Override
   public FlowProcess<JobConf> getFlowProcess()
     {
     return new HadoopFlowProcess( getConfig() );
@@ -372,7 +389,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       }
     catch( IOException exception )
       {
-      throw new RuntimeException( "unable to open stringPath: " + stringPath, exception );
+      throw new RuntimeException( "unable to open: " + stringPath, exception );
       }
     }
 

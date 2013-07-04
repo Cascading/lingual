@@ -102,7 +102,6 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   @Override
   public Flow create()
     {
-    // add jars here
     FlowDef flowDef = FlowDef.flowDef()
       .setName( getName() )
       .addTails( tail )

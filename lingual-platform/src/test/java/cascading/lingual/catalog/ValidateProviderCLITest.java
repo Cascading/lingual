@@ -42,7 +42,7 @@ public class ValidateProviderCLITest extends CLIPlatformTestCase
     int initialSize = providerNames.size();
 
     // validate a jar provider
-    catalog( "--provider", "jarprovider", "--validate", "--jar", TEST_PROPERTIES_LOCATION );
+    catalog( "--provider", "jarprovider", "--validate", "--jar", TEST_PROPERTIES_EXTENDS_LOCATION );
     // validate a maven provider
     // TODO: maven install not currently supported.
     //executeCatalog( outputPath, "--provider", "mavenprovider", "--validate", "--spec", "maven:sucks:666" );

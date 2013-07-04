@@ -31,6 +31,7 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.provider.ProviderProxy;
 import cascading.lingual.platform.LingualProtocolHandler;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.MiscCollection;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
@@ -41,11 +42,13 @@ import cascading.tap.Tap;
  */
 public class ProviderProtocolHandler extends LingualProtocolHandler
   {
+  private transient PlatformBroker platformBroker;
   private ProviderProxy providerProxy;
 
-  public ProviderProtocolHandler( ProviderDef providerDef )
+  public ProviderProtocolHandler( PlatformBroker platformBroker, ProviderDef providerDef )
     {
     super( providerDef );
+    this.platformBroker = platformBroker;
 
     getProviderProxy();
     }
@@ -53,7 +56,7 @@ public class ProviderProtocolHandler extends LingualProtocolHandler
   private ProviderProxy getProviderProxy()
     {
     if( providerProxy == null )
-      providerProxy = new ProviderProxy( getProviderDef() );
+      providerProxy = new ProviderProxy( platformBroker, getProviderDef() );
 
     return providerProxy;
     }

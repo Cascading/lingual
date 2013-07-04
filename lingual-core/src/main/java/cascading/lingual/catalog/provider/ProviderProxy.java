@@ -20,7 +20,6 @@
 
 package cascading.lingual.catalog.provider;
 
-import java.io.File;
 import java.util.Properties;
 
 import cascading.bind.catalog.Resource;
@@ -28,6 +27,7 @@ import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Reflection;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
@@ -40,13 +40,14 @@ import org.slf4j.LoggerFactory;
 public class ProviderProxy
   {
   private static final Logger LOG = LoggerFactory.getLogger( ProviderProxy.class );
+  private final PlatformBroker platformBroker;
   private final ProviderDef providerDef;
 
-  private String jarPath = null;
   private ProviderFactory factoryObject;
 
-  public ProviderProxy( ProviderDef providerDef )
+  public ProviderProxy( PlatformBroker platformBroker, ProviderDef providerDef )
     {
+    this.platformBroker = platformBroker;
     this.providerDef = providerDef;
     this.factoryObject = instantiateFactory();
     }
@@ -58,7 +59,7 @@ public class ProviderProxy
     if( factoryClassName == null )
       throw new IllegalStateException( "no factory class found" );
 
-    Class factoryClass = loadClass( factoryClassName, jarPath );
+    Class factoryClass = loadClass( factoryClassName, providerDef.getIdentifier() );
 
     if( factoryClass == null )
       throw new RuntimeException( "unable to load factory class: " + factoryClassName );
@@ -138,6 +139,8 @@ public class ProviderProxy
     if( jarPath == null ) // its a default factory
       return Reflection.loadClass( Thread.currentThread().getContextClassLoader(), className );
 
-    return CatalogProviderUtil.loadClass( new File( jarPath ), null, className );
+    String qualifiedPath = platformBroker.makePath( platformBroker.getFullProviderPath(), jarPath );
+
+    return platformBroker.loadClass( qualifiedPath, className );
     }
   }

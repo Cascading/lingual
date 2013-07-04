@@ -21,12 +21,19 @@
 package cascading.lingual.platform;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLStreamHandlerFactory;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +62,7 @@ import cascading.tap.type.FileType;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
-import org.apache.commons.io.FileUtils;
+import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -306,18 +313,16 @@ public abstract class PlatformBroker<Config>
 
   private String makeFullCatalogFilePath( String catalogPath )
     {
-    String metaDataPath = properties.getProperty(META_DATA_DIR_NAME_PROP, META_DATA_DIR_NAME);
     String metaDataFile = properties.getProperty( CATALOG_FILE_NAME_PROP, CATALOG_FILE_NAME );
 
-    return getFullPath( makePath( catalogPath, metaDataPath, metaDataFile ) );
+    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), metaDataFile ) );
     }
 
   private String makeFullProviderDirPath( String catalogPath )
     {
-    String metaDataPath = properties.getProperty(META_DATA_DIR_NAME_PROP, META_DATA_DIR_NAME);
     String metaDataFile = properties.getProperty( PROVIDER_DIR_NAME_PROP, PROVIDER_DIR_NAME );
 
-    return getFullPath( makePath( catalogPath, metaDataPath, metaDataFile ) );
+    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), metaDataFile ) );
     }
 
   public String getResultPath( String name )
@@ -380,22 +385,27 @@ public abstract class PlatformBroker<Config>
     String targetPath = makePath( getFullProviderPath(), sourceFile.getName() );
 
     long bytesCopied;
+    InputStream inputStream = null;
     OutputStream outputStream = null;
 
     try
       {
+      inputStream = new FileInputStream( sourceFile );
       outputStream = getOutputStream( targetPath );
-      bytesCopied = FileUtils.copyFile( sourceFile, outputStream );
+      bytesCopied = ByteStreams.copy( inputStream, outputStream );
       outputStream.flush();
       }
     catch( IOException exception )
       {
-      throw new RuntimeException( "unable to install from " + sourcePath + " to " + targetPath + ":" + exception.getMessage(), exception );
+      throw new RuntimeException( "unable to copy from " + sourcePath + " to " + targetPath + ":" + exception.getMessage(), exception );
       }
     finally
       {
       try
         {
+        if( inputStream != null )
+          inputStream.close();
+
         if( outputStream != null )
           outputStream.close();
         }
@@ -405,10 +415,59 @@ public abstract class PlatformBroker<Config>
         }
       }
 
+    if( LOG.isDebugEnabled() )
+      LOG.debug( "copied bytes: {} to: {}", bytesCopied, targetPath );
+
     if( bytesCopied > 0 )
       return new File( targetPath ).getName(); // return relative path to provider install directory
     else
       throw new RuntimeException( "zero bytes copied from " + sourcePath + " to " + targetPath );
+    }
+
+  public URI retrieveTempProvider( String providerJar )
+    {
+//    String providerPath = makePath( getFullProviderPath(), providerJar );
+
+    long bytesCopied;
+    InputStream inputStream = null;
+    OutputStream outputStream = null;
+
+    File tempFile = null;
+    try
+      {
+      tempFile = File.createTempFile( "provider", ".jar" );
+      inputStream = getInputStream( providerJar );
+      outputStream = new FileOutputStream( tempFile );
+      bytesCopied = ByteStreams.copy( inputStream, outputStream );
+      outputStream.flush();
+      }
+    catch( IOException exception )
+      {
+      throw new RuntimeException( "unable to copy from " + providerJar + " to " + tempFile + ":" + exception.getMessage(), exception );
+      }
+    finally
+      {
+      try
+        {
+        if( inputStream != null )
+          inputStream.close();
+
+        if( outputStream != null )
+          outputStream.close();
+        }
+      catch( IOException exception )
+        {
+        LOG.error( "error closing file {}: ", providerJar, exception );
+        }
+      }
+
+    if( LOG.isDebugEnabled() )
+      LOG.debug( "copied bytes: {} to: {}", bytesCopied, providerJar );
+
+    if( bytesCopied > 0 )
+      return tempFile.toURI();
+    else
+      throw new RuntimeException( "zero bytes copied from " + providerJar + " to " + tempFile );
     }
 
   public String createSchemaNameFrom( String identifier )
@@ -546,4 +605,49 @@ public abstract class PlatformBroker<Config>
 
     return identifier;
     }
+
+  public Class loadClass( String qualifiedPath, String className )
+    {
+    if( !pathExists( qualifiedPath ) )
+      throw new IllegalStateException( "path does not exist: " + qualifiedPath );
+
+    try
+      {
+      URL[] urls = new URL[]{toURL( qualifiedPath )};
+
+      if( LOG.isDebugEnabled() )
+        LOG.debug( "loading from: {}", Arrays.toString( urls ) );
+
+      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+      URLClassLoader urlLoader = new URLClassLoader( urls, classLoader, null );
+
+      if( LOG.isDebugEnabled() )
+        LOG.info( "loading class: " + className );
+
+      return urlLoader.loadClass( className );
+      }
+    catch( Exception exception )
+      {
+      throw new RuntimeException( "unable to load class: " + className + " from: " + qualifiedPath, exception );
+      }
+    }
+
+  protected URL toURL( String qualifiedPath ) throws MalformedURLException
+    {
+    URI uri = toURI( qualifiedPath );
+
+    if( !uri.getScheme().equals( "file" ) )
+      return retrieveTempProvider( qualifiedPath ).toURL();
+
+    URLStreamHandlerFactory handlerFactory = getURLStreamHandlerFactory();
+
+    if( handlerFactory == null )
+      return uri.toURL();
+
+    return new URL( null, uri.toString(), handlerFactory.createURLStreamHandler( uri.getScheme() ) );
+    }
+
+  protected abstract URI toURI( String qualifiedPath );
+
+  protected abstract URLStreamHandlerFactory getURLStreamHandlerFactory();
   }

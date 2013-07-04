@@ -33,6 +33,7 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.provider.ProviderProxy;
 import cascading.lingual.platform.LingualFormatHandler;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.MultiProperties;
 import cascading.scheme.Scheme;
 
@@ -45,15 +46,21 @@ import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
  */
 public class ProviderFormatHandler extends LingualFormatHandler
   {
-  private final ProviderProxy providerProxy;
-//  private final Map<Format, List<Protocol>> formatProtocols;
+  private transient PlatformBroker platformBroker;
+  private ProviderProxy providerProxy;
 
-  public ProviderFormatHandler( ProviderDef providerDef )
+  public ProviderFormatHandler( PlatformBroker platformBroker, ProviderDef providerDef )
     {
     super( providerDef );
+    this.platformBroker = platformBroker;
+    }
 
-    this.providerProxy = new ProviderProxy( providerDef );
-//    this.formatProtocols = getFormatProtocols();
+  private ProviderProxy getProviderProxy()
+    {
+    if( providerProxy == null )
+      providerProxy = new ProviderProxy( platformBroker, getProviderDef() );
+
+    return providerProxy;
     }
 
   public Map<Format, List<Protocol>> getFormatProtocols()
@@ -100,6 +107,6 @@ public class ProviderFormatHandler extends LingualFormatHandler
     Map<String, List<String>> defaultProperties = getDefaultProperties( format );
     Properties properties = asProperties( defaultProperties );
 
-    return providerProxy.createScheme( stereotype, protocol, format, properties );
+    return getProviderProxy().createScheme( stereotype, protocol, format, properties );
     }
   }

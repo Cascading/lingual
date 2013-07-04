@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -40,6 +42,9 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Joiner.on;
+import static com.google.common.collect.Maps.fromProperties;
+
 /**
  *
  */
@@ -49,11 +54,21 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
   private static final Logger LOG = LoggerFactory.getLogger( CLIPlatformTestCase.class );
 
   public static final String TEST_META_DATA_PATH_PROP = "_lingual";
-  public static final String TEST_PROVIDER_PROPERTIES = "provider.properties";
+  public static final String TEST_PROVIDER_PROPERTIES_EXTENDS = "extends/provider.properties";
+  public static final String TEST_PROVIDER_PROPERTIES_FACTORY = "factory/provider.properties";
   public static final String TEST_PROVIDER_JAR_NAME = "pipeprovider.jar";
-  public static final String TEST_PROPERTIES_LOCATION = PROVIDER_PATH + TEST_PROVIDER_PROPERTIES;
-  public static final String BUILD_TEST_PROVIDER = "build/test/provider/";
-  public static final String PROVIDER_JAR_PATH = BUILD_TEST_PROVIDER + TEST_PROVIDER_JAR_NAME;
+
+  public static final String TEST_PROPERTIES_EXTENDS_LOCATION = PROVIDER_PATH + TEST_PROVIDER_PROPERTIES_EXTENDS;
+  public static final String TEST_PROPERTIES_FACTORY_LOCATION = PROVIDER_PATH + TEST_PROVIDER_PROPERTIES_FACTORY;
+
+  protected CLIPlatformTestCase( boolean useCluster )
+    {
+    super( useCluster );
+    }
+
+  protected CLIPlatformTestCase()
+    {
+    }
 
   @Before
   public void before()
@@ -62,10 +77,31 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     Logging.setLogLevel( "debug" );
     }
 
-  protected void createProviderJar() throws IOException
+  protected String getProviderPath()
     {
-    File[] contents = new File[]{new File( TEST_PROPERTIES_LOCATION )};
-    File jarFile = new File( PROVIDER_JAR_PATH );
+    return getRootPath() + "/provider/" + getTestName() + "/" + TEST_PROVIDER_JAR_NAME;
+    }
+
+  protected String getFactoryPath()
+    {
+    return getRootPath() + "/factory/" + getTestName() + "/";
+    }
+
+  protected void createProviderJar( String propertiesPath, String classPath ) throws IOException
+    {
+    List<File> contents = new ArrayList<File>();
+
+    contents.add( new File( propertiesPath ) );
+
+    if( classPath != null )
+      contents.add( new File( classPath ) );
+
+    List<File> locations = new ArrayList<File>();
+
+    locations.add( new File( "cascading/bind/" ) );
+    locations.add( new File( "lingual/test/" ) );
+
+    File jarFile = new File( getProviderPath() );
 
     jarFile.getParentFile().mkdirs();
 
@@ -76,14 +112,14 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     FileOutputStream stream = new FileOutputStream( jarFile );
     JarOutputStream out = new JarOutputStream( stream, new Manifest() );
 
-    File packagePath = new File( "cascading/bind/" );
-
-    for( File file : contents )
+    for( int i = 0; i < contents.size(); i++ )
       {
+      File file = contents.get( i );
+
       if( file == null || !file.exists() || file.isDirectory() )
         continue;
 
-      String currentContent = new File( packagePath, file.getName() ).toString();
+      String currentContent = new File( locations.get( i ), file.getName() ).toString();
 
       LOG.debug( "adding " + currentContent );
 
@@ -161,10 +197,16 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     {
     Properties properties = new Properties();
 
+    properties.putAll( getProperties() ); // add platform properties
+
     properties.setProperty( Driver.CATALOG_PROP, rootPath );
     properties.setProperty( PlatformBroker.META_DATA_DIR_NAME_PROP, TEST_META_DATA_PATH_PROP );
     properties.setProperty( PlatformBroker.CATALOG_FILE_NAME_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
+
+    String join = on( ";" ).withKeyValueSeparator( "=" ).join( fromProperties( properties ) );
+
+    properties.setProperty( "urlProperties", join );
 
     return properties;
     }

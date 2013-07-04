@@ -26,7 +26,7 @@ import org.apache.log4j.Level;
 /**
  *
  */
-public class LingualPlatformTestCase extends PlatformTestCase
+public abstract class LingualPlatformTestCase extends PlatformTestCase
   {
   public static final String DATA_PATH = System.getProperty( "test.data.path", "../lingual-platform/src/test/resources/data/" );
   public static final String PROVIDER_PATH = System.getProperty( "test.providerjar.path", "../lingual-platform/src/test/resources/provider/" );
@@ -41,7 +41,7 @@ public class LingualPlatformTestCase extends PlatformTestCase
   public static final String SIMPLE_SCHEMA = DATA_PATH + SIMPLE_SCHEMA_NAME + "/";
   public static final String SIMPLE_EMPLOYEE_TABLE = SIMPLE_SCHEMA + "employee.tcsv";
   public static final String SIMPLE_SALES_FACT_TABLE = SIMPLE_SCHEMA + "sales_fact_1997.tcsv";
-  public static final String SIMPLE_PRODUCTS_TABLE = SIMPLE_SCHEMA + "products.psv";
+  public static final String SIMPLE_PRODUCTS_TABLE = SIMPLE_SCHEMA + "products.tpsv";
 
   public static final String[] EMPS_COLUMNS = new String[]{
     "EMPNO", "NAME", "DEPTNO", "GENDER", "CITY", "EMPID", "AGE", "SLACKER", "MANAGER"
@@ -51,6 +51,15 @@ public class LingualPlatformTestCase extends PlatformTestCase
     "int", "string", "int", "string", "string", "int", "int", "boolean", "boolean"
   };
   private String resultPath;
+
+  protected LingualPlatformTestCase( boolean useCluster )
+    {
+    super( useCluster );
+    }
+
+  public LingualPlatformTestCase()
+    {
+    }
 
   public static void enableLogging( String log, String level )
     {

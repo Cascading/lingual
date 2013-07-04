@@ -29,9 +29,16 @@ import org.junit.Test;
  */
 public class PropertiesProviderCLITest extends CLIPlatformTestCase
   {
+  public PropertiesProviderCLITest()
+    {
+    super( true );
+    }
+
   @Test
   public void testProviderPropertiesWithSQLLine() throws IOException
     {
+    copyFromLocal( SIMPLE_PRODUCTS_TABLE );
+
     initCatalog();
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();

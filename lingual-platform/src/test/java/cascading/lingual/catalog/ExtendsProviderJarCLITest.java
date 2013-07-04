@@ -27,16 +27,23 @@ import org.junit.Test;
 /**
  *
  */
-public class ProviderJarCLITest extends CLIPlatformTestCase
+public class ExtendsProviderJarCLITest extends CLIPlatformTestCase
   {
+  public ExtendsProviderJarCLITest()
+    {
+    super( true );
+    }
+
   @Test
   public void testProviderWithSQLLine() throws IOException
     {
-    createProviderJar();
+    copyFromLocal( SIMPLE_PRODUCTS_TABLE );
+
+    createProviderJar( TEST_PROPERTIES_EXTENDS_LOCATION, null );
 
     initCatalog();
 
-    catalog( "--provider", "--add", PROVIDER_JAR_PATH );
+    catalog( "--provider", "--add", getProviderPath() );
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
     Format format = Format.getFormat( "tpsv" );
