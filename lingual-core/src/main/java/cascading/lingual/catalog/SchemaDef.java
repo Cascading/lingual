@@ -594,6 +594,9 @@ public class SchemaDef extends Def
     {
     List<String> providers = findFormatProperties( format ).get( SchemaProperties.PROVIDER );
 
+    if( providers == null )
+      return null;
+
     for( String providerName : providers )
       {
       ProviderDef providerDef = findProviderDefFor( providerName );

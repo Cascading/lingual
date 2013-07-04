@@ -117,11 +117,12 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
 
     initCatalog();
 
-    catalog( "--provider", "--add", getProviderPath() );
+    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", "example", "--provider", "--add", getProviderPath() );
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
     Format format = Format.getFormat( "tpsv" );
-    ProviderDef providerDef = schemaCatalog.findProviderDefFor( null, format );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
     assertNotNull( "provider not registered to format", providerDef );
     assertEquals( "lingual.test.ProviderFactory", providerDef.getFactoryClassName() );
 
@@ -130,7 +131,6 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
-    catalog( "--schema", "example", "--add" );
     catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );

@@ -408,7 +408,7 @@ public abstract class SchemaCatalog implements Serializable
       return stereotype;
 
     if( fields == null )
-      fields = getFieldsFor( identifier );
+      fields = getFieldsFor( schema, identifier );
 
     if( fields == null )
       return schema.findStereotypeFor( Fields.UNKNOWN );
@@ -571,7 +571,8 @@ public abstract class SchemaCatalog implements Serializable
 
   public Protocol getDefaultProtocolFor( SchemaDef schemaDef, String identifier )
     {
-    TableDef table = rootSchemaDef.findTableFor( identifier );
+    // not using root by default in case identifier is registered with multiple tables
+    TableDef table = schemaDef.findTableFor( identifier );
 
     if( table != null && table.getProtocol() != null )
       return table.getActualProtocol();
@@ -591,7 +592,8 @@ public abstract class SchemaCatalog implements Serializable
 
   public Format getDefaultFormatFor( SchemaDef schemaDef, String identifier )
     {
-    TableDef tableDef = rootSchemaDef.findTableFor( identifier );
+    // not using root by default in case identifier is registered with multiple tables
+    TableDef tableDef = schemaDef.findTableFor( identifier );
 
     // return declared format by given table
     if( tableDef != null && tableDef.getFormat() != null )
@@ -680,18 +682,18 @@ public abstract class SchemaCatalog implements Serializable
     return getSchemaDefChecked( schemaName ).findStereotypeFor( fields );
     }
 
-  public Fields getFieldsFor( String identifier )
+  public Fields getFieldsFor( SchemaDef schemaDef, String identifier )
     {
     String name = platformBroker.createTableNameFrom( identifier );
 
     if( nameFieldsMap.containsKey( name ) )
       return nameFieldsMap.get( name );
 
-    Point<Protocol, Format> point = getPointFor( identifier, null, null, null );
+    Point<Protocol, Format> point = getPointFor( identifier, schemaDef.getName(), null, null );
 
     Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( identifier, point.protocol, point.format, SinkMode.KEEP );
 
-    Tap tap = createTapFor( rootSchemaDef, rootSchemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
+    Tap tap = createTapFor( schemaDef, schemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
 
     if( !resourceExists( tap ) )
       return null;

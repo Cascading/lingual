@@ -43,16 +43,17 @@ public class PropertiesProviderCLITest extends CLIPlatformTestCase
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
 
-    catalog(
-      "--format", "psv", "--add", "--extensions", ".psv", "--provider", "text",
+    catalog( "--schema", "example", "--add" );
+
+    catalog( "--schema", "example",
+      "--format", "psv", "--add", "--extensions", ".tpsv", "--provider", "text",
       "--properties", "delimiter=|,typed=true,quote='"
     );
 
-    catalog( "--schema", "example", "--add" );
     catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     Format format = Format.getFormat( "psv" );
-    ProviderDef providerDef = schemaCatalog.findProviderDefFor( null, format );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
     assertNotNull( "provider not registered to format", providerDef );
 
     boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );
