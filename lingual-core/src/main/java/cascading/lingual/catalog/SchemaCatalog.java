@@ -691,7 +691,7 @@ public abstract class SchemaCatalog implements Serializable
 
     Point<Protocol, Format> point = getPointFor( identifier, schemaDef.getName(), null, null );
 
-    Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( identifier, point.protocol, point.format, SinkMode.KEEP );
+    Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( schemaDef.getName(), identifier, point.protocol, point.format, SinkMode.KEEP );
 
     Tap tap = createTapFor( schemaDef, schemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
 
@@ -772,6 +772,14 @@ public abstract class SchemaCatalog implements Serializable
     Format format = point.format;
 
     return new Resource<Protocol, Format, SinkMode>( identifier, protocol, format, mode );
+    }
+
+  public Resource<Protocol, Format, SinkMode> getResourceFor( TableDef tableDef, SinkMode mode )
+    {
+    Protocol protocol = tableDef.getActualProtocol();
+    Format format = tableDef.getActualFormat();
+
+    return new Resource<Protocol, Format, SinkMode>( tableDef.getParentSchema().getName(), tableDef.identifier, protocol, format, mode );
     }
 
   protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )

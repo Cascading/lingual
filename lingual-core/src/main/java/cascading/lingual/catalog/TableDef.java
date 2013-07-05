@@ -48,6 +48,11 @@ public class TableDef extends Def
     {
     }
 
+  public TableDef( SchemaDef parentSchema, String name, String identifier )
+    {
+    super( parentSchema, name, identifier );
+    }
+
   public TableDef( SchemaDef parentSchema, String name, String identifier, Stereotype<Protocol, Format> stereotype )
     {
     super( parentSchema, name, identifier );
@@ -120,7 +125,7 @@ public class TableDef extends Def
 
   public Resource<Protocol, Format, SinkMode> getResourceWith( SinkMode sinkMode )
     {
-    return new Resource<Protocol, Format, SinkMode>( identifier, getActualProtocol(), getActualFormat(), sinkMode );
+    return new Resource<Protocol, Format, SinkMode>( getParentSchema().getName(), identifier, getActualProtocol(), getActualFormat(), sinkMode );
     }
 
   public ProviderDef getProtocolProvider()

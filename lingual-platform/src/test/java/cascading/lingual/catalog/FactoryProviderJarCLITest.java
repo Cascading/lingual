@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -33,6 +34,8 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
+import com.google.common.base.Joiner;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +69,7 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
     super( true );
     }
 
-  private String compileFactory( String path )
+  private Collection<File> compileFactory( String path )
     {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
@@ -74,8 +77,21 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
     StringWriter writer = new StringWriter();
     PrintWriter out = new PrintWriter( writer );
     out.println( "package lingual.test;" );
+    out.println( "import java.util.Properties;" );
+    out.println( "import cascading.scheme.Scheme;" );
+    out.println( "import cascading.tap.SinkMode;" );
+    out.println( "import cascading.tap.Tap;" );
+    out.println( "import cascading.tuple.Fields;" );
+    out.println( "import cascading.tap.MultiSourceTap;" );
     out.println( "public class ProviderFactory extends cascading.lingual.catalog.TestProviderFactory" );
     out.println( "  {" );
+    out.println( "  public Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties )" );
+    out.println( "    {" );
+    out.println( "    return new MultiSourceTap( super.createTap( protocol, scheme, identifier, mode, properties ) )" );
+    out.println( "      {" );
+    out.println( "      boolean nada = false;" );
+    out.println( "      };" );
+    out.println( "    }" );
     out.println( "  }" );
     out.close();
 
@@ -104,7 +120,7 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
 
     assertTrue( "compile failed", success );
 
-    return path + className.replace( '.', '/' ) + JavaFileObject.Kind.CLASS.extension;
+    return FileUtils.listFiles( new File( path ), null, true );
     }
 
   @Test
@@ -112,13 +128,21 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
     {
     copyFromLocal( SIMPLE_PRODUCTS_TABLE );
 
-    String classPath = compileFactory( getFactoryPath() );
+    Collection<File> classPath = compileFactory( getFactoryPath() );
     createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath );
 
     initCatalog();
 
     catalog( "--schema", "example", "--add" );
     catalog( "--schema", "example", "--provider", "--add", getProviderPath() );
+
+    catalog( "--schema", "results", "--add" );
+    catalog(
+      "--stereotype", "results", "--add",
+      "--columns", Joiner.on( "," ).join( PRODUCTS_COLUMNS ),
+      "--types", Joiner.on( "," ).join( PRODUCTS_COLUMN_TYPES )
+    );
+    catalog( "--schema", "results", "--table", "results", "--add", getTablePath(), "--stereotype", "results" );
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
     Format format = Format.getFormat( "tpsv" );
@@ -133,8 +157,11 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
 
     catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
-    boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );
-
-    assertTrue( "unable to run query", result );
+    // read a file
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    // spawn a job
+    assertTrue( shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) );
+    // spawn results into a unique table/scheme with differing providers meta-data
+    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
     }
   }

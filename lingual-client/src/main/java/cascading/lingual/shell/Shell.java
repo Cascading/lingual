@@ -22,6 +22,7 @@ package cascading.lingual.shell;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,8 +45,16 @@ public class Shell extends Main<ShellOptions>
   {
   private static final Logger LOG = LoggerFactory.getLogger( Shell.class );
 
+  InputStream inputStream = System.in;
+
   public Shell()
     {
+    }
+
+  public Shell( InputStream inputStream, PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
+    {
+    super( outPrintStream, errPrintStream, properties );
+    this.inputStream = inputStream;
     }
 
   public Shell( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
@@ -165,7 +174,7 @@ public class Shell extends Main<ShellOptions>
     else if( "-".equals( sql ) )
       {
       LOG.info( "reading from stdin" );
-      SqlLine.mainWithInputRedirection( sqlLineArgs, System.in );
+      SqlLine.mainWithInputRedirection( sqlLineArgs, inputStream );
       }
     else
       {

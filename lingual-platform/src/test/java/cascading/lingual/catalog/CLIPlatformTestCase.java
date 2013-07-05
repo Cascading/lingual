@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -37,6 +39,7 @@ import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.shell.Shell;
 import cascading.lingual.util.Logging;
+import com.amazonaws.util.StringInputStream;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -82,24 +85,29 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return getRootPath() + "/provider/" + getTestName() + "/" + TEST_PROVIDER_JAR_NAME;
     }
 
+  protected String getTablePath()
+    {
+    return getRootPath() + "/table/" + getTestName() + "/result.tcsv";
+    }
+
   protected String getFactoryPath()
     {
     return getRootPath() + "/factory/" + getTestName() + "/";
     }
 
-  protected void createProviderJar( String propertiesPath, String classPath ) throws IOException
+  protected void createProviderJar( String propertiesPath, Collection<File> classPath ) throws IOException
     {
     List<File> contents = new ArrayList<File>();
-
-    contents.add( new File( propertiesPath ) );
-
-    if( classPath != null )
-      contents.add( new File( classPath ) );
-
     List<File> locations = new ArrayList<File>();
 
+    contents.add( new File( propertiesPath ) );
     locations.add( new File( "cascading/bind/" ) );
-    locations.add( new File( "lingual/test/" ) );
+
+    for( File file : classPath )
+      {
+      contents.add( file );
+      locations.add( new File( "lingual/test/" ) );
+      }
 
     File jarFile = new File( getProviderPath() );
 
@@ -181,6 +189,13 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return shell.execute( args );
     }
 
+  protected boolean shellSQL( String sql ) throws IOException
+    {
+    String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName()};
+    Shell shell = createShell( getCatalogPath(), new StringInputStream( sql.concat( "\n" ) ) );
+    return shell.execute( args );
+    }
+
   protected Catalog createCatalog( String catalogPath )
     {
     Properties platformProperties = getPlatformProperties( catalogPath );
@@ -191,6 +206,12 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     {
     Properties platformProperties = getPlatformProperties( catalogPath );
     return new Shell( System.out, System.err, platformProperties );
+    }
+
+  private Shell createShell( String catalogPath, InputStream inputStream )
+    {
+    Properties platformProperties = getPlatformProperties( catalogPath );
+    return new Shell( inputStream, System.out, System.err, platformProperties );
     }
 
   protected Properties getPlatformProperties( String rootPath )

@@ -44,6 +44,7 @@ import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
 import cascading.lingual.catalog.CatalogManager;
+import cascading.lingual.catalog.Def;
 import cascading.lingual.catalog.FileCatalogManager;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
@@ -426,8 +427,6 @@ public abstract class PlatformBroker<Config>
 
   public URI retrieveTempProvider( String providerJar )
     {
-//    String providerPath = makePath( getFullProviderPath(), providerJar );
-
     long bytesCopied;
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -541,30 +540,46 @@ public abstract class PlatformBroker<Config>
       {
       Stereotype<Protocol, Format> stereotypeFor;
 
-      if( head.tableDef == null )
+      TableDef tableDef = head.tableDef;
+
+      if( tableDef == null )
         stereotypeFor = catalog.getRootSchemaDef().findStereotypeFor( head.fields ); // do not use head name
       else
-        stereotypeFor = head.tableDef.getStereotype();
+        stereotypeFor = tableDef.getStereotype();
 
       lingualFlowFactory.setSourceStereotype( head.name, stereotypeFor );
 
-      if( head.tableDef != null )
-        {
-        lingualFlowFactory.getProtocolHandlers().addAll( catalog.getProtocolHandlers( head.tableDef ) );
-        lingualFlowFactory.getFormatHandlers().addAll( catalog.getFormatHandlersFor( head.tableDef ) );
-        }
+      if( tableDef != null )
+        addHandlers( lingualFlowFactory, tableDef );
       }
 
     lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
 
     if( branch.resultName != null )
       {
-      TableDef sinkTable = catalog.resolveTableDef( branch.resultName );
-      lingualFlowFactory.getProtocolHandlers().addAll( catalog.getProtocolHandlers( sinkTable ) );
-      lingualFlowFactory.getFormatHandlers().addAll( catalog.getFormatHandlersFor( sinkTable ) );
+      TableDef tableDef = catalog.resolveTableDef( branch.resultName );
+      addHandlers( lingualFlowFactory, tableDef );
+      }
+    else
+      {
+      addHandlers( lingualFlowFactory, catalog.getRootSchemaDef().getName(), catalog.getRootSchemaDef() );
       }
 
     return lingualFlowFactory;
+    }
+
+  private void addHandlers( LingualFlowFactory lingualFlowFactory, TableDef tableDef )
+    {
+    addHandlers( lingualFlowFactory, tableDef.getParentSchema().getName(), tableDef );
+    }
+
+  private void addHandlers( LingualFlowFactory lingualFlowFactory, String name, Def def )
+    {
+    if( !lingualFlowFactory.containsProtocolHandlers( name ) )
+      lingualFlowFactory.addProtocolHandlers( name, catalog.getProtocolHandlers( def ) );
+
+    if( !lingualFlowFactory.containsFormatHandlers( name ) )
+      lingualFlowFactory.addFormatHandlers( name, catalog.getFormatHandlersFor( def ) );
     }
 
   public SchemaCatalog newCatalogInstance()

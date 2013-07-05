@@ -56,8 +56,6 @@ public class PropertiesProviderCLITest extends CLIPlatformTestCase
     ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
     assertNotNull( "provider not registered to format", providerDef );
 
-    boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );
-
-    assertTrue( "unable to run query", result );
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
     }
   }

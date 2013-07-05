@@ -103,7 +103,7 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();
 
     Tap tap = schemaCatalog.createTapFor( getTableDef(), SinkMode.KEEP );
-    int size = tap.getSinkFields().size();
+    int size = tap.getSourceFields().size();
 
     Type[] types = new Type[ size ];
 

@@ -20,7 +20,9 @@
 
 package cascading.lingual.catalog;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -39,7 +41,7 @@ public class ExtendsProviderJarCLITest extends CLIPlatformTestCase
     {
     copyFromLocal( SIMPLE_PRODUCTS_TABLE );
 
-    createProviderJar( TEST_PROPERTIES_EXTENDS_LOCATION, null );
+    createProviderJar( TEST_PROPERTIES_EXTENDS_LOCATION, Collections.<File>emptyList() );
 
     initCatalog();
 
@@ -58,8 +60,6 @@ public class ExtendsProviderJarCLITest extends CLIPlatformTestCase
     catalog( "--schema", "example", "--add" );
     catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
-    boolean result = shell( "--sql", PROVIDER_SQL_SELECT_FILE, "--platform", getPlatformName() );
-
-    assertTrue( "unable to run query", result );
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
     }
   }

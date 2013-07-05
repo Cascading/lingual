@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import cascading.bind.catalog.Resource;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -32,6 +31,7 @@ import cascading.flow.FlowDef;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.util.Version;
 import cascading.pipe.Pipe;
@@ -76,22 +76,23 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     return platformBroker.getFlowConnector();
     }
 
-  public void addSource( String sourceName, String path, String... jarPaths )
+  public void addSource( String sourceName, TableDef tableDef, String... jarPaths )
     {
     addJars( jarPaths );
 
-    Resource<Protocol, Format, SinkMode> resource = catalog.getResourceFor( path, SinkMode.KEEP );
-
-    addSourceResource( sourceName, resource );
+    addSourceResource( sourceName, catalog.getResourceFor( tableDef, SinkMode.KEEP ) );
     }
 
-  public void addSink( String sinkName, String path, String... jarPaths )
+  public void addSink( String sinkName, String identifier )
+    {
+    addSinkResource( sinkName, catalog.getResourceFor( identifier, SinkMode.REPLACE ) );
+    }
+
+  public void addSink( String sinkName, TableDef tableDef, String... jarPaths )
     {
     addJars( jarPaths );
 
-    Resource<Protocol, Format, SinkMode> resourceFor = catalog.getResourceFor( path, SinkMode.REPLACE );
-
-    addSinkResource( sinkName, resourceFor );
+    addSinkResource( sinkName, catalog.getResourceFor( tableDef, SinkMode.REPLACE ) );
     }
 
   private void addJars( String... jarPaths )
@@ -106,6 +107,9 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       .setName( getName() )
       .addTails( tail )
       .setDebugLevel( platformBroker.getDebugLevel() );
+
+    for( String jar : jars )
+      flowDef.addToClassPath( jar );
 
     Flow flow = createFlowFrom( flowDef, tail );
 

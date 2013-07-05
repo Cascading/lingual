@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog.provider;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import javassist.util.proxy.MethodHandler;
@@ -27,7 +28,7 @@ import javassist.util.proxy.MethodHandler;
 /**
  *
  */
-class ProviderHandler implements MethodHandler
+class ProviderHandler implements MethodHandler, Serializable
   {
   public Object invoke( Object self, Method calling, Method proceed, Object[] args ) throws Throwable
     {

@@ -50,6 +50,15 @@ public abstract class LingualPlatformTestCase extends PlatformTestCase
   public static final String[] EMPS_COLUMN_TYPES = new String[]{
     "int", "string", "int", "string", "string", "int", "int", "boolean", "boolean"
   };
+
+  public static final String[] PRODUCTS_COLUMNS = new String[]{
+    "SKU", "PRODUCT_NAME", "PRODUCT_DESCRIPTION"
+  };
+
+  public static final String[] PRODUCTS_COLUMN_TYPES = new String[]{
+    "string", "string", "string"
+  };
+
   private String resultPath;
 
   protected LingualPlatformTestCase( boolean useCluster )

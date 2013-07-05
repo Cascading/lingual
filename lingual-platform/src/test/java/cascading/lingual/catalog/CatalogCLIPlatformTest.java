@@ -58,8 +58,7 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--stereotype" );
 
     catalog( "--schema", AD_HOC_SHECMA, "--add" );
-    catalog( "--schema", AD_HOC_SHECMA, "--table", "local", "--add", SALES_EMPS_TABLE, "--stereotype", "emps"
-    );
+    catalog( "--schema", AD_HOC_SHECMA, "--table", "local", "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
     catalog( "--schema", AD_HOC_SHECMA, "--table" );
     catalog( "--schema", "ADHOC", "--table" ); // verify case insensitivity
 

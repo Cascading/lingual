@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 import cascading.lingual.catalog.provider.ProviderFactory;
@@ -32,10 +33,10 @@ import cascading.tuple.Fields;
 import static cascading.lingual.util.Reflection.loadClassSafe;
 import static cascading.lingual.util.Reflection.newInstanceSafe;
 
-/** is subclassed by the dynamic class in FactoryProviderJarCLITest */
-public class TestProviderFactory implements ProviderFactory
+/** is sub-classed by the dynamic class in FactoryProviderJarCLITest */
+public class TestProviderFactory implements ProviderFactory, Serializable
   {
-  DefaultFactory factory;
+  transient DefaultFactory factory;
 
   public TestProviderFactory()
     {

@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-def bindVersion = "wip-74"
+def bindVersion = "wip-81"
 def bindChanging = false
 
 def linq4jVersion = '0.1.5'

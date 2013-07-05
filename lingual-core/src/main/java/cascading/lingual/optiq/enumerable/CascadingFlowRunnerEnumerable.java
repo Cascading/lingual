@@ -148,18 +148,18 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     for( Ref head : branch.heads.keySet() )
       {
-      String identifier = getIdentifierFor( platformBroker, head );
-      String[] jarPath = getJarPaths( catalog, identifier );
+      TableDef tableDefFor = getTableDefFor( platformBroker, head );
+      String[] jarPath = getJarPaths( tableDefFor );
 
-      flowFactory.addSource( head.name, identifier, jarPath );
+      flowFactory.addSource( head.name, tableDefFor, jarPath );
       }
 
     if( branch.resultName != null )
       {
       TableDef tableDef = catalog.resolveTableDef( branch.resultName );
-      String[] jarPath = getJarPaths( catalog, tableDef.getIdentifier() );
+      String[] jarPath = getJarPaths( tableDef );
 
-      flowFactory.addSink( tableDef.getName(), tableDef.getIdentifier(), jarPath );
+      flowFactory.addSink( tableDef.getName(), tableDef, jarPath );
       }
     else
       {
@@ -235,21 +235,19 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     }
 
-  private String[] getJarPaths( SchemaCatalog catalog, String identifier )
+  private String[] getJarPaths( TableDef tableDef )
     {
     Set<String> jars = new HashSet<String>();
     String rootPath = getPlatformBroker().getFullProviderPath();
 
-    TableDef tableDefFor = catalog.findTableDefFor( identifier );
+    ProviderDef protocolProvider = tableDef.getProtocolProvider();
 
-    ProviderDef protocolProvider = tableDefFor.getProtocolProvider();
-
-    if( protocolProvider != null )
+    if( protocolProvider != null && protocolProvider.getIdentifier() != null )
       jars.add( getPlatformBroker().makePath( rootPath, protocolProvider.getIdentifier() ) );
 
-    ProviderDef formatProvider = tableDefFor.getFormatProvider();
+    ProviderDef formatProvider = tableDef.getFormatProvider();
 
-    if( formatProvider != null )
+    if( formatProvider != null && formatProvider.getIdentifier() != null )
       jars.add( getPlatformBroker().makePath( rootPath, formatProvider.getIdentifier() ) );
 
     return jars.toArray( new String[ jars.size() ] );
@@ -263,6 +261,16 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       identifier = platformBroker.getTempPath( head.name );
 
     return identifier;
+    }
+
+  private TableDef getTableDefFor( PlatformBroker platformBroker, Ref head )
+    {
+    if( head.tableDef != null )
+      return head.tableDef;
+
+    String identifier = platformBroker.getTempPath( head.name );
+
+    return new TableDef( platformBroker.getCatalog().getRootSchemaDef(), head.name, identifier );
     }
 
   private void writeValuesTuple( PlatformBroker platformBroker, Ref head ) throws IOException
