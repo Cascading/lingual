@@ -166,7 +166,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
 
   protected SchemaCatalog getSchemaCatalog()
     {
-    Properties platformProperties = getPlatformProperties( getCatalogPath() );
+    Properties platformProperties = getPlatformProperties();
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), platformProperties );
 
     return platformBroker.getCatalog();
@@ -180,49 +180,50 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
   protected void executeCatalogWithOptionalTest( boolean expectedResult, String... args ) throws IOException
     {
     args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
-    boolean result = createCatalog( getCatalogPath() ).execute( args );
+    boolean result = createCatalog().execute( args );
     assertEquals( "executeCatalog returned false", expectedResult, result );
     }
 
   protected boolean shell( String... args ) throws IOException
     {
     args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
-    Shell shell = createShell( getCatalogPath() );
+    Shell shell = createShell();
     return shell.execute( args );
     }
 
   protected boolean shellSQL( String sql ) throws IOException
     {
     String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName()};
-    Shell shell = createShell( getCatalogPath(), new ByteArrayInputStream( sql.concat( "\n" ).getBytes() ) );
+    Shell shell = createShell( new ByteArrayInputStream( sql.concat( "\n" ).getBytes() ) );
     return shell.execute( args );
     }
 
-  protected Catalog createCatalog( String catalogPath )
+  protected Catalog createCatalog()
     {
-    Properties platformProperties = getPlatformProperties( catalogPath );
+    Properties platformProperties = getPlatformProperties();
     return new Catalog( System.out, System.err, platformProperties );
     }
 
-  private Shell createShell( String catalogPath )
+  private Shell createShell()
     {
-    Properties platformProperties = getPlatformProperties( catalogPath );
+    Properties platformProperties = getPlatformProperties();
     return new Shell( System.out, System.err, platformProperties );
     }
 
-  private Shell createShell( String catalogPath, InputStream inputStream )
+  private Shell createShell( InputStream inputStream )
     {
-    Properties platformProperties = getPlatformProperties( catalogPath );
+    Properties platformProperties = getPlatformProperties();
     return new Shell( inputStream, System.out, System.err, platformProperties );
     }
 
-  protected Properties getPlatformProperties( String rootPath )
+  protected Properties getPlatformProperties()
     {
     Properties properties = new Properties();
 
     properties.putAll( getProperties() ); // add platform properties
 
-    properties.setProperty( Driver.CATALOG_PROP, rootPath );
+    properties.setProperty( Driver.CATALOG_PROP, getCatalogPath() );
+    properties.setProperty( Driver.RESULT_PATH_PROP, getResultPath() );
     properties.setProperty( PlatformBroker.META_DATA_DIR_NAME_PROP, TEST_META_DATA_PATH_PROP );
     properties.setProperty( PlatformBroker.CATALOG_FILE_NAME_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
