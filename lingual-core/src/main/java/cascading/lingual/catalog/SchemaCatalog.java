@@ -79,7 +79,7 @@ public abstract class SchemaCatalog implements Serializable
 
   @JsonProperty
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final InsensitiveMap<Repo> mavenRepos = new InsensitiveMap<Repo>();
+  private final InsensitiveMap<Repo> repositories = new InsensitiveMap<Repo>();
 
   @JsonProperty
   private SchemaDef rootSchemaDef;
@@ -518,27 +518,27 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getMavenRepoNames()
     {
-    return mavenRepos.keySet();
+    return repositories.keySet();
     }
 
-  public Collection<Repo> getMavenRepos()
+  public Collection<Repo> getRepositories()
     {
-    return mavenRepos.values();
+    return repositories.values();
     }
 
   public Repo getMavenRepo( String repoName )
     {
-    return mavenRepos.get( repoName );
+    return repositories.get( repoName );
     }
 
   public void addRepo( Repo repo )
     {
-    mavenRepos.put( repo.getRepoName(), repo );
+    repositories.put( repo.getRepoName(), repo );
     }
 
   public void removeMavenRepo( String repoName )
     {
-    mavenRepos.remove( repoName );
+    repositories.remove( repoName );
     }
 
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
@@ -874,7 +874,7 @@ public abstract class SchemaCatalog implements Serializable
 
     if( idPointMap != null ? !idPointMap.equals( that.idPointMap ) : that.idPointMap != null )
       return false;
-    if( mavenRepos != null ? !mavenRepos.equals( that.mavenRepos ) : that.mavenRepos != null )
+    if( repositories != null ? !repositories.equals( that.repositories ) : that.repositories != null )
       return false;
     if( nameFieldsMap != null ? !nameFieldsMap.equals( that.nameFieldsMap ) : that.nameFieldsMap != null )
       return false;
@@ -890,7 +890,7 @@ public abstract class SchemaCatalog implements Serializable
   public int hashCode()
     {
     int result = platformBroker != null ? platformBroker.hashCode() : 0;
-    result = 31 * result + ( mavenRepos != null ? mavenRepos.hashCode() : 0 );
+    result = 31 * result + ( repositories != null ? repositories.hashCode() : 0 );
     result = 31 * result + ( rootSchemaDef != null ? rootSchemaDef.hashCode() : 0 );
     result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
     result = 31 * result + ( idPointMap != null ? idPointMap.hashCode() : 0 );

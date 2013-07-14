@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -35,6 +36,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 
 import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -43,9 +45,9 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class FactoryProviderJarCLITest extends CLIPlatformTestCase
+public class ProviderJarCLITest extends CLIPlatformTestCase
   {
-  private static final Logger LOG = LoggerFactory.getLogger( FactoryProviderJarCLITest.class );
+  private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLITest.class );
 
   class JavaSourceFromString extends SimpleJavaFileObject
     {
@@ -64,7 +66,7 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
       }
     }
 
-  public FactoryProviderJarCLITest()
+  public ProviderJarCLITest()
     {
     super( true );
     }
@@ -128,13 +130,118 @@ public class FactoryProviderJarCLITest extends CLIPlatformTestCase
     {
     copyFromLocal( SIMPLE_PRODUCTS_TABLE );
 
+    createProviderJar( TEST_PROPERTIES_EXTENDS_LOCATION, Collections.<File>emptyList(), getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    initCatalog();
+
+    catalog( "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    SchemaCatalog schemaCatalog = getSchemaCatalog();
+    Format format = Format.getFormat( "tpsv" );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( null, format );
+    assertNotNull( "provider not registered to format", providerDef );
+
+    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
+    schemaCatalog = getSchemaCatalog();
+    providerDef = schemaCatalog.findProviderDefFor( null, protocol );
+    assertNotNull( "provider not registered to protocol", providerDef );
+
+    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    }
+
+  @Test
+  public void testProviderPropertiesWithSQLLine() throws IOException
+    {
+    copyFromLocal( SIMPLE_PRODUCTS_TABLE );
+
+    initCatalog();
+
+    SchemaCatalog schemaCatalog = getSchemaCatalog();
+
+    catalog( "--schema", "example", "--add" );
+
+    catalog( "--schema", "example",
+      "--format", "psv", "--add", "--extensions", ".tpsv", "--provider", "text",
+      "--properties", "delimiter=|,typed=true,quote='"
+    );
+
+    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+
+    Format format = Format.getFormat( "psv" );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
+    assertNotNull( "provider not registered to format", providerDef );
+
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    }
+
+  @Test
+  public void testJarProviderWithSQLLine() throws IOException
+    {
+    copyFromLocal( SIMPLE_PRODUCTS_TABLE );
+
     Collection<File> classPath = compileFactory( getFactoryPath() );
-    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath );
+    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     initCatalog();
 
     catalog( "--schema", "example", "--add" );
-    catalog( "--schema", "example", "--provider", "--add", getProviderPath() );
+    catalog( "--schema", "example", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    catalog( "--schema", "results", "--add" );
+    catalog(
+      "--stereotype", "results", "--add",
+      "--columns", Joiner.on( "," ).join( PRODUCTS_COLUMNS ),
+      "--types", Joiner.on( "," ).join( PRODUCTS_COLUMN_TYPES )
+    );
+    catalog( "--schema", "results", "--table", "results", "--add", getTablePath(), "--stereotype", "results" );
+
+    SchemaCatalog schemaCatalog = getSchemaCatalog();
+    Format format = Format.getFormat( "tpsv" );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
+    assertNotNull( "provider not registered to format", providerDef );
+    assertEquals( "lingual.test.ProviderFactory", providerDef.getFactoryClassName() );
+
+    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
+    schemaCatalog = getSchemaCatalog();
+    providerDef = schemaCatalog.findProviderDefFor( null, protocol );
+    assertNotNull( "provider not registered to protocol", providerDef );
+
+    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+
+    // read a file
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    // spawn a job
+    assertTrue( shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) );
+    // spawn results into a unique table/scheme with differing providers meta-data
+    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
+    }
+
+  @Test
+  public void testSpecProviderWithSQLLine() throws IOException
+    {
+    copyFromLocal( SIMPLE_PRODUCTS_TABLE );
+
+    String mavenLikePath = "repo/com/test/provider/test-provider/1.0.0/";
+    String jarName = mavenLikePath + "test-provider-1.0.0.jar";
+    String pom = mavenLikePath + "test-provider-1.0.0.pom";
+    String spec = "com.test.provider:test-provider:1.0.0";
+
+    Collection<File> classPath = compileFactory( getFactoryPath() );
+    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( jarName ) );
+    File pomFile = new File( getProviderPath( pom ) );
+
+    pomFile.getParentFile().mkdirs();
+
+    Files.copy( new File( TEST_PROPERTIES_POM ), pomFile );
+
+    initCatalog();
+
+    catalog( "--schema", "example", "--add" );
+    catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
+    catalog( "--schema", "example", "--provider", "--add", spec );
 
     catalog( "--schema", "results", "--add" );
     catalog(

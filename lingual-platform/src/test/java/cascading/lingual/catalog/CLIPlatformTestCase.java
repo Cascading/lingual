@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,7 +40,6 @@ import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.shell.Shell;
 import cascading.lingual.util.Logging;
-import com.amazonaws.util.StringInputStream;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -53,16 +53,17 @@ import static com.google.common.collect.Maps.fromProperties;
  */
 public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
   {
-  protected static final String PROVIDER_SQL_SELECT_FILE = QUERY_FILES_PATH + "provider-select.sql";
   private static final Logger LOG = LoggerFactory.getLogger( CLIPlatformTestCase.class );
 
   public static final String TEST_META_DATA_PATH_PROP = "_lingual";
   public static final String TEST_PROVIDER_PROPERTIES_EXTENDS = "extends/provider.properties";
   public static final String TEST_PROVIDER_PROPERTIES_FACTORY = "factory/provider.properties";
+  public static final String TEST_PROVIDER_POM = "pom/pom.xml";
   public static final String TEST_PROVIDER_JAR_NAME = "pipeprovider.jar";
 
   public static final String TEST_PROPERTIES_EXTENDS_LOCATION = PROVIDER_PATH + TEST_PROVIDER_PROPERTIES_EXTENDS;
   public static final String TEST_PROPERTIES_FACTORY_LOCATION = PROVIDER_PATH + TEST_PROVIDER_PROPERTIES_FACTORY;
+  public static final String TEST_PROPERTIES_POM = PROVIDER_PATH + TEST_PROVIDER_POM;
 
   protected CLIPlatformTestCase( boolean useCluster )
     {
@@ -80,9 +81,9 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     Logging.setLogLevel( "debug" );
     }
 
-  protected String getProviderPath()
+  protected String getProviderPath( String testProviderJarName )
     {
-    return getRootPath() + "/provider/" + getTestName() + "/" + TEST_PROVIDER_JAR_NAME;
+    return getRootPath() + "/provider/" + getTestName() + "/" + testProviderJarName;
     }
 
   protected String getTablePath()
@@ -95,7 +96,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return getRootPath() + "/factory/" + getTestName() + "/";
     }
 
-  protected void createProviderJar( String propertiesPath, Collection<File> classPath ) throws IOException
+  protected void createProviderJar( String propertiesPath, Collection<File> classPath, String providerPath ) throws IOException
     {
     List<File> contents = new ArrayList<File>();
     List<File> locations = new ArrayList<File>();
@@ -109,7 +110,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
       locations.add( new File( "lingual/test/" ) );
       }
 
-    File jarFile = new File( getProviderPath() );
+    File jarFile = new File( providerPath );
 
     jarFile.getParentFile().mkdirs();
 
@@ -158,6 +159,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
 
   protected void initCatalog() throws IOException
     {
+    PlatformBrokerFactory.instance().reloadBrokers();
     getPlatform().remoteRemove( getCatalogPath(), true );
     catalog( "--init" );
     }
@@ -192,7 +194,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
   protected boolean shellSQL( String sql ) throws IOException
     {
     String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName()};
-    Shell shell = createShell( getCatalogPath(), new StringInputStream( sql.concat( "\n" ) ) );
+    Shell shell = createShell( getCatalogPath(), new ByteArrayInputStream( sql.concat( "\n" ).getBytes() ) );
     return shell.execute( args );
     }
 

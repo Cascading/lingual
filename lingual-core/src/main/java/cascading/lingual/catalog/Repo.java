@@ -30,13 +30,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Repo
   {
-  public static final Repo MAVEN_CENTRAL = new Repo( Kind.Maven, "mavencentral", "http://repo1.maven.org/maven2/" );
-  public static final Repo MAVEN_LOCAL = new Repo( Kind.Maven, "mavenlocal", System.getenv( "HOME" ) + File.separator + ".m2/" );
-  public static final Repo MAVEN_CONJARS = new Repo( Kind.Maven, "conjars", "http://conjars.org/repo/" );
+  public static final Repo MAVEN_CENTRAL = new Repo( Kind.Maven2, "mavencentral", "http://repo1.maven.org/maven2/" );
+  public static final Repo MAVEN_LOCAL = new Repo( Kind.Maven2, "mavenlocal", System.getenv( "HOME" ) + File.separator + ".m2/" );
+  public static final Repo MAVEN_CONJARS = new Repo( Kind.Maven2, "conjars", "http://conjars.org/repo/" );
 
   public enum Kind
     {
-      Maven, Ivy
+      Maven2, Ivy
     }
 
   @JsonProperty
@@ -61,7 +61,7 @@ public class Repo
 
   public Repo( String repoName, String repoUrl )
     {
-    this.repoKind = Kind.Maven;
+    this.repoKind = Kind.Maven2;
     this.repoName = repoName;
     this.repoUrl = repoUrl;
     }

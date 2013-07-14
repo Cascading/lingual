@@ -8,7 +8,7 @@ A protocol is a label specifying a Cascading Tap, and a format is a label for a 
 By default Lingual supports multiple text formats like 'csv' and 'tsv' (comma separated values, and tab separated values,
 respectively). Files ending with '.csv' or '.tsv' are automatically mapped to the proper format.
 
-And Cascading local mode supports the 'file' protocol via the FileTap, and Hadoop mode supports the 'hdfs' protocol
+Cascading local mode supports the 'file' protocol via the FileTap, and Hadoop mode supports the 'hdfs' protocol
 via the Hfs Tap. URLs (identifiers) starting with 'file:' or 'hdfs:' are automatically madded to the proper protocol.
 
 # Creating
@@ -17,7 +17,8 @@ To add new protocol or format providers, a new Jar library must be created with 
 `provider.properties` file defining how to find and use the factory.
 
 If a factory class is not provided, the `extends` property must be used to specify an existing provider that these
-properties will ammend.
+properties will ammend. Extending an existing provider is a simple way to add new formats or protocols by creating
+a new named set of properties.
 
 # Detail
 
