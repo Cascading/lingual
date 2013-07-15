@@ -18,15 +18,11 @@
  * limitations under the License.
  */
 
-apply plugin: 'fatjar'
-
 configurations {
   hadoopArtifacts {
     extendsFrom runtime
   }
 }
-
-ext.hadoopVersion = '1.1.2'
 
 if( System.properties[ 'hadoop.release.final' ] )
   hadoopVersion = System.properties[ 'hadoop.release.final' ]
@@ -42,7 +38,7 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, classifier: 'tests', changing: true
@@ -58,9 +54,9 @@ dependencies {
   testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
     exclude group: 'oro' // causes transient build maven failures, ftw
   }
-  testCompile group: 'commons-io', name: 'commons-io', version: '2.1'
+  testCompile group: 'commons-io', name: 'commons-io', version: commonsIoVersion
 
-  testRuntime 'javax.ws.rs:jsr311-api:1.1.1' // missed dep in hadoop, go figure
+  testRuntime group: 'javax.ws.rs', name: 'jsr311-api', version: jsrVersion // missed dep in hadoop, go figure
 }
 
 task createProps() {
@@ -83,6 +79,7 @@ task hadoopJar( type: Jar, dependsOn: [jar, createProps] ) {
   classifier = 'hadoop'
 
   from sourceSets.main.output
+  from createProps.jobProps
 
   doFirst {
 
@@ -90,9 +87,6 @@ task hadoopJar( type: Jar, dependsOn: [jar, createProps] ) {
       from( configurations.runtime )
     }
 
-    metaInf() {
-      from( createProps.jobProps )
-    }
   }
 }
 
@@ -101,15 +95,46 @@ artifacts {
   hadoopArtifacts hadoopJar
 }
 
-fatJar {
-  dependsOn << createProps
+// builds a maven-shade type jar. Ant's JarJar task is an independent jar build so rather than re-write the entire file
+// collection in ant terms, this code builds a gradle-style jar and uses that as the source. This also retains the
+// previous Gradle FatJar-based behavior of producing a merged META-INF directory.
+task fatJar( type: Jar, dependsOn: [jar, createProps] ) {
 
+  description = "Assembles a shaded jar file"
   classifier = 'jdbc'
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
 
-  metaInf() {
-    from( createProps.jobProps )
+  // the lingual-client is only in runtime scope for IDE use so avoid including the lingual-client jar when building a JDBC jar
+  // because the :lingual-client.jar task isn't called when building this, we can't simply use jar.archiveName since that includes
+  // the internally-specified "classifier" value
+  clientFile = "${project( ':lingual-client' ).jar.baseName}-${project( ':lingual-client' ).jar.version}"
+  doLast {
+    project.ant {
+      taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
+      jarjar( jarfile: archivePath ) {
+        configurations.runtime.files.findAll { file ->
+          [ "${clientFile}" ].every { !file.name.startsWith( it ) }
+        }.each { jarjarFile ->
+          zipfileset( src: jarjarFile ) {
+            exclude( name:  'META-INF/*.DSA' )
+            exclude( name:  'META-INF/LICENSE*' )
+          }
+        }
+        zipfileset( src: jar.archivePath )
+        zipfileset( file: createProps.jobProps, fullpath: 'hadoop.job.properties' )
+
+        neverIncludePackages.each { omitClass ->
+          zap pattern: omitClass
+        }
+        unshadeableDependencies.each { retainClass ->
+          rule pattern: retainClass, result: "@0"
+        }
+        shadeableDependencies.each { shadeClass ->
+          rule pattern: shadeClass, result: "${shadePackagePrefix}@0"
+        }
+      }
+    }
+
+    delete (jar.archivePath)
   }
 }
 

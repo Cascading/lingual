@@ -20,6 +20,7 @@
 
 apply from: 'etc/version.gradle'
 apply from: 'etc/s3Upload.gradle'
+apply from: 'etc/dependencyVersions.gradle'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
@@ -54,11 +55,13 @@ subprojects {
   version = releaseVersion
 
   apply from: "${rootDir}/etc/includes.gradle"
+  apply from: "${rootDir}/etc/dependencyVersions.gradle"
 
   configurations {
     testArtifacts {
       extendsFrom testRuntime
     }
+    jarjar
   }
 
   repositories {
@@ -66,7 +69,6 @@ subprojects {
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
     mavenRepo name: 'pentaho', url: 'http://repo.pentaho.org/artifactory/repo/' // optiq deps
-    mavenRepo name: 'typesafe', url: 'http://repo.typesafe.com/typesafe/repo/' // sqlline
   }
 
   task sourcesJar( type: Jar, dependsOn: classes ) {
@@ -100,7 +102,10 @@ subprojects {
   }
 
   dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'junit', name: 'junit', version: junitVersion
+    jarjar group: 'org.ow2.asm', name: 'asm', version: asmVersion
+    jarjar group: 'org.ow2.asm', name: 'asm-commons', version: asmVersion
+    jarjar group: 'com.googlecode.jarjar', name: 'jarjar', version: jarjarVersion
   }
 
   uploadArchives {

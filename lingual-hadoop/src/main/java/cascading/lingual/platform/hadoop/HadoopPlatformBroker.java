@@ -63,6 +63,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
 
   public static final String HADOOP_USER_ENV = "HADOOP_USER_NAME";
   public static final String HADOOP_USER_PROPERTY = "hadoop.username";
+  public static final String HADOOP_OVERRIDE_RESOURCE = "hadoop-override.properties";
+  public static final String HADOOP_APP_JAR_FLAG_RESOURCE = "hadoop.job.properties";
+
   private JobConf jobConf;
 
   public HadoopPlatformBroker()
@@ -134,7 +137,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     LOG.info( "using app jar: {}", jobConf.getJar() );
     LOG.info( "using user: {}", jobConf.getUser() == null ? "" : jobConf.getUser() );
 
-    URL url = HadoopPlatformBroker.class.getClassLoader().getResource( "hadoop-override.properties" );
+    URL url = getResource( HADOOP_OVERRIDE_RESOURCE );
 
     if( url != null )
       {
@@ -151,6 +154,12 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
 
     return jobConf;
     }
+
+  private URL getResource( String resourceName )
+    {
+    return Thread.currentThread().getContextClassLoader().getResource( resourceName );
+    }
+
 
   private Properties loadPropertiesFrom( URL url )
     {
@@ -170,7 +179,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
 
   private String findAppJar()
     {
-    URL url = Thread.currentThread().getContextClassLoader().getResource( "META-INF/hadoop.job.properties" );
+    URL url = getResource( HADOOP_APP_JAR_FLAG_RESOURCE );
 
     if( url == null || !url.toString().startsWith( "jar" ) )
       return null;

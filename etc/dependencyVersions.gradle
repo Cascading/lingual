@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ *
+ * Project and contact information: http://www.cascading.org/
+ *
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Dependencies directly related to cascading get versions defined here
+ */
+ext.cascadingVersion = '2.2.0-+'
+
+// set property to use locally installed cascading builds
+// otherwise wip releases will be pulled from conjars
+if( System.properties[ 'lingual.release.local' ] )
+  ext.cascadingVersion = '2.2.0-wip-dev'
+
+ext.bindVersion = "wip-81"
+ext.bindChanging = false
+ext.linq4jVersion = '0.1.5'
+ext.linq4jChanging = false
+ext.optiqVersion = '0.4.5'
+ext.optiqChanging = false
+
+// set the following property in $root/gradle.properties to use local installs of optiq/linq4j
+// systemProp.optiq.release.local=true
+if( System.properties[ 'optiq.release.local' ] )
+{
+  ext.linq4jVersion = "${linq4jVersion}-SNAPSHOT"
+  ext.linq4jChanging = true
+  ext.optiqVersion = "${optiqVersion}-SNAPSHOT"
+  ext.optiqChanging = true
+}
+// set the following property in $root/gradle.properties to use local installs of bind
+// systemProp.bind.release.local=true
+if( System.properties[ 'bind.release.local' ] )
+{
+  ext.bindVersion = "wip-dev"
+  ext.bindChanging = true
+}
+ext.cascadingBindVersion = "1.0.0-${bindVersion}"
+
+/*
+ * Dependencies not directly related to cascading get versions defined here
+ */
+ext.apacheCommonsVersion = '3.1'
+ext.commonsIoVersion = '2.4'
+ext.commonsLangVersion = '3.1'
+ext.guavaVersion = '14.0.1'
+ext.hadoopVersion = '1.1.2'
+ext.ivyVersion = '2.3.0'
+ext.jacksonDatabindVersion = '2.2.2'
+ext.jacksonDatatypeGuavaVersion = jacksonDatabindVersion
+ext.javaassistVerion = '3.12.1.GA'
+ext.jlineVersion = '2.0.10'
+ext.joptVersion = '4.4'
+ext.jsrVersion = '1.1.1'
+ext.junitVersion = '4.11'
+ext.log4jVersion = '1.2.17'
+ext.slf4jVersion = '1.6.1'
+ext.sqllineVersion = '1.1.3'
+
+/*
+ * Build tool dependencies
+ */
+ext.asmVersion = '4.1'
+ext.jarjarVersion = '1.3'
+
+/*
+ * Control over rules for shading with jarjar.
+ */
+ext.shadeableDependencies = [ "com.**", "net.**", "org.**", "riffle.**" ]
+ext.shadePackagePrefix = "cascading.thirdparty."
+ext.neverIncludePackages = []
+ext.unshadeableDependencies = [
+        "cascading.**",
+        "net.hydromatic.**",
+        "org.eigenbase.**",
+        "org.apache.hadoop.**",
+        "org.apache.commons.codec.**",
+        "org.apache.commons.logging.**",
+        "META**",
+        "org.slf4j.**",
+        "org.apache.log4j.**",
+]

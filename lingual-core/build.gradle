@@ -18,35 +18,9 @@
  * limitations under the License.
  */
 
-def bindVersion = "wip-81"
-def bindChanging = false
-
-def linq4jVersion = '0.1.5'
-def linq4jChanging = false
-def optiqVersion = '0.4.5'
-def optiqChanging = false
-
-// set the following property in $root/gradle.properties to use local installs of bind
-// systemProp.bind.release.local=true
-if( System.properties[ 'bind.release.local' ] )
-{
-  bindVersion = "wip-dev"
-  bindChanging = true
-}
-
-// set the following property in $root/gradle.properties to use local installs of optiq/linq4j
-// systemProp.optiq.release.local=true
-if( System.properties[ 'optiq.release.local' ] )
-{
-  linq4jVersion = "${linq4jVersion}-SNAPSHOT"
-  linq4jChanging = true
-  optiqVersion = "${optiqVersion}-SNAPSHOT"
-  optiqChanging = true
-}
-
 dependencies {
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
-  compile( group: 'cascading', name: 'cascading-bind', version: "1.0.0-${bindVersion}", changing: bindChanging ) {
+  compile( group: 'cascading', name: 'cascading-bind', version: cascadingBindVersion, changing: bindChanging ) {
     exclude group: 'org.slf4j'
     exclude group: 'cascading' // prevents losing the current `cascadingVersion`
   }
@@ -59,28 +33,28 @@ dependencies {
     exclude group: 'org.mongodb'
   }
 
-  compile group: 'javassist', name: 'javassist', version: '3.12.1.GA'
+  compile group: 'javassist', name: 'javassist', version: javaassistVerion
 
   compile group: 'net.hydromatic', name: 'linq4j', version: linq4jVersion, changing: linq4jChanging
-  compile group: 'com.google.guava', name: 'guava', version: '14.0.1'
-  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.2.2'
-  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.2.2'
+  compile group: 'com.google.guava', name: 'guava', version: guavaVersion
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonDatabindVersion
+  compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: jacksonDatatypeGuavaVersion
 
-  compile group: 'commons-io', name: 'commons-io', version: '2.4'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
+  compile group: 'commons-io', name: 'commons-io', version: commonsIoVersion
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: commonsLangVersion
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
-  providedCompile group: 'log4j', name: 'log4j', version: '1.2.17'
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
+  providedCompile group: 'log4j', name: 'log4j', version: log4jVersion
 
-  testCompile group: 'junit', name: 'junit', version: '4.11'
+  testCompile group: 'junit', name: 'junit', version: junitVersion
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
-  testRuntime group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
-  testRuntime group: 'log4j', name: 'log4j', version: '1.2.17'
+  testRuntime group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  testRuntime group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
+  testRuntime group: 'log4j', name: 'log4j', version: log4jVersion
 }
 
 // only performed in this artifact as it is included in all others
