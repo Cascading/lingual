@@ -21,15 +21,56 @@
 package cascading.lingual.catalog;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collection;
 
 import org.junit.Test;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
  */
 public class RepoCLITest extends CLIPlatformTestCase
   {
+
+  public static final String PROP_OMIT_REPO_NETWORK_TEST = "lingual.test.repo.network.omit";
+
+  @Test
+  public void testValidateRepoCLI() throws IOException
+    {
+    // since the repo validation is a network event the unit test makes a network call
+    // this might be an issue for people developing remotely on laptops so allow dynamic ignoring
+    assumeTrue( "Test ignored since user set -D" + PROP_OMIT_REPO_NETWORK_TEST, System.getProperty( PROP_OMIT_REPO_NETWORK_TEST ) == null );
+
+    try
+      {
+      URL conjarsUrl = new URL( "http://conjars.org" );
+      HttpURLConnection urlConnection = (HttpURLConnection) conjarsUrl.openConnection();
+      urlConnection.connect();
+      urlConnection.disconnect();
+      }
+    catch( IOException ioException )
+      {
+      fail( "this machine needs network access to conjars.org to do this test. to omit this test without changing code, set -D" + PROP_OMIT_REPO_NETWORK_TEST );
+      }
+
+    initCatalog();
+    int initialSize = getSchemaCatalog().getMavenRepoNames().size();
+
+    // a legit repo that should pass
+    catalog( "--repo", "conjars", "--validate", "--add", "http://conjars.org/repo" );
+
+    // this is not a valid repo and should fail.
+    catalogWithOptionalTest( false, "--repo", "conjars", "--validate", "--add", "http://conjars.org/not_a_valid_repo/" );
+
+    // confirm that validate doesn't add any any repos
+    int finalSize = getSchemaCatalog().getMavenRepoNames().size();
+    assertEquals( "repo list should not have changed size", initialSize, finalSize );
+
+    }
+
   @Test
   public void testRepoCLI() throws IOException
     {

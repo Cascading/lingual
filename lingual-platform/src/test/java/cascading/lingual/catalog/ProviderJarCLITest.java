@@ -47,6 +47,11 @@ import org.slf4j.LoggerFactory;
  */
 public class ProviderJarCLITest extends CLIPlatformTestCase
   {
+  private static final String MAVEN_LIKE_PATH = "repo/com/test/provider/test-provider/1.0.0/";
+  private static final String JAR_NAME = MAVEN_LIKE_PATH + "test-provider-1.0.0.jar";
+  private static final String POM = MAVEN_LIKE_PATH + "test-provider-1.0.0.pom";
+  private static final String SPEC = "com.test.provider:test-provider:1.0.0";
+
   private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLITest.class );
 
   class JavaSourceFromString extends SimpleJavaFileObject
@@ -124,6 +129,75 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     return FileUtils.listFiles( new File( path ), null, true );
     }
+
+  @Test
+  public void testValidateJarProviderCLI() throws IOException
+    {
+    Collection<File> classPath = compileFactory( getFactoryPath() );
+    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    initCatalog();
+    int initialSize = getSchemaCatalog().getProviderNames().size();
+
+    // validate a jar provider
+    catalog( "--schema", "example", "--validate", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    // intentionally fail
+    catalogWithOptionalTest( false, "--schema", "example", "--validate", "--provider", "--add", "build/resources/test/jar/not-found-provider.jar" );
+
+    // confirm that validate doesn't add any providers
+    int finalSize = getSchemaCatalog().getProviderNames().size();
+    assertEquals( "provider list should not have changed size", initialSize, finalSize );
+    }
+
+  @Test
+  public void testValidateSpecProviderCLI() throws IOException
+    {
+    makeTestMavenRepo();
+    initCatalog();
+    int initialSize = getSchemaCatalog().getProviderNames().size();
+
+    catalog( "--schema", "example", "--add" );
+    catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
+
+    // validate an actual spec
+    catalog( "--schema", "example", "--validate", "--provider", "--add", SPEC );
+
+    // fail a bogus spec
+    catalogWithOptionalTest( false, "--schema", "example", "--validate", "--provider", "--add", "foo:bar:1.0" );
+
+    // confirm that validate doesn't add any providers
+    int finalSize = getSchemaCatalog().getProviderNames().size();
+    assertEquals( "provider list should not have changed size", initialSize, finalSize );
+    }
+
+  @Test
+  public void testValidatePropertiesProviderCLI() throws IOException
+    {
+    initCatalog();
+    int initialSize = getSchemaCatalog().getProviderNames().size();
+
+    catalog( "--schema", "example", "--add" );
+
+    // A provider defined entirely on the CLI always passes validation but should
+    // still result in not adding the provider
+    catalog( "--schema", "example",
+      "--format", "psv", "--validate", "--extensions", ".tpsv", "--provider", "bar",
+      "--properties", "delimiter=|,typed=true,quote='"
+    );
+
+    // A provider defined entirely on the CLI always passes validation.
+    // But this call to --properties without an arg should still get a CLI error.
+    catalogWithOptionalTest( false, "--schema", "example",
+      "--format", "psv", "--validate", "--extensions", ".tpsv", "--provider", "text",
+      "--properties"
+    );
+
+    // confirm that validate doesn't add any providers
+    int finalSize = getSchemaCatalog().getProviderNames().size();
+    assertEquals( "provider list should not have changed size", initialSize, finalSize );
+    }
+
 
   @Test
   public void testProviderWithSQLLine() throws IOException
@@ -223,25 +297,12 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
   public void testSpecProviderWithSQLLine() throws IOException
     {
     copyFromLocal( SIMPLE_PRODUCTS_TABLE );
-
-    String mavenLikePath = "repo/com/test/provider/test-provider/1.0.0/";
-    String jarName = mavenLikePath + "test-provider-1.0.0.jar";
-    String pom = mavenLikePath + "test-provider-1.0.0.pom";
-    String spec = "com.test.provider:test-provider:1.0.0";
-
-    Collection<File> classPath = compileFactory( getFactoryPath() );
-    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( jarName ) );
-    File pomFile = new File( getProviderPath( pom ) );
-
-    pomFile.getParentFile().mkdirs();
-
-    Files.copy( new File( TEST_PROPERTIES_POM ), pomFile );
-
+    makeTestMavenRepo();
     initCatalog();
 
     catalog( "--schema", "example", "--add" );
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
-    catalog( "--schema", "example", "--provider", "--add", spec );
+    catalog( "--schema", "example", "--provider", "--add", SPEC );
 
     catalog( "--schema", "results", "--add" );
     catalog(
@@ -271,4 +332,16 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     // spawn results into a unique table/scheme with differing providers meta-data
     assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
     }
+
+  protected void makeTestMavenRepo() throws IOException
+    {
+    Collection<File> classPath = compileFactory( getFactoryPath() );
+    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( JAR_NAME ) );
+    File pomFile = new File( getProviderPath( POM ) );
+
+    pomFile.getParentFile().mkdirs();
+
+    Files.copy( new File( TEST_PROPERTIES_POM ), pomFile );
+    }
+
   }

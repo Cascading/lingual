@@ -310,46 +310,34 @@ public class CatalogProviderUtil
   /**
    * Load *.properties resource into java.util.Properties
    *
-   * @return properties object or null if resource not found
-   */
-  public static Properties getPropertiesResource( File jarFile, String resourceName )
-    {
-    InputStream is = getResourceAsStream( jarFile, resourceName );
-
-    return getPropertiesFromStream( is );
-    }
-
-  /**
-   * Load *.properties resource into java.util.Properties
-   *
-   * @param inStream     the in stream
-   * @param resourceName the resource name
-   * @return properties object or null if resource not found
+   * @param jarFile the provider jar file.
+   * @return properties determining provider setup
    * @throws InvalidProviderException
    */
-  public static Properties getPropertiesResource( JarInputStream inStream, String resourceName )
+  public static Properties getProviderProperties( File jarFile )
     {
     try
       {
+      JarInputStream jarInputStream = new JarInputStream( new BufferedInputStream( new FileInputStream( jarFile ) ) );
       // position the input stream at the given resource.
-      JarEntry entry = inStream.getNextJarEntry();
+      JarEntry entry = jarInputStream.getNextJarEntry();
 
-      while( ( entry != null ) && ( !resourceName.equals( entry.getName() ) ) )
-        entry = inStream.getNextJarEntry();
+      while( ( entry != null ) && ( !ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES.equals( entry.getName() ) ) )
+        entry = jarInputStream.getNextJarEntry();
 
       if( entry == null )
-        throw new InvalidProviderException( "unable to find resource " + resourceName + " in provider jar" );
+        throw new InvalidProviderException( "unable to find resource " + ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES + " in provider jar" );
 
       Properties properties = new Properties();
 
-      // calling load on JarInputStream get only the current resource.
-      properties.load( inStream );
+      // calling load on JarInputStream gets only the current resource.
+      properties.load( jarInputStream );
 
       return properties;
       }
     catch( IOException ioe )
       {
-      throw new InvalidProviderException( "unable to read resource " + resourceName + " in provider jar", ioe );
+      throw new InvalidProviderException( "unable to read resource " + ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES + " in provider jar", ioe );
       }
     }
 
@@ -388,59 +376,5 @@ public class CatalogProviderUtil
     return properties;
     }
 
-  public static Properties getProviderProperties( File jarFile, boolean validate )
-    {
-    try
-      {
-      JarInputStream jarInputStream = new JarInputStream( new BufferedInputStream( new FileInputStream( jarFile ) ) );
-
-      return getProviderProperties( jarInputStream, validate );
-      }
-    catch( IOException exception )
-      {
-      throw new InvalidProviderException( "error reading provider jar " + jarFile, exception );
-      }
-    }
-
-  public static Properties getProviderProperties( JarInputStream jarInputStream, boolean validate )
-    {
-    Properties providerProperties = getPropertiesResource( jarInputStream, ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
-
-//    if( validate )
-//      getProviderProperties( providerProperties );
-
-    return providerProperties;
-    }
-
-  public static void getProviderProperties( Properties properties )
-    {
-    throw new UnsupportedOperationException( "unimplemented" );
-
-/*
-    String factoryClassName = properties.getProperty( ProviderDefinition.PROVIDER_FACTORY_CLASS_NAME );
-
-    if( factoryClassName != null )
-      {
-      LOG.debug( "provider properties define factory {}", factoryClassName );
-      return;
-      }
-
-    LOG.debug( "provider properties do not define {}", ProviderDefinition.PROVIDER_FACTORY_CLASS_NAME );
-    Map<String, String> providerFormats = CatalogProviderUtil.getPropertiesWithSubstring( ProviderDefinition.PROVIDER_FORMAT, properties );
-    Map<String, String> providerProtocols = CatalogProviderUtil.getPropertiesWithSubstring( ProviderDefinition.PROVIDER_PROTOCOL, properties );
-    Map<String, String> providerStereotypes = CatalogProviderUtil.getPropertiesWithSubstring( ProviderDefinition.PROVIDER_STEREOTYPE, properties );
-
-    if( LOG.isDebugEnabled() )
-      {
-      Object[] argArray = {providerFormats, providerProtocols, providerStereotypes};
-      LOG.debug( "provider properties define formats: {}, protocols: {}, stereotypes: {}", argArray );
-      }
-
-    boolean hasFormats = ( providerFormats.size() > 0 ), hasProtocols = ( providerProtocols.size() > 0 ), hasStereotypes = ( providerStereotypes.size() > 0 );
-
-    if( !hasFormats && !hasProtocols && !hasStereotypes )
-      throw new InvalidProviderException( "provider jar does not specify factory class or stereotype/protocol/format classname properties" );
-*/
-    }
   }
 

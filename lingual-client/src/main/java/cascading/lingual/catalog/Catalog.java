@@ -81,7 +81,7 @@ public class Catalog extends Main<CatalogOptions>
   public boolean execute( String[] args ) throws IOException
     {
     if( !parse( args ) )
-      return true;
+      return false;
 
     setVerbose();
 

@@ -20,6 +20,8 @@
 
 package cascading.lingual.catalog.target;
 
+import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +30,10 @@ import cascading.lingual.catalog.Repo;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
+import org.apache.ivy.Ivy;
+import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.RepositoryResolver;
+import org.apache.ivy.plugins.resolver.URLResolver;
 
 import static java.util.Arrays.asList;
 
@@ -36,6 +42,9 @@ import static java.util.Arrays.asList;
  */
 public class RepoTarget extends CRUDTarget
   {
+  private static final String M2_PER_MODULE_PATTERN = "[revision]/[artifact]-[revision](-[classifier]).[ext]";
+  private static final String M2_PATTERN = "[organisation]/[module]/" + M2_PER_MODULE_PATTERN;
+
   public RepoTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
@@ -46,23 +55,16 @@ public class RepoTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    String repoName = getOptions().getRepoName();
-    String repoUrl = getOptions().getAddURI();
-
-    if( repoName == null || repoUrl == null )
-      throw new IllegalArgumentException( "repo add action must have a repo name and a url" );
-
-    Repo repo = new Repo( repoName, repoUrl );
-
+    Repo repo = getRequestedRepo();
     catalog.addRepo( repo );
 
-    return asList( repoName );
+    return asList( repo.getRepoName() );
     }
 
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    // remove is not supported. There aren't likely to be enough registered repos to make
+    // rename is not supported. There aren't likely to be enough registered repos to make
     // it worth doing, particularly when we don't want people to be able to rename mavencentral
     // or mavenlocal easily. People who need to change a name can do it via remove and an add.
     return false;
@@ -85,16 +87,13 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    String repoName = getOptions().getRepoName();
+    RepositoryResolver repositoryResolver = getRepositoryResolver( getRequestedRepo() );
+    IvySettings ivySettings = new IvySettings();
+    ivySettings.addResolver( repositoryResolver );
+    ivySettings.setDefaultResolver( repositoryResolver.getName() );
+    Ivy ivy = Ivy.newInstance( ivySettings );
 
-    if( repoName == null )
-      throw new IllegalArgumentException( "validate action must have a name" );
-
-    Repo repo = catalog.getMavenRepo( repoName );
-
-    // TODO: validate the repo exists and that downloading the spec gets a workable jar.
-    return true;
+    return ivy.listOrganisations().length > 0;
     }
 
   @Override
@@ -102,4 +101,37 @@ public class RepoTarget extends CRUDTarget
     {
     return platformBroker.getCatalog().getMavenRepoNames();
     }
+
+  private Repo getRequestedRepo()
+    {
+    String repoName = getOptions().getRepoName();
+    String repoUrl = getOptions().getAddURI();
+
+    if( repoName == null || repoUrl == null )
+      throw new IllegalArgumentException( "repo add action must have a repo name" );
+    if( repoUrl == null )
+      throw new IllegalArgumentException( "repo add action must have an url" );
+
+    return new Repo( repoName, repoUrl );
+    }
+
+  protected static RepositoryResolver getRepositoryResolver( Repo repo )
+    {
+    String repoUrl = repo.getRepoUrl();
+
+    if( !repoUrl.endsWith( "/" ) )
+      repoUrl += "/";
+
+    RepositoryResolver resolver = new URLResolver();
+
+    if( URI.create( repoUrl ).getScheme() == null )
+      repoUrl = new File( repoUrl ).getAbsoluteFile().toURI().toASCIIString();
+
+    resolver.setM2compatible( repo.getRepoKind() == Repo.Kind.Maven2 );
+    resolver.setName( repo.getRepoName() );
+    resolver.addArtifactPattern( repoUrl + M2_PATTERN );
+
+    return resolver;
+    }
+
   }

@@ -53,7 +53,6 @@ public abstract class CRUDTarget extends Target
     if( getOptions().isList() )
       return handlePrint( platformBroker );
 
-    // if they've screwed up validate and add then validate takes precendence.
     if( getOptions().isValidate() )
       return handleValidateDependencies( platformBroker );
 

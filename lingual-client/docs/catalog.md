@@ -63,7 +63,7 @@ To add new table to an existing schema:
 | --repo [name]       |                              |
 |                     | --remove                     | remove maven repo
 |                     | --add [url]                  | add maven repo
-|                     | --validate [url]             | checks that a maven repo is reachable without altering the catalog
+|                     | --validate                   | optional arg when using --add to test the repo is valid without adding it
 |                     |                              |
 | --schema            |                              | lists all current schemas
 | --schema [name]     |                              |
@@ -94,16 +94,17 @@ To add new table to an existing schema:
 |                     | --show                       | display stereotype details
 |                     |                              |
 | --provider          |                              | list all registered providers (unless --add is specified)
-| --provider [name]   |                              | regsiter a new provider
+| --provider [name]   |                              | register a new provider
 |                     | --remove                     |
 |                     | --rename [new name]          |
 |                     | --add [uri|spec]             | register a provider located by the uri or maven spec
-|                     | --validate                   | confirms that a provider declaration is valid
+|                     | --validate                   | optional arg when using --add to test the provider's uri or spec is valid without it.
+|                     | --properties                 | the properties defining the provider's behavior as "keyOne=valueOne,keyTwo=valueTwo"
 |                     |                              |
 | --format            |                              | list all registered format names
 | --format [name]     |                              |
 |                     | --remove                     |
-|                     | --add                        | regsiter a new format, like CSV, TSV, Avro, or Thrift
+|                     | --add                        | register a new format, like CSV, TSV, Avro, or Thrift
 |                     | --provider [name]*           | use the given provider
 |                     | --update                     | update with given values (replaces values)
 |                     | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)

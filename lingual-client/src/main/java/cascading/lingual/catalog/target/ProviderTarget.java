@@ -46,7 +46,6 @@ import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.resolver.RepositoryResolver;
-import org.apache.ivy.plugins.resolver.URLResolver;
 import org.apache.ivy.util.DefaultMessageLogger;
 import org.apache.ivy.util.Message;
 
@@ -59,9 +58,6 @@ import static org.apache.ivy.core.module.id.ModuleRevisionId.newInstance;
  */
 public class ProviderTarget extends CRUDTarget
   {
-  private static final String M2_PER_MODULE_PATTERN = "[revision]/[artifact]-[revision](-[classifier]).[ext]";
-  private static final String M2_PATTERN = "[organisation]/[module]/" + M2_PER_MODULE_PATTERN;
-
 
   public ProviderTarget( Printer printer, CatalogOptions options )
     {
@@ -71,36 +67,7 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
-
-    String providerName = getOptions().getProviderName();
-    File jarFile = getLocalJarFile( platformBroker );
-
-    platformBroker.retrieveInstallProvider( jarFile.getPath() );
-    String md5Hash = Misc.getHash( jarFile );
-
-    List<String> names = new ArrayList<String>();
-    Properties providerProperties = getProviderProperties( jarFile, true );
-
-    ProviderDefinition[] providerDefinitions = ProviderDefinition.getProviderDefinitions( providerProperties );
-
-    for( ProviderDefinition providerDefinition : providerDefinitions )
-      {
-      if( providerName != null && !providerDefinition.getProviderName().equals( providerName ) )
-        continue;
-
-      if( !providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
-        continue;
-
-      String name = providerDefinition.getProviderName();
-      Map<String, String> map = providerDefinition.getProviderPropertyMap();
-
-      names.add( name );
-      schemaDef.addProviderDef( name, jarFile.getName(), map, md5Hash );
-      }
-
-    return names;
+    return doAdd( platformBroker, true );
     }
 
   @Override
@@ -126,17 +93,8 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {
-    File jarFile = getLocalJarFile( platformBroker );
-
-    if( !jarFile.exists() && !jarFile.canRead() )
-      {
-      getPrinter().print( "cannot read from file: " + jarFile.getName() );
-      return false;
-      }
-
-    getProviderProperties( jarFile, true );
-
-    return true;
+    doAdd( platformBroker, false );
+    return true; // doAdd() would have thrown a descriptive Exception if the processing failed.
     }
 
   @Override
@@ -146,6 +104,47 @@ public class ProviderTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
 
     return catalog.getProviderNames( schemaName );
+    }
+
+  protected List<String> doAdd( PlatformBroker platformBroker, boolean doActualInstall )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+
+    String providerName = getOptions().getProviderName();
+    File jarFile = getLocalJarFile( platformBroker );
+
+    platformBroker.retrieveInstallProvider( jarFile.getPath() );
+    String md5Hash = Misc.getHash( jarFile );
+
+    List<String> names = new ArrayList<String>();
+    Properties providerProperties = getProviderProperties( jarFile );
+
+    ProviderDefinition[] providerDefinitions = ProviderDefinition.getProviderDefinitions( providerProperties );
+
+    if( providerDefinitions.length == 0 )
+      throw new IllegalArgumentException( "no provider definition supplied" );
+
+    for( ProviderDefinition providerDefinition : providerDefinitions )
+      {
+      if( providerName != null && !providerDefinition.getProviderName().equals( providerName ) )
+        continue;
+
+      if( !providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
+        continue;
+
+      String name = providerDefinition.getProviderName();
+      Map<String, String> map = providerDefinition.getProviderPropertyMap();
+
+      names.add( name );
+      if( doActualInstall )
+        schemaDef.addProviderDef( name, jarFile.getName(), map, md5Hash );
+      }
+
+    if( names.size() == 0 )
+      throw new UnsupportedOperationException( "supplied provider definitions could not be added" );
+
+    return names;
     }
 
   protected File getLocalJarFile( PlatformBroker platformBroker )
@@ -230,21 +229,7 @@ public class ProviderTarget extends CRUDTarget
 
     for( Repo repo : repositories )
       {
-      String repoUrl = repo.getRepoUrl();
-
-      if( !repoUrl.endsWith( "/" ) )
-        repoUrl += "/";
-
-      RepositoryResolver resolver = new URLResolver();
-
-      if( URI.create( repoUrl ).getScheme() == null )
-        repoUrl = new File( repoUrl ).getAbsoluteFile().toURI().toASCIIString();
-
-      resolver.setM2compatible( repo.getRepoKind() == Repo.Kind.Maven2 );
-      resolver.setName( repo.getRepoName() );
-      resolver.addArtifactPattern( repoUrl + M2_PATTERN );
-
-      resolvers.add( resolver );
+      resolvers.add( RepoTarget.getRepositoryResolver( repo ) );
       }
 
     return resolvers;
