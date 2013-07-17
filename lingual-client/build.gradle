@@ -139,10 +139,6 @@ assembleDist << {
   }
 
   copy {
-    into "${distDir}/docs"
-    from 'docs/'
-  }
-  copy {
     fileMode = 0755
     into "${distDir}/bin/"
     from( 'src/dist/bin/' ) {
@@ -158,14 +154,14 @@ assembleDist << {
 task packageDist( type: Tar, dependsOn: assembleDist ) {
   description = "package current build, does not run tests"
 
-  destinationDir = file( s3Upload.source )
+  destinationDir = file( s3UploadArtifacts.source )
   compression = "GZIP"
 
   into( baseName ) {
     from assembleDist.distDir
   }
 
-  s3Upload.dependsOn packageDist
+  s3UploadArtifacts.dependsOn packageDist
 }
 
 packageDist << {
@@ -177,10 +173,10 @@ packageDist << {
               'majorVersion': majorVersion.toString()
       ] )
     }
-    into s3Upload.source
+    into s3UploadArtifacts.source
   }
 
-  file( "${s3Upload.source}/latest.txt" ).write( "http://${s3Upload.destination}${archiveName}" )
+  file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${archiveName}" )
 }
 
 uploadArchives.enabled = false

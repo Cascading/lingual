@@ -32,7 +32,8 @@ buildscript {
   }
 }
 
-task s3Upload( type: S3Sync ) {
+// artifacts always publish in sub-project
+task s3UploadArtifacts( type: S3Sync ) {
 
   accessKey = rootProject.awsAccessId
   secretKey = rootProject.awsSecretKey
@@ -43,13 +44,37 @@ task s3Upload( type: S3Sync ) {
 
   configFile "${rootProject.projectDir}/etc/synchronizer.properties"
 
-  ext.source = "${buildDir}/publish"
+  ext.source = "${buildDir}/artifacts"
 
-  if( project == rootProject ) // only publishes docs
-    ext.destination = "${project.s3BucketDocs}/${rootProject.name}/${majorVersion}/"
+  if( project == rootProject )
+    ext.destination = "${project.s3Bucket}/${rootProject.name}/${majorVersion}/"
   else
     ext.destination = "${project.s3Bucket}/${rootProject.name}/${majorVersion}/${project.name}/"
 
   from source
   into destination
+}
+
+// docs always publish in project root, do need a qualifier like 'javadoc' added
+task s3UploadDocs( type: S3Sync ) {
+
+  accessKey = rootProject.awsAccessId
+  secretKey = rootProject.awsSecretKey
+
+  keepFiles = true // prevents deletion from bucket
+
+  acl ACL.PublicRead
+
+  configFile "${rootProject.projectDir}/etc/synchronizer.properties"
+
+  ext.source = "${buildDir}/documentation"
+
+  ext.destination = "${project.s3BucketDocs}/${rootProject.name}/${majorVersion}/"
+
+  from source
+  into destination
+}
+
+task s3Upload( dependsOn: [s3UploadArtifacts, s3UploadDocs] ) {
+
 }

@@ -1,0 +1,79 @@
+[id="getting-started"]
+## Getting Started
+
+The best way to learn Lingual is it download sample data and run a few queries.
+
+After <<install,installing Lingual>>, in a new working directory download sample data:
+
+    > wget http://data.cascading.org/employees.tgz
+    > tar -xzf employees.tgz
+
+Next download a simple shell script to register the employee data with Lingual (used below):
+
+    > wget http://data.cascading.org/create-employees.sh
+    > chmod a+x create-employees.sh
+
+The `create-employees.sh` script simply calls `lingual catalog` to register each file as a table, and the columns and
+types in each file.
+
+### Using data in "Local" mode
+
+Register the data with Lingual where the employee data is used from the current filesystem:
+
+    > ./create-employees.sh local
+
+Start the Lingual command shell on the `local` platform:
+
+    > lingual --platform local shell
+
+### Using data in "Hadoop" mode
+
+To use Lingual against an Apache Hadoop cluster, you must copy the data to the cluster, then register the data
+with Lingual.
+
+    > hadoop fs -copyFromLocal employees employees
+    > export HADOOP_HOME=/path/to/hadoop
+    > ./create-employees.sh hadoop
+
+Now start the shell in `hadoop` platform:
+
+    > lingual shell --platform hadoop
+
+### Running queries (on either platform):
+
+After starting the shell for the expected platform (see above), type:
+
+    > select * from employees.titles;
+
+Lingual detects that we are effectively only reading the file with this query, so the results begin to display
+immediately.
+
+Alternately, run:
+
+    > select * from employees.titles where title = 'Engineer';
+
+This will result in an actual MapReduce job being submitted, if using the Hadoop platform. You can verify this on the
+JobTracker web interface.
+
+What actually happened under the hood is that a new Cascading Flow was created by the JDBC Driver and run to select
+all the `employees` records with the given `title`, which were placed, by default, into a file in the `./results/`
+directory, either on the local disk or in your user directory on HDFS.
+
+A JDBC ResultSet was then created to read the results file where the "max rows" was set to 10,000 (the default). Since Hadoop
+generally has really large files, this seems like a reasonable limit. See the command line args to change.
+
+The file in the `./results/` directory is a valid data file, but should be deleted if you want to reclaim the
+space it is taking up.
+
+A table must exist in Lingual before an `insert into select ...` statement can be called.
+
+Currently Lingual does not support DDL from the Shell prompt so Catalog must be used to create schemas and tables.
+
+    > lingual catalog --platform hadoop --schema working --add
+
+    > lingual catalog --platform hadoop --schema working --stereotype titles -add --columns title --types string
+
+    > lingual catalog --platform hadoop --schema working --table unique_titles --stereotype titles -add working/unique-titles.csv
+
+    > lingual shell --platform [platform]
+    > insert into "working"."unique_titles" select distinct( title ) from employees.titles;

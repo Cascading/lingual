@@ -170,7 +170,7 @@ task javadocDist( type: Copy, dependsOn: javadocAll ) {
   description = "build javadoc"
 
   from javadocAll.destinationDir
-  into "${s3Upload.source}/javadoc/"
+  into "${s3UploadDocs.source}/javadoc/"
 
-  s3Upload.dependsOn javadocDist
+  s3UploadDocs.dependsOn javadocDist
 }

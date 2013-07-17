@@ -1,0 +1,91 @@
+# Lingual - SQL for Cascading (on Apache Hadoop)
+
+Lingual executes ANSI SQL queries as Cascading applications on Apache Hadoop clusters.
+
+[options="header",frame="none"]
+|===========================================================
+^|Immediate Data Access ^|Simplify SQL Migration
+|*Using the Lingual Shell or JDBC Driver with existing Desktop and BI tools, unlock data stored on an Apache Hadoop cluster.*
+|*Using the Lingual JDBC Driver or native Cascading APIs, simply migrate existing SQL code to Apache Hadoop.*
+|===========================================================
+
+## Overview
+
+Lingual includes JDBC Drivers, SQL command shell, and a catalog manager for creating schemas and tables.
+
+If you are already familiar with Cascading, you can use a Cascading like API to run SQL based `Flow`s in tandem with
+other custom `Flow`s in your application.
+
+To use Lingual, there is no installation other than the optional command line utilities.
+
+Lingual is based on the http://cascading.org[Cascading] distributed processing engine and
+the https://github.com/julianhyde/optiq[Optiq] SQL parser and rule engine.
+
+Lingual only supports `SELECT` and `INSERT INTO` statements, for example
+
+    SELECT COUNT( DISTINCT CITY ), SUM( DISTINCT AGE ) FROM SALES.EMPS
+
+    INSERT INTO TEST.RESULTS SELECT EMPNO, NAME FROM SALES.EMPS
+
+DDL statements like `CREATE TABLE` are unsupported via the JDBC Driver interface. See the <<catalog,Lingual Catalog>>
+tool for defining Schemas and Tables from the command line.
+
+### Command Line Tools
+
+Use the command line tools to publish files as tables, or run queries from the console, locally or
+on Amazon ElasticMapReduce.
+
+To install:
+
+  * <<install,Installation>>
+
+The Lingual command line client consists of two utilities:
+
+  * <<catalog,Catalog>>
+  * <<shell,Shell>>
+
+See the <<getting-started,Getting Started>> page for an overview of how the utilities work together.
+
+When using Apache Hadoop, refer to the notes on how to setup your Hadoop environment:
+
+  * <<hadoop,Using Hadoop>>
+
+### Java JDBC
+
+Lingual provides a fully Java JDBC compliant Driver.
+
+  * <<jdbc-java,A Java JDBC Example>>
+  * <<jdbc-r,Accessing Data from R>>
+  * <<jdbc,Using the Driver>>
+
+### Java Cascading APIs
+
+Lingual provides a very simple API for executing a SQL statement as a Cascading Flow.
+
+  * <<java, A Java Example>>
+
+### Data Providers
+
+*Data Providers* are `jar` files with custom Cascading Taps, Schemes, a factory class, and a provider definition file
+(`provider.properties`).
+
+When registered with the Lingual Catalog tool, the Lingual JDBC Driver and/or Lingual Shell can run queries where data
+is read or written to systems the `provider` provides integration to.
+
+A provider can be specified by either referencing the file location, or using a Maven style spec (`group:name:revision`).
+
+Learn more about how to create a Provider:
+
+  * <<provider,Data Providers>>
+
+include::install.adoc[]
+include::getting-started.adoc[]
+include::catalog.adoc[]
+include::shell.adoc[]
+include::hadoop.adoc[]
+include::jdbc.adoc[]
+include::jdbc-java.adoc[]
+include::jdbc-r.adoc[]
+include::java.adoc[]
+include::provider.adoc[]
+

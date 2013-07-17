@@ -1,12 +1,15 @@
-# Overview
+[id="shell"]
+## Lingual Shell
 
-Lingual Shell is an interactive SQL command shell based on [SQLLine](http://sqlline.sourceforge.net).
+Lingual Shell is an interactive SQL command shell based on http://sqlline.sourceforge.net[SQLLine].
 
 Lingual Shell expects to find a catalog configuration that defines available Schemas and Tables.
 
 For more information, visit [Cascading Lingual](http://cascading.org/lingual).
 
-# CLI Usage
+Or see the <<getting_started,Getting Started>> guide.
+
+### CLI Usage
 
 Catalog is invoked from the command line via:
 
@@ -16,10 +19,11 @@ To start the shell for running queries on Apache Hadoop:
 
     lingual shell --platform hadoop
 
-# CLI Options Reference
+### CLI Options Reference
 
+[width="100%",cols="<30m,<40d",frame="topbot",options="header"]
+|=========================================================================================================
 | switch               | description
-| -------------------- | -----------
 |                      |
 | --platform [name]    | use the named platform
 |                      |
@@ -34,8 +38,8 @@ To start the shell for running queries on Apache Hadoop:
 | --sqlPlanPath [dir ] | where to write out the Optiq planner plan file for debugging
 |                      |
 | --config [file]      | config properties file to use instead of .lingual/config/default.properties
-|                      |
+|=========================================================================================================
 
-# Configuration
+### Configuration
 
-See [Configuring Apache Hadoop](hadoop.md) for using with a Apache Hadoop cluster.
+See <<hadoop.html,Configuring Apache Hadoop>> for using with a Apache Hadoop cluster.

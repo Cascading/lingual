@@ -1,0 +1,175 @@
+[id="catalog"]
+## Lingual Catalog
+
+The Lingual Catalog command line tool allows users to curate a catalog of database schemas and tables, where a *table* is
+a Tap accessible data-set and a *schema* is a collection of tables.
+
+The Lingual Catalog is used in tandem with the Lingual Shell and the Lingual JDBC driver. By default the Shell will use
+the current (in the current directory) catalog of schemas and tables to satisfy the SQL planner.
+
+These concepts are inherited from the database world and are compatible with standard SQL tools.
+
+### Detail
+
+A Schema is a collection of Tables. A Schema has a name like _employees_.
+
+----
+|-- schemas --|
+root           <- default schema
+    \
+     employees <- user schema
+----
+
+A Table consists of a URI, Stereotype, a Format, and a Protocol. A Table also has a name like _titles_. The full name,
+if the Table belonged to the Schema _employees_ would be _employees.titles_.
+
+----
+|-- schemas --|-- tables -- |
+root
+    \
+     employees
+              \
+               titles  <- user table
+----
+
+*Format* is the format or encoding of a Table URI. Tab delimited (TSV) and comma delimited (CSV) are common text formats
+can be identified by the file extension on the URI (`employees/titles.csv`). Format maps to a Cascading Scheme
+instance internally (like `TextDelimited` for CSV).
+
+*Protocol* is how a Table URI is accessed. If on Hadoop, the default is HDFS. If in Local mode, the default is through
+the local filesystem. Protocols can be identified the the URI 'scheme'. `hdfs:/...` for HDFS and `file:/...` for the
+local filesystem. Protocol maps to a Cascading Tap type internally (like `HFS` for HDFS).
+
+A *Stereotype* represents the meta-data associated with a Table, the table definition, which includes column names
+and column types. Stereotypes have a name, may be nested in a Schema, and may be shared between Tables.
+
+Use the command line to create and update new Schema, Table, Stereotype, Format, and Protocols.
+
+### CLI Usage
+
+Catalog is invoked from the command line via:
+
+    lingual catalog [switches]*
+
+To create a new catalog in the user root directory on HDFS:
+
+    lingual catalog --platform hadoop --init
+
+To add new table to an existing schema:
+
+    lingual catalog --platform hadoop --schema company --table employees --add ./data/employees
+
+### CLI Options Reference
+
+[width="100%",cols="<30m,<30m,<40d",frame="topbot",options="header"]
+|===
+| context              | action                       | description
+| --uri [uri]          |                              | optional path to the catalog meta-data, defaults to current directory relative to the current platform
+|                      |                              |
+| --platform           |                              | lists all known platforms (currently local and hadoop)
+| --platform [name]    |                              | use the named platform (relative uri will be resolved for given platform)
+| --default*           |                              | make the current relevant options the default environment
+|                      |                              |
+| --init               |                              | initializes a new catalog in the current directory if --uri is not given
+|                      |                              |
+| --ddl [file]         |                              | use DDL file to define tables in an existing schema
+|                      | --schema [name]              |
+|                      | --format [name]              |
+|                      | --protocol [name]            |
+|                      |                              |
+| --repo               |                              | list all maven repos
+| --repo [name]        |                              |
+|                      | --add [url]                  | add maven repo
+|                      | --remove                     | remove maven repo
+|                      | --validate                   | optional arg when using --add to test the repo is valid without adding it
+|                      | --show                       | shows detailed information about a repo. requires the [name] param for repo
+|                      |                              |
+| --schema             |                              | lists all current schemas
+| --schema [name]      |                              |
+|                      | --add [uri]                  | uri optional, add path as a new schema root
+|                      | --remove                     |
+|                      | --rename [new name]          |
+|                      | --show                       | shows detailed information about a schema. requires the [name] param for schema
+|                      |                              |
+| --table              |                              | lists all tables for the current schema
+| --table [name]       |                              |
+|                      | --add [uri]                  | add path as a new table root, will attempt to resolve stereotype
+|                      | --update                     | updates the table with new properties
+|                      | --stereotype [name]          | use existing stereotype for table definition
+|                      | --format [name]              | use format for uri identifier
+|                      | --protocol [name]            | optional, use protocol for uri identifier
+|                      | --remove                     | logically removes table, does not delete files
+|                      | --rename [new name]          | logically renames table, does not alter files
+|                      | --show                       | shows detailed information about a table. requires the [name] param for table
+|                      |                              |
+| --stereotype         |                              | list all registered stereotype names
+| --stereotype [name]  |                              |
+|                      | --add                        |
+|                      | --update                     | update with given values (replaces values)
+|                      | --provider [name]*           | use the given provider (optional)
+|                      | --columns [names,.]          | required
+|                      | --types [types,.]            | required
+|                      | --remove                     |
+|                      | --rename [new name]          |
+|                      | --show                       | shows detailed information about a stereotype. requires the [name] param for stereotype
+|                      |                              |
+| --provider           |                              | list all registered providers
+| --provider [name]    |                              | register a new provider
+|                      | --add [uri\|spec]            | register a provider located by the uri or maven spec (group:name:revision)
+|                      | --validate                   | optional arg when using --add to test the provider's uri or spec is valid without it
+|                      | --properties                 | the properties defining the provider's behavior as "keyOne=valueOne,keyTwo=valueTwo"
+|                      | --remove                     |
+|                      | --rename [new name]*         |
+|                      | --show                       | shows detailed information about a provider. requires the [name] param for provider
+|                      |                              |
+| --format             |                              | list all registered format names
+| --format [name]      |                              |
+|                      | --add                        | register a new format, like CSV, TSV, Avro, or Thrift
+|                      | --provider [name]            | use the given provider
+|                      | --update                     | update with given values (replaces values)
+|                      | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)
+|                      | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
+|                      | --remove*                    |
+|                      | --rename [new name]*         |
+|                      | --show                       | shows detailed information about a format. requires the [name] param for format
+|                      |                              |
+| --protocol           |                              | list all registered protocol names
+| --protocol [name]    |                              |
+|                      | --add                        | register a new protocol
+|                      | --provider [name]            | use the given provider
+|                      | --update                     | update with given values (replaces values)
+|                      | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
+|                      | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
+|                      | --remove*                    |
+|                      | --rename [new name]*         |
+|                      | --show                       | shows detailed information about a protocol. requires the [name] param for protocol
+|                      |                              |
+| --config [name|uri]* |                              | config properties file to use instead of .lingual/config/default.properties
+|                      |                              |
+|===
+
+__* currently unsupported__
+
+### Catalog Structure
+
+Any directory can be the root namespace for a catalog
+
+[width="70%",cols="<30m,<70d",frame="topbot",options="header"]
+|===
+| path         | description
+| .            | current directory
+| ./.lingual/  | all meta-data (hidden directory)
+|              |
+|   defaults   | default environment values *
+|   catalog    | catalog data file in JSON
+|   providers  | provider jar files
+|   config     | config files dir, "default.properties" file from it is picked by default
+|              |
+| ./results    | local storage for all SELECT query results sets
+|===
+
+__* currently unsupported__
+
+### Configuration
+
+See <<hadoop,Configuring Apache Hadoop>> for using with a Apache Hadoop cluster.

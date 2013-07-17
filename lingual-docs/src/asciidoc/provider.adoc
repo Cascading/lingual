@@ -1,0 +1,91 @@
+[id="provider"]
+## Data Providers
+
+The Data Provider mechanism allows for new protocols and formats to be added dynamically to a Lingual query through
+a packaged `jar` file hosted locally or from Maven. This jar is automatically added, on the users behalf, to any Lingual
+queries executed from the Lingual JDBC Driver.
+
+Where a *protocol* is a label specifying a Cascading Tap, and a *format* is a label for a Cascading Scheme.
+
+By default Lingual supports multiple text formats like 'csv' and 'tsv' (comma separated values, and tab separated values,
+respectively). Files ending with '.csv' or '.tsv' are automatically mapped to the proper format.
+
+Cascading local mode supports the 'file' protocol via the `FileTap`, and Hadoop mode supports the 'hdfs' protocol
+via the `Hfs` Tap. URLs (identifiers) starting with 'file:' or 'hdfs:' are automatically mapped to the proper protocol.
+
+### Creating a Data Provider
+
+To add new protocol or format providers, a new Jar library must be created with an optional 'factory' class and a
+`provider.properties` file defining how to find and use the factory.
+
+If a factory class is not provided, the `extends` property must be used to specify an existing provider that these
+properties will amend. Extending an existing provider is a simple way to add new formats or protocols by creating
+a new named set of properties.
+
+[NOTE]
+====
+Any dependent Java class files (or libraries) must be expanded into the final jar file. Typically this is called a
+`fatjar`. Hadoop style `lib` folder inside the jar file is not honored.
+====
+
+#### The Factory Class
+
+Below are the optional method signatures expected to be seen in a custom factory.
+
+If only creating a Protocol factory, only one of the `createTap` methods must be implemented. Similarly, if only
+creating a Format factory, only one of the `createScheme` methods must be implemented. Obviously if the Factory
+is providing a Protocol and a Format it must have one `createTap` and one `createScheme` method.
+
+Note the Properties object is a `java.util.Properties` instance containing the key to value sets either defined in the
+`provider.properties` file (described below), or set from the Catalog tool command line.
+
+[source,java]
+----
+public interface ProviderFactory
+  {
+  String getDescription(); // optional
+
+  Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties );
+
+  Tap createTap( Scheme scheme, String identifier, SinkMode mode, Properties properties );
+
+  Tap createTap( Scheme scheme, String identifier, SinkMode mode );
+
+  Scheme createScheme( String protocol, String format, Fields fields, Properties properties );
+
+  Scheme createScheme( String format, Fields fields, Properties properties );
+
+  Scheme createScheme( Fields fields, Properties properties );
+
+  Scheme createScheme( Fields fields );
+  }
+----
+
+#### The provider.properties File
+
+The contents of the `provider.properties` file should follow this template, and be located in the `cascading.bind`
+package.
+
+[literal]
+----
+cascading.bind.provider.names=
+cascading.bind.provider.[provider_name].platforms=
+
+# one or the other
+cascading.bind.provider.[provider_name].factory.classname=[classname]
+cascading.bind.provider.[provider_name].extends=[provider_name]
+
+# define protocols differentiated by properties
+cascading.bind.provider.[provider_name].protocol.names=
+cascading.bind.provider.[provider_name].protocol.[protocol_name].uris=
+cascading.bind.provider.[provider_name].protocol.[protocol_name].[property]=[value]
+
+# define formats differentiated by properties
+cascading.bind.provider.[provider_name].format.names=
+cascading.bind.provider.[provider_name].format.[format_name].extensions=
+cascading.bind.provider.[provider_name].format.[format_name].[property]=[value]
+
+# optional format property specifying the protocols this format is compatible with
+# otherwise all defined protocols in this definition will be used
+cascading.bind.provider.[provider_name].format.[format_name].protocols=
+----

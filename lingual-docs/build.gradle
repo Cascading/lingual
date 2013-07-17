@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ *
+ * Project and contact information: http://www.cascading.org/
+ *
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+buildscript {
+  repositories {
+    mavenRepo name: 'Bintray Asciidoctor repo', url: 'http://dl.bintray.com/content/aalmiray/asciidoctor'
+    mavenRepo name: 'Bintray JCenter', url: 'http://jcenter.bintray.com'
+  }
+
+  dependencies {
+    classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.4.1'
+  }
+}
+
+apply plugin: 'asciidoctor'
+
+asciidoctor {
+
+  sourceDocumentName = file( 'src/asciidoc/index.adoc' )
+
+  // http://asciidoc.org/userguide.html#X88
+  // attributed must all be lowercase
+
+  def attributes = [
+          toc2: '',
+          revnumber: version,
+          'source-highlighter': 'coderay', // seems better than highlightjs
+          'linkcss!': '',
+          stylesdir: 'lingual-docs/src/site/stylesheets/', // should not be relative to rootDir
+          stylesheet: 'github.css',
+          'data-uri': '',
+          imagesdir: 'lingual-docs/src/site/images/', // should not be relative to rootDir
+          artifactsurl: project.s3Bucket,
+          docsurl: project.s3BucketDocs,
+          projectroot: project.rootDir,
+
+          // disabled till attributes in docinfo is supported
+//          docinfo1: '', // currently passing bad analyitics code till below is supported
+//          analyticsid: System.properties[ 'analytics.id' ],
+//          analyticsdomain: System.properties[ 'analytics.domain' ]
+  ]
+  options = [
+//          template_dir: 'lingual-docs/src/templates/', // craps out
+          eruby: 'erubis',
+          attributes: attributes
+  ]
+}
+
+task docDist( type: Copy, dependsOn: asciidoctor ) {
+  description = "publish documentation"
+
+  from asciidoctor.outputDir
+  into "${s3UploadDocs.source}/" // intentionally publish to root
+
+  s3UploadDocs.dependsOn docDist
+}
+
+uploadArchives.enabled = false
+
+platformTest.enabled = false
+

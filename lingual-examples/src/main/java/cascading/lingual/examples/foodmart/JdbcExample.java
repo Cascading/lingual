@@ -27,11 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 
-/**
- * Example of using Optiq via JDBC.
- * <p/>
- * <p>Schema is specified programmatically.</p>
- */
+/** A trivial JDBC Example */
 public class JdbcExample
   {
   public static void main( String[] args ) throws Exception
@@ -47,7 +43,8 @@ public class JdbcExample
     Tap empTap = new FileTap(new TextDelimited(true, ",", "\""), "src/test/data/employee.txt");
     Tap salesTap = new FileTap(new TextDelimited(true, ",", "\""), "src/test/data/salesfact.txt");
 
-    Tap resultsTap = new FileTap(new TextDelimited(true, ",", "\""), "build/test/output/results.txt", SinkMode.REPLACE);
+    Tap resultsTap = new FileTap(new TextDelimited(true, ",", "\""),
+      "build/test/output/results.txt", SinkMode.REPLACE);
 
     Pipe empPipe = new Pipe("emp");
     Pipe salesPipe = new Pipe("sales");
@@ -68,7 +65,8 @@ public class JdbcExample
     */
 
     Class.forName( "cascading.lingual.jdbc.Driver" );
-    Connection connection = DriverManager.getConnection( "jdbc:lingual:local;schemas=src/main/resources/data/example" );
+    Connection connection = DriverManager.getConnection(
+      "jdbc:lingual:local;schemas=src/main/resources/data/example" );
 
     Statement statement = connection.createStatement();
 

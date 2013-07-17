@@ -1,0 +1,52 @@
+[id="jdbc_r"]
+## JDBC Access from R
+
+The following example is based on the RJDBC package for R, assuming that the MySQL Sample Employee Database
+has been used as described on the <<jdbc_java,Java Example>> page.
+
+[source]
+----
+# JDBC support in R is provided by the RJDBC package http://www.rforge.net/RJDBC/
+
+# install the RJDBC package; only needed once -- uncomment next line the first time
+#install.packages("RJDBC", dep=TRUE)
+
+# load the library
+library(RJDBC)
+
+# set up the driver
+drv <- JDBC("cascading.lingual.jdbc.Driver", "~/src/concur/lingual/lingual-local/build/libs/lingual-local-1.0.0-wip-dev-jdbc.jar")
+
+# set up a database connection to a local repository
+connection <- dbConnect(drv, "jdbc:lingual:local;catalog=~/src/concur/lingual/lingual-examples/tables;schema=EMPLOYEES")
+
+# query the repository
+df <- dbGetQuery(connection, "SELECT * FROM EMPLOYEES.EMPLOYEES WHERE FIRST_NAME = 'Gina'")
+head(df)
+
+# use R functions to summarize and visualize part of the data
+df$hire_age <- as.integer(as.Date(df$HIRE_DATE) - as.Date(df$BIRTH_DATE)) / 365.25
+summary(df$hire_age)
+
+# uncomment next line the first time
+#install.packages("ggplot2")
+library(ggplot2)
+
+m <- ggplot(df, aes(x=hire_age))
+m <- m + ggtitle("Age at hire, people named Gina")
+m + geom_histogram(binwidth=1, aes(y=..density.., fill=..count..)) + geom_density()
+----
+
+The last part of that R script calculates the age (in years) at time of hire for all people named ‘Gina’, summarized as:
+
+[source]
+----
+> summary(df$hire_age)
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  20.86   27.89   31.70   31.61   35.01   43.92
+----
+
+and visualized in the plot:
+
+image:gina_hire_age.png[link="images/gina_hire_age.png"]
+

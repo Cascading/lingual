@@ -1,0 +1,49 @@
+[id="jdbc"]
+## Using the JDBC Drivers
+
+Lingual provides two JDBC Driver jars with self contained dependencies in the http://conjars.org[Conjars] Maven
+repository.
+
+The JDBC connection string is of the form `jdbc:lingual:[platform]`, where `[platform]` is either `local` or `hadoop`.
+
+Additional JDBC properties may be set using the form:
+
+    jdbc:lingual:[platform];[property]=[value];[property]=[value];...
+
+Where the property keys are:
+
+  * `catalog=[path]` - the working directory where your .lingual workspace is kept, default is `./`.
+  * `schema=[name]` - set the default schema name to use
+  * `schemas=[path,path]` - URI paths to the set of schema/tables to install in the catalog on startup
+  * `resultPath=[path]` - temporary root path for result sets to be stored, defaults to `./results`
+  * `flowPlanPath=[path]` - for debugging, print the corresponding Flow dot file here
+  * `sqlPlanPath=[path]` - for debugging, print the corresponding SQL plan file here
+
+Platform is requried to help the driver distinguish between either backend when more than one JDBC Driver is in
+the CLASSPATH.
+
+### Using the JDBC Driver In Your Project
+
+To pull either of these jars, the `jdbc` Maven classifier must be used if you want the self contained `jar` file with
+all its _shaded_ dependencies.
+
+For the `local` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-local</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+For the `hadoop` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-hadoop</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as
+would be expected.
