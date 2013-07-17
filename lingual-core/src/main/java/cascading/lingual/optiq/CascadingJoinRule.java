@@ -60,13 +60,9 @@ class CascadingJoinRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    RelNode[] rels = call.getRels();
-
-    assert rels.length == 3;
-
-    final JoinRel join = (JoinRel) rels[ 0 ];
-    final RelNode left = rels[ 1 ];
-    final RelNode right = rels[ 2 ];
+    final JoinRel join = call.rel( 0 );
+    final RelNode left = call.rel( 1 );
+    final RelNode right = call.rel( 2 );
 
     if( !join.getVariablesStopped().isEmpty() )
       {
@@ -111,7 +107,7 @@ class CascadingJoinRule extends RelOptRule
 
     final RelNode newLeft = inputRels[ 0 ];
     final RelNode newRight = inputRels[ 1 ];
-    final RelTraitSet traits = join.getCluster().getEmptyTraitSet().plus( Cascading.CONVENTION );
+    final RelTraitSet traits = join.getCluster().traitSetOf( Cascading.CONVENTION );
     final RexNode newCondition = createCondition( join.getCluster().getRexBuilder(), newLeft, leftKeys, newRight, rightKeys );
 
     final CascadingJoinRel newJoin = new CascadingJoinRel( join.getCluster(), traits, convert( newLeft, traits ),

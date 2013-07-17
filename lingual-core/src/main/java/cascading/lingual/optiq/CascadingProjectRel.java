@@ -20,7 +20,6 @@
 
 package cascading.lingual.optiq;
 
-import java.util.Arrays;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
@@ -30,12 +29,10 @@ import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptCost;
 import org.eigenbase.relopt.RelOptPlanner;
-import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexProgram;
-import org.eigenbase.util.Pair;
 
 /**
  *
@@ -53,7 +50,7 @@ class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
    * @param flags         values as in {@link org.eigenbase.rel.ProjectRelBase.Flags}
    * @param collationList List of sort keys
    */
-  protected CascadingProjectRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode[] exps, RelDataType rowType, int flags, final List<RelCollation> collationList )
+  protected CascadingProjectRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, List<RexNode> exps, RelDataType rowType, int flags, final List<RelCollation> collationList )
     {
     super( cluster, traits, child, exps, rowType, flags, collationList );
 
@@ -67,7 +64,7 @@ class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
       getCluster(),
       traitSet,
       sole( inputs ),
-      exps.clone(),
+      exps,
       rowType,
       flags,
       getCollationList() );
@@ -78,11 +75,6 @@ class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
   public RelOptCost computeSelfCost( RelOptPlanner planner )
     {
     return super.computeSelfCost( planner ).multiplyBy( .1 );
-    }
-
-  protected List<Pair<String, RexNode>> projects()
-    {
-    return Pair.zip( RelOptUtil.getFieldNameList( getRowType() ), Arrays.asList( exps ) );
     }
 
   public Branch visitChild( Stack stack )

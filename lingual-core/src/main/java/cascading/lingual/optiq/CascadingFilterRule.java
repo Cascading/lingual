@@ -40,7 +40,7 @@ class CascadingFilterRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    FilterRel rel = (FilterRel) call.getRels()[ 0 ];
+    FilterRel rel = call.rel( 0 );
 
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 

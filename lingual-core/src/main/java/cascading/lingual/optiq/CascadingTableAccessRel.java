@@ -29,7 +29,6 @@ import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.type.FileType;
 import cascading.util.Util;
-import net.hydromatic.optiq.rules.java.JavaRules;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.rel.rules.PushJoinThroughJoinRule;
 import org.eigenbase.relopt.RelOptCluster;
@@ -53,7 +52,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public CascadingTableAccessRel( RelOptCluster cluster, RelOptTable table, String name, String identifier )
     {
-    super( cluster, cluster.getEmptyTraitSet().plus( Cascading.CONVENTION ), table );
+    super( cluster, cluster.traitSetOf( Cascading.CONVENTION ), table );
     this.name = name;
     this.identifier = identifier;
     }
@@ -67,12 +66,10 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public static void registerRules( RelOptPlanner planner )
     {
-    planner.removeRule( JavaRules.ENUMERABLE_CUSTOM_FROM_ARRAY_RULE );
-
     planner.addRule( PushJoinThroughJoinRule.INSTANCE );
 
     // handles actual flow planning
-    planner.addRule( CascadingEnumerableConverterRule.ARRAY_INSTANCE );
+    planner.addRule( CascadingEnumerableConverterRule.INSTANCE );
 
     planner.addRule( CascadingTableModificationConverterRule.INSTANCE );
     planner.addRule( CascadingAggregateConverterRule.INSTANCE );

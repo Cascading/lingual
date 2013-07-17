@@ -58,7 +58,7 @@ class RelUtil
     {
     Fields fields = Fields.NONE;
 
-    for( RelDataTypeField typeField : rowType.getFields() )
+    for( RelDataTypeField typeField : rowType.getFieldList() )
       fields = fields.append( createTypedFieldsFor( cluster, typeField ) );
 
     return fields;

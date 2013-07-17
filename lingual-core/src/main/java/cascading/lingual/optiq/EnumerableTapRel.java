@@ -31,10 +31,10 @@ import cascading.lingual.tap.TapTable;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockExpression;
 import net.hydromatic.linq4j.expressions.Expressions;
-import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import net.hydromatic.optiq.rules.java.EnumerableRel;
 import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
+import net.hydromatic.optiq.rules.java.JavaRowFormat;
 import net.hydromatic.optiq.rules.java.PhysType;
 import net.hydromatic.optiq.rules.java.PhysTypeImpl;
 import org.eigenbase.rel.RelNode;
@@ -56,21 +56,12 @@ class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
   {
   private static final Logger LOG = LoggerFactory.getLogger( EnumerableTapRel.class );
 
-  private final PhysType physType;
-
   public EnumerableTapRel( RelOptCluster cluster, RelTraitSet traitSet, RelOptTable table )
     {
     super( cluster, traitSet, table );
 
-    if( getConvention() != EnumerableConvention.ARRAY )
+    if( getConvention() != EnumerableConvention.INSTANCE )
       throw new IllegalStateException( "unsupported convention " + getConvention() );
-
-    physType = PhysTypeImpl.of( (JavaTypeFactory) cluster.getTypeFactory(), table.getRowType(), (EnumerableConvention) getConvention() );
-    }
-
-  public PhysType getPhysType()
-    {
-    return physType;
     }
 
   @Override
@@ -87,7 +78,7 @@ class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
     }
 
   @Override
-  public BlockExpression implement( EnumerableRelImplementor implementer )
+  public Result implement( EnumerableRelImplementor implementor, Prefer pref )
     {
     LOG.debug( "implementing enumerable" );
 
@@ -95,11 +86,17 @@ class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
 
     VolcanoPlanner planner = (VolcanoPlanner) getCluster().getPlanner();
 
-    TableHolder tableHolder = new TableHolder( getPhysType(), tableDef, getPlatformBroker(), planner );
+    if( pref == Prefer.CUSTOM )
+      throw new RuntimeException( "cannot return custom format" );
+
+    final PhysType physType = PhysTypeImpl.of( implementor.getTypeFactory(), table.getRowType(), JavaRowFormat.ARRAY );
+
+    TableHolder tableHolder = new TableHolder( physType, tableDef, getPlatformBroker(), planner );
     long ordinal = CascadingTapEnumerable.addHolder( tableHolder );
     Constructor<CascadingTapEnumerable> constructor = CascadingEnumerableRel.getConstructorFor( CascadingTapEnumerable.class );
 
-    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    BlockExpression block = new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    return implementor.result( physType, block );
     }
 
   private PlatformBroker getPlatformBroker()

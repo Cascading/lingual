@@ -55,7 +55,7 @@ class CascadingProjectConverterRule extends ConverterRule
     return new CascadingProjectRel( rel.getCluster(),
       rel.getTraitSet(),
       convertedChild,
-      project.getProjectExps(),
+      project.getProjects(),
       project.getRowType(),
       project.getFlags(),
       project.getCollationList() );

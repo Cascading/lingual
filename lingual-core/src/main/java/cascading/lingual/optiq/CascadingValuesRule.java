@@ -46,7 +46,7 @@ class CascadingValuesRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    final ValuesRel values = (ValuesRel) call.getRels()[ 1 ];
+    final ValuesRel values = call.rel( 1 );
 
     RelTraitSet newTraits = values.getTraitSet().plus( Cascading.CONVENTION );
 

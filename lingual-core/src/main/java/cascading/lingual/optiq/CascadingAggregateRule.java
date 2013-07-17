@@ -41,7 +41,7 @@ class CascadingAggregateRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    AggregateRel rel = (AggregateRel) call.getRels()[ 0 ];
+    AggregateRel rel = call.rel( 0 );
 
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 

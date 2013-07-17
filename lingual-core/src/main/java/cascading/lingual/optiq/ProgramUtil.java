@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -151,17 +152,17 @@ class ProgramUtil
     return true;
     }
 
-  public static RelDataType removeIdentity( RexProgram program )
+  public static RelDataType removeIdentity( RelDataType incomingRowType, RexProgram program )
     {
-    RelDataType inputProjects = getInputProjectsRowType( program );
+    RelDataType inputProjects = getInputProjectsRowType( program, incomingRowType, Collections.<Integer>emptyList() );
     RelDataType outputProjects = getOutputProjectsRowType( program );
 
     List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
 
     for( int i = 0; i < inputProjects.getFieldCount(); i++ )
       {
-      RelDataTypeField inputField = inputProjects.getFields()[ i ];
-      RelDataTypeField outputField = outputProjects.getFields()[ i ];
+      RelDataTypeField inputField = inputProjects.getFieldList().get( i );
+      RelDataTypeField outputField = outputProjects.getFieldList().get( i );
 
       if( !inputField.getKey().equals( outputField.getKey() ) )
         fields.add( outputField );
@@ -172,14 +173,10 @@ class ProgramUtil
 
   public static RelDataType getDuplicatesRowType( RelDataType inputRowType, RelDataType outputRowType )
     {
-    Set<String> outputNames = new HashSet<String>();
-
-    for( RelDataTypeField field : outputRowType.getFields() )
-      outputNames.add( field.getKey() );
+    Set<String> outputNames = new HashSet<String>( outputRowType.getFieldNames() );
 
     List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
-
-    for( RelDataTypeField typeField : inputRowType.getFields() )
+    for( RelDataTypeField typeField : inputRowType.getFieldList() )
       {
       if( outputNames.contains( typeField.getKey() ) )
         fields.add( typeField );
@@ -190,17 +187,26 @@ class ProgramUtil
 
   public static RelDataType getInputProjectsRowType( RexProgram program )
     {
-    RelDataType inputRowType = program.getInputRowType();
+    return getInputProjectsRowType( program, program.getInputRowType(), Collections.<Integer>emptyList() );
+    }
+
+  public static RelDataType getInputProjectsRowType( RexProgram program, RelDataType inputRowType, List<Integer> deletedFields )
+    {
     int fieldCount = inputRowType.getFieldCount();
     List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
     List<RexLocalRef> projectList = program.getProjectList();
 
     for( RexLocalRef ref : projectList )
       {
-      if( program.isConstant( ref ) || ref.getIndex() >= fieldCount )
+      int index = ref.getIndex();
+      for( int deletedField : deletedFields )
+        if( index > deletedField )
+          --index;
+
+      if( program.isConstant( ref ) || index >= fieldCount )
         continue;
 
-      fields.add( inputRowType.getFields()[ ref.getIndex() ] );
+      fields.add( inputRowType.getFieldList().get( index ) );
       }
 
     return new RelRecordType( fields );
@@ -220,7 +226,7 @@ class ProgramUtil
       if( program.isConstant( ref ) || ref.getIndex() >= fieldCount )
         continue;
 
-      fields.add( outputRowType.getFields()[ i ] );
+      fields.add( outputRowType.getFieldList().get( i ) );
       }
 
     return new RelRecordType( fields );
@@ -239,7 +245,7 @@ class ProgramUtil
       if( !program.isConstant( ref ) )
         continue;
 
-      fields.add( outputRowType.getFields()[ i ] );
+      fields.add( outputRowType.getFieldList().get( i ) );
       }
 
     return new RelRecordType( fields );

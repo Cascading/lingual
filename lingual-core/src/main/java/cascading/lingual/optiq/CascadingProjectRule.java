@@ -40,7 +40,7 @@ class CascadingProjectRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    ProjectRel rel = (ProjectRel) call.getRels()[ 0 ];
+    ProjectRel rel = call.rel( 0 );
 
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
@@ -48,7 +48,7 @@ class CascadingProjectRule extends RelOptRule
       rel.getCluster(),
       newTraits,
       convert( rel.getChild(), newTraits ),
-      rel.getProjectExps(),
+      rel.getProjects(),
       rel.getRowType(),
       rel.getFlags(),
       rel.getCollationList() ) );

@@ -54,8 +54,8 @@ class CascadingInsertValuesRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    CascadingTableModificationRel modificationRel = (CascadingTableModificationRel) call.getRels()[ 0 ];
-    CascadingValuesRel valuesRel = (CascadingValuesRel) call.getRels()[ 2 ];
+    CascadingTableModificationRel modificationRel = call.rel( 0 );
+    CascadingValuesRel valuesRel = call.rel( 2 );
 
     RelTraitSet newTraits = modificationRel.getTraitSet().plus( CONVENTION );
     RelOptCluster cluster = modificationRel.getCluster();

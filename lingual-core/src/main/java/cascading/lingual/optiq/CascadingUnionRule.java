@@ -20,7 +20,6 @@
 
 package cascading.lingual.optiq;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.eigenbase.rel.RelNode;
@@ -50,10 +49,10 @@ class CascadingUnionRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    RelNode[] rels = call.getRels();
+    List<RelNode> rels = call.getRelList();
 
-    final UnionRel union = (UnionRel) rels[ 0 ];
-    final List<RelNode> inputs = Arrays.asList( rels ).subList( 1, rels.length );
+    final UnionRel union = (UnionRel) rels.get( 0 );
+    final List<RelNode> inputs = rels.subList( 1, rels.size() );
 
     if( !union.getVariablesStopped().isEmpty() )
       {
@@ -64,7 +63,7 @@ class CascadingUnionRule extends RelOptRule
     call.transformTo(
       new CascadingUnionRel(
         union.getCluster(),
-        union.getCluster().getEmptyTraitSet().plus( Cascading.CONVENTION ),
+        union.getCluster().traitSetOf( Cascading.CONVENTION ),
         inputs,
         union.all
       ) );

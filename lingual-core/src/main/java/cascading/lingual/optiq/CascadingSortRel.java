@@ -21,13 +21,13 @@
 package cascading.lingual.optiq;
 
 import java.util.Comparator;
-import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.function.Functions;
+import org.eigenbase.rel.RelCollation;
 import org.eigenbase.rel.RelFieldCollation;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.rel.SortRel;
@@ -45,9 +45,9 @@ import org.eigenbase.rex.RexNode;
  */
 class CascadingSortRel extends SortRel implements CascadingRelNode
   {
-  public CascadingSortRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, List<RelFieldCollation> collations )
+  public CascadingSortRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RelCollation collation )
     {
-    super( cluster, traits, child, collations );
+    super( cluster, traits, child, collation );
 
     assert child.getTraitSet().contains( Cascading.CONVENTION );
     }
@@ -59,9 +59,9 @@ class CascadingSortRel extends SortRel implements CascadingRelNode
     }
 
   @Override
-  public SortRel copy( RelTraitSet traitSet, RelNode newInput, List<RelFieldCollation> newCollations )
+  public SortRel copy( RelTraitSet traitSet, RelNode newInput, RelCollation newCollation )
     {
-    return new CascadingSortRel( getCluster(), traitSet, newInput, newCollations );
+    return new CascadingSortRel( getCluster(), traitSet, newInput, newCollation );
     }
 
   public Branch visitChild( Stack stack )
@@ -92,13 +92,13 @@ class CascadingSortRel extends SortRel implements CascadingRelNode
       fields = fields.append( new Fields( name ) );
       }
 
-    for( RelFieldCollation collation : collations )
+    for( RelFieldCollation fieldCollation : collation.getFieldCollations() )
       {
-      String name = inputRowType.getFieldList().get( collation.getFieldIndex() ).getName();
-      boolean isDescending = collation.getDirection() == RelFieldCollation.Direction.Descending;
-      boolean isNullsFirst = collation.nullDirection == RelFieldCollation.NullDirection.FIRST;
+      String name = inputRowType.getFieldList().get( fieldCollation.getFieldIndex() ).getName();
+      boolean isDescending = fieldCollation.getDirection() == RelFieldCollation.Direction.Descending;
+      boolean isNullsFirst = fieldCollation.nullDirection == RelFieldCollation.NullDirection.FIRST;
 
-      Comparator<Comparable> comparator = Functions.nullsComparator( isNullsFirst, isDescending );
+      Comparator<Comparable> comparator = Functions.<Comparable>nullsComparator( isNullsFirst, isDescending );
 
       if( comparator != null )
         fields.setComparator( name, comparator );

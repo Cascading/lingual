@@ -30,12 +30,11 @@ import org.eigenbase.relopt.volcano.AbstractConverter;
  */
 class CascadingEnumerableConverterRule extends ConverterRule
   {
-  public static final CascadingEnumerableConverterRule ARRAY_INSTANCE = new CascadingEnumerableConverterRule( EnumerableConvention.ARRAY );
-  public static final CascadingEnumerableConverterRule CUSTOM_INSTANCE = new CascadingEnumerableConverterRule( EnumerableConvention.CUSTOM );
+  public static final CascadingEnumerableConverterRule INSTANCE = new CascadingEnumerableConverterRule();
 
-  public CascadingEnumerableConverterRule( EnumerableConvention outConvention )
+  public CascadingEnumerableConverterRule()
     {
-    super( AbstractConverter.class, Cascading.CONVENTION, outConvention, "Convert Cascading rels to Enumerable " + outConvention );
+    super( AbstractConverter.class, Cascading.CONVENTION, EnumerableConvention.INSTANCE, "Convert Cascading rels to Enumerable" );
     }
 
   @Override

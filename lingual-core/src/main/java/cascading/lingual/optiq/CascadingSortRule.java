@@ -40,7 +40,7 @@ class CascadingSortRule extends RelOptRule
   @Override
   public void onMatch( RelOptRuleCall call )
     {
-    SortRel rel = (SortRel) call.getRels()[ 0 ];
+    SortRel rel = call.rel( 0 );
 
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
@@ -48,6 +48,6 @@ class CascadingSortRule extends RelOptRule
       rel.getCluster(),
       newTraits,
       convert( rel.getChild(), newTraits ),
-      rel.getCollations() ) );
+      rel.getCollation() ) );
     }
   }
