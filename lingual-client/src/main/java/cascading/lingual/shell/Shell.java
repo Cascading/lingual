@@ -20,8 +20,8 @@
 
 package cascading.lingual.shell;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -185,7 +185,16 @@ public class Shell extends Main<ShellOptions>
     else
       {
       LOG.info( "reading from {}", sql );
-      SqlLine.mainWithInputRedirection( sqlLineArgs, new FileInputStream( sql ) );
+      String runCommand = SqlLine.COMMAND_PREFIX + "run " + sql + "\n";
+      InputStream commandStream = new ByteArrayInputStream( runCommand.getBytes() );
+      try
+        {
+        SqlLine.mainWithInputRedirection( sqlLineArgs, commandStream );
+        }
+      finally
+        {
+        commandStream.close();
+        }
       }
 
     return true;
