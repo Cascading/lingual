@@ -175,7 +175,7 @@ public class ProviderTarget extends CRUDTarget
       }
 
     if( names.size() == 0 )
-      throw new UnsupportedOperationException( "supplied provider definitions could not be added" );
+      throw new IllegalArgumentException( "supplied provider definitions not appropriate to platform: " + platformBroker.getName() );
 
     return names;
     }

@@ -1,7 +1,15 @@
 #!/bin/sh
 
 if [ -z "${HADOOP_HOME}" ]; then
-  echo "warning: HADOOP_HOME is not set."
+  echo "warning: HADOOP_HOME is not set. see your hadoop documents for details."
+  BIN_PATH=`which hadoop`
+  if [ -n "${BIN_PATH}" ] ; then
+    HADOOP_HOME=${BIN_PATH%/bin/hadoop}
+    echo "lingual will use HADOOP_HOME of ${HADOOP_HOME}"
+  else
+    echo "exiting."
+    exit 1
+  fi
 fi
 
 if [ -n "${HADOOP_CONF_DIR}" ]; then
