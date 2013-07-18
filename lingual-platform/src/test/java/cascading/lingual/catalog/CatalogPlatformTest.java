@@ -58,9 +58,9 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
 
     SchemaCatalog catalog = broker.getCatalog();
 
-    catalog.addSchemaDef( "test", null, null );
+    catalog.addSchemaDef( "TEST", null, null );
 
-    catalog.createTableDefFor( "test", null, SALES_DEPTS_TABLE, (Fields) null, null, null );
+    catalog.createTableDefFor( "TEST", null, SALES_DEPTS_TABLE, (Fields) null, null, null );
 
     assertEquals( "SALES", catalog.createSchemaDefAndTableDefsFor( SALES_SCHEMA ) );
 
@@ -76,14 +76,14 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
     assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "EMPS" ) );
     assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "DEPTS" ) );
 
-    assertTrue( catalog.getSchemaNames().contains( "test" ) );
-    assertTrue( catalog.getSchemaDef( "test" ).getChildTableNames().contains( "DEPTS" ) );
+    assertTrue( catalog.getSchemaNames().contains( "TEST" ) );
+    assertTrue( catalog.getSchemaDef( "TEST" ).getChildTableNames().contains( "DEPTS" ) );
 
-    catalog.renameSchemaDef( "test", "newtest" );
-    assertFalse( catalog.getSchemaNames().contains( "test" ) );
-    assertTrue( catalog.getSchemaNames().contains( "newtest" ) );
+    catalog.renameSchemaDef( "TEST", "NEWTEST" );
+    assertFalse( catalog.getSchemaNames().contains( "TEST" ) );
+    assertTrue( catalog.getSchemaNames().contains( "NEWTEST" ) );
 
-    catalog.removeSchemaDef( "newtest" );
-    assertFalse( catalog.getSchemaNames().contains( "newtest" ) );
+    catalog.removeSchemaDef( "NEWTEST" );
+    assertFalse( catalog.getSchemaNames().contains( "NEWTEST" ) );
     }
   }

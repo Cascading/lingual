@@ -40,6 +40,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -285,7 +287,7 @@ public class SchemaDef extends Def
 
   public Collection<String> getChildSchemaNames()
     {
-    return childSchemas.keySet();
+    return getDefNames( childSchemas );
     }
 
   public Collection<TableDef> getChildTables()
@@ -295,7 +297,7 @@ public class SchemaDef extends Def
 
   public Collection<String> getChildTableNames()
     {
-    return childTables.keySet();
+    return getDefNames( childTables );
     }
 
   public boolean addSchema( String name, Protocol protocol, Format format )
@@ -606,6 +608,20 @@ public class SchemaDef extends Def
       }
 
     return null;
+    }
+
+  public Collection<String> getDefNames( InsensitiveMap<? extends Def> defInsensitiveMap )
+    {
+    Function<Def, String> defNameExtractor =
+      new Function<Def, String>()
+      {
+      public String apply( Def def )
+        {
+        return def.getName();
+        }
+      };
+    Collection<? extends Def> values = defInsensitiveMap.values();
+    return Collections2.transform( values, defNameExtractor );
     }
 
   @Override

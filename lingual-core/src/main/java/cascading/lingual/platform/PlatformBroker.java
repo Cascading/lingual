@@ -474,7 +474,7 @@ public abstract class PlatformBroker<Config>
     String path = URI.create( identifier ).getPath();
     String schemaName = path.replaceAll( "^.*/([^/]+)/?$", "$1" );
 
-    LOG.debug( "found schema name: {}", schemaName );
+    LOG.debug( "found schema name: {} at: {}", schemaName, path );
 
     return schemaName;
     }
@@ -484,7 +484,7 @@ public abstract class PlatformBroker<Config>
     String path = URI.create( identifier ).getPath();
     String tableName = path.replaceAll( "^.*/([^/.]+)(\\.?.*$|/$)", "$1" );
 
-    LOG.debug( "found table name: {}", tableName );
+    LOG.debug( "found table name: {} at: {}", tableName, path );
 
     return tableName;
     }

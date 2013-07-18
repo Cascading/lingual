@@ -31,7 +31,14 @@ import org.junit.Test;
  */
 public class CatalogCLIPlatformTest extends CLIPlatformTestCase
   {
-  private static final String AD_HOC_SHECMA = "adhoc";
+  private static final String AD_HOC_SCHEMA = "adhoc";
+  private static final String AD_HOC_SCHEMA_LC = AD_HOC_SCHEMA.toLowerCase();
+  private static final String AD_HOC_SCHEMA_UC = AD_HOC_SCHEMA.toUpperCase();
+  private static final String AD_HOC_SCHEMA_MC = "aDHOc";
+  private static final String TEST_TABLE_NAME = "local";
+  private static final String TEST_TABLE_NAME_LC = TEST_TABLE_NAME.toLowerCase();
+  private static final String TEST_TABLE_NAME_UC = TEST_TABLE_NAME.toUpperCase();
+  private static final String TEST_TABLE_NAME_MC = "lOcAl";
 
   @Test
   public void testCLI() throws IOException
@@ -57,25 +64,60 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
 
     catalog( "--stereotype" );
 
-    catalog( "--schema", AD_HOC_SHECMA, "--add" );
-    catalog( "--schema", AD_HOC_SHECMA, "--table", "local", "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
-    catalog( "--schema", AD_HOC_SHECMA, "--table" );
-    catalog( "--schema", "ADHOC", "--table" ); // verify case insensitivity
+    catalog( "--schema", AD_HOC_SCHEMA, "--add" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--table" );
 
-    Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SHECMA );
-    assertTrue( AD_HOC_SHECMA + " does not contain table local in " + tableNames.toString(), tableNames.contains( "local" ) );
+    Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA );
+    assertTrue( AD_HOC_SCHEMA + " does not contain table " + TEST_TABLE_NAME + " in " + tableNames.toString(), tableNames.contains( TEST_TABLE_NAME ) );
 
-    catalog( "--schema", AD_HOC_SHECMA, "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
 
-    catalog( "--schema", AD_HOC_SHECMA, "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
 
-    catalog( "--schema", AD_HOC_SHECMA,
+    catalog( "--schema", AD_HOC_SCHEMA,
       "--table", "remote", "--add", SALES_EMPS_TABLE,
       "--stereotype", "emps",
       "--format", "table", "--protocol", "jdbc"
     );
-    catalog( "--schema", AD_HOC_SHECMA, "--table" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--table" );
 
     catalog( "--schema" );
+    }
+
+  @Test
+  public void testCLICaseSensitivity() throws IOException
+    {
+    initCatalog();
+    // general process for test: create it with mixed-case name, search for it with different mixed-case name
+    // to see if that works but confirm that the getDefNames() preserves case.
+
+    SchemaCatalog schemaCatalog = getSchemaCatalog();
+    Collection<String> schemaNames = schemaCatalog.getSchemaNames();
+    assertEquals( "Catalog contains schema at startup " + schemaNames.toString(), 0, schemaNames.size() );
+
+    // add the schema twice under different cases should get an error and produce only one with original case
+    catalog( "--schema", AD_HOC_SCHEMA_MC, "--add" );
+    catalogWithOptionalTest( false, "--schema", AD_HOC_SCHEMA_UC, "--add" );
+    schemaNames = schemaCatalog.getSchemaNames();
+    assertEquals( "Case change should still have one schemas: " + schemaNames.toString(), 1, schemaNames.size() );
+    assertEquals( "Case was not preserved for schema", AD_HOC_SCHEMA_MC, schemaNames.iterator().next() );
+
+    // should be able to use a mixed case-name for work against a schema and adding table under multiple cases
+    // should produce only one table.
+    Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA_LC );
+    assertEquals( "Schema had tables at startup: " + tableNames.toString(), 0, tableNames.size() );
+    catalog( "--schema", AD_HOC_SCHEMA_MC, "--table", TEST_TABLE_NAME_MC, "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
+    catalogWithOptionalTest( false, "--schema", AD_HOC_SCHEMA_UC, "--table", TEST_TABLE_NAME_LC, "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
+    tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA_LC );
+    assertEquals( "Case change should still have one table: " + tableNames.toString(), 1, tableNames.size() );
+    assertEquals( "Case was not preserved for table", TEST_TABLE_NAME_MC, tableNames.iterator().next() );
+
+    // should be able to find the correct table with assorted case searches by name
+    SchemaDef schemaDef = schemaCatalog.getSchemaDef( AD_HOC_SCHEMA_LC );
+    assertEquals( "Wrong schema found in full search", AD_HOC_SCHEMA_MC, schemaDef.getName() );
+    TableDef tableDef = schemaDef.getTable( TEST_TABLE_NAME_UC );
+    assertNotNull( "No table found for mixed case search in: " + schemaDef.getChildTableNames().toString(), tableDef );
+    assertEquals( "Wrong table found in full search", TEST_TABLE_NAME_MC, tableDef.getName() );
     }
   }
