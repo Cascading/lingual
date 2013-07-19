@@ -56,7 +56,7 @@ public class RepoTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    Repo repo = getRequestedRepo();
+    Repo repo = getRepoFromArgs();
     catalog.addRepo( repo );
 
     return asList( repo.getRepoName() );
@@ -65,10 +65,15 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    // rename is not supported. There aren't likely to be enough registered repos to make
-    // it worth doing, particularly when we don't want people to be able to rename mavencentral
-    // or mavenlocal easily. People who need to change a name can do it via remove and an add.
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    return catalog.renameMavenRepo( getOptions().getRepoName(), getOptions().getRenameName() );
+    }
+
+  @Override
+  protected Object getSource( PlatformBroker platformBroker )
+    {
+    return platformBroker.getCatalog().getMavenRepo( getOptions().getRepoName() );
     }
 
   @Override
@@ -76,9 +81,6 @@ public class RepoTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String repoName = getOptions().getRepoName();
-
-    if( repoName == null )
-      throw new IllegalArgumentException( "remove action must have a name" );
 
     catalog.removeMavenRepo( repoName );
 
@@ -88,7 +90,7 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {
-    RepositoryResolver repositoryResolver = getRepositoryResolver( getRequestedRepo() );
+    RepositoryResolver repositoryResolver = getRepositoryResolver( getRepoFromArgs() );
     IvySettings ivySettings = new IvySettings();
     ivySettings.addResolver( repositoryResolver );
     ivySettings.setDefaultResolver( repositoryResolver.getName() );
@@ -106,16 +108,15 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected Collection<String> performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    return new RepoOutputFormatter().format( getRequestedRepo() );
+    return new RepoOutputFormatter().format( getRepoFromArgs() );
     }
 
-  private Repo getRequestedRepo()
+  private Repo getRepoFromArgs()
     {
     String repoName = getOptions().getRepoName();
     String repoUrl = getOptions().getAddURI();
 
-    if( repoName == null || repoUrl == null )
+    if( repoName == null )
       throw new IllegalArgumentException( "repo add action must have a repo name" );
     if( repoUrl == null )
       throw new IllegalArgumentException( "repo add action must have an url" );

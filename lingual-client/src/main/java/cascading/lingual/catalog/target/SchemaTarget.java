@@ -65,6 +65,13 @@ public class SchemaTarget extends CRUDTarget
     }
 
   @Override
+  protected Object getSource( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    return catalog.getSchemaDef( getOptions().getSchemaName() );
+    }
+
+  @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     String addURI = getOptions().getAddOrUpdateURI();

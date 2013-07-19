@@ -114,33 +114,49 @@ public abstract class CRUDTarget extends Target
     {
     LOG.debug( "{}: rename", name );
 
+    String renameName = getOptions().getRenameName();
+    if( renameName == null )
+      throw new IllegalArgumentException( "rename action must have a rename target" );
+
+    if( getSource( platformBroker ) == null )
+      throw new IllegalArgumentException( "original " + getName() + " not found for renaming" );
+
     boolean result = performRename( platformBroker );
 
     if( result )
-      getPrinter().print( "successfully renamed %s to: %s", getName(), getOptions().getRenameName() );
+      getPrinter().print( "successfully renamed %s to: %s", getName(), renameName );
     else
-      getPrinter().print( "failed to rename %s to: %s", getName(), getOptions().getRenameName() );
+      getPrinter().print( "failed to rename %s to: %s", getName(), renameName );
 
     return result;
     }
 
   protected abstract boolean performRename( PlatformBroker platformBroker );
 
+
   protected boolean handleRemove( PlatformBroker platformBroker )
     {
     LOG.debug( "{}: remove", name );
 
+    if( getName() == null )
+      throw new IllegalArgumentException( "remove action must have a remove target" );
+
+    if( getSource( platformBroker ) == null )
+      throw new IllegalArgumentException( "original " + getName() + " not found for removal" );
+
     boolean result = performRemove( platformBroker );
 
     if( result )
-      getPrinter().print( "successfully removed %s: %s", getName(), getOptions().getSchemaName() );
+      getPrinter().print( "successfully removed %s", getName() );
     else
-      getPrinter().print( "failed to remove %s: %s", getName(), getOptions().getSchemaName() );
+      getPrinter().print( "failed to remove %s", getName() );
 
     return result;
     }
 
   protected abstract boolean performRemove( PlatformBroker platformBroker );
+
+  protected abstract Object getSource( PlatformBroker platformBroker );
 
   protected boolean handlePrint( PlatformBroker platformBroker )
     {

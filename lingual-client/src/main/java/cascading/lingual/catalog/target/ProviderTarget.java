@@ -75,7 +75,9 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    return catalog.renameProviderDef( schemaName, getOptions().getProviderName(), getOptions().getRenameName() );
     }
 
   @Override
@@ -83,13 +85,17 @@ public class ProviderTarget extends CRUDTarget
     {
     String providerName = getOptions().getProviderName();
 
-    if( providerName == null )
-      throw new IllegalArgumentException( "provider remove action must have a name" );
-
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
 
     return catalog.removeProviderDef( schemaName, providerName );
+    }
+
+  @Override
+  protected Object getSource( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    return catalog.getSchemaDef( getOptions().getSchemaName() ).getProviderDef( getOptions().getProviderName() );
     }
 
   @Override

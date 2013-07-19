@@ -127,14 +127,10 @@ public class Options
     return optionSet.valueOf( platform );
     }
 
-  ////////////////
-
   protected boolean isSetWithNoArg( OptionSpec<String> spec )
     {
     return optionSet.has( spec ) && !optionSet.hasArgument( spec );
     }
-
-  ////////////////
 
   public void printDebug( PrintStream printStream )
     {

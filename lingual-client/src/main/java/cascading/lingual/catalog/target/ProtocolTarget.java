@@ -48,23 +48,44 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    Protocol oldProtocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    Protocol newProtocol = Protocol.getProtocol( getOptions().getRenameName() );
+    return catalog.renameProtocol( schemaName, oldProtocol, newProtocol );
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    return catalog.removeProtocol( schemaName, protocol );
+    }
+
+  @Override
+  protected Object getSource( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String sourceProtocol = getOptions().getProtocolName();
+    String schemaName = getOptions().getSchemaName();
+    Collection<Protocol> protocols = catalog.getSchemaDef( schemaName ).getAllProtocols();
+    for (Protocol protocol : protocols)
+      if (protocol.getName().equals( sourceProtocol ))
+        return sourceProtocol ;
+    return null;
     }
 
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
-
-    if( protocol == null )
+    String protocolName = getOptions().getProtocolName();
+    if( protocolName == null )
       throw new IllegalArgumentException( "add action must have a protocol name value" );
+
+    Protocol protocol = Protocol.getProtocol( protocolName );
 
     String schemaName = getOptions().getSchemaName();
 

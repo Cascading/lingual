@@ -516,6 +516,11 @@ public abstract class SchemaCatalog implements Serializable
     return getSchemaDefChecked( schemaName ).removeProviderDef( providerName );
     }
 
+  public boolean renameProviderDef( String schemaName, String oldProviderName, String newProviderName )
+    {
+    return getSchemaDefChecked( schemaName ).renameProviderDef( oldProviderName, newProviderName );
+    }
+
   public Collection<String> getMavenRepoNames()
     {
     return repositories.keySet();
@@ -539,6 +544,18 @@ public abstract class SchemaCatalog implements Serializable
   public void removeMavenRepo( String repoName )
     {
     repositories.remove( repoName );
+    }
+
+  public boolean renameMavenRepo( String oldName, String newName )
+    {
+    Repo oldRepo = repositories.get( oldName );
+
+    repositories.remove( oldName );
+
+    Repo newRepo = new Repo( newName, oldRepo.getRepoUrl() );
+    repositories.put( newName, newRepo );
+
+    return true;
     }
 
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
@@ -848,6 +865,25 @@ public abstract class SchemaCatalog implements Serializable
       schemaDef.addFormatProperty( format, entry.getKey(), entry.getValue() );
     }
 
+  public boolean removeFormat( String schemaName, Format format )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    schemaDef.removeFormatProperties( format );
+
+    return true;
+    }
+
+  public boolean renameFormat( String schemaName, Format oldFormat, Format newFormat )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    Map<String, List<String>> oldProperties = schemaDef.removeFormatProperties( oldFormat );
+    schemaDef.addFormatProperties( newFormat, oldProperties );
+
+    return true;
+    }
+
   public void addProtocol( String schemaName, Protocol protocol, List<String> uris, Map<String, String> properties, String providerName )
     {
     SchemaDef schemaDef = getSchemaDefChecked( schemaName );
@@ -860,6 +896,25 @@ public abstract class SchemaCatalog implements Serializable
 
     for( Map.Entry<String, String> entry : properties.entrySet() )
       schemaDef.addProtocolProperty( protocol, entry.getKey(), entry.getValue() );
+    }
+
+  public boolean removeProtocol( String schemaName, Protocol protocol )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    schemaDef.removeProtocolProperties( protocol );
+
+    return true;
+    }
+
+  public boolean renameProtocol( String schemaName, Protocol oldProtocol, Protocol newProtocol )
+    {
+    SchemaDef schemaDef = getSchemaDefChecked( schemaName );
+
+    Map<String, List<String>> oldProperties = schemaDef.removeProtocolProperties( oldProtocol );
+    schemaDef.addProtocolProperties( newProtocol, oldProperties );
+
+    return true;
     }
 
   @Override

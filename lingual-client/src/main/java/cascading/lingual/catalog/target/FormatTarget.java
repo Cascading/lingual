@@ -47,13 +47,34 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    Format oldFormat = Format.getFormat( getOptions().getFormatName() );
+    Format newFormat = Format.getFormat( getOptions().getRenameName() );
+    return catalog.renameFormat( schemaName, oldFormat, newFormat );
     }
 
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    return false;
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    Format format = Format.getFormat( getOptions().getFormatName() );
+    return catalog.removeFormat( schemaName, format );
+    }
+
+  @Override
+  protected String getSource( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    String formatName = getOptions().getFormatName();
+    Collection<Format> formats = catalog.getSchemaDef( schemaName ).getAllFormats();
+    for( Format format : formats )
+      if( format.getName().equals( formatName ) )
+        return formatName;
+
+    return null;
     }
 
   @Override
@@ -76,7 +97,7 @@ public class FormatTarget extends CRUDTarget
       ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
 
       if( providerDef == null )
-        throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
+        throw new IllegalArgumentException( "provider " + providerName + " not registered to schema: " + schemaName );
       }
 
     catalog.addFormat( schemaName, format, extensions, properties, providerName );

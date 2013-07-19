@@ -22,6 +22,7 @@ package cascading.lingual.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,6 +102,28 @@ public class MultiProperties<K> implements Serializable
   public Map<String, List<String>> getValueFor( K k )
     {
     return properties.row( k );
+    }
+
+  public Map<String, List<String>> removeRow( K key )
+    {
+    if( !properties.containsRow( key ) )
+      {
+      return null;
+      }
+    Map<String, List<String>> returnValue = new HashMap<String, List<String>>();
+    // two collections since can't iterate over keys while removing w/o getting ConcurrentModificationException.
+    Map<String, List<String>> values = getValueFor( key );
+    List<String> removedItems = new ArrayList<String>( values.size() );
+    for( String columnName : values.keySet())
+      {
+      returnValue.put( columnName, values.get( columnName ));
+      removedItems.add( columnName );
+      }
+    for( String columnName : removedItems)
+      {
+      properties.remove( key, columnName );
+      }
+    return returnValue.size() != 0 ? returnValue : null;
     }
 
   @Override

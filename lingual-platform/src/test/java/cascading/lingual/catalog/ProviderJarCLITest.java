@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -51,25 +52,8 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
   private static final String JAR_NAME = MAVEN_LIKE_PATH + "test-provider-1.0.0.jar";
   private static final String POM = MAVEN_LIKE_PATH + "test-provider-1.0.0.pom";
   private static final String SPEC = "com.test.provider:test-provider:1.0.0";
-
+  private static final String EXAMPLE_SCHEMA = "example";
   private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLITest.class );
-
-  class JavaSourceFromString extends SimpleJavaFileObject
-    {
-    final String code;
-
-    JavaSourceFromString( String name, String code )
-      {
-      super( URI.create( "string:///" + name.replace( '.', '/' ) + JavaFileObject.Kind.SOURCE.extension ), JavaFileObject.Kind.SOURCE );
-      this.code = code;
-      }
-
-    @Override
-    public CharSequence getCharContent( boolean ignoreEncodingErrors )
-      {
-      return code;
-      }
-    }
 
   public ProviderJarCLITest()
     {
@@ -137,16 +121,17 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     initCatalog();
-    int initialSize = getSchemaCatalog().getProviderNames().size();
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
 
     // validate a jar provider
-    catalog( "--schema", "example", "--validate", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     // intentionally fail
-    catalogWithOptionalTest( false, "--schema", "example", "--validate", "--provider", "--add", "build/resources/test/jar/not-found-provider.jar" );
+    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "build/resources/test/jar/not-found-provider.jar" );
 
     // confirm that validate doesn't add any providers
-    int finalSize = getSchemaCatalog().getProviderNames().size();
+    int finalSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
     assertEquals( "provider list should not have changed size", initialSize, finalSize );
     }
 
@@ -155,19 +140,20 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     {
     makeTestMavenRepo();
     initCatalog();
-    int initialSize = getSchemaCatalog().getProviderNames().size();
 
-    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
 
     // validate an actual spec
-    catalog( "--schema", "example", "--validate", "--provider", "--add", SPEC );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", SPEC );
+    assertFalse( SPEC + " provider found in catalog: " + getSchemaCatalog().getProviderNames(), getSchemaCatalog().getProviderNames().contains( SPEC ) );
 
     // fail a bogus spec
-    catalogWithOptionalTest( false, "--schema", "example", "--validate", "--provider", "--add", "foo:bar:1.0" );
+    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "foo:bar:1.0" );
 
     // confirm that validate doesn't add any providers
-    int finalSize = getSchemaCatalog().getProviderNames().size();
+    int finalSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
     assertEquals( "provider list should not have changed size", initialSize, finalSize );
     }
 
@@ -175,29 +161,81 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
   public void testValidatePropertiesProviderCLI() throws IOException
     {
     initCatalog();
-    int initialSize = getSchemaCatalog().getProviderNames().size();
 
-    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
 
     // A provider defined entirely on the CLI always passes validation but should
     // still result in not adding the provider
-    catalog( "--schema", "example",
+    catalog( "--schema", EXAMPLE_SCHEMA,
       "--format", "psv", "--validate", "--extensions", ".tpsv", "--provider", "bar",
       "--properties", "delimiter=|,typed=true,quote='"
     );
 
     // A provider defined entirely on the CLI always passes validation.
     // But this call to --properties without an arg should still get a CLI error.
-    catalogWithOptionalTest( false, "--schema", "example",
+    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA,
       "--format", "psv", "--validate", "--extensions", ".tpsv", "--provider", "text",
       "--properties"
     );
 
     // confirm that validate doesn't add any providers
-    int finalSize = getSchemaCatalog().getProviderNames().size();
+    int finalSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
     assertEquals( "provider list should not have changed size", initialSize, finalSize );
     }
 
+  @Test
+  public void testRemoveProviderCLI() throws IOException
+    {
+    Collection<File> classPath = compileFactory( getFactoryPath() );
+    createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    makeTestMavenRepo();
+    initCatalog();
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+
+    // spec-based
+    catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", SPEC );
+    Collection<String> specProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertTrue( "spec-based provider not added to catalog: " + specProviderNames.toString(), specProviderNames.contains( getSpecProviderName() ) );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", getSpecProviderName(), "--remove" );
+    specProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertFalse( "spec-based provider not removed from catalog: " + specProviderNames.toString(), specProviderNames.contains( getSpecProviderName() ) );
+
+    // jar-based
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    Collection<String> jarProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertTrue( "jar-based provider not added to catalog: " + jarProviderNames.toString(), jarProviderNames.contains( getSpecProviderName() ) );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", getSpecProviderName(), "--remove" );
+    jarProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertFalse( "jar-based provider not removed from catalog: " + jarProviderNames.toString(), jarProviderNames.contains( getSpecProviderName() ) );
+    }
+
+  @Test
+  public void testRenameProviderCLI() throws IOException
+    {
+    makeTestMavenRepo();
+    initCatalog();
+
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
+
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", SPEC );
+    Collection<String> providerNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertTrue( "provider " + getSpecProviderName() + " not added to catalog: " + providerNames.toString(), providerNames.contains( getSpecProviderName() ) );
+
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", getSpecProviderName(), "--rename", "renamed-spec" );
+
+    assertFalse( "provider " + getSpecProviderName() + " still in catalog: " + providerNames.toString(), providerNames.contains( getSpecProviderName() ) );
+    assertTrue( "provider " + "renamed-spec" + " not in catalog: " + providerNames.toString(), providerNames.contains( "renamed-spec" ) );
+
+    ProviderDef providerDef = getSchemaCatalog().findProviderFor( EXAMPLE_SCHEMA, "renamed-spec" );
+    Map<String, String> providerProps = providerDef.getProperties();
+    String keyName = "cascading.bind.provider.pipe-local.format.tpsv.delimiter";
+    assertTrue( "renamed provider did not retain properties in " + providerProps.toString(), providerProps.containsKey( keyName ) );
+    assertEquals( "renamed provider did not retain value in " + providerProps.toString(), "|", providerProps.get( keyName ) );
+    }
 
   @Test
   public void testProviderWithSQLLine() throws IOException
@@ -220,8 +258,8 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
-    catalog( "--schema", "example", "--add" );
-    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
     }
@@ -235,14 +273,14 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
 
-    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
 
-    catalog( "--schema", "example",
+    catalog( "--schema", EXAMPLE_SCHEMA,
       "--format", "psv", "--add", "--extensions", ".tpsv", "--provider", "text",
       "--properties", "delimiter=|,typed=true,quote='"
     );
 
-    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     Format format = Format.getFormat( "psv" );
     ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
@@ -263,8 +301,8 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     initCatalog();
 
-    catalog( "--schema", "example", "--add" );
-    catalog( "--schema", "example", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     catalog( "--schema", "results", "--add" );
     catalog(
@@ -276,7 +314,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
     Format format = Format.getFormat( "tpsv" );
-    ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
+    ProviderDef providerDef = schemaCatalog.findProviderDefFor( EXAMPLE_SCHEMA, format );
     assertNotNull( "provider not registered to format", providerDef );
     assertEquals( "lingual.test.ProviderFactory", providerDef.getFactoryClassName() );
 
@@ -285,7 +323,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
-    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
 //    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
@@ -302,9 +340,9 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     makeTestMavenRepo();
     initCatalog();
 
-    catalog( "--schema", "example", "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
-    catalog( "--schema", "example", "--provider", "--add", SPEC );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", SPEC );
 
     catalog( "--schema", "results", "--add" );
     catalog(
@@ -325,7 +363,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
-    catalog( "--schema", "example", "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
     assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
@@ -344,6 +382,28 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     pomFile.getParentFile().mkdirs();
 
     Files.copy( new File( TEST_PROPERTIES_POM ), pomFile );
+    }
+
+  protected String getSpecProviderName()
+    {
+    return "pipe-" + getPlatform().getName();
+    }
+
+  class JavaSourceFromString extends SimpleJavaFileObject
+    {
+    final String code;
+
+    JavaSourceFromString( String name, String code )
+      {
+      super( URI.create( "string:///" + name.replace( '.', '/' ) + JavaFileObject.Kind.SOURCE.extension ), JavaFileObject.Kind.SOURCE );
+      this.code = code;
+      }
+
+    @Override
+    public CharSequence getCharContent( boolean ignoreEncodingErrors )
+      {
+      return code;
+      }
     }
 
   }

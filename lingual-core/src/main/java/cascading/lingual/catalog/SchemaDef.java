@@ -172,6 +172,11 @@ public class SchemaDef extends Def
     protocolProperties.addProperty( protocol, property, values );
     }
 
+  public Map<String, List<String>> removeProtocolProperties( Protocol protocol )
+    {
+    return protocolProperties.removeRow( protocol );
+    }
+
   public List<String> getProtocolProperty( Protocol protocol, String property )
     {
     List<String> result = findProtocolProperties( protocol ).get( property );
@@ -225,6 +230,11 @@ public class SchemaDef extends Def
   public void addFormatProperty( Format format, String property, List<String> values )
     {
     formatProperties.addProperty( format, property, values );
+    }
+
+  public Map<String, List<String>> removeFormatProperties( Format format )
+    {
+    return formatProperties.removeRow( format );
     }
 
   public List<String> getFormatProperty( Format format, String property )
@@ -327,12 +337,14 @@ public class SchemaDef extends Def
 
   public boolean renameSchema( String schemaName, String newName )
     {
-    SchemaDef schemaDef = childSchemas.remove( schemaName );
+    SchemaDef schemaDef = childSchemas.get( schemaName );
 
     if( schemaDef == null )
       return false;
 
-    childSchemas.put( newName, schemaDef.copyWith( newName ) );
+    schemaDef.setName( newName );
+    childSchemas.remove( schemaName );
+    childSchemas.put( newName, schemaDef );
 
     return true;
     }
@@ -374,12 +386,14 @@ public class SchemaDef extends Def
 
   private boolean renameTable( String tableName, String newName )
     {
-    TableDef tableDef = childTables.remove( tableName );
+    TableDef tableDef = childTables.get( tableName );
 
     if( tableDef == null )
       return false;
 
-    childTables.put( newName, tableDef.copyWith( newName ) );
+    tableDef.setName( newName );
+    childTables.remove( tableName );
+    childTables.put( newName, tableDef );
 
     return true;
     }
@@ -520,7 +534,17 @@ public class SchemaDef extends Def
 
   public boolean removeProviderDef( String providerDefName )
     {
-    return providers.remove( providerDefName ) != null;
+    providers.remove( providerDefName );
+    return true;
+    }
+
+  public boolean renameProviderDef( String oldProviderDefName, String newProviderDefName )
+    {
+    ProviderDef oldProviderDef = providers.get( oldProviderDefName );
+    ProviderDef newProviderDef = new ProviderDef( this, newProviderDefName, oldProviderDef.getIdentifier(), oldProviderDef.getProperties() );
+    providers.remove( oldProviderDef.getName() );
+    providers.put( newProviderDefName, newProviderDef );
+    return true;
     }
 
   public void addProviderDef( String name, String jarName, Map<String, String> properties, String md5Hash )

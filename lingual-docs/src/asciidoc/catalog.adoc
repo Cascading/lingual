@@ -119,7 +119,7 @@ To add new table to an existing schema:
 |                      | --validate                   | optional arg when using --add to test the provider's uri or spec is valid without it
 |                      | --properties                 | the properties defining the provider's behavior as "keyOne=valueOne,keyTwo=valueTwo"
 |                      | --remove                     |
-|                      | --rename [new name]*         |
+|                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a provider. requires the [name] param for provider
 |                      |                              |
 | --format             |                              | list all registered format names
@@ -129,8 +129,8 @@ To add new table to an existing schema:
 |                      | --update                     | update with given values (replaces values)
 |                      | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)
 |                      | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
-|                      | --remove*                    |
-|                      | --rename [new name]*         |
+|                      | --remove                     |
+|                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a format. requires the [name] param for format
 |                      |                              |
 | --protocol           |                              | list all registered protocol names
@@ -140,8 +140,8 @@ To add new table to an existing schema:
 |                      | --update                     | update with given values (replaces values)
 |                      | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
 |                      | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
-|                      | --remove*                    |
-|                      | --rename [new name]*         |
+|                      | --remove                     |
+|                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a protocol. requires the [name] param for protocol
 |                      |                              |
 | --config [name|uri]* |                              | config properties file to use instead of .lingual/config/default.properties
