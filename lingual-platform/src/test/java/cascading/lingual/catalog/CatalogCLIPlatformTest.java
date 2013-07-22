@@ -120,4 +120,39 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     assertNotNull( "No table found for mixed case search in: " + schemaDef.getChildTableNames().toString(), tableDef );
     assertEquals( "Wrong table found in full search", TEST_TABLE_NAME_MC, tableDef.getName() );
     }
+
+  @Test
+  public void testShowCommandCLI() throws IOException
+    {
+    initCatalog();
+
+    catalog( "--schema", "sales", "--add", SALES_SCHEMA );
+
+    catalog(
+      "--stereotype", "emps", "--add",
+      "--columns", Joiner.on( "," ).join( EMPS_COLUMNS ),
+      "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
+    );
+
+    catalog( "--schema", AD_HOC_SCHEMA, "--add" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--add", SALES_EMPS_TABLE, "--stereotype", "emps" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--table" );
+
+    catalog( "--schema", AD_HOC_SCHEMA, "--format", "table", "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+
+    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", "jdbc", "--add", "--uris", "jdbc:,jdbcs:" );
+
+    catalog( "--schema", AD_HOC_SCHEMA,
+      "--table", "remote", "--add", SALES_EMPS_TABLE,
+      "--stereotype", "emps",
+      "--format", "table", "--protocol", "jdbc"
+    );
+
+    // test that the various show commands don't fail.
+    catalog( "--schema", AD_HOC_SCHEMA,  "--show");
+    catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--show");
+    catalog( "--schema", AD_HOC_SCHEMA, "--format", "table", "--show");
+    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", "jdbc", "--show");
+    }
+
   }

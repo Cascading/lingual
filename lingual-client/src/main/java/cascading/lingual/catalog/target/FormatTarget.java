@@ -28,6 +28,7 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.format.FormatOutputFormatter;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
@@ -93,5 +94,14 @@ public class FormatTarget extends CRUDTarget
       return catalog.getFormatNames( getOptions().getSchemaName() );
     else
       return catalog.getFormatNames();
+    }
+
+  @Override
+  protected Collection<String> performShow( PlatformBroker platformBroker )
+    {
+    Format format = Format.getFormat( getOptions().getFormatName() );
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    return new FormatOutputFormatter( catalog.getSchemaDef( schemaName ) ).format( format );
     }
   }

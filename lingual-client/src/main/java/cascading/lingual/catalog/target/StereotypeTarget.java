@@ -24,9 +24,11 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
+import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.format.StereotypeOutputFormatter;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.type.SQLTypeMap;
@@ -99,6 +101,18 @@ public class StereotypeTarget extends CRUDTarget
       return catalog.getStereotypeNames( schemaName );
     else
       return catalog.getStereotypeNames();
+    }
+
+  @Override
+  protected Collection<String> performShow( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+
+    String schemaName = getOptions().getSchemaName();
+
+    Stereotype stereotype = catalog.getSchemaDef( schemaName ).getStereotype( getOptions().getStereotypeName() );
+
+    return new StereotypeOutputFormatter().format( stereotype );
     }
 
   private Fields createFields( List<String> columns, List<String> types )

@@ -26,9 +26,9 @@ import java.util.Properties;
 
 import cascading.lingual.catalog.target.DDLTarget;
 import cascading.lingual.catalog.target.FormatTarget;
-import cascading.lingual.catalog.target.RepoTarget;
 import cascading.lingual.catalog.target.ProtocolTarget;
 import cascading.lingual.catalog.target.ProviderTarget;
+import cascading.lingual.catalog.target.RepoTarget;
 import cascading.lingual.catalog.target.SchemaTarget;
 import cascading.lingual.catalog.target.StereotypeTarget;
 import cascading.lingual.catalog.target.TableTarget;
@@ -136,7 +136,7 @@ public class Catalog extends Main<CatalogOptions>
       else if( getOptions().isListRepos() || getOptions().isRepoActions() )
         return handleMavenRepo( platformBroker );
 
-      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update, --validate" );
+      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update, --validate, --show" );
       }
     catch( Throwable throwable )
       {

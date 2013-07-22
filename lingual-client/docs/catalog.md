@@ -64,12 +64,14 @@ To add new table to an existing schema:
 |                     | --remove                     | remove maven repo
 |                     | --add [url]                  | add maven repo
 |                     | --validate                   | optional arg when using --add to test the repo is valid without adding it
+|                     | --show                       | shows detailed information about a repo. requires the [name] param for repo
 |                     |                              |
 | --schema            |                              | lists all current schemas
 | --schema [name]     |                              |
 |                     | --remove                     |
 |                     | --rename [new name]          |
 |                     | --add [uri]                  | uri optional, add path as a new schema root
+|                     | --show                       | shows detailed information about a schema. requires the [name] param for schema
 |                     |                              |
 | --table             |                              | lists all tables for the current schema
 | --table [name]      |                              |
@@ -80,7 +82,7 @@ To add new table to an existing schema:
 |                     | --stereotype [name]          | use existing stereotype for table definition
 |                     | --format [name]              | use format for uri identifier
 |                     | --protocol [name]            | optional, use protocol for uri identifier
-|                     | --show                       | display table details
+|                     | --show                       | shows detailed information about a table. requires the [name] param for table
 |                     |                              |
 | --stereotype        |                              | list all registered stereotype names
 | --stereotype [name] |                              |
@@ -91,7 +93,7 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --columns [names,.]          |
 |                     | --types [types,.]            |
-|                     | --show                       | display stereotype details
+|                     | --show                       | shows detailed information about a stereotype. requires the [name] param for stereotype
 |                     |                              |
 | --provider          |                              | list all registered providers (unless --add is specified)
 | --provider [name]   |                              | register a new provider
@@ -100,6 +102,7 @@ To add new table to an existing schema:
 |                     | --add [uri|spec]             | register a provider located by the uri or maven spec
 |                     | --validate                   | optional arg when using --add to test the provider's uri or spec is valid without it.
 |                     | --properties                 | the properties defining the provider's behavior as "keyOne=valueOne,keyTwo=valueTwo"
+|                     | --show                       | shows detailed information about a provider. requires the [name] param for provider
 |                     |                              |
 | --format            |                              | list all registered format names
 | --format [name]     |                              |
@@ -109,6 +112,7 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)
 |                     | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
+|                     | --show                       | shows detailed information about a format. requires the [name] param for format
 |                     |                              |
 | --protocol          |                              | list all registered protocol names
 | --protocol [name]   |                              |
@@ -118,6 +122,7 @@ To add new table to an existing schema:
 |                     | --update                     | update with given values (replaces values)
 |                     | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
 |                     | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
+|                     | --show                       | shows detailed information about a protocol. requires the [name] param for protocol
 |                     |                              |
 | --config [file]     |                              | config properties file to use instead of .lingual/config/default.properties
 |                     |                              |

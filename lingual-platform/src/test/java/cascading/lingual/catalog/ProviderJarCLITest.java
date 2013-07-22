@@ -248,6 +248,8 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     ProviderDef providerDef = schemaCatalog.findProviderDefFor( "example", format );
     assertNotNull( "provider not registered to format", providerDef );
 
+    catalog( "--provider", providerDef.getName(), "--show" );
+
     assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
     }
 

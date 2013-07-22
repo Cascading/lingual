@@ -50,6 +50,9 @@ public abstract class CRUDTarget extends Target
   @Override
   public boolean handle( PlatformBroker platformBroker )
     {
+    if( getOptions().isShow() )
+      return handleShow( platformBroker );
+
     if( getOptions().isList() )
       return handlePrint( platformBroker );
 
@@ -160,6 +163,19 @@ public abstract class CRUDTarget extends Target
 
     return result;
     }
+
+  protected boolean handleShow( PlatformBroker platformBroker )
+    {
+    LOG.debug( "{}: show", name );
+
+    Collection<String> output = performShow( platformBroker );
+
+    getPrinter().print( getName(), output );
+
+    return true;
+    }
+
+  protected abstract Collection<String> performShow( PlatformBroker platformBroker );
 
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {

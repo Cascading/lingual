@@ -30,9 +30,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.Repo;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
+import cascading.lingual.catalog.format.ProviderOutputFormatter;
 import cascading.lingual.catalog.provider.ProviderDefinition;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
@@ -104,6 +106,15 @@ public class ProviderTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
 
     return catalog.getProviderNames( schemaName );
+    }
+
+  @Override
+  protected Collection<String> performShow( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    ProviderDef providerDef = catalog.findProviderFor( schemaName, getOptions().getProviderName() );
+    return new ProviderOutputFormatter().format( providerDef );
     }
 
   protected List<String> doAdd( PlatformBroker platformBroker, boolean doActualInstall )

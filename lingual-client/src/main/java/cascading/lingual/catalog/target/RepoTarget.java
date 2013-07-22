@@ -28,6 +28,7 @@ import java.util.List;
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Repo;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.format.RepoOutputFormatter;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import org.apache.ivy.Ivy;
@@ -100,6 +101,13 @@ public class RepoTarget extends CRUDTarget
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
     return platformBroker.getCatalog().getMavenRepoNames();
+    }
+
+  @Override
+  protected Collection<String> performShow( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    return new RepoOutputFormatter().format( getRequestedRepo() );
     }
 
   private Repo getRequestedRepo()

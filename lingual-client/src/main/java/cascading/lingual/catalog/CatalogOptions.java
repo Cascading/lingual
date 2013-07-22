@@ -52,6 +52,7 @@ public class CatalogOptions extends Options
   private final OptionSpec<String> update;
   private final OptionSpec<Void> remove;
   private final OptionSpec<String> rename;
+  private final OptionSpec<Void> show;
 
   private final OptionSpec<Map<String, String>> properties;
 
@@ -105,6 +106,8 @@ public class CatalogOptions extends Options
 
     rename = parser.accepts( "rename", "rename the specified schema or table to given name" )
       .withRequiredArg();
+
+    show = parser.accepts( "show", "shows properties assigned to a schema, table, sterotype, format, or provider" );
 
     properties = parser.acceptsAll( asList( "props", "properties" ), "key=value pairs" )
       .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
@@ -166,7 +169,7 @@ public class CatalogOptions extends Options
 
   public boolean isActions()
     {
-    return optionSet.has( add ) || optionSet.has( update ) || optionSet.has( remove ) || optionSet.has( rename ) || optionSet.has( validate );
+    return optionSet.has( add ) || optionSet.has( update ) || optionSet.has( remove ) || optionSet.has( rename ) || optionSet.has( validate ) || optionSet.has( show );
     }
 
   public String getURI()
@@ -327,7 +330,10 @@ public class CatalogOptions extends Options
     return optionSet.valueOf( repo );
     }
 
-  /////
+  public boolean isShow()
+    {
+    return optionSet.has( show );
+    }
 
   public boolean isAdd()
     {
