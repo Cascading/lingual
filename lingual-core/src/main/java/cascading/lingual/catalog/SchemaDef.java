@@ -492,11 +492,8 @@ public class SchemaDef extends Def
     {
     Set<String> names = new TreeSet<String>();
 
-    for( ProviderDef providerDef : getAllProviderDefs() )
-      {
-      for( Format format : providerDef.getFormatProperties().keySet() )
-        names.add( format.toString() );
-      }
+    for( Format format : getAllFormats() )
+      names.add( format.toString() );
 
     return names;
     }
@@ -505,11 +502,8 @@ public class SchemaDef extends Def
     {
     Set<String> names = new TreeSet<String>();
 
-    for( ProviderDef providerDef : getAllProviderDefs() )
-      {
-      for( Protocol protocol : providerDef.getProtocolProperties().keySet() )
-        names.add( protocol.toString() );
-      }
+    for( Protocol protocol : getAllProtocols() )
+      names.add( protocol.toString() );
 
     return names;
     }
