@@ -75,7 +75,7 @@ jar {
   ext.extrasDir = file( "${buildDir}/extras" )
   extrasDir.delete();
   extrasDir.mkdir();
-  runtimeProvidedJarPath = "${extrasDir}/${baseName}-${version}-runtimeprovided.${extension}"
+  ext.runtimeProvidedJarPath = "${extrasDir}/${baseName}-${version}-runtimeprovided.${extension}"
 
   project.ant {
     taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
