@@ -44,7 +44,7 @@ asciidoctor {
           'source-highlighter': 'coderay', // seems better than highlightjs
           'linkcss!': '',
           stylesdir: 'lingual-docs/src/site/stylesheets/', // should not be relative to rootDir
-          stylesheet: 'github.css',
+          stylesheet: 'cascading.css',
           'data-uri': '',
           imagesdir: 'lingual-docs/src/site/images/', // should not be relative to rootDir
           artifactsurl: project.s3Bucket,
