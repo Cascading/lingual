@@ -24,9 +24,6 @@ configurations {
   }
 }
 
-if( System.properties[ 'hadoop.release.final' ] )
-  hadoopVersion = System.properties[ 'hadoop.release.final' ]
-
 dependencies {
 
   compile project( ':lingual-core' )
@@ -57,6 +54,7 @@ dependencies {
   testCompile group: 'commons-io', name: 'commons-io', version: commonsIoVersion
 
   testRuntime group: 'javax.ws.rs', name: 'jsr311-api', version: jsrVersion // missed dep in hadoop, go figure
+  testRuntime 'org.codehaus.jackson:jackson-mapper-asl:1.0.1'  // workaround for HADOOP-7461.
 }
 
 task createProps() {
