@@ -79,6 +79,8 @@ public abstract class CRUDTarget extends Target
     {
     LOG.debug( "{}: add", name );
 
+    validateAdd( platformBroker );
+
     List<String> names = performAdd( platformBroker );
 
     for( String name : names )
@@ -86,6 +88,8 @@ public abstract class CRUDTarget extends Target
 
     return true;
     }
+
+  protected abstract void validateAdd( PlatformBroker platformBroker );
 
   protected abstract List<String> performAdd( PlatformBroker platformBroker );
 
@@ -116,6 +120,7 @@ public abstract class CRUDTarget extends Target
     LOG.debug( "{}: rename", name );
 
     String renameName = getOptions().getRenameName();
+
     if( renameName == null )
       throw new IllegalArgumentException( "rename action must have a rename target" );
 
@@ -133,7 +138,6 @@ public abstract class CRUDTarget extends Target
     }
 
   protected abstract boolean performRename( PlatformBroker platformBroker );
-
 
   protected boolean handleRemove( PlatformBroker platformBroker )
     {

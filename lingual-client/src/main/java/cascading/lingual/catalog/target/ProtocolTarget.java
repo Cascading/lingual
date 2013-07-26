@@ -71,10 +71,35 @@ public class ProtocolTarget extends CRUDTarget
     String sourceProtocol = getOptions().getProtocolName();
     String schemaName = getOptions().getSchemaName();
     Collection<Protocol> protocols = catalog.getSchemaDef( schemaName ).getAllProtocols();
+
     for( Protocol protocol : protocols )
+      {
       if( protocol.getName().equals( sourceProtocol ) )
         return sourceProtocol;
+      }
+
     return null;
+    }
+
+  @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    String protocolName = getOptions().getProtocolName();
+
+    if( protocolName == null )
+      throw new IllegalArgumentException( "add action must have a protocol name value" );
+
+    String providerName = getOptions().getProviderName();
+
+    if( providerName == null )
+      throw new IllegalArgumentException( "provider is required" );
+
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
+
+    if( providerDef == null )
+      throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
     }
 
   @Override
@@ -82,25 +107,11 @@ public class ProtocolTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String protocolName = getOptions().getProtocolName();
-    if( protocolName == null )
-      throw new IllegalArgumentException( "add action must have a protocol name value" );
-
     Protocol protocol = Protocol.getProtocol( protocolName );
-
     String schemaName = getOptions().getSchemaName();
-
     Map<String, String> properties = getOptions().getProperties();
     List<String> uris = getOptions().getURIs();
-
     String providerName = getOptions().getProviderName();
-
-    if( providerName != null )
-      {
-      ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
-
-      if( providerDef == null )
-        throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
-      }
 
     catalog.addProtocol( schemaName, protocol, uris, properties, providerName );
 

@@ -78,9 +78,9 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA );
     assertTrue( AD_HOC_SCHEMA + " does not contain table " + TEST_TABLE_NAME + " in " + tableNames.toString(), tableNames.contains( TEST_TABLE_NAME ) );
 
-    catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
 
-    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--add", "--uris", "jdbc:,jdbcs:" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--add", "--uris", "jdbc:,jdbcs:", "--provider", "text" );
 
     catalog( "--schema", AD_HOC_SCHEMA,
       "--table", "remote", "--add", SALES_EMPS_TABLE,
@@ -159,8 +159,8 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--add" );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", TEST_TABLE_NAME + RENAME_FROM_SUFFIX, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--add", "--extensions", ".jdbc,.jdbc.lzo" );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--add", "--uris", "jdbc:,jdbcs:" );
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--add", "--uris", "jdbc:,jdbcs:", "--provider", "text" );
     Collection<String> schemaNames = schemaCatalog.getSchemaNames();
     assertTrue( "initial schema missing from: " + schemaNames.toString(), schemaNames.contains( "adhoc_fr" ) );
     Collection<String> tableNames = schemaCatalog.getTableNames( "adhoc_fr" );
@@ -214,8 +214,8 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--add" );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", TEST_TABLE_NAME + RENAME_FROM_SUFFIX, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--add", "--extensions", ".jdbc,.jdbc.lzo" );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--add", "--uris", "jdbc:,jdbcs:" );
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--add", "--uris", "jdbc:,jdbcs:", "--provider", "text" );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX,
       "--table", "remote_test", "--add", SALES_EMPS_TABLE,
       "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX,
@@ -281,9 +281,9 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME );
     catalog( "--schema", AD_HOC_SCHEMA, "--table" );
 
-    catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
 
-    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--add", "--uris", "jdbc:,jdbcs:" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--add", "--uris", "jdbc:,jdbcs:", "--provider", "text" );
 
     catalog( "--schema", AD_HOC_SCHEMA,
       "--table", "remote", "--add", SALES_EMPS_TABLE,

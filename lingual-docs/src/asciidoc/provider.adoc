@@ -1,11 +1,21 @@
 [id="provider"]
 ## Data Providers
 
-The Data Provider mechanism allows for new protocols and formats to be added dynamically to a Lingual query through
-a packaged `jar` file hosted locally or from Maven. This jar is automatically added, on the users behalf, to any Lingual
+The *Data Provider* mechanism allows Lingual to integrate multiple systems, including Hadoop, into a single JDBC based
+application. This tremendously simplifies building integration and http://en.wikipedia.org/wiki/Extract,_transform,_load[ETL]
+(extract, trans`form, and load) types of applications.
+
+It also allows JDBC Client applications (Web based BI tools, GUI SQL Clients, etc) to execute queries on Hadoop with any
+data format or back end system. For example, a web based reporting tool can join relational data (from Oracle) with data
+on HDFS in the http://avro.apache.org[Apache Avro] format to generate a report without the use of any additional tools
+to migrate or modify data from the database or read the Avro files.
+
+This is accomplished by adding new protocols and formats dynamically to a Lingual query through
+a packaged `jar` file hosted locally or from Maven. This jar is automatically added, on demand, to any Lingual
 queries executed from the Lingual JDBC Driver.
 
-Where a *protocol* is a label specifying a Cascading Tap, and a *format* is a label for a Cascading Scheme.
+Where a *protocol* is a label specifying a Cascading Tap, and a *format* is a label for a Cascading Scheme, along with
+any relevant meta-data (text delimiters, username and password, etc) needed by the Tap or Scheme classes.
 
 By default Lingual supports multiple text formats like 'csv' and 'tsv' (comma separated values, and tab separated values,
 respectively). Files ending with '.csv' or '.tsv' are automatically mapped to the proper format.

@@ -92,14 +92,29 @@ public class TableDef extends Def
     return getStereotype().getFields();
     }
 
+  public void setStereotypeName( String stereotypeName )
+    {
+    this.stereotypeName = stereotypeName;
+    }
+
   public String getStereotypeName()
     {
     return stereotypeName;
     }
 
+  public void setProtocol( Protocol protocol )
+    {
+    this.protocol = protocol;
+    }
+
   public Protocol getProtocol()
     {
     return protocol;
+    }
+
+  public void setFormat( Format format )
+    {
+    this.format = format;
     }
 
   public Format getFormat()

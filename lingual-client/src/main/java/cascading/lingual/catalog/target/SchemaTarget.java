@@ -73,6 +73,11 @@ public class SchemaTarget extends CRUDTarget
     }
 
   @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    }
+
+  @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     String addURI = getOptions().getAddOrUpdateURI();

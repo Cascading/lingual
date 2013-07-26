@@ -66,6 +66,11 @@ public class ProviderTarget extends CRUDTarget
     }
 
   @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    }
+
+  @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     return doAdd( platformBroker, true );
@@ -119,6 +124,7 @@ public class ProviderTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     ProviderDef providerDef = catalog.findProviderFor( schemaName, getOptions().getProviderName() );
+
     return new ProviderBuilder().format( providerDef );
     }
 
@@ -153,6 +159,7 @@ public class ProviderTarget extends CRUDTarget
       Map<String, String> map = providerDefinition.getProviderPropertyMap();
 
       names.add( name );
+
       if( doActualInstall )
         schemaDef.addProviderDef( name, jarFile.getName(), map, md5Hash );
       }

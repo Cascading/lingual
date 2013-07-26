@@ -53,7 +53,7 @@ public class Options
     verbose = parser.accepts( "verbose" ).withOptionalArg().defaultsTo( "info" );
     version = parser.accepts( "version" );
 
-    platform = parser.accepts( "platform", "platform planner to use" )
+    platform = parser.accepts( "platform", "platform planner to use, optionally set LINGUAL_PLATFORM env variable" )
       .withRequiredArg().defaultsTo( "local" );
     }
 

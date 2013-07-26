@@ -32,11 +32,11 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public abstract class DefaultFactory
+public abstract class DefaultFactory<Config, Input, Output, SourceContext, SinkContext>
   {
   private static final Logger LOG = LoggerFactory.getLogger( DefaultFactory.class );
 
-  public Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties )
+  public Tap<Config, Input, Output> createTap( String protocol, Scheme<Config, Input, Output, SourceContext, SinkContext> scheme, String identifier, SinkMode mode, Properties properties )
     {
     if( LOG.isDebugEnabled() )
       {
@@ -47,9 +47,9 @@ public abstract class DefaultFactory
     return newTap( scheme, identifier, mode );
     }
 
-  protected abstract Tap newTap( Scheme scheme, String identifier, SinkMode mode );
+  protected abstract Tap<Config, Input, Output> newTap( Scheme<Config, Input, Output, SourceContext, SinkContext> scheme, String identifier, SinkMode mode );
 
-  public Scheme createScheme( String protocol, String format, Fields fields, Properties properties )
+  public Scheme<Config, Input, Output, SourceContext, SinkContext> createScheme( String protocol, String format, Fields fields, Properties properties )
     {
     String delimiter = properties.getProperty( "delimiter", "," );
     String quote = properties.getProperty( "quote", "\"" );
@@ -58,11 +58,12 @@ public abstract class DefaultFactory
     if( LOG.isDebugEnabled() )
       {
       LOG.debug( "with protocol: {}, and format: {}", protocol, format );
-      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}", new Object[]{delimiter, quote, typed} );
+      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}", new Object[]{delimiter, quote,
+                                                                                              typed} );
       }
 
     return newScheme( fields, delimiter, quote, typed );
     }
 
-  protected abstract Scheme newScheme( Fields fields, String delimiter, String quote, boolean typed );
+  protected abstract Scheme<Config, Input, Output, SourceContext, SinkContext> newScheme( Fields fields, String delimiter, String quote, boolean typed );
   }

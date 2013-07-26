@@ -77,7 +77,7 @@ public class Def implements Serializable
     return identifier;
     }
 
-  protected void setIdentifier( String identifier )
+  public void setIdentifier( String identifier )
     {
     this.identifier = identifier;
     }

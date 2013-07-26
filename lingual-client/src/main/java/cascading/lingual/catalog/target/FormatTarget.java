@@ -71,11 +71,35 @@ public class FormatTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
     String formatName = getOptions().getFormatName();
     Collection<Format> formats = catalog.getSchemaDef( schemaName ).getAllFormats();
+
     for( Format format : formats )
+      {
       if( format.getName().equals( formatName ) )
         return formatName;
+      }
 
     return null;
+    }
+
+  @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    Format format = Format.getFormat( getOptions().getFormatName() );
+
+    if( format == null )
+      throw new IllegalArgumentException( "add action must have a format name value" );
+
+    String providerName = getOptions().getProviderName();
+
+    if( providerName == null )
+      throw new IllegalArgumentException( "provider is required" );
+
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
+
+    if( providerDef == null )
+      throw new IllegalArgumentException( "provider " + providerName + " not registered to schema: " + schemaName );
     }
 
   @Override
@@ -83,23 +107,10 @@ public class FormatTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     Format format = Format.getFormat( getOptions().getFormatName() );
-
-    if( format == null )
-      throw new IllegalArgumentException( "add action must have a format name value" );
-
     String schemaName = getOptions().getSchemaName();
     Map<String, String> properties = getOptions().getProperties();
     List<String> extensions = getOptions().getExtensions();
-
     String providerName = getOptions().getProviderName();
-
-    if( providerName != null )
-      {
-      ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
-
-      if( providerDef == null )
-        throw new IllegalArgumentException( "provider " + providerName + " not registered to schema: " + schemaName );
-      }
 
     catalog.addFormat( schemaName, format, extensions, properties, providerName );
 

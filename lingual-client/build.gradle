@@ -35,69 +35,21 @@ dependencies {
 
   runtime group: 'jline', name: 'jline', version: jlineVersion
 
-  providedCompile group: 'log4j', name: 'log4j', version: log4jVersion
   providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-  providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
 
   testCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
 }
 
-
-// The client environment is a mix of CLI tools, JDBC dependencies that will be passed along
-// and the app itself. To avoid having to re-do the entire dependency chain to set this up
-// Have Gradle make a regular jar of type "unshaded" and then modify the jar so that it can
-// handle references to other uberjars that are fully shaded.
 jar {
   ext.finalName = jar.archivePath
   classifier = 'unshaded'
+}
 
-  doLast {
-    project.ant {
-      taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
-      jarjar( jarfile: finalName ) {
-        zipfileset(src: jar.archivePath)
-
-        neverIncludePackages.each { omitClass ->
-          zap pattern: omitClass
-        }
-        unshadeableDependencies.each { retainClass ->
-          rule pattern: retainClass, result: "@0"
-        }
-        shadeableDependencies.each { shadeClass ->
-          rule pattern: shadeClass, result: "${shadePackagePrefix}@0"
-        }
-      }
-    }
-  }
-
-  // assemble a jar of all the runtime dependencies the client needs, shaded appropriately.
-  // client should not need to pull things like logging in from the jdbc classes and packing
-  // these runtime deps in a second jar keeps the app jar itself reasonably sized.
-  // This jar is where things like jline and sqlline that are only needed for CLI use get put.
-  ext.extrasDir = file( "${buildDir}/extras" )
-  extrasDir.delete();
-  extrasDir.mkdir();
-  ext.runtimeProvidedJarPath = "${extrasDir}/${baseName}-${version}-runtimeprovided.${extension}"
-
+jar << {
   project.ant {
-    taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
-    jarjar(jarfile: runtimeProvidedJarPath) {
-      configurations.runtime.files.each { jarjarFile ->
-        zipfileset( src: jarjarFile ) {
-          exclude( name:  'META-INF/*.DSA' )
-          exclude( name:  'META-INF/LICENSE*' )
-        }
-      }
-
-//      println "need $configurations.providedCompile.files"
-      configurations.providedCompile.files.findAll { file ->
-        [ 'slf4j', 'log4j' ].any { file.name.contains( it ) }
-      }.each { jarjarFile ->
-        zipfileset( src: jarjarFile ) {
-          exclude( name:  'META-INF/*.DSA' )
-          exclude( name:  'META-INF/LICENSE*' )
-        }
-      }
+    taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
+    jarjar( jarfile: finalName ) {
+      zipfileset( src: jar.archivePath )
 
       neverIncludePackages.each { omitClass ->
         zap pattern: omitClass

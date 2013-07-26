@@ -69,15 +69,52 @@ public class TableTarget extends CRUDTarget
     }
 
   @Override
+  protected List<String> performUpdate( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    String tableName = getOptions().getTableName();
+
+    TableDef tableDef = catalog.getSchemaDef( schemaName ).getTable( tableName );
+
+    String addURI = getOptions().getAddOrUpdateURI();
+
+    if( addURI != null )
+      tableDef.setIdentifier( addURI );
+
+    String stereotypeName = getOptions().getStereotypeName();
+
+    if( stereotypeName != null )
+      tableDef.setStereotypeName( stereotypeName );
+
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+
+    if( protocol != null )
+      tableDef.setProtocol( protocol );
+
+    Format format = Format.getFormat( getOptions().getFormatName() );
+
+    if( format != null )
+      tableDef.setFormat( format );
+
+    return asList( tableName );
+    }
+
+  @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    String addURI = getOptions().getAddOrUpdateURI();
+
+    if( addURI == null )
+      throw new IllegalArgumentException( "add action must have a uri value" );
+    }
+
+  @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
     String addURI = getOptions().getAddOrUpdateURI();
-
-    if( addURI == null )
-      throw new IllegalArgumentException( "add action must have a uri value" );
-
     String tableName = getOptions().getTableName();
     String stereotypeName = getOptions().getStereotypeName();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
@@ -105,6 +142,7 @@ public class TableTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
     TableDef tableDef = catalog.getSchemaDef( schemaName ).getTable( tableName );
+
     return new TableBuilder().format( tableDef );
     }
   }

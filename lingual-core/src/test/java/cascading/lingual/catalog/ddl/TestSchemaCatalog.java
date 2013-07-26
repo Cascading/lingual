@@ -48,13 +48,13 @@ public class TestSchemaCatalog extends SchemaCatalog
   @Override
   protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
     {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
     }
 
   @Override
   protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
     }
 
   @Override

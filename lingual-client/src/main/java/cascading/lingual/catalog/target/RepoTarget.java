@@ -53,6 +53,11 @@ public class RepoTarget extends CRUDTarget
     }
 
   @Override
+  protected void validateAdd( PlatformBroker platformBroker )
+    {
+    }
+
+  @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();

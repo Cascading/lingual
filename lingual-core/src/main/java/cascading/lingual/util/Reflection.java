@@ -84,7 +84,7 @@ public class Reflection
     {
     try
       {
-      Constructor constructor = type.getDeclaredConstructor( null );
+      Constructor constructor = type.getDeclaredConstructor( new Class[]{null} );
 
       constructor.setAccessible( true );
 

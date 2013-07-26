@@ -75,15 +75,10 @@ public class StereotypeTarget extends CRUDTarget
     }
 
   @Override
-  protected List<String> performAdd( PlatformBroker platformBroker )
+  protected void validateAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    String stereotypeName = getOptions().getStereotypeName();
-    List<String> columns = getOptions().getColumns();
-    List<String> types = getOptions().getTypes();
-    Fields fields = createFields( columns, types );
-
     String providerName = getOptions().getProviderName();
 
     if( providerName != null )
@@ -93,6 +88,17 @@ public class StereotypeTarget extends CRUDTarget
       if( providerDef == null )
         throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
       }
+    }
+
+  @Override
+  protected List<String> performAdd( PlatformBroker platformBroker )
+    {
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    String stereotypeName = getOptions().getStereotypeName();
+    List<String> columns = getOptions().getColumns();
+    List<String> types = getOptions().getTypes();
+    Fields fields = createFields( columns, types );
 
     catalog.createStereotype( schemaName, stereotypeName, fields );
 

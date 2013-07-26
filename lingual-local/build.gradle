@@ -28,9 +28,9 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 
-  providedCompile group: 'log4j', name: 'log4j', version: log4jVersion
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-  providedCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
+  compile group: 'log4j', name: 'log4j', version: log4jVersion
+  compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  compile group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion, classifier: 'tests', changing: true
@@ -40,7 +40,7 @@ dependencies {
 // builds a maven-shade type jar. Ant's JarJar task is an independent jar build so rather than re-write the entire file
 // collection in ant terms, this code builds a gradle-style jar and uses that as the source. This also retains the
 // previous Gradle FatJar-based behavior of producing a merged META-INF directory.
-task fatJar(type: Jar, dependsOn: jar) {
+task fatJar( type: Jar, dependsOn: jar ) {
 
   description = "Assembles a shaded jar file"
   classifier = 'jdbc'
@@ -49,16 +49,17 @@ task fatJar(type: Jar, dependsOn: jar) {
   // because the :lingual-client.jar task isn't called when building this, we can't simply use jar.archiveName since that includes
   // the internally-specified "classifier" value
   ext.clientFile = "${project( ':lingual-client' ).jar.baseName}-${project( ':lingual-client' ).jar.version}"
+
   doLast {
     project.ant {
-      taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
+      taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
       jarjar( jarfile: archivePath ) {
         configurations.runtime.files.findAll { file ->
-          [ clientFile ].every { !file.name.startsWith( it ) }
+          [clientFile].every { !file.name.startsWith( it ) }
         }.each { jarjarFile ->
           zipfileset( src: jarjarFile ) {
-            exclude( name:  'META-INF/*.DSA' )
-            exclude( name:  'META-INF/LICENSE*' )
+            exclude( name: 'META-INF/*.DSA' )
+            exclude( name: 'META-INF/LICENSE*' )
           }
         }
         zipfileset( src: jar.archivePath )
@@ -74,7 +75,7 @@ task fatJar(type: Jar, dependsOn: jar) {
         }
       }
     }
-    delete (jar.archivePath)
+    delete( jar.archivePath )
   }
 }
 

@@ -105,16 +105,17 @@ task fatJar( type: Jar, dependsOn: [jar, createProps] ) {
   // because the :lingual-client.jar task isn't called when building this, we can't simply use jar.archiveName since that includes
   // the internally-specified "classifier" value
   ext.clientFile = "${project( ':lingual-client' ).jar.baseName}-${project( ':lingual-client' ).jar.version}"
+
   doLast {
     project.ant {
-      taskdef ( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
+      taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
       jarjar( jarfile: archivePath ) {
         configurations.runtime.files.findAll { file ->
-          [ "${clientFile}" ].every { !file.name.startsWith( it ) }
+          ["${clientFile}"].every { !file.name.startsWith( it ) }
         }.each { jarjarFile ->
           zipfileset( src: jarjarFile ) {
-            exclude( name:  'META-INF/*.DSA' )
-            exclude( name:  'META-INF/LICENSE*' )
+            exclude( name: 'META-INF/*.DSA' )
+            exclude( name: 'META-INF/LICENSE*' )
           }
         }
         zipfileset( src: jar.archivePath )
@@ -132,7 +133,7 @@ task fatJar( type: Jar, dependsOn: [jar, createProps] ) {
       }
     }
 
-    delete (jar.archivePath)
+    delete( jar.archivePath )
   }
 }
 
