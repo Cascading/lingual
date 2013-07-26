@@ -22,12 +22,19 @@ package cascading.lingual.common;
 
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 
 /**
  *
  */
 public class Printer
   {
+  char[] borders = new char[]{'=', '-', '-'};
+
   private final PrintStream outPrintStream;
 
   public Printer( PrintStream outPrintStream )
@@ -40,19 +47,65 @@ public class Printer
     return outPrintStream;
     }
 
-  public void print( String formatString, Object... args )
+  public void printMap( String header, Map map )
+    {
+    printHeader( header, '=' );
+
+    printMap( map, 0 );
+    }
+
+  private void printMap( Map map, int depth )
+    {
+    Set<Map.Entry> entries = map.entrySet();
+
+    for( Map.Entry entry : entries )
+      {
+      String key = entry.getKey().toString();
+      Object value = entry.getValue();
+
+      if( value instanceof Map )
+        {
+        getOutPrintStream().println();
+
+        printHeader( key, borders[ depth ] );
+
+        printMap( (Map) value, depth + 1 );
+        }
+      else
+        {
+        if( value instanceof Collection )
+          value = Joiner.on( "," ).skipNulls().join( (Collection) value );
+
+        if( value != null )
+          value = value.toString();
+
+        getOutPrintStream().println( key + '=' + Strings.nullToEmpty( (String) value ) );
+        }
+      }
+    }
+
+  public void printFormatted( String formatString, Object... args )
     {
     getOutPrintStream().println( String.format( formatString, args ) );
     }
 
-  public void print( String header, Collection<String> values )
+  public void printLines( String header, char border, Collection values )
+    {
+    printHeader( header, border );
+
+    for( Object value : values )
+      {
+      if( value instanceof Collection )
+        getOutPrintStream().println( Joiner.on( "," ).join( (Collection) value ) );
+      else
+        getOutPrintStream().println( value );
+      }
+    }
+
+  protected void printHeader( String header, char border )
     {
     getOutPrintStream().println( header );
 
-    getOutPrintStream().println( "-----" );
-
-    for( String value : values )
-      getOutPrintStream().println( value );
+    getOutPrintStream().println( Strings.repeat( String.valueOf( border ), header.length() ) );
     }
-
   }

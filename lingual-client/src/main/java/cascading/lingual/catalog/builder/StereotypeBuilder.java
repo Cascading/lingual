@@ -18,10 +18,8 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import cascading.bind.catalog.Stereotype;
@@ -29,22 +27,24 @@ import cascading.bind.catalog.Stereotype;
 /**
  *
  */
-public class StereotypeOutputFormatter extends OutputFormatter<Stereotype>
+public class StereotypeBuilder extends Builder<Stereotype>
   {
-  public StereotypeOutputFormatter()
+  public StereotypeBuilder()
     {
     super( null );
     }
 
   @Override
-  public Collection<String> format( Stereotype stereotype )
+  public Map format( Stereotype stereotype )
     {
-    Map map = new HashMap();
+    Map map = getMap();
+
     map.put( "formats", stereotype.getAllFormats() );
     map.put( "default format", stereotype.getDefaultFormat() );
     map.put( "protocols", stereotype.getAllProtocols() );
     map.put( "default protocol", stereotype.getDefaultProtocol() );
     map.put( "fields", stereotype.getFields() );
-    return toStringCollection( map );
+
+    return map;
     }
   }

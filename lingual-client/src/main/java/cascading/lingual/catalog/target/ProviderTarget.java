@@ -34,7 +34,7 @@ import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.Repo;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
-import cascading.lingual.catalog.format.ProviderOutputFormatter;
+import cascading.lingual.catalog.builder.ProviderBuilder;
 import cascading.lingual.catalog.provider.ProviderDefinition;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
@@ -60,7 +60,6 @@ import static org.apache.ivy.core.module.id.ModuleRevisionId.newInstance;
  */
 public class ProviderTarget extends CRUDTarget
   {
-
   public ProviderTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
@@ -115,12 +114,12 @@ public class ProviderTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     ProviderDef providerDef = catalog.findProviderFor( schemaName, getOptions().getProviderName() );
-    return new ProviderOutputFormatter().format( providerDef );
+    return new ProviderBuilder().format( providerDef );
     }
 
   protected List<String> doAdd( PlatformBroker platformBroker, boolean doActualInstall )
@@ -185,7 +184,7 @@ public class ProviderTarget extends CRUDTarget
     if( jarFile.exists() && jarFile.canRead() )
       return jarFile;
 
-    getPrinter().print( "cannot read from file: " + jarOrSpec );
+    getPrinter().printFormatted( "cannot read from file: " + jarOrSpec );
 
     throw new IllegalArgumentException( "source jar not valid: " + jarFile.getAbsoluteFile() );
     }

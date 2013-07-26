@@ -23,12 +23,13 @@ package cascading.lingual.catalog.target;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.format.StereotypeOutputFormatter;
+import cascading.lingual.catalog.builder.StereotypeBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.type.SQLTypeMap;
@@ -70,7 +71,7 @@ public class StereotypeTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.getSchemaDef( getOptions().getSchemaName() ).getStereotype( getOptions().getStereotypeName() ) ;
+    return catalog.getSchemaDef( getOptions().getSchemaName() ).getStereotype( getOptions().getStereotypeName() );
     }
 
   @Override
@@ -112,7 +113,7 @@ public class StereotypeTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
@@ -120,7 +121,7 @@ public class StereotypeTarget extends CRUDTarget
 
     Stereotype stereotype = catalog.getSchemaDef( schemaName ).getStereotype( getOptions().getStereotypeName() );
 
-    return new StereotypeOutputFormatter().format( stereotype );
+    return new StereotypeBuilder().format( stereotype );
     }
 
   private Fields createFields( List<String> columns, List<String> types )

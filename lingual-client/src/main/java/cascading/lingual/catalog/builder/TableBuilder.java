@@ -18,9 +18,8 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
 import java.util.Map;
 
 import cascading.lingual.catalog.TableDef;
@@ -28,20 +27,22 @@ import cascading.lingual.catalog.TableDef;
 /**
  *
  */
-public class TableOutputFormatter extends OutputFormatter<TableDef>
+public class TableBuilder extends Builder<TableDef>
   {
-  public TableOutputFormatter()
+  public TableBuilder()
     {
     super( null );
     }
 
   @Override
-  public Collection<String> format( TableDef tableDef )
+  public Map format( TableDef tableDef )
     {
     Map map = getDefProperties( tableDef );
+
     map.put( "stereotype", tableDef.getStereotypeName() );
     map.put( "protocol", tableDef.getProtocol().getName() );
     map.put( "format", tableDef.getFormat() );
-    return toStringCollection( map );
+
+    return map;
     }
   }

@@ -292,6 +292,7 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     );
 
     // test that the various show commands don't fail.
+    catalog( "--provider", "text", "--show" );
     catalog( "--schema", AD_HOC_SCHEMA, "--show" );
     catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--show" );
     catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--show" );

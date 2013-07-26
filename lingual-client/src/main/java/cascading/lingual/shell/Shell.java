@@ -130,7 +130,7 @@ public class Shell extends Main<ShellOptions>
 //    \  --isolation=LEVEL               set the transaction isolation level\n \
 //    \  --help                          display this message
 
-    getPrinter().print( Version.getBannerVersionString() );
+    getPrinter().printFormatted( Version.getBannerVersionString() );
 
     // sqlline doesn't handle basic dir config from command line but it does handle it from System.
     String sqlLineDir = Joiner.on( File.separator ).join( System.getProperty( "user.home" ), ".lingual", "sqlline" );
@@ -157,7 +157,7 @@ public class Shell extends Main<ShellOptions>
     else
       {
       addAll( args, "--incremental=false" ); // allows buffering
-      getPrinter().print( "only %,d rows will be displayed", getOptions().getMaxRows() );
+      getPrinter().printFormatted( "only %,d rows will be displayed", getOptions().getMaxRows() );
       }
 
     if( getOptions().isVerbose() )

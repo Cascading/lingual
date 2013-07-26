@@ -24,11 +24,12 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Repo;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.format.RepoOutputFormatter;
+import cascading.lingual.catalog.builder.RepoBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import org.apache.ivy.Ivy;
@@ -106,9 +107,9 @@ public class RepoTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
-    return new RepoOutputFormatter().format( getRepoFromArgs() );
+    return new RepoBuilder().format( getRepoFromArgs() );
     }
 
   private Repo getRepoFromArgs()

@@ -18,26 +18,30 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
+import java.util.Map;
 
-import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaDef;
 
 /**
  *
  */
-public class FormatOutputFormatter extends OutputFormatter<Format>
+public class ProtocolBuilder extends Builder<Protocol>
   {
-  public FormatOutputFormatter( SchemaDef schemaDef )
+  public ProtocolBuilder( SchemaDef schemaDef )
     {
     super( schemaDef );
     }
 
   @Override
-  public Collection<String> format( Format format )
+  public Map format( Protocol protocol )
     {
-    return toStringCollection( schemaDef.findFormatProperties( format ) );
+    Map map = getMap();
+
+    map.put( protocol, schemaDef.findProtocolProperties( protocol ) );
+
+    return map;
     }
   }

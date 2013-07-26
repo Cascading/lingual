@@ -29,7 +29,7 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
-import cascading.lingual.catalog.format.ProtocolOutputFormatter;
+import cascading.lingual.catalog.builder.ProtocolBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
@@ -71,9 +71,9 @@ public class ProtocolTarget extends CRUDTarget
     String sourceProtocol = getOptions().getProtocolName();
     String schemaName = getOptions().getSchemaName();
     Collection<Protocol> protocols = catalog.getSchemaDef( schemaName ).getAllProtocols();
-    for (Protocol protocol : protocols)
-      if (protocol.getName().equals( sourceProtocol ))
-        return sourceProtocol ;
+    for( Protocol protocol : protocols )
+      if( protocol.getName().equals( sourceProtocol ) )
+        return sourceProtocol;
     return null;
     }
 
@@ -120,12 +120,13 @@ public class ProtocolTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
-    return new ProtocolOutputFormatter( schemaDef ).format( protocol );
+
+    return new ProtocolBuilder( schemaDef ).format( protocol );
     }
   }

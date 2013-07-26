@@ -22,11 +22,12 @@ package cascading.lingual.catalog.target;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
-import cascading.lingual.catalog.format.SchemaOutputFormatter;
+import cascading.lingual.catalog.builder.SchemaBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
@@ -100,11 +101,11 @@ public class SchemaTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
-    return new SchemaOutputFormatter().format( schemaDef );
+    return new SchemaBuilder().format( schemaDef );
     }
   }

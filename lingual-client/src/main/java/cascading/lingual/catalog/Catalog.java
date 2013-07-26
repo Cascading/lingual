@@ -205,9 +205,9 @@ public class Catalog extends Main<CatalogOptions>
       platformBroker.writeCatalog();
 
     if( !success )
-      getPrinter().print( "path: %s has already been initialized", platformBroker.getFullMetadataPath() );
+      getPrinter().printFormatted( "path: %s has already been initialized", platformBroker.getFullMetadataPath() );
     else
-      getPrinter().print( "path: %s has been initialized", platformBroker.getFullMetadataPath() );
+      getPrinter().printFormatted( "path: %s has been initialized", platformBroker.getFullMetadataPath() );
 
     return success;
     }

@@ -18,30 +18,30 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
-import cascading.lingual.catalog.Repo;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.SchemaDef;
 
 /**
  *
  */
-public class RepoOutputFormatter extends OutputFormatter<Repo>
+public class FormatBuilder extends Builder<Format>
   {
-  public RepoOutputFormatter()
+  public FormatBuilder( SchemaDef schemaDef )
     {
-    super( null );
+    super( schemaDef );
     }
 
   @Override
-  public Collection<String> format( Repo repo )
+  public Map format( Format format )
     {
-    Map map = new HashMap( 2 );
-    map.put( "kind", repo.getRepoKind().toString() );
-    map.put( "url", repo.getRepoUrl() );
-    return toStringCollection( map );
+    Map map = getMap();
+
+    map.put( format, schemaDef.findFormatProperties( format ) );
+
+    return map;
     }
   }

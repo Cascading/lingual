@@ -22,6 +22,7 @@ package cascading.lingual.catalog.target;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.common.Printer;
@@ -81,7 +82,7 @@ public abstract class CRUDTarget extends Target
     List<String> names = performAdd( platformBroker );
 
     for( String name : names )
-      getPrinter().print( "added %s: %s", getName(), name );
+      getPrinter().printFormatted( "added %s: %s", getName(), name );
 
     return true;
     }
@@ -98,7 +99,7 @@ public abstract class CRUDTarget extends Target
     List<String> names = performUpdate( platformBroker );
 
     for( String name : names )
-      getPrinter().print( "updated %s: %s", getName(), name );
+      getPrinter().printFormatted( "updated %s: %s", getName(), name );
 
     return true;
     }
@@ -124,9 +125,9 @@ public abstract class CRUDTarget extends Target
     boolean result = performRename( platformBroker );
 
     if( result )
-      getPrinter().print( "successfully renamed %s to: %s", getName(), renameName );
+      getPrinter().printFormatted( "successfully renamed %s to: %s", getName(), renameName );
     else
-      getPrinter().print( "failed to rename %s to: %s", getName(), renameName );
+      getPrinter().printFormatted( "failed to rename %s to: %s", getName(), renameName );
 
     return result;
     }
@@ -147,9 +148,9 @@ public abstract class CRUDTarget extends Target
     boolean result = performRemove( platformBroker );
 
     if( result )
-      getPrinter().print( "successfully removed %s", getName() );
+      getPrinter().printFormatted( "successfully removed %s", getName() );
     else
-      getPrinter().print( "failed to remove %s", getName() );
+      getPrinter().printFormatted( "failed to remove %s", getName() );
 
     return result;
     }
@@ -162,7 +163,7 @@ public abstract class CRUDTarget extends Target
     {
     LOG.debug( "{}: print", name );
 
-    getPrinter().print( getName(), performGetNames( platformBroker ) );
+    getPrinter().printLines( getName(), '-', performGetNames( platformBroker ) );
 
     return true;
     }
@@ -175,7 +176,7 @@ public abstract class CRUDTarget extends Target
 
     boolean result = performValidateDependencies( platformBroker );
 
-    getPrinter().print( "%s validation returned: %b", getName(), result );
+    getPrinter().printFormatted( "%s validation returned: %b", getName(), result );
 
     return result;
     }
@@ -184,14 +185,14 @@ public abstract class CRUDTarget extends Target
     {
     LOG.debug( "{}: show", name );
 
-    Collection<String> output = performShow( platformBroker );
+    Map output = performShow( platformBroker );
 
-    getPrinter().print( getName(), output );
+    getPrinter().printMap( getName(), output );
 
     return true;
     }
 
-  protected abstract Collection<String> performShow( PlatformBroker platformBroker );
+  protected abstract Map performShow( PlatformBroker platformBroker );
 
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {

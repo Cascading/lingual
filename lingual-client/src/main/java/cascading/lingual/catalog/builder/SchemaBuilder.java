@@ -18,28 +18,30 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
 import java.util.Map;
 
-import cascading.lingual.catalog.ProviderDef;
+import cascading.lingual.catalog.SchemaDef;
 
 /**
  *
  */
-public class ProviderOutputFormatter extends OutputFormatter<ProviderDef>
+public class SchemaBuilder extends Builder<SchemaDef>
   {
-  public ProviderOutputFormatter()
+  public SchemaBuilder()
     {
     super( null );
     }
 
   @Override
-  public Collection<String> format( ProviderDef providerDef )
+  public Map format( SchemaDef pSchemaDef )
     {
-    Map map = getDefProperties( providerDef );
-    map.putAll( providerDef.getProperties() );
-    return toStringCollection( map );
+    Map map = getDefProperties( pSchemaDef );
+
+    map.put( "default format", pSchemaDef.getDefaultFormat() );
+    map.put( "default protocol", pSchemaDef.getDefaultProtocol() );
+
+    return map;
     }
   }

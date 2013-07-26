@@ -28,7 +28,8 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.format.FormatOutputFormatter;
+import cascading.lingual.catalog.SchemaDef;
+import cascading.lingual.catalog.builder.FormatBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
@@ -118,11 +119,14 @@ public class FormatTarget extends CRUDTarget
     }
 
   @Override
-  protected Collection<String> performShow( PlatformBroker platformBroker )
+  protected Map performShow( PlatformBroker platformBroker )
     {
     Format format = Format.getFormat( getOptions().getFormatName() );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    return new FormatOutputFormatter( catalog.getSchemaDef( schemaName ) ).format( format );
+
+    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
+
+    return new FormatBuilder( schemaDef ).format( format );
     }
   }

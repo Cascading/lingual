@@ -18,50 +18,44 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog.format;
+package cascading.lingual.catalog.builder;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cascading.lingual.catalog.Def;
 import cascading.lingual.catalog.SchemaDef;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 
 /**
  *
  */
-public abstract class OutputFormatter<T>
+public abstract class Builder<T>
   {
   protected final SchemaDef schemaDef;
 
-  public OutputFormatter( SchemaDef schemaDef )
+  public Builder( SchemaDef schemaDef )
     {
     this.schemaDef = schemaDef;
     }
 
-  public abstract Collection<String> format( T def );
-
-  protected Collection<String> toStringCollection( Map map )
-    {
-    Function<Map.Entry, String> kayValueCombiner =
-      new Function<Map.Entry, String>()
-      {
-      public String apply( Map.Entry entry )
-        {
-        return String.valueOf( entry.getKey() ) + ": " + String.valueOf( entry.getValue() );
-        }
-      };
-
-    return Collections2.transform( map.entrySet(), kayValueCombiner );
-    }
+  public abstract Map format( T def );
 
   protected Map getDefProperties( Def def )
     {
-    Map map = new HashMap();
+    Map map = getMap();
+
+    map.put( "name", def.getName() );
+
+    if( !( def instanceof SchemaDef ) )
+      map.put( "schema", def.getParentSchema().getName() );
+
     map.put( "identifier", def.getIdentifier() );
-    map.put( "parent schema", def.getParentSchema().getName() );
+
     return map;
+    }
+
+  protected Map getMap()
+    {
+    return new LinkedHashMap();
     }
   }
