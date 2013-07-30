@@ -111,6 +111,9 @@ public class ProviderProxy
       tap = factoryObject.createTap( scheme, identifier, mode, properties );
 
     if( tap == null )
+      tap = factoryObject.createTap( scheme, identifier, properties );
+
+    if( tap == null )
       tap = factoryObject.createTap( scheme, identifier, mode );
 
     return tap;

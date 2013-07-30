@@ -85,7 +85,7 @@ ext.jarjarVersion = '1.3'
 /*
  * Control over rules for shading with jarjar.
  */
-ext.shadeableDependencies = [ "com.**", "net.**", "org.**", "riffle.**" ]
+ext.shadeableDependencies = ["com.**", "net.**", "org.**", "riffle.**"]
 ext.shadePackagePrefix = "cascading.thirdparty."
 ext.neverIncludePackages = []
 ext.unshadeableDependencies = [
@@ -98,4 +98,6 @@ ext.unshadeableDependencies = [
         "META**",
         "org.slf4j.**",
         "org.apache.log4j.**",
+        "org.xml.sax.**",
+        "org.apache.ivy.**"
 ]

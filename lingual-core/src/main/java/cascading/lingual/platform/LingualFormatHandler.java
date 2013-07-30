@@ -30,9 +30,6 @@ import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.util.MultiProperties;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
-
 /**
  *
  */
@@ -67,15 +64,7 @@ public abstract class LingualFormatHandler implements FormatHandler<Protocol, Fo
     if( values == null || values.isEmpty() )
       return;
 
-    Map<String, List<String>> defaultValues = getProperties().getValueFor( format );
-
-    if( defaultValues.containsKey( key ) )
-      {
-      defaultValues.get( key ).addAll( values );
-      defaultValues.put( key, newArrayList( newHashSet( defaultValues.get( key ) ) ) );
-      }
-    else
-      defaultValues.put( key, values );
+    getProperties().addProperty( format, key, values );
     }
 
   protected MultiProperties<Format> getProperties()

@@ -45,6 +45,8 @@ public interface ProviderFactory
 
   Tap createTap( Scheme scheme, String identifier, SinkMode mode, Properties properties );
 
+  Tap createTap( Scheme scheme, String identifier, Properties properties );
+
   Tap createTap( Scheme scheme, String identifier, SinkMode mode );
 
   Scheme createScheme( String protocol, String format, Fields fields, Properties properties );

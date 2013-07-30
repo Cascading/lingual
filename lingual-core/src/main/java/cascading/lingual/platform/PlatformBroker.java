@@ -628,13 +628,7 @@ public abstract class PlatformBroker<Config>
 
     try
       {
-      URL[] urls = new URL[]{toURL( qualifiedPath )};
-
-      if( LOG.isDebugEnabled() )
-        LOG.debug( "loading from: {}", Arrays.toString( urls ) );
-
-      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-      URLClassLoader urlLoader = new URLClassLoader( urls, classLoader, null );
+      URLClassLoader urlLoader = getUrlClassLoader( qualifiedPath );
 
       if( LOG.isDebugEnabled() )
         LOG.info( "loading class: " + className );
@@ -645,6 +639,27 @@ public abstract class PlatformBroker<Config>
       {
       throw new RuntimeException( "unable to load class: " + className + " from: " + qualifiedPath, exception );
       }
+    }
+
+  Map<String, URLClassLoader> classLoaderMap = new HashMap<String, URLClassLoader>();
+
+  private synchronized URLClassLoader getUrlClassLoader( String qualifiedPath ) throws MalformedURLException
+    {
+    if( classLoaderMap.containsKey( qualifiedPath ) )
+      return classLoaderMap.get( qualifiedPath );
+
+    URL[] urls = new URL[]{toURL( qualifiedPath )};
+
+    if( LOG.isDebugEnabled() )
+      LOG.debug( "loading from: {}", Arrays.toString( urls ) );
+
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    URLClassLoader urlClassLoader = new URLClassLoader( urls, classLoader, null );
+
+    classLoaderMap.put( qualifiedPath, urlClassLoader );
+
+    return urlClassLoader;
     }
 
   protected URL toURL( String qualifiedPath ) throws MalformedURLException

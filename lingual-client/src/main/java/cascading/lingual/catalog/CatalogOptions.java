@@ -47,6 +47,8 @@ public class CatalogOptions extends Options
   private final OptionSpec<String> stereotype;
   private final OptionSpec<String> format;
   private final OptionSpec<String> protocol;
+  private final OptionSpec<String> provider;
+  private final OptionSpec<String> repo;
 
   private final OptionSpec<String> add;
   private final OptionSpec<String> update;
@@ -57,14 +59,10 @@ public class CatalogOptions extends Options
   private final OptionSpec<Map<String, String>> properties;
 
   private final OptionSpec<String> extensions;
-  private final OptionSpec<String> uris;
+  private final OptionSpec<String> schemes;
 
   private final OptionSpec<String> columns;
   private final OptionSpec<String> types;
-
-  private final OptionSpec<String> provider;
-
-  private final OptionSpec<String> repo;
 
   private final OptionSpec<String> validate;
 
@@ -75,7 +73,7 @@ public class CatalogOptions extends Options
 
     init = parser.accepts( "init", "initializes meta-data store" );
 
-    uri = parser.accepts( "uri", "path to catalog location, defaults is current directory" )
+    uri = parser.accepts( "uri", "path to catalog location, defaults is current directory on current platform" )
       .withRequiredArg().describedAs( "directory" ).defaultsTo( "./" );
 
     ddl = parser.accepts( "ddl", "initializes schema with DDL commands" )
@@ -96,18 +94,24 @@ public class CatalogOptions extends Options
     protocol = parser.accepts( "protocol", "name of protocol to use" )
       .withOptionalArg();
 
-    add = parser.accepts( "add", "possible uri path to schema or table" )
+    provider = parser.accepts( "provider", "provider definition" )
+      .withOptionalArg().describedAs( "name of provider to use from specified jar" );
+
+    repo = parser.accepts( "repo", "Maven repo management" )
       .withOptionalArg();
 
-    update = parser.accepts( "update", "possible uri path to schema or table" )
+    add = parser.accepts( "add", "uri path to schema, table, or provider. or maven spec 'group:name:rev[:classifier]'" )
       .withOptionalArg();
 
-    remove = parser.accepts( "remove", "remove the specified schema or table" );
+    update = parser.accepts( "update", "uri path to schema, table, or provider. or maven spec 'group:name:rev[:classifier]'" )
+      .withOptionalArg();
 
-    rename = parser.accepts( "rename", "rename the specified schema or table to given name" )
+    remove = parser.accepts( "remove", "remove the named schema, table, etc" );
+
+    rename = parser.accepts( "rename", "remove the named schema, table, etc to the given name" )
       .withRequiredArg();
 
-    show = parser.accepts( "show", "shows properties assigned to a schema, table, sterotype, format, or provider" );
+    show = parser.accepts( "show", "shows properties assigned to a schema, table, stereotype, format, or provider" );
 
     properties = parser.acceptsAll( asList( "props", "properties" ), "key=value pairs" )
       .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
@@ -115,7 +119,7 @@ public class CatalogOptions extends Options
     extensions = parser.acceptsAll( asList( "exts", "extensions" ), "file name extension to associate with format, .csv, .tsv, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
-    uris = parser.accepts( "uris", "uri schemes to associate with protocol, http:, jdbc:, ..." )
+    schemes = parser.accepts( "schemes", "uri schemes to associate with protocol, http:, jdbc:, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
     columns = parser.accepts( "columns", "columns names of the stereotype" )
@@ -123,12 +127,6 @@ public class CatalogOptions extends Options
 
     types = parser.accepts( "types", "types for each column" )
       .withRequiredArg().withValuesSeparatedBy( ',' );
-
-    provider = parser.accepts( "provider", "provider definition" )
-      .withOptionalArg().describedAs( "name of provider to install" );
-
-    repo = parser.accepts( "repo", "Maven repo management" )
-      .withOptionalArg();
 
     validate = parser.accepts( "validate", "confirms that a maven repo or provider is valid without adding it" )
       .withOptionalArg();
@@ -285,9 +283,9 @@ public class CatalogOptions extends Options
     return optionSet.valuesOf( extensions );
     }
 
-  public List<String> getURIs()
+  public List<String> getSchemes()
     {
-    return optionSet.valuesOf( uris );
+    return optionSet.valuesOf( schemes );
     }
 
   public List<String> getColumns()

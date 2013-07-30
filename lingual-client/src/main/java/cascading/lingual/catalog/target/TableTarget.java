@@ -114,12 +114,13 @@ public class TableTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    String addURI = getOptions().getAddOrUpdateURI();
+    String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
-    String stereotypeName = getOptions().getStereotypeName();
+    String addURI = getOptions().getAddOrUpdateURI();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
     Format format = Format.getFormat( getOptions().getFormatName() );
-    String schemaName = getOptions().getSchemaName();
+
+    String stereotypeName = getOptions().getStereotypeName();
 
     return asList( catalog.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format ) );
     }

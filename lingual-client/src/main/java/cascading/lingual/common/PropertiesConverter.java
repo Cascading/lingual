@@ -36,7 +36,8 @@ public class PropertiesConverter implements ValueConverter<Map<String, String>>
     {
     // let foo=, foo => ,
     // let foo=,bar=1 foo => & bar => 1
-    return onPattern( "(?<==),(?!,|$)|(?<!=),(?![,$])" ).withKeyValueSeparator( '=' ).split( value );
+    // let foo=bar1,bar2 foo => bar1,bar2 -- when used alone
+    return onPattern( "(?<==),(?!,|$)|(?<!=),(?![,$])(?=[^=]+=)" ).withKeyValueSeparator( '=' ).split( value );
     }
 
   @Override
@@ -48,6 +49,6 @@ public class PropertiesConverter implements ValueConverter<Map<String, String>>
   @Override
   public String valuePattern()
     {
-    return "name=value,name=value";
+    return "name=value,name=value1|value2";
     }
   }

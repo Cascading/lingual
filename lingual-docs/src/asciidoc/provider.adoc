@@ -87,7 +87,7 @@ cascading.bind.provider.[provider_name].extends=[provider_name]
 
 # define protocols differentiated by properties
 cascading.bind.provider.[provider_name].protocol.names=
-cascading.bind.provider.[provider_name].protocol.[protocol_name].uris=
+cascading.bind.provider.[provider_name].protocol.[protocol_name].schemes=
 cascading.bind.provider.[provider_name].protocol.[protocol_name].[property]=[value]
 
 # define formats differentiated by properties

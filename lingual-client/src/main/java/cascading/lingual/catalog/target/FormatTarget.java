@@ -82,6 +82,12 @@ public class FormatTarget extends CRUDTarget
     }
 
   @Override
+  protected List<String> performUpdate( PlatformBroker platformBroker )
+    {
+    return performAdd( platformBroker );
+    }
+
+  @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
     Format format = Format.getFormat( getOptions().getFormatName() );
@@ -112,7 +118,7 @@ public class FormatTarget extends CRUDTarget
     List<String> extensions = getOptions().getExtensions();
     String providerName = getOptions().getProviderName();
 
-    catalog.addFormat( schemaName, format, extensions, properties, providerName );
+    catalog.addUpdateFormat( schemaName, format, extensions, properties, providerName );
 
     return asList( format.getName() );
     }
@@ -123,10 +129,7 @@ public class FormatTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
 
-    if( schemaName != null && !schemaName.isEmpty() )
-      return catalog.getFormatNames( getOptions().getSchemaName() );
-    else
-      return catalog.getFormatNames();
+    return catalog.getFormatNames( schemaName );
     }
 
   @Override
@@ -135,8 +138,7 @@ public class FormatTarget extends CRUDTarget
     Format format = Format.getFormat( getOptions().getFormatName() );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
 
     return new FormatBuilder( schemaDef ).format( format );
     }

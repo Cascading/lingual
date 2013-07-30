@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog.provider;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaProperties;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
@@ -190,7 +192,9 @@ public class ProviderDefinition
       {
       String value = entry.getValue();
 
-      if( value.equals( "," ) )
+      if( Strings.isNullOrEmpty( value ) )
+        result.put( entry.getKey().substring( length ), new ArrayList<String>() );
+      else if( value.equals( "," ) )
         result.put( entry.getKey().substring( length ), newCopyOnWriteArrayList( asList( value ) ) );
       else
         result.put( entry.getKey().substring( length ), newCopyOnWriteArrayList( asList( value.split( "," ) ) ) );

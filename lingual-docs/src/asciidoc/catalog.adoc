@@ -117,10 +117,20 @@ To add new table to an existing schema:
 | --provider [name]    |                              | register a new provider
 |                      | --add [uri\|spec]            | register a provider located by the uri or maven spec (group:name:revision)
 |                      | --validate                   | optional arg when using --add to test the provider's uri or spec is valid without it
-|                      | --properties                 | the properties defining the provider's behavior as "keyOne=valueOne,keyTwo=valueTwo"
 |                      | --remove                     |
 |                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a provider. requires the [name] param for provider
+|                      |                              |
+| --protocol           |                              | list all registered protocol names
+| --protocol [name]    |                              |
+|                      | --add                        | register a new protocol
+|                      | --provider [name]            | use the given provider
+|                      | --update                     | update with given values (replaces values)
+|                      | --schemes [uri,.]            | uri scheme to identify protocol (jdbc:, hdfs:, etc)
+|                      | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)**
+|                      | --remove                     |
+|                      | --rename [new name]          |
+|                      | --show                       | shows detailed information about a protocol. requires the [name] param for protocol
 |                      |                              |
 | --format             |                              | list all registered format names
 | --format [name]      |                              |
@@ -128,27 +138,19 @@ To add new table to an existing schema:
 |                      | --provider [name]            | use the given provider
 |                      | --update                     | update with given values (replaces values)
 |                      | --extensions [.ext,.]        | file extension used to identify format (.csv, .tsv, etc)
-|                      | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)
+|                      | --properties [name=value,.]  | update/add properties for the format (hasHeaders=true, etc)**
 |                      | --remove                     |
 |                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a format. requires the [name] param for format
-|                      |                              |
-| --protocol           |                              | list all registered protocol names
-| --protocol [name]    |                              |
-|                      | --add                        | register a new protocol
-|                      | --provider [name]            | use the given provider
-|                      | --update                     | update with given values (replaces values)
-|                      | --uris [uri,.]               | uri scheme to identify protocol (jdbc:, hdfs:, etc)
-|                      | --properties [name=value,.]  | update/add properties for the protocol (user=jsmith, etc)
-|                      | --remove                     |
-|                      | --rename [new name]          |
-|                      | --show                       | shows detailed information about a protocol. requires the [name] param for protocol
 |                      |                              |
 | --config [name|uri]* |                              | config properties file to use instead of .lingual/config/default.properties
 |                      |                              |
 |===
 
 __* currently unsupported__
+
+__** If a key has a list of values, `name1=value1,value2`, you can only set a single property from that invocation
+Otherwise `name1=value1,name=value2` works.__
 
 ### Catalog Structure
 

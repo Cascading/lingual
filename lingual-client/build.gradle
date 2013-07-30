@@ -48,6 +48,7 @@ jar {
 jar << {
   project.ant {
     taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
+
     jarjar( jarfile: finalName ) {
       zipfileset( src: jar.archivePath )
 
@@ -79,8 +80,9 @@ assembleDist << {
 
   copy {
     into "${distDir}/lib"
+//    from configurations.runtime
+//    archivePath
     from jar.finalName
-    from "${buildDir}/extras"
   }
 
   copy {

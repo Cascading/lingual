@@ -34,8 +34,8 @@ import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.apache.ivy.plugins.resolver.RepositoryResolver;
-import org.apache.ivy.plugins.resolver.URLResolver;
 
 import static java.util.Arrays.asList;
 
@@ -137,14 +137,15 @@ public class RepoTarget extends CRUDTarget
     if( !repoUrl.endsWith( "/" ) )
       repoUrl += "/";
 
-    RepositoryResolver resolver = new URLResolver();
+    IBiblioResolver resolver = new IBiblioResolver();
 
     if( URI.create( repoUrl ).getScheme() == null )
       repoUrl = new File( repoUrl ).getAbsoluteFile().toURI().toASCIIString();
 
     resolver.setM2compatible( repo.getRepoKind() == Repo.Kind.Maven2 );
     resolver.setName( repo.getRepoName() );
-    resolver.addArtifactPattern( repoUrl + M2_PATTERN );
+    resolver.setRoot( repoUrl );
+//    resolver.addArtifactPattern( repoUrl + M2_PATTERN );
 
     return resolver;
     }

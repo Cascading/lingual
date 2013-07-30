@@ -64,7 +64,7 @@ public class ProviderProtocolHandler extends LingualProtocolHandler
   @Override
   public Collection<? extends Protocol> getProtocols()
     {
-    return getDefaults().getKeys();
+    return getProperties().getKeys();
     }
 
   @Override

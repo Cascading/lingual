@@ -70,7 +70,7 @@ public class ShellOptions extends Options
     sqlPlanPath = parser.accepts( "sqlPlanPath", "platform path to write SQL plan files" )
       .withOptionalArg().defaultsTo( "sqlPlanPath" ).describedAs( "directory" );
 
-    sqlFile = parser.accepts( "sql", "file with sql commands to execute" )
+    sqlFile = parser.accepts( "sql", "file with sql commands to execute, '-' for stdin" )
       .withRequiredArg().describedAs( "filename" );
 
     maxRows = parser.accepts( "maxRows", "number of results to limit. 0 for unlimited" )

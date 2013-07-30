@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol, Format>, Serializable
   {
   private final ProviderDef providerDef;
-  private MultiProperties<Protocol> defaults = new MultiProperties<Protocol>();
+  private MultiProperties<Protocol> properties = new MultiProperties<Protocol>();
 
   protected final Logger LOG = LoggerFactory.getLogger( getClass() );
 
@@ -51,7 +51,7 @@ public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol
     Map<Protocol, Map<String, List<String>>> protocols = providerDef.getProtocolProperties();
 
     for( Protocol protocol : protocols.keySet() )
-      getDefaults().putProperties( protocol, protocols.get( protocol ) );
+      getProperties().putProperties( protocol, protocols.get( protocol ) );
     }
 
   public ProviderDef getProviderDef()
@@ -70,22 +70,17 @@ public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol
     if( values == null || values.isEmpty() )
       return;
 
-    Map<String, List<String>> defaultValues = getDefaults().getValueFor( protocol );
-
-    if( defaultValues.containsKey( key ) )
-      defaultValues.get( key ).addAll( values );
-    else
-      defaultValues.put( key, values );
+    getProperties().addProperty( protocol, key, values );
     }
 
-  public MultiProperties<Protocol> getDefaults()
+  public MultiProperties<Protocol> getProperties()
     {
-    return defaults;
+    return properties;
     }
 
   @Override
   public Map<String, List<String>> getDefaultProperties( Protocol protocol )
     {
-    return getDefaults().getValueFor( protocol );
+    return getProperties().getValueFor( protocol );
     }
   }

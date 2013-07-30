@@ -23,6 +23,7 @@ package cascading.lingual.catalog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -86,9 +87,6 @@ public abstract class SchemaCatalog implements Serializable
 
   @JsonProperty
   private Map<String, Fields> nameFieldsMap = new InsensitiveMap<Fields>();
-
-  @JsonProperty
-  private Map<String, Point<Protocol, Format>> idPointMap = new InsensitiveMap<Point<Protocol, Format>>();
 
   protected SchemaCatalog()
     {
@@ -315,7 +313,7 @@ public abstract class SchemaCatalog implements Serializable
     return getSchemaDefChecked( schemaName ).getChildTableNames();
     }
 
-  private SchemaDef getSchemaDefChecked( String schemaName )
+  public SchemaDef getSchemaDefChecked( String schemaName )
     {
     SchemaDef schemaDef = getSchemaDef( schemaName );
 
@@ -332,9 +330,9 @@ public abstract class SchemaCatalog implements Serializable
 
   public void createTableDefFor( String schemaName, String tableName, String tableIdentifier, Fields fields, String protocolName, String formatName )
     {
-    tableIdentifier = getFullPath( tableIdentifier );
-
     Point<Protocol, Format> point = getPointFor( tableIdentifier, schemaName, Protocol.getProtocol( protocolName ), Format.getFormat( formatName ) );
+
+    tableIdentifier = getFullPath( tableIdentifier );
 
     SchemaDef schemaDef = rootSchemaDef.getSchema( schemaName );
 
@@ -363,9 +361,12 @@ public abstract class SchemaCatalog implements Serializable
 
   protected String createTableDefFor( SchemaDef schemaDef, String tableName, String tableIdentifier, String stereotypeName, Fields fields, Protocol protocol, Format format )
     {
-    tableIdentifier = getFullPath( tableIdentifier );
+    Point<Protocol, Format> point = getPointFor( tableIdentifier, schemaDef.getName(), protocol, format );
 
-    LOG.debug( "using table full path: {}", tableIdentifier );
+    if( protocol == null )
+      tableIdentifier = getFullPath( tableIdentifier );
+
+    LOG.debug( "using table path: {}", tableIdentifier );
 
     if( tableName == null )
       tableName = platformBroker.createTableNameFrom( tableIdentifier );
@@ -381,13 +382,7 @@ public abstract class SchemaCatalog implements Serializable
     if( stereotype == null )
       throw new IllegalArgumentException( "stereotype does not exist: " + stereotypeName );
 
-    if( protocol == null )
-      protocol = getDefaultProtocolFor( schemaDef, tableIdentifier );
-
-    if( format == null )
-      format = getDefaultFormatFor( schemaDef, tableIdentifier );
-
-    schemaDef.addTable( tableName, tableIdentifier, stereotype, protocol, format );
+    schemaDef.addTable( tableName, tableIdentifier, stereotype, point.protocol, point.format );
 
     return tableName;
     }
@@ -395,6 +390,9 @@ public abstract class SchemaCatalog implements Serializable
   private String getFullPath( String identifier )
     {
     if( platformBroker == null )
+      return identifier;
+
+    if( URI.create( identifier ).getScheme() != null )
       return identifier;
 
     return platformBroker.getFullPath( identifier );
@@ -468,7 +466,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getFormatNames( String schemaName )
     {
-    return rootSchemaDef.getSchema( schemaName ).getAllFormatNames();
+    return getSchemaDefChecked( schemaName ).getAllFormatNames();
+    }
+
+  public List<String> getFormatProperty( String schemeName, String format, String propertyName )
+    {
+    return getSchemaDef( schemeName ).getFormatProperty( Format.getFormat( format ), propertyName );
     }
 
   public Collection<String> getProtocolNames()
@@ -478,7 +481,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getProtocolNames( String schemaName )
     {
-    return rootSchemaDef.getSchema( schemaName ).getProtocolNames();
+    return getSchemaDefChecked( schemaName ).getProtocolNames();
+    }
+
+  public List<String> getProtocolProperty( String schemeName, String protocol, String propertyName )
+    {
+    return getSchemaDef( schemeName ).getProtocolProperty( Protocol.getProtocol( protocol ), propertyName );
     }
 
   public Collection<String> getProviderNames()
@@ -560,23 +568,17 @@ public abstract class SchemaCatalog implements Serializable
 
   protected Point<Protocol, Format> getPointFor( String identifier, String schemaName, Protocol protocol, Format format )
     {
-    if( idPointMap.containsKey( identifier ) )
-      return idPointMap.get( identifier );
-
-    Point<Protocol, Format> point = createPointFor( schemaName, identifier, protocol, format );
-
-    idPointMap.put( identifier, point );
-
-    return point;
-    }
-
-  private Point<Protocol, Format> createPointFor( String schemaName, String identifier, Protocol protocol, Format format )
-    {
     if( protocol == null )
       protocol = getDefaultProtocolFor( schemaName, identifier );
 
+    if( !getSchemaDef( schemaName ).getAllProtocols().contains( protocol ) )
+      throw new IllegalStateException( "no protocol found named: " + protocol );
+
     if( format == null )
       format = getDefaultFormatFor( schemaName, identifier );
+
+    if( !getSchemaDef( schemaName ).getAllFormats().contains( format ) )
+      throw new IllegalStateException( "no format found named: " + format );
 
     return new Point<Protocol, Format>( protocol, format );
     }
@@ -596,7 +598,7 @@ public abstract class SchemaCatalog implements Serializable
 
     Protocol protocol = ProtocolProperties.findProtocolFor( schemaDef, identifier );
 
-    if( protocol == null && schemaDef != null )
+    if( protocol == null )
       protocol = schemaDef.findDefaultProtocol();
 
     return protocol;
@@ -618,7 +620,7 @@ public abstract class SchemaCatalog implements Serializable
 
     Format format = FormatProperties.findFormatFor( schemaDef, identifier );
 
-    if( format == null && schemaDef != null )
+    if( format == null )
       format = schemaDef.findDefaultFormat();
 
     return format;
@@ -851,12 +853,15 @@ public abstract class SchemaCatalog implements Serializable
 
   protected abstract FormatHandler createFormatHandler( ProviderDef providerDef );
 
-  public void addFormat( String schemaName, Format format, List<String> extensions, Map<String, String> properties, String providerName )
+  public void addUpdateFormat( String schemaName, Format format, List<String> extensions, Map<String, String> properties, String providerName )
     {
     SchemaDef schemaDef = getSchemaDefChecked( schemaName );
 
-    schemaDef.addFormatProperty( format, FormatProperties.EXTENSIONS, extensions );
-    schemaDef.addFormatProperty( format, FormatProperties.PROVIDER, providerName );
+    if( extensions != null && !extensions.isEmpty() )
+      schemaDef.addFormatProperty( format, FormatProperties.EXTENSIONS, extensions );
+
+    if( providerName != null )
+      schemaDef.addFormatProperty( format, FormatProperties.PROVIDER, providerName );
 
     if( properties == null )
       return;
@@ -884,12 +889,15 @@ public abstract class SchemaCatalog implements Serializable
     return true;
     }
 
-  public void addProtocol( String schemaName, Protocol protocol, List<String> uris, Map<String, String> properties, String providerName )
+  public void addUpdateProtocol( String schemaName, Protocol protocol, List<String> schemes, Map<String, String> properties, String providerName )
     {
     SchemaDef schemaDef = getSchemaDefChecked( schemaName );
 
-    schemaDef.addProtocolProperty( protocol, ProtocolProperties.URIS, uris );
-    schemaDef.addProtocolProperty( protocol, ProtocolProperties.PROVIDER, providerName );
+    if( schemes != null && !schemes.isEmpty() )
+      schemaDef.addProtocolProperty( protocol, ProtocolProperties.SCHEMES, schemes );
+
+    if( providerName != null )
+      schemaDef.addProtocolProperty( protocol, ProtocolProperties.PROVIDER, providerName );
 
     if( properties == null )
       return;
@@ -927,8 +935,6 @@ public abstract class SchemaCatalog implements Serializable
 
     SchemaCatalog that = (SchemaCatalog) object;
 
-    if( idPointMap != null ? !idPointMap.equals( that.idPointMap ) : that.idPointMap != null )
-      return false;
     if( repositories != null ? !repositories.equals( that.repositories ) : that.repositories != null )
       return false;
     if( nameFieldsMap != null ? !nameFieldsMap.equals( that.nameFieldsMap ) : that.nameFieldsMap != null )
@@ -948,7 +954,6 @@ public abstract class SchemaCatalog implements Serializable
     result = 31 * result + ( repositories != null ? repositories.hashCode() : 0 );
     result = 31 * result + ( rootSchemaDef != null ? rootSchemaDef.hashCode() : 0 );
     result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
-    result = 31 * result + ( idPointMap != null ? idPointMap.hashCode() : 0 );
     return result;
     }
   }

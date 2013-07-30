@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,6 +64,12 @@ public class ProviderTarget extends CRUDTarget
   public ProviderTarget( Printer printer, CatalogOptions options )
     {
     super( printer, options );
+    }
+
+  @Override
+  public boolean updateIsNoop()
+    {
+    return true;
     }
 
   @Override
@@ -124,6 +131,9 @@ public class ProviderTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     ProviderDef providerDef = catalog.findProviderFor( schemaName, getOptions().getProviderName() );
+
+    if( providerDef == null )
+      throw new IllegalStateException( "provider not found: " + getOptions().getProviderName() );
 
     return new ProviderBuilder().format( providerDef );
     }
@@ -218,7 +228,16 @@ public class ProviderTarget extends CRUDTarget
     String[] dep = jarOrSpec.split( ":" );
 
     DefaultModuleDescriptor md = newDefaultInstance( newInstance( dep[ 0 ], dep[ 1 ] + "-caller", "working" ) );
-    DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor( md, newInstance( dep[ 0 ], dep[ 1 ], dep[ 2 ] ), false, false, false );
+
+    md.addExtraAttributeNamespace( "m", Ivy.getIvyHomeURL() + "maven" );
+
+    Map attributes = new HashMap();
+
+    if( dep.length == 4 )
+      attributes.put( "m:classifier", dep[ 3 ] );
+
+    DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor( md, newInstance( dep[ 0 ], dep[ 1 ], dep[ 2 ], attributes ), false, false, false );
+
     md.addDependency( dd );
 
     ResolveOptions resolveOptions = new ResolveOptions().setConfs( new String[]{"default"} ).setTransitive( false );
@@ -251,9 +270,7 @@ public class ProviderTarget extends CRUDTarget
     List<RepositoryResolver> resolvers = new ArrayList<RepositoryResolver>();
 
     for( Repo repo : repositories )
-      {
       resolvers.add( RepoTarget.getRepositoryResolver( repo ) );
-      }
 
     return resolvers;
     }

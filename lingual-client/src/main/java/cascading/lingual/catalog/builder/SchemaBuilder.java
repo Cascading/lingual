@@ -35,12 +35,12 @@ public class SchemaBuilder extends Builder<SchemaDef>
     }
 
   @Override
-  public Map format( SchemaDef pSchemaDef )
+  public Map format( SchemaDef schemaDef )
     {
-    Map map = getDefProperties( pSchemaDef );
+    Map map = getDefProperties( schemaDef );
 
-    map.put( "default format", pSchemaDef.getDefaultFormat() );
-    map.put( "default protocol", pSchemaDef.getDefaultProtocol() );
+    map.put( "protocol", schemaDef.findDefaultProtocol() );
+    map.put( "format", schemaDef.findDefaultFormat() );
 
     return map;
     }

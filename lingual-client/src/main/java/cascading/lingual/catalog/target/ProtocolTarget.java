@@ -82,6 +82,12 @@ public class ProtocolTarget extends CRUDTarget
     }
 
   @Override
+  protected List<String> performUpdate( PlatformBroker platformBroker )
+    {
+    return performAdd( platformBroker );
+    }
+
+  @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
     String protocolName = getOptions().getProtocolName();
@@ -110,10 +116,10 @@ public class ProtocolTarget extends CRUDTarget
     Protocol protocol = Protocol.getProtocol( protocolName );
     String schemaName = getOptions().getSchemaName();
     Map<String, String> properties = getOptions().getProperties();
-    List<String> uris = getOptions().getURIs();
+    List<String> schemes = getOptions().getSchemes();
     String providerName = getOptions().getProviderName();
 
-    catalog.addProtocol( schemaName, protocol, uris, properties, providerName );
+    catalog.addUpdateProtocol( schemaName, protocol, schemes, properties, providerName );
 
     return asList( protocol.getName() );
     }
@@ -124,19 +130,16 @@ public class ProtocolTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
 
-    if( schemaName != null && !schemaName.isEmpty() )
-      return catalog.getProtocolNames( getOptions().getSchemaName() );
-    else
-      return catalog.getProtocolNames();
+    return catalog.getProtocolNames( schemaName );
     }
 
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
 
     return new ProtocolBuilder( schemaDef ).format( protocol );
     }

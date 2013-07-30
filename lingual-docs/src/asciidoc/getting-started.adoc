@@ -23,7 +23,7 @@ Or if `hadoop`, call:
 
     > export LINGUAL_PLATFORM=hadoop
     > export HADOOP_HOME=/path/to/hadoop
-    > hadoop fs -copyFromLocal employees employees
+    > hadoop fs -copyFromLocal employees .
 
 Then call:
 
@@ -141,3 +141,57 @@ To create a `.psv` file, execute
     > lingual catalog --schema working --table unique_titles --update working/unique-titles.psv --format psv
 
 The results will be located in `working/unique-titles.psv` and use a `|` instead of `,` as a field delimiter.
+
+### Adding and using a new Data Provider
+
+Instead of using the built in <<provider,Data Provider>>, new ones can be added that provide access to data systems
+not currently supported by Lingual.
+
+For example, to copy data from a `csv` file and store it in a memcached server, the
+https://github.com/Cascading/cascading.memcached[`cascading-memcached`] provider can be registered.
+
+To register the memcached provider, run:
+
+    > lingual catalog --provider -add cascading:cascading-memcached:0.3.0:provider
+
+This will retrieve the http://conjars.org/search?q=memcached[`cascading-memcached-0.3.0-provider.jar`]
+from http://conjars.org[Conjars] (if not on Conjars, then from Maven Central).
+
+To see what the provider provides, call:
+
+    > lingual catalog --provider memcached --show
+
+The memcached provider can store data as text delimited values, or as binary. To store values as comma separated
+text values, we can use the builtin *format* called `csv`. But we need to tell it which columns are keys, and which
+columns are values.
+
+    > lingual catalog --schema working --format csv --update --properties keyFields=title,valueFields=cnt
+
+Note we are "updating" the `csv` format as seen by the "working" schema even though the provider was added to the
+default schema.
+
+Compare these two calls:
+
+    > lingual catalog --format csv --show
+    > lingual catalog --schema working --format csv --show
+
+The first shows the default values of `csv`, the second shows the properties as configured in the "working" schema.
+
+Schemas are used to customize and/or override default protocols and formats as seen by the tables in the given schema.
+
+Next we need to create a table that is backed by our memcached server on the given IP and port:
+
+  > lingual catalog --schema working --table title_counts --stereotype titles -add 127.0.0.1:11211 \
+    --protocol memcached-text --format csv
+
+Note that we re-used the stereotype "titles" created in the above example.
+
+And when using Hadoop, make sure you use the actual IP address of the memcached server host, not `localhost`.
+
+Now execute the query, assuming an actual memcached server is running:
+
+    > lingual shell
+    > insert into "working"."title_counts" select title, count( title ) as cnt from employees.titles group by title;
+
+If run on Hadoop, a MapReduce job will be spawned, and the "sink" Tap in the Flow will be the memcached Tap. That is
+the results are *not* written to disk, but streamed directly into the memcached server from each reducer task.

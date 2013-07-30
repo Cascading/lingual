@@ -65,6 +65,12 @@ public class TestProviderFactory implements ProviderFactory, Serializable
     }
 
   @Override
+  public Tap createTap( Scheme scheme, String identifier, Properties properties )
+    {
+    return null;
+    }
+
+  @Override
   public Tap createTap( Scheme scheme, String identifier, SinkMode mode )
     {
     return null;

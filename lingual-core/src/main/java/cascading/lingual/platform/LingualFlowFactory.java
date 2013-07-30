@@ -37,6 +37,8 @@ import cascading.lingual.util.Version;
 import cascading.pipe.Pipe;
 import cascading.property.AppProps;
 import cascading.tap.SinkMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class LingualFlowFactory is an implementation of the {@link FlowFactory} base class.
@@ -46,6 +48,8 @@ import cascading.tap.SinkMode;
  */
 public class LingualFlowFactory extends FlowFactory<Protocol, Format>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( LingualFlowFactory.class );
+
   PlatformBroker platformBroker;
   private Pipe tail;
   private SchemaCatalog catalog;
@@ -108,8 +112,13 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       .addTails( tail )
       .setDebugLevel( platformBroker.getDebugLevel() );
 
+    LOG.debug( "using log level: {}", platformBroker.getDebugLevel() );
+
     for( String jar : jars )
+      {
+      LOG.debug( "adding jar to classpath: {}", jar );
       flowDef.addToClassPath( jar );
+      }
 
     Flow flow = createFlowFrom( flowDef, tail );
 

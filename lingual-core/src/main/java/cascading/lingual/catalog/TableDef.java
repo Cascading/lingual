@@ -122,7 +122,7 @@ public class TableDef extends Def
     return format;
     }
 
-  protected Protocol getActualProtocol()
+  public Protocol getActualProtocol()
     {
     if( protocol != null )
       return protocol;
@@ -130,7 +130,7 @@ public class TableDef extends Def
     return getParentSchema().findDefaultProtocol();
     }
 
-  protected Format getActualFormat()
+  public Format getActualFormat()
     {
     if( format != null )
       return format;
@@ -154,7 +154,7 @@ public class TableDef extends Def
 
     String providerName = providers.get( 0 );
 
-    return parentSchema.getProviderDef( providerName );
+    return parentSchema.findProviderDefFor( providerName );
     }
 
   public ProviderDef getFormatProvider()
@@ -168,7 +168,7 @@ public class TableDef extends Def
 
     String providerName = providers.get( 0 );
 
-    return parentSchema.getProviderDef( providerName );
+    return parentSchema.findProviderDefFor( providerName );
     }
 
   @Override

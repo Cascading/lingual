@@ -40,8 +40,8 @@ public class TableBuilder extends Builder<TableDef>
     Map map = getDefProperties( tableDef );
 
     map.put( "stereotype", tableDef.getStereotypeName() );
-    map.put( "protocol", tableDef.getProtocol().getName() );
-    map.put( "format", tableDef.getFormat() );
+    map.put( "protocol", tableDef.getActualProtocol() );
+    map.put( "format", tableDef.getActualFormat() );
 
     return map;
     }
