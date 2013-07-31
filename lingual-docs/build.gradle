@@ -41,7 +41,8 @@ asciidoctor {
   def attributes = [
           toc2: '',
           revnumber: version,
-          'source-highlighter': 'coderay', // seems better than highlightjs
+          'source-highlighter': 'highlightjs',
+          'highlightjs-theme': 'pojoaque',
           'linkcss!': '',
           stylesdir: 'lingual-docs/src/site/stylesheets/', // should not be relative to rootDir
           stylesheet: 'cascading.css',
