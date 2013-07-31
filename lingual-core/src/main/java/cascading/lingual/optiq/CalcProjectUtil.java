@@ -42,7 +42,7 @@ import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
-import net.hydromatic.linq4j.expressions.BlockExpression;
+import net.hydromatic.linq4j.expressions.BlockStatement;
 import net.hydromatic.linq4j.expressions.ConstantExpression;
 import net.hydromatic.linq4j.expressions.Expression;
 import net.hydromatic.linq4j.expressions.Expressions;
@@ -269,7 +269,7 @@ class CalcProjectUtil
     Expression not = Expressions.not( nullToFalse ); // matches #isRemove semantics in Filter
 
     statements.add( Expressions.return_( null, not ) );
-    BlockExpression block = statements.toBlock();
+    BlockStatement block = statements.toBlock();
     String expression = Expressions.toString( block );
 
     LOG.debug( "filter parameters: {}", incomingFields );
@@ -311,7 +311,7 @@ class CalcProjectUtil
 
     statements.add( Expressions.return_( null, record ) );
 
-    BlockExpression block = statements.toBlock();
+    BlockStatement block = statements.toBlock();
     String expression = Expressions.toString( block );
 
     Fields outgoingFields = createTypedFields( cluster, program.getOutputRowType() );

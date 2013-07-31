@@ -47,7 +47,7 @@ public class FieldTypeFactory extends JavaTypeFactoryImpl
       RelDataType javaType;
 
       if( type instanceof Class )
-        javaType = canonize( new JavaType( (Class) type ) );
+        javaType = canonize( createJavaType( (Class) type ) );
       else if( type instanceof RelDataType )
         javaType = canonize( (RelDataType) type );
       else

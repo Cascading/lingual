@@ -29,7 +29,7 @@ import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
 import cascading.lingual.optiq.meta.ValuesHolder;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
-import net.hydromatic.linq4j.expressions.BlockExpression;
+import net.hydromatic.linq4j.expressions.BlockStatement;
 import net.hydromatic.linq4j.expressions.Expressions;
 import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import net.hydromatic.optiq.rules.java.EnumerableRel;
@@ -86,14 +86,14 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     PhysType physType = PhysTypeImpl.of( implementor.getTypeFactory(), input.getRowType(), JavaRowFormat.ARRAY );
 
-    BlockExpression block =
+    BlockStatement block =
       branch.tuples != null
         ? handleInsert( branch, planner )
         : handleFlow( branch, physType, planner );
     return implementor.result( physType, block );
     }
 
-  private BlockExpression handleInsert( Branch branch, VolcanoPlanner planner )
+  private BlockStatement handleInsert( Branch branch, VolcanoPlanner planner )
     {
     ValuesHolder holder = new ValuesHolder( branch, planner );
 
@@ -104,7 +104,7 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }
 
-  private BlockExpression handleFlow( Branch branch, PhysType physType, VolcanoPlanner planner )
+  private BlockStatement handleFlow( Branch branch, PhysType physType, VolcanoPlanner planner )
     {
     FlowHolder flowHolder = new FlowHolder( physType, branch, planner );
 

@@ -110,7 +110,7 @@ public class SQLPlanner implements AssemblyPlanner
 
     OptiqPrepare.PrepareResult<Object> prepareResult = prepare.prepareSql( lingualContext, getSql(), null, Object[].class, -1 );
 
-    Pipe current = ( (CascadingFlowRunnerEnumerable) prepareResult.enumerable ).getBranch().current;
+    Pipe current = ( (CascadingFlowRunnerEnumerable) prepareResult.getExecutable() ).getBranch().current;
 
     String name;
 

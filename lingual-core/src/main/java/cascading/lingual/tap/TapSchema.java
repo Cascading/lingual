@@ -52,12 +52,12 @@ public class TapSchema extends MapSchema
 
   public TapSchema( QueryProvider queryProvider, JavaTypeFactory typeFactory )
     {
-    super( queryProvider, typeFactory, Expressions.parameter( Object.class, "root" ) );
+    super( null, queryProvider, typeFactory, "root", Expressions.parameter( Object.class, "root" ) );
     }
 
   public TapSchema( TapSchema parent, String name )
     {
-    super( parent.getQueryProvider(), parent.typeFactory, makeExpression( name, parent ) );
+    super( parent, name, makeExpression( name, parent ) );
     this.parent = parent;
     this.name = name;
     }
@@ -69,7 +69,7 @@ public class TapSchema extends MapSchema
 
   public TapSchema( MapSchema parent, LingualConnection connection, String name, String identifier )
     {
-    super( connection.getParent(), connection.getTypeFactory(), makeExpression( name, connection.getRootSchema() ) );
+    super( parent, name, makeExpression( name, connection.getRootSchema() ) );
     this.parent = parent;
     this.connection = connection;
     this.platformBroker = connection.getPlatformBroker();

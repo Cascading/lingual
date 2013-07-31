@@ -20,10 +20,7 @@
 
 package cascading.lingual.flow;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
@@ -36,6 +33,8 @@ import cascading.tuple.Fields;
 import com.google.common.base.Function;
 import net.hydromatic.optiq.Schema;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
+import net.hydromatic.optiq.jdbc.ConnectionProperty;
+import net.hydromatic.optiq.jdbc.OptiqConnection;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
 
 /**
@@ -108,6 +107,12 @@ class LingualContext implements OptiqPrepare.Context
       return Collections.EMPTY_LIST;
 
     return Arrays.asList( getDefaultSchema().split( "\\." ) );
+    }
+
+  @Override
+  public ConnectionProperty.ConnectionConfig config()
+    {
+    return ConnectionProperty.connectionConfig( new Properties() );
     }
 
   private void addTaps( SchemaDef parentSchemaDef, TapSchema parentTapSchema, Map<String, Tap> taps, Function<Tap, Fields> function )
