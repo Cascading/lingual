@@ -172,14 +172,18 @@ public class LingualStatement implements Statement
     {
     try
       {
-      parent.cancel();
+      if( !parent.isClosed() )
+        parent.cancel();
       }
     finally
       {
       Flow flow = lingualConnection.getCurrentFlow();
 
       if( flow != null )
+        {
+        LOG.info( "stopping flow: {}", flow.getID() );
         flow.stop();
+        }
       }
     }
 
