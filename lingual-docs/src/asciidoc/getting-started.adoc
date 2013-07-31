@@ -23,7 +23,7 @@ Or if `hadoop`, call:
 
     > export LINGUAL_PLATFORM=hadoop
     > export HADOOP_HOME=/path/to/hadoop
-    > hadoop fs -copyFromLocal employees .
+    > hadoop fs -copyFromLocal employees employees
 
 Then call:
 
@@ -57,7 +57,7 @@ having to re-register the redundant data.
 
 Note that `.csv` file support is built in to Lingual, so there is no need to register or create that data *format*.
 
-### Running queries:
+### Running queries
 
 The Lingual Shell is simply a command shell that uses the Lingual JDBC Driver to execute SQL statements against
 the configured platform.

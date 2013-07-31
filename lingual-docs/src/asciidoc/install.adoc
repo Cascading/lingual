@@ -56,12 +56,19 @@ elastic-mapreduce \
   --create \
   --instance-group master --instance-count 1 --instance-type $MASTER_INSTANCE_TYPE \
   --instance-group core --instance-count $1 --instance-type $SLAVE_INSTANCE_TYPE \
-  --bootstrap-action s3://files.cascading.org/sdk/2.1/install-cascading-sdk.sh \
   --bootstrap-action s3://{artifactsurl}/lingual/1.0/lingual-client/install-lingual-client.sh \
   --name "Cascading Cluster - $USER" \
   --key-pair $EMR_SSH_KEY_NAME \
   --alive
 ----
 
-The assumption here is that you will be shelling into your remote Hadoop cluster to use Lingual. See
+Alternately you can install the full http://cascading.org/sdk/[Cascading SDK] which includes a number of additional
+tools with the following bootstrap action:
+
+[subs="attributes"]
+----
+--bootstrap-action s3://{artifactsurl}/sdk/2.2/install-cascading-sdk.sh
+----
+
+The assumption here is that you will be shelling into your remote Hadoop cluster to use Lingual or other SDK tools. See
 <<hadoop,Using Hadoop>> for tips on connecting remotely.

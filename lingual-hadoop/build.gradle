@@ -132,8 +132,6 @@ task fatJar( type: Jar, dependsOn: [jar, createProps] ) {
         }
       }
     }
-
-    delete( jar.archivePath )
   }
 }
 

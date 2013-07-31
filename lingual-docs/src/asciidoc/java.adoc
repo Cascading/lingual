@@ -1,5 +1,5 @@
 [id="java"]
-## Using Lingual in Java with Cascading
+## Lingual in Java with Cascading
 
 The Java source code used to execute a query as a Cascading `Flow` is much the same as assembling a `Flow` from
 a pipe assembly. Cascading 2.2 has introduced the `SQLPlanner` interface allowing the underlying pipe assembly

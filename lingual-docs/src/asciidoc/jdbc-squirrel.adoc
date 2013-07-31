@@ -1,0 +1,41 @@
+[id="jdbc_squirrel"]
+## Using JDBC with Squirrel SQL
+
+The Lingual Drivers work great with http://squirrel-sql.sourceforge.net[Squirrel SQL] as a desktop client.
+
+Here we will describe installing the Lingual Driver for the Apache Hadoop platform. The local mode platform should
+be straightforward as it has less configuration.
+
+Before starting, make sure:
+
+ * the Lingual Client has been downloaded and installed per the<<getting-started,Getting Started>> section,
+ * a local copy of the Apache Hadoop libraries are unpacked, and
+ * a copy of the remote Hadoop cluster configuration is copied local (found in the remote `HADOOP_CONF_DIR`)
+
+After downloading the Squirrel application and installing, simply add a new "driver" from the drivers tab.
+
+The "name" is arbitrary, "Lingual Hadoop" is a good place to start.
+
+The "example url" should be `jdbc:lingual:hadoop`.
+
+After clicking "extra classpath", navigate and add:
+
+ * All the `jar` files found under the Apache Hadoop unpack directory, including the `lib` folder
+ * The directory containing all the Hadoop configuration files (`HADOOP_CONF_DIR`)
+ * The Lingual Hadoop JDBC jar file, found under `lingual-client/platform/hadoop/lingual-hadoop-x.y.z-jdbc.jar`
+
+Finally, if not already filled out, set "class name" to `cascading.lingual.jdbc.Driver` then click "Ok".
+
+Next click the "Aliases" tab and create a new alias using the driver name just created. The name is arbitrary here
+as well.
+
+"username" should be the name of the user in which the default directory on HDFS should be accessed. If using
+the vagrant test cluster, set the username to "vagrant". This will pull all catalog and meta-data from the
+`/user/vagrant` director on HDFS. No password is necessary.
+
+Save any any changes and connect to the cluster.
+
+If the <<getting-started,Getting Started Guide>> was followed, you can now query any data that was previously
+registered by `lingual catalog` tool.
+
+

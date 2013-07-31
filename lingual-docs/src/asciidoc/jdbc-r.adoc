@@ -1,5 +1,5 @@
 [id="jdbc_r"]
-## JDBC Access from R
+## Using JDBC from R
 
 The following example is based on the RJDBC package for R, assuming that the MySQL Sample Employee Database
 has been used as described on the <<jdbc_java,Java Example>> page.

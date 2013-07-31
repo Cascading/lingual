@@ -61,6 +61,7 @@ Lingual provides a fully Java 1.6 JDBC compliant Driver.
   * <<jdbc-java,A Java JDBC Example>>
   * <<jdbc-r,Accessing Data from R>>
   * <<jdbc,Using the Driver>>
+  * <<jdbc-squirrel,Using the Driver with Squirrel Desktop>>
 
 ### Java Cascading APIs
 
@@ -83,13 +84,25 @@ Learn more about how to create a Provider:
   * <<provider,Data Providers>>
 
 include::install.adoc[]
+
 include::getting-started.adoc[]
+
 include::catalog.adoc[]
+
 include::shell.adoc[]
-include::hadoop.adoc[]
+
+[id="jdbc"]
+## Lingual JDBC
+:leveloffset: 1
 include::jdbc.adoc[]
 include::jdbc-java.adoc[]
 include::jdbc-r.adoc[]
+include::jdbc-squirrel.adoc[]
+
+:leveloffset: 0
+
 include::java.adoc[]
+
 include::provider.adoc[]
 
+include::hadoop.adoc[]

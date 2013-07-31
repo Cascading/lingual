@@ -50,14 +50,14 @@ asciidoctor {
           artifactsurl: project.s3Bucket,
           docsurl: project.s3BucketDocs,
           projectroot: project.rootDir,
+          analyticsid: System.properties[ 'analytics.id' ],
+          analyticsdomain: System.properties[ 'analytics.domain' ]
 
           // disabled till attributes in docinfo is supported
-//          docinfo1: '', // currently passing bad analyitics code till below is supported
-//          analyticsid: System.properties[ 'analytics.id' ],
-//          analyticsdomain: System.properties[ 'analytics.domain' ]
+//          docinfo1: '',
   ]
   options = [
-//          template_dir: 'lingual-docs/src/templates/', // craps out
+          template_dir: 'lingual-docs/src/templates/',
           eruby: 'erubis',
           attributes: attributes
   ]

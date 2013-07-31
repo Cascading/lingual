@@ -1,4 +1,4 @@
-[id="jdbc"]
+[id="jdbc_driver"]
 ## Using the JDBC Drivers
 
 Lingual provides two JDBC Driver jars with self contained dependencies in the http://conjars.org[Conjars] Maven

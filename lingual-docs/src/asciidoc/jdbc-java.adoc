@@ -1,5 +1,5 @@
 [id="jdbc_java"]
-## Using Lingual JDBC in Java
+## Using JDBC in Java
 
 The Java source code used to execute a query via a JDBC connection is much the same as with any other JDBC driver:
 

@@ -1,5 +1,5 @@
 [id="hadoop"]
-## Using with Apache Hadoop
+## Notes on using with Apache Hadoop
 
 When using with Apache Hadoop, the Shell expects the following environment variable so that the correct Hadoop
 version and configuration may be included in the CLASSPATH.
