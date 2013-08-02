@@ -128,7 +128,7 @@ public abstract class Main<O extends Options>
     if( getOptions().isVerbose() )
       setLogLevel( Main.class.getClassLoader(), "", getOptions().getVerbose() );
     else
-      setLogLevel( Main.class.getClassLoader(), "", "off" );
+      setLogLevel( Main.class.getClassLoader(), "", "ERROR" );
     }
 
   protected void printFailure( PrintStream errPrintStream, Throwable throwable )
