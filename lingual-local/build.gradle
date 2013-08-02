@@ -21,8 +21,8 @@ dependencies {
 
   compile project( ':lingual-core' )
 
-  // included for testing from an ide
-  runtime project( ':lingual-client' )
+  // include for testing from an ide
+  // testRuntime project( ':lingual-client' )
 
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
