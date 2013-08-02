@@ -120,6 +120,10 @@ public abstract class SchemaCatalog implements Serializable
     {
     for( ProviderDefinition providerDefinition : getDefaultProviderProperties() )
       {
+      // only install providers for the current platform
+      if( !providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
+        continue;
+
       Map<String, String> properties = providerDefinition.getProperties();
 
       rootSchemaDef.addProviderDef( providerDefinition.getProviderName(), null, properties, null );
