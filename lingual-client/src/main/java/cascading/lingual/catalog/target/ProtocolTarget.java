@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.FormatProperties;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.builder.ProtocolBuilder;
@@ -84,15 +84,30 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+
+    if( protocol == null )
+      throw new IllegalArgumentException( "update action must have a protocol name value" );
+
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    String providerName = getOptions().getProviderName();
+
+    if( providerName == null )
+      providerName = joinOrNull( catalog.getProtocolProperty( schemaName, protocol, FormatProperties.PROVIDER ) );
+
+    if( providerName == null )
+      throw new IllegalArgumentException( "provider is required" );
+
     return performAdd( platformBroker );
     }
 
   @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
-    String protocolName = getOptions().getProtocolName();
+    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
 
-    if( protocolName == null )
+    if( protocol == null )
       throw new IllegalArgumentException( "add action must have a protocol name value" );
 
     String providerName = getOptions().getProviderName();
@@ -102,10 +117,8 @@ public class ProtocolTarget extends CRUDTarget
 
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
 
-    if( providerDef == null )
-      throw new IllegalArgumentException( "provider not registered to schema: " + providerName );
+    validateProviderName( catalog, schemaName, providerName );
     }
 
   @Override
@@ -141,6 +154,6 @@ public class ProtocolTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
 
-    return new ProtocolBuilder( schemaDef ).format( protocol );
+    return new ProtocolBuilder( schemaDef, getOptions().getProviderName() ).format( protocol );
     }
   }

@@ -225,6 +225,13 @@ public abstract class PlatformBroker<Config>
     return catalog;
     }
 
+  public boolean confirmMetaData()
+    {
+    String path = getFullMetadataPath();
+
+    return pathExists( path );
+    }
+
   public boolean initializeMetaData()
     {
     String path = getFullMetadataPath();
@@ -555,15 +562,10 @@ public abstract class PlatformBroker<Config>
 
     lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
 
-    if( branch.resultName != null )
-      {
-      TableDef tableDef = catalog.resolveTableDef( branch.resultName );
-      addHandlers( lingualFlowFactory, tableDef );
-      }
+    if( branch.tailTableDef != null )
+      addHandlers( lingualFlowFactory, branch.tailTableDef );
     else
-      {
       addHandlers( lingualFlowFactory, catalog.getRootSchemaDef().getName(), catalog.getRootSchemaDef() );
-      }
 
     return lingualFlowFactory;
     }
@@ -573,13 +575,13 @@ public abstract class PlatformBroker<Config>
     addHandlers( lingualFlowFactory, tableDef.getParentSchema().getName(), tableDef );
     }
 
-  private void addHandlers( LingualFlowFactory lingualFlowFactory, String name, Def def )
+  private void addHandlers( LingualFlowFactory lingualFlowFactory, String schemaName, Def def )
     {
-    if( !lingualFlowFactory.containsProtocolHandlers( name ) )
-      lingualFlowFactory.addProtocolHandlers( name, catalog.getProtocolHandlers( def ) );
+    if( !lingualFlowFactory.containsProtocolHandlers( schemaName ) )
+      lingualFlowFactory.addProtocolHandlers( schemaName, catalog.getProtocolHandlers( def ) );
 
-    if( !lingualFlowFactory.containsFormatHandlers( name ) )
-      lingualFlowFactory.addFormatHandlers( name, catalog.getFormatHandlersFor( def ) );
+    if( !lingualFlowFactory.containsFormatHandlers( schemaName ) )
+      lingualFlowFactory.addFormatHandlers( schemaName, catalog.getFormatHandlersFor( def ) );
     }
 
   public SchemaCatalog newCatalogInstance()

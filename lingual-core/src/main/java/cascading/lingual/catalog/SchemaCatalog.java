@@ -174,7 +174,7 @@ public abstract class SchemaCatalog implements Serializable
   private List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( Def def )
     {
     if( def instanceof TableDef )
-      return createProtocolHandlers( def.getParentSchema() );
+      return createProtocolHandlers( (TableDef) def );
 
     return createProtocolHandlers( ( (SchemaDef) def ) );
     }
@@ -187,7 +187,7 @@ public abstract class SchemaCatalog implements Serializable
   private List<FormatHandler<Protocol, Format>> createFormatHandlers( Def def )
     {
     if( def instanceof TableDef )
-      return createFormatHandlers( def.getParentSchema() );
+      return createFormatHandlers( (TableDef) def );
 
     return createFormatHandlers( ( (SchemaDef) def ) );
     }
@@ -459,11 +459,6 @@ public abstract class SchemaCatalog implements Serializable
       }
     }
 
-  public Collection<String> getFormatNames()
-    {
-    return rootSchemaDef.getAllFormatNames();
-    }
-
   public Collection<String> getFormatNames( String schemaName )
     {
     return getSchemaDefChecked( schemaName ).getAllFormatNames();
@@ -471,12 +466,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public List<String> getFormatProperty( String schemeName, String format, String propertyName )
     {
-    return getSchemaDef( schemeName ).getFormatProperty( Format.getFormat( format ), propertyName );
+    return getFormatProperty( schemeName, Format.getFormat( format ), propertyName );
     }
 
-  public Collection<String> getProtocolNames()
+  public List<String> getFormatProperty( String schemeName, Format format, String propertyName )
     {
-    return rootSchemaDef.getProtocolNames();
+    return getSchemaDef( schemeName ).getFormatProperty( format, propertyName );
     }
 
   public Collection<String> getProtocolNames( String schemaName )
@@ -486,7 +481,12 @@ public abstract class SchemaCatalog implements Serializable
 
   public List<String> getProtocolProperty( String schemeName, String protocol, String propertyName )
     {
-    return getSchemaDef( schemeName ).getProtocolProperty( Protocol.getProtocol( protocol ), propertyName );
+    return getProtocolProperty( schemeName, Protocol.getProtocol( protocol ), propertyName );
+    }
+
+  public List<String> getProtocolProperty( String schemeName, Protocol protocol, String propertyName )
+    {
+    return getSchemaDef( schemeName ).getProtocolProperty( protocol, propertyName );
     }
 
   public Collection<String> getProviderNames()
@@ -801,10 +801,23 @@ public abstract class SchemaCatalog implements Serializable
     return new Resource<Protocol, Format, SinkMode>( tableDef.getParentSchema().getName(), tableDef.identifier, protocol, format, mode );
     }
 
+  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( TableDef tableDef )
+    {
+    Protocol protocol = tableDef.getActualProtocol();
+    ProviderDef providerDef = tableDef.getParentSchema().findProviderDefFor( protocol );
+    ProtocolHandler<Protocol, Format> handler = createProtocolHandler( providerDef );
+
+    Map<String, List<String>> properties = tableDef.getParentSchema().findAllProtocolProperties( protocol );
+
+    ( (LingualProtocolHandler) handler ).addProperties( protocol, properties );
+
+    return Arrays.asList( handler );
+    }
+
   protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
     {
     Map<String, ProtocolHandler<Protocol, Format>> handlers = new HashMap<String, ProtocolHandler<Protocol, Format>>();
-    Collection<Protocol> protocols = schemaDef.getAllProtocols();
+    Collection<Protocol> protocols = Arrays.asList( schemaDef.findDefaultProtocol() );
 
     for( Protocol protocol : protocols )
       {
@@ -817,7 +830,7 @@ public abstract class SchemaCatalog implements Serializable
         handlers.put( providerDef.getName(), protocolHandler );
         }
 
-      Map<String, List<String>> protocolProperties = schemaDef.findProtocolProperties( protocol );
+      Map<String, List<String>> protocolProperties = schemaDef.findAllProtocolProperties( protocol );
 
       ( (LingualProtocolHandler) protocolHandler ).addProperties( protocol, protocolProperties );
       }
@@ -825,10 +838,23 @@ public abstract class SchemaCatalog implements Serializable
     return new ArrayList<ProtocolHandler<Protocol, Format>>( handlers.values() );
     }
 
+  protected List<FormatHandler<Protocol, Format>> createFormatHandlers( TableDef tableDef )
+    {
+    Format format = tableDef.getActualFormat();
+    ProviderDef providerDef = tableDef.getParentSchema().findProviderDefFor( format );
+    FormatHandler<Protocol, Format> handler = createFormatHandler( providerDef );
+
+    Map<String, List<String>> properties = tableDef.getParentSchema().findAllFormatProperties( format );
+
+    ( (LingualFormatHandler) handler ).addProperties( format, properties );
+
+    return Arrays.asList( handler );
+    }
+
   protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
     Map<String, FormatHandler<Protocol, Format>> handlers = new HashMap<String, FormatHandler<Protocol, Format>>();
-    Collection<Format> formats = schemaDef.getAllFormats();
+    Collection<Format> formats = Arrays.asList( schemaDef.findDefaultFormat() );
 
     for( Format format : formats )
       {
@@ -841,7 +867,7 @@ public abstract class SchemaCatalog implements Serializable
         handlers.put( providerDef.getName(), formatHandler );
         }
 
-      Map<String, List<String>> formatProperties = schemaDef.findFormatProperties( format );
+      Map<String, List<String>> formatProperties = schemaDef.findAllFormatProperties( format );
 
       ( (LingualFormatHandler) formatHandler ).addProperties( format, formatProperties );
       }
@@ -849,9 +875,9 @@ public abstract class SchemaCatalog implements Serializable
     return new ArrayList<FormatHandler<Protocol, Format>>( handlers.values() );
     }
 
-  protected abstract ProtocolHandler createProtocolHandler( ProviderDef providerDef );
+  protected abstract ProtocolHandler<Protocol, Format> createProtocolHandler( ProviderDef providerDef );
 
-  protected abstract FormatHandler createFormatHandler( ProviderDef providerDef );
+  protected abstract FormatHandler<Protocol, Format> createFormatHandler( ProviderDef providerDef );
 
   public void addUpdateFormat( String schemaName, Format format, List<String> extensions, Map<String, String> properties, String providerName )
     {

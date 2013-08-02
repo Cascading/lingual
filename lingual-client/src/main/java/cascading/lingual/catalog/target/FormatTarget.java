@@ -26,7 +26,7 @@ import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
-import cascading.lingual.catalog.ProviderDef;
+import cascading.lingual.catalog.FormatProperties;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.builder.FormatBuilder;
@@ -84,6 +84,21 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
+    Format format = Format.getFormat( getOptions().getFormatName() );
+
+    if( format == null )
+      throw new IllegalArgumentException( "update action must have a format name value" );
+
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String schemaName = getOptions().getSchemaName();
+    String providerName = getOptions().getProviderName();
+
+    if( providerName == null )
+      providerName = joinOrNull( catalog.getFormatProperty( schemaName, format, FormatProperties.PROVIDER ) );
+
+    if( providerName == null )
+      throw new IllegalArgumentException( "provider is required" );
+
     return performAdd( platformBroker );
     }
 
@@ -102,10 +117,8 @@ public class FormatTarget extends CRUDTarget
 
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    ProviderDef providerDef = catalog.findProviderFor( schemaName, providerName );
 
-    if( providerDef == null )
-      throw new IllegalArgumentException( "provider " + providerName + " not registered to schema: " + schemaName );
+    validateProviderName( catalog, schemaName, providerName );
     }
 
   @Override
@@ -140,6 +153,6 @@ public class FormatTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
 
-    return new FormatBuilder( schemaDef ).format( format );
+    return new FormatBuilder( schemaDef, getOptions().getProviderName() ).format( format );
     }
   }

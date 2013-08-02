@@ -99,7 +99,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     Optiq.writeSQLPlan( platformBroker.getProperties(), createUniqueName(), getVolcanoPlanner() );
 
     Branch branch = getBranch();
-    TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch.resultName );
+    TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch.tailTableDef );
 
     long rowCount = 0;
 
@@ -115,13 +115,12 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     return new Linq4j().singletonEnumerable( rowCount ).enumerator();
     }
 
-  private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, String[] resultName )
+  private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, TableDef tableDef )
     {
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();
     Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
 
-    TableDef tableDef = platformBroker.getCatalog().resolveTableDef( resultName );
     String identifier = tableDef.getIdentifier();
 
     TupleEntryCollector collector;

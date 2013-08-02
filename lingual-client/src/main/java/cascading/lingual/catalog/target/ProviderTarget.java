@@ -166,12 +166,12 @@ public class ProviderTarget extends CRUDTarget
         continue;
 
       String name = providerDefinition.getProviderName();
-      Map<String, String> map = providerDefinition.getProviderPropertyMap();
+      Map<String, String> propertyMap = providerDefinition.getProviderPropertyMap();
 
       names.add( name );
 
       if( doActualInstall )
-        schemaDef.addProviderDef( name, jarFile.getName(), map, md5Hash );
+        schemaDef.addProviderDef( name, jarFile.getName(), propertyMap, md5Hash );
       }
 
     if( names.size() == 0 )

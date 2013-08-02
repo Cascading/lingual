@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog.builder;
 
+import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.catalog.Protocol;
@@ -30,9 +31,12 @@ import cascading.lingual.catalog.SchemaDef;
  */
 public class ProtocolBuilder extends Builder<Protocol>
   {
-  public ProtocolBuilder( SchemaDef schemaDef )
+  private final String providerName;
+
+  public ProtocolBuilder( SchemaDef schemaDef, String providerName )
     {
     super( schemaDef );
+    this.providerName = providerName;
     }
 
   @Override
@@ -40,7 +44,23 @@ public class ProtocolBuilder extends Builder<Protocol>
     {
     Map map = getMap();
 
-    map.put( protocol, schemaDef.findProtocolProperties( protocol ) );
+    try
+      {
+      map.put( protocol, schemaDef.findAllProtocolProperties( protocol ) );
+      }
+    catch( IllegalStateException exception )
+      {
+      Map<String, Map<String, List<String>>> providerProperties = schemaDef.findProviderProtocolProperties( protocol );
+
+      if( providerProperties.keySet().size() == 1 )
+        map.put( protocol, providerProperties.values().iterator().next() );
+      else if( providerProperties.containsKey( providerName ) )
+        map.put( protocol, providerProperties.get( providerName ) );
+      else if( providerName == null )
+        throw new IllegalStateException( exception.getMessage() + ", use --provider to specify" );
+      else
+        throw new IllegalStateException( "provider: " + providerName + ", not found" );
+      }
 
     return map;
     }

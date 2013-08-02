@@ -99,6 +99,10 @@ public class Catalog extends Main<CatalogOptions>
       {
       getOptions().printInvalidOptionMessage( getErrPrintStream(), exception );
       }
+    catch( IllegalStateException exception )
+      {
+      getOptions().printErrorMessage( getErrPrintStream(), exception );
+      }
     catch( Throwable throwable )
       {
       printFailure( getErrPrintStream(), throwable );
@@ -114,6 +118,12 @@ public class Catalog extends Main<CatalogOptions>
 
     if( getOptions().isInit() )
       return init( platformBroker );
+
+    if( !platformBroker.confirmMetaData() )
+      {
+      getPrinter().printFormatted( "path: %s has not been initialized, use --init", platformBroker.getFullMetadataPath() );
+      return false;
+      }
 
     boolean doNotWrite = false;
 

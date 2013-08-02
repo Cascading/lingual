@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog.builder;
 
+import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.catalog.Format;
@@ -30,9 +31,12 @@ import cascading.lingual.catalog.SchemaDef;
  */
 public class FormatBuilder extends Builder<Format>
   {
-  public FormatBuilder( SchemaDef schemaDef )
+  private final String providerName;
+
+  public FormatBuilder( SchemaDef schemaDef, String providerName )
     {
     super( schemaDef );
+    this.providerName = providerName;
     }
 
   @Override
@@ -40,7 +44,23 @@ public class FormatBuilder extends Builder<Format>
     {
     Map map = getMap();
 
-    map.put( format, schemaDef.findFormatProperties( format ) );
+    try
+      {
+      map.put( format, schemaDef.findAllFormatProperties( format ) );
+      }
+    catch( IllegalStateException exception )
+      {
+      Map<String, Map<String, List<String>>> providerProperties = schemaDef.findProviderFormatProperties( format );
+
+      if( providerProperties.keySet().size() == 1 )
+        map.put( format, providerProperties.values().iterator().next() );
+      else if( providerProperties.containsKey( providerName ) )
+        map.put( format, providerProperties.get( providerName ) );
+      else if( providerName == null )
+        throw new IllegalStateException( exception.getMessage() + ", use --provider to specify" );
+      else
+        throw new IllegalStateException( "provider: " + providerName + ", not found" );
+      }
 
     return map;
     }

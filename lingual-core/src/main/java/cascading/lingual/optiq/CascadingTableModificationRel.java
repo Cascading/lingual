@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import java.util.List;
 
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
@@ -77,14 +78,18 @@ public class CascadingTableModificationRel extends TableModificationRelBase impl
   public Branch visitChild( Stack stack )
     {
     Branch branch = ( (CascadingRelNode) getChild() ).visitChild( stack );
+    TableDef tableDef = getTapTable().getTableDef();
 
-    String[] qualifiedName = getTable().getQualifiedName();
+    return new Branch( getPlatformBroker(), branch, tableDef );
+    }
 
-    return new Branch( getPlatformBroker(), branch, qualifiedName[ qualifiedName.length - 1 ], qualifiedName );
+  private TapTable getTapTable()
+    {
+    return getTable().unwrap( TapTable.class );
     }
 
   public PlatformBroker getPlatformBroker()
     {
-    return getTable().unwrap( TapTable.class ).getPlatformBroker();
+    return getTapTable().getPlatformBroker();
     }
   }

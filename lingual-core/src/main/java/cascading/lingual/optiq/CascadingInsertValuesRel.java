@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import java.util.List;
 
+import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
@@ -75,13 +76,18 @@ class CascadingInsertValuesRel extends AbstractRelNode implements CascadingRelNo
   public Branch visitChild( Stack stack )
     {
     PlatformBroker platformBroker = getPlatformBroker();
-    String[] qualifiedName = getTable().getQualifiedName();
+    TableDef tableDef = getTapTable().getTableDef();
 
-    return new Branch( platformBroker, qualifiedName, getTuples() );
+    return new Branch( platformBroker, tableDef, getTuples() );
     }
 
   public PlatformBroker getPlatformBroker()
     {
-    return getTable().unwrap( TapTable.class ).getPlatformBroker();
+    return getTapTable().getPlatformBroker();
+    }
+
+  private TapTable getTapTable()
+    {
+    return getTable().unwrap( TapTable.class );
     }
   }

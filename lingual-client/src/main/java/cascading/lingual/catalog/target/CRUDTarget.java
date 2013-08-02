@@ -25,9 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.common.Printer;
 import cascading.lingual.common.Target;
 import cascading.lingual.platform.PlatformBroker;
+import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,4 +209,17 @@ public abstract class CRUDTarget extends Target
     return true;
     }
 
+  protected void validateProviderName( SchemaCatalog catalog, String schemaName, String providerName )
+    {
+    if( catalog.findProviderFor( schemaName, providerName ) == null )
+      throw new IllegalArgumentException( "provider " + providerName + " not available to schema: " + schemaName );
+    }
+
+  protected String joinOrNull( List<String> list )
+    {
+    if( list.isEmpty() )
+      return null;
+
+    return Joiner.on( ',' ).join( list );
+    }
   }

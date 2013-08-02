@@ -85,6 +85,11 @@ public class Options
     printUsage( printStream );
     }
 
+  public void printErrorMessage( PrintStream printStream, Exception exception )
+    {
+    printStream.println( "error: " + exception.getMessage() );
+    }
+
   protected void validate()
     {
     }

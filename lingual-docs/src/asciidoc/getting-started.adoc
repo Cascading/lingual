@@ -117,7 +117,7 @@ Now execute the query:
 
 The results will be located in `working/unique-titles.csv`.
 
-### Using different file formats:
+### Using different file formats
 
 Lingual supports a <<provider,Data Provider>> mechanism that allows for new *formats* and *protocols* to be added
 on demand.
@@ -170,19 +170,23 @@ columns are values.
 Note we are "updating" the `csv` format as seen by the "working" schema even though the provider was added to the
 default schema.
 
-Compare these two calls:
+Compare these three calls:
 
     > lingual catalog --format csv --show
+    > lingual catalog --format csv --provider memcached --show
     > lingual catalog --schema working --format csv --show
 
-The first shows the default values of `csv`, the second shows the properties as configured in the "working" schema.
+The first fails naming two providers that provide support for the `csv` format.
+The second shows the default values of `csv` for the "memcached" provider.
+The third shows the properties as configured in the "working" schema along with the defaults from the provider.
 
-Schemas are used to customize and/or override default protocols and formats as seen by the tables in the given schema.
+Schemas are used to customize and/or override default protocol and format properties as seen by the tables in the
+given schema.
 
 Next we need to create a table that is backed by our memcached server on the given IP and port:
 
-  > lingual catalog --schema working --table title_counts --stereotype titles -add 127.0.0.1:11211 \
-    --protocol memcached-text --format csv
+    > lingual catalog --schema working --table title_counts --stereotype titles -add localhost:11211 \
+      --protocol memcached-text --format csv
 
 Note that we re-used the stereotype "titles" created in the above example.
 
@@ -195,3 +199,8 @@ Now execute the query, assuming an actual memcached server is running:
 
 If run on Hadoop, a MapReduce job will be spawned, and the "sink" Tap in the Flow will be the memcached Tap. That is
 the results are *not* written to disk, but streamed directly into the memcached server from each reducer task.
+
+To verify values are stored in the memcached server, run:
+
+    > telnet localhost 11211
+    > get Staff

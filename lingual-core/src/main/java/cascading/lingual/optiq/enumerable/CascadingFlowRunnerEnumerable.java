@@ -144,8 +144,6 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     Optiq.writeSQLPlan( properties, flowFactory.getName(), getVolcanoPlanner() );
 
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
     for( Ref head : branch.heads.keySet() )
       {
       TableDef tableDefFor = getTableDefFor( platformBroker, head );
@@ -154,9 +152,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       flowFactory.addSource( head.name, tableDefFor, jarPath );
       }
 
-    if( branch.resultName != null )
+    if( branch.tailTableDef != null )
       {
-      TableDef tableDef = catalog.resolveTableDef( branch.resultName );
+      TableDef tableDef = branch.tailTableDef;
       String[] jarPath = getJarPaths( tableDef );
 
       flowFactory.addSink( tableDef.getName(), tableDef, jarPath );
