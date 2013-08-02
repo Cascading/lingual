@@ -23,7 +23,6 @@ package cascading.lingual.common;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import cascading.util.Version;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -160,11 +159,12 @@ public class Options
 
   public void printVersion( PrintStream printStream )
     {
-    printStream.println( cascadingVersion() );
-    }
+    String versionString = String.format( "Concurrent, Inc - %s:%s, %s:%s ",
+      cascading.lingual.util.Version.LINGUAL,
+      cascading.lingual.util.Version.getFullVersionString(),
+      cascading.util.Version.CASCADING,
+      cascading.util.Version.getRelease() );
 
-  private String cascadingVersion()
-    {
-    return Version.getVersionString();
+    printStream.println( versionString );
     }
   }
