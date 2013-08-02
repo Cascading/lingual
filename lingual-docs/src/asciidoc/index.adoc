@@ -1,22 +1,26 @@
 [id="top"]
 # Lingual - SQL for Cascading (on Apache Hadoop)
 
-Lingual executes ANSI SQL queries as http://cascading.org[Cascading] applications on http://hadoop.apache.org[Apache Hadoop] clusters.
+Lingual executes ANSI SQL queries as http://cascading.org[Cascading] applications on
+http://hadoop.apache.org[Apache Hadoop] clusters.
 
 ## Introduction
 
 Lingual was designed to support the following goals:
 
-Immediate Data Access:: Using the <<shell,Lingual Shell>> or <<jdbc,JDBC Driver>> with existing Desktop and BI tools, unlock data stored on an Apache Hadoop cluster.
-Simplify SQL Migration:: Using the Lingual <<jdbc,JDBC Driver>> or native <<java,Cascading APIs>>, simply migrate existing SQL code to Apache Hadoop.
-Simplify System and Data Integration:: Using the Lingual <<provider,Data Provider>> functionality, data can be moved between any two systems over Apache Hadoop using SQL.
+Immediate Data Access:: Using the <<shell,Lingual Shell>> or <<jdbc,JDBC Driver>> with existing Desktop and BI tools,
+unlock data stored on an Apache Hadoop cluster.
+
+Simplify SQL Migration:: Using the Lingual <<jdbc,JDBC Driver>> or native <<java,Cascading APIs>>, simply migrate
+existing SQL code to Apache Hadoop.
+
+Simplify System and Data Integration:: Using the Lingual <<provider,Data Provider>> functionality, data can be moved
+between any two systems over Apache Hadoop using SQL.
 
 To satisfy these goals, Lingual supports as much of the ANSI SQL spec that makes sense, which is more than any other
-tool today providing "SQL" on Apache Hadoop. It is also fully compliant with the JDBC API.
+tool today providing "SQL" on Apache Hadoop MapReduce. Lingual is also fully compliant with the JDBC API.
 
 And being built on Cascading, it works seamlessly with other Cascading based workloads via the native Cascading API.
-
-<<top>>
 
 ## Overview
 
@@ -85,6 +89,8 @@ A provider can be specified by either referencing the file location, or using a 
 Learn more about how to create a Provider:
 
   * <<provider,Data Providers>>
+
+<<top>>
 
 include::install.adoc[]
 

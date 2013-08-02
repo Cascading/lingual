@@ -62,7 +62,7 @@ elastic-mapreduce \
   --alive
 ----
 
-Alternately you can install the full http://cascading.org/sdk/[Cascading SDK] which includes a number of additional
+Alternately, you can install the full http://cascading.org/sdk/[Cascading SDK] which includes a number of additional
 tools with the following bootstrap action:
 
 [subs="attributes"]
