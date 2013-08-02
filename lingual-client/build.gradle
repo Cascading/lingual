@@ -80,8 +80,7 @@ assembleDist << {
 
   copy {
     into "${distDir}/lib"
-//    from configurations.runtime
-//    archivePath
+    from configurations.runtime
     from jar.finalName
   }
 
