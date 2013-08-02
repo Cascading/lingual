@@ -1,3 +1,4 @@
+[id="top"]
 # Lingual - SQL for Cascading (on Apache Hadoop)
 
 Lingual executes ANSI SQL queries as http://cascading.org[Cascading] applications on http://hadoop.apache.org[Apache Hadoop] clusters.
@@ -14,6 +15,8 @@ To satisfy these goals, Lingual supports as much of the ANSI SQL spec that makes
 tool today providing "SQL" on Apache Hadoop. It is also fully compliant with the JDBC API.
 
 And being built on Cascading, it works seamlessly with other Cascading based workloads via the native Cascading API.
+
+<<top>>
 
 ## Overview
 
@@ -98,6 +101,8 @@ include::jdbc.adoc[]
 include::jdbc-java.adoc[]
 include::jdbc-r.adoc[]
 include::jdbc-squirrel.adoc[]
+
+<<top>>
 
 :leveloffset: 0
 

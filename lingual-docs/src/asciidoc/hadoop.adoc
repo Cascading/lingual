@@ -19,3 +19,5 @@ If errors are encountered executing SQL queries remotely, calling:
     > export HADOOP_USER_NAME=hadoop
 
 Should alleviate any security issues causing failures on the remote EMR Cluster.
+
+<<top>>

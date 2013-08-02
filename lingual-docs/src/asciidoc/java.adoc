@@ -69,3 +69,5 @@ Note that in this example the table definitions expected by the SQL statement ha
 TCSV files. Where TCSV files are standard CSV (comma separated values) files with a header containing the field name
 and "type" of the column, like `string` or `int`. This feature is provided by the `SQLTypedTextDelimited` `Scheme`
 class.
+
+<<top>>

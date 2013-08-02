@@ -43,3 +43,5 @@ To start the shell for running queries on Apache Hadoop:
 ### Configuration
 
 See <<hadoop.html,Configuring Apache Hadoop>> for using with a Apache Hadoop cluster.
+
+<<top>>
