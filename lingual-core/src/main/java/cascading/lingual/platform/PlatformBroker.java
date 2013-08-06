@@ -219,8 +219,11 @@ public abstract class PlatformBroker<Config>
 
   public synchronized SchemaCatalog getCatalog()
     {
-    if( catalog == null )
-      catalog = loadCatalog();
+    // this will only be null on startup so exit the sync block asap.
+    if( catalog != null )
+      return catalog;
+
+    catalog = loadCatalog();
 
     return catalog;
     }
@@ -271,9 +274,9 @@ public abstract class PlatformBroker<Config>
     getCatalogManager().writeCatalog( getCatalog() );
     }
 
-  private synchronized SchemaCatalog loadCatalog()
+  protected SchemaCatalog loadCatalog()
     {
-    catalog = getCatalogManager().readCatalog();
+    SchemaCatalog catalog = getCatalogManager().readCatalog();
 
     if( catalog == null )
       catalog = newCatalogInstance();

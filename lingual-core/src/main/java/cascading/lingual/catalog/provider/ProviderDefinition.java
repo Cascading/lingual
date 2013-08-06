@@ -56,7 +56,7 @@ public class ProviderDefinition
   public static final String PROVIDER_STEREOTYPE = PROVIDER_BASE + "%s.stereotype.";
   public static final String PROVIDER_DESCRIPTION = PROVIDER_BASE + "%s.description";
 
-  private final String name;
+  private final String providerName;
   private Map<String, String> properties;
 
   public static ProviderDefinition[] getProviderDefinitions( Properties set )
@@ -85,9 +85,9 @@ public class ProviderDefinition
     return names.split( "," );
     }
 
-  public ProviderDefinition( String name, Map<String, String> properties )
+  public ProviderDefinition( String providerName, Map<String, String> properties )
     {
-    this.name = name;
+    this.providerName = providerName;
     this.properties = new HashMap<String, String>( properties );
     }
 
@@ -98,7 +98,7 @@ public class ProviderDefinition
 
   public String getProviderName()
     {
-    return name;
+    return providerName;
     }
 
   public Map<String, String> getProviderPropertyMap()
@@ -113,7 +113,7 @@ public class ProviderDefinition
 
   private String property( String property )
     {
-    return String.format( property, name );
+    return String.format( property, providerName );
     }
 
   public List<String> getPlatforms()

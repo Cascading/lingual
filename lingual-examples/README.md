@@ -1,14 +1,16 @@
 Build Instructions
 ==================
 
-    gradle clean jar
-    hadoop jar build/libs/lingual-examples-1.0.0-wip-dev.jar
+    gradle clean fatJar
+    hadoop jar build/libs/lingual-examples-1.0.0-wip-dev.jar cascading.lingual.examples.foodmart.JdbcExample
+    hadoop jar build/libs/lingual-examples-1.0.0-wip-dev.jar cascading.lingual.examples.foodmart.FlowExample
 
-This sample app uses Lingual to open a JDBC connection and run a SQL query:
+This sample app uses Lingual to open a JDBC connection and run a SQL query
+against a local filesystem platform:
 
     SELECT *
-      FROM "EXAMPLE"."SALES_FACT_1997" AS s
-      JOIN "EXAMPLE"."EMPLOYEE" AS e
+      FROM "example"."sales_fact_1997" AS s
+      JOIN "example"."employee" AS e
         ON e."EMPID\" = s."CUST_ID"
     ;
 

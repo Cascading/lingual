@@ -18,20 +18,15 @@
  * limitations under the License.
  */
 
+apply plugin: 'fatjar'
+
 dependencies {
   compile project( ':lingual-local' )
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 }
 
-//jar {
-//  description = "Assembles a Hadoop-ready JAR file"
-//  doFirst {
-//    into( 'lib' ) {
-//      from configurations.compile
-//    }
-//  }
-//
-//  manifest {
-//    attributes( "Main-Class": "cascading.lingual.examples.foodmart.JdbcExample" )
-//  }
-//}
+fatJar {
+  classifier = 'fatjar'
+  exclude 'META-INF/*.DSA'
+  exclude 'META-INF/LICENSE*'
+}

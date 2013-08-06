@@ -29,9 +29,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -124,9 +124,14 @@ public abstract class SchemaCatalog implements Serializable
       if( !providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
         continue;
 
+      String providerName = providerDefinition.getProviderName();
+
+      LOG.debug( "adding default provider: " + providerName );
+
       Map<String, String> properties = providerDefinition.getProperties();
 
-      rootSchemaDef.addProviderDef( providerDefinition.getProviderName(), null, properties, null );
+      // not using URL as jar name since the default providers are built in
+      rootSchemaDef.addProviderDef( providerName, null, properties, null );
       }
     }
 
@@ -137,29 +142,43 @@ public abstract class SchemaCatalog implements Serializable
     addRepo( Repo.MAVEN_CONJARS );
     }
 
-  protected List<ProviderDefinition> getDefaultProviderProperties()
+  protected Collection<ProviderDefinition> getDefaultProviderProperties()
     {
-    List<ProviderDefinition> properties = new ArrayList<ProviderDefinition>();
+    Map<String, ProviderDefinition> results = new LinkedHashMap<String, ProviderDefinition>();
 
     try
       {
-      Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
+      // in theory should only be loading the provider definition from the jar supporting the current platform
+      // here we just grab the first definition for the given provider, in classpath order, compensating for multiple resources
+      // the caller discriminates on the platform
+      Enumeration<URL> resources = this.getClass().getClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
 
       while( resources.hasMoreElements() )
         {
         URL url = resources.nextElement();
 
         LOG.debug( "loading properties from: {}", url );
-
+        InputStream inputStream = url.openStream();
         Properties definitions = new Properties();
 
-        InputStream inputStream = url.openStream();
-
         definitions.load( inputStream );
-
         inputStream.close();
 
-        Collections.addAll( properties, getProviderDefinitions( definitions ) );
+        ProviderDefinition[] providerDefinitions = getProviderDefinitions( definitions );
+
+        for( ProviderDefinition providerDefinition : providerDefinitions )
+          {
+          String providerName = providerDefinition.getProviderName();
+
+          if( results.containsKey( providerName ) )
+            {
+            LOG.debug( "ignoring duplicate provider definition found for: " + providerName + " at: " + url );
+            continue;
+            }
+
+          LOG.debug( "provider definition found for: " + providerName + " at: " + url );
+          results.put( providerName, providerDefinition );
+          }
         }
       }
     catch( IOException exception )
@@ -167,7 +186,7 @@ public abstract class SchemaCatalog implements Serializable
       throw new RuntimeException( "unable to load default provider properties", exception );
       }
 
-    return properties;
+    return results.values();
     }
 
   public ProtocolHandlers<Protocol, Format> getProtocolHandlers( Def def )
@@ -986,4 +1005,5 @@ public abstract class SchemaCatalog implements Serializable
     result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
     return result;
     }
+
   }
