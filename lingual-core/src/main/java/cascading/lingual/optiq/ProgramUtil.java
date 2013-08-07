@@ -31,13 +31,7 @@ import java.util.Set;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.reltype.RelRecordType;
-import org.eigenbase.rex.RexBuilder;
-import org.eigenbase.rex.RexCall;
-import org.eigenbase.rex.RexLiteral;
-import org.eigenbase.rex.RexLocalRef;
-import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexProgram;
-import org.eigenbase.rex.RexProgramBuilder;
+import org.eigenbase.rex.*;
 
 /**
  *
@@ -154,8 +148,10 @@ class ProgramUtil
 
   public static RelDataType removeIdentity( RelDataType incomingRowType, RexProgram program )
     {
-    RelDataType inputProjects = getInputProjectsRowType( program, incomingRowType, Collections.<Integer>emptyList() );
-    RelDataType outputProjects = getOutputProjectsRowType( program );
+    RelDataType inputProjects = getInputProjectsRowType(program,
+        incomingRowType,
+        Collections.<Integer>emptyList());
+    RelDataType outputProjects = getOutputProjectsRowType(program);
 
     List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
 
@@ -279,7 +275,7 @@ class ProgramUtil
     return values;
     }
 
-  public static RexProgram createNarrowProgram( RexProgram program, RexBuilder rexBuilder )
+  public static RexProgram createNarrowProgram0( RexProgram program, RexBuilder rexBuilder )
     {
     RelDataType inputRowType = program.getInputRowType();
     RelDataType outputRowType = program.getOutputRowType();
@@ -302,6 +298,39 @@ class ProgramUtil
 
       if( rexNode instanceof RexCall )
         builder.addProject( rexNode, outputRowType.getFieldList().get( i ).getName() );
+      }
+
+    return builder.getProgram();
+    }
+
+  public static RexProgram createNarrowProgram( RexProgram program, RexBuilder rexBuilder )
+    {
+    RelDataType inputRowType = program.getInputRowType();
+    RelDataType outputRowType = program.getOutputRowType();
+
+    RexProgramBuilder builder = new RexProgramBuilder( inputRowType, rexBuilder );
+
+    final List<RexNode> exprList = program.getExprList();
+    final RexShuttle shuttle = new RexShuttle()
+      {
+      @Override
+      public RexNode visitLocalRef( RexLocalRef localRef )
+        {
+        return exprList.get( localRef.getIndex() ).accept( this );
+        }
+      };
+
+    for( int i = 0; i < program.getProjectList().size(); i++ )
+      {
+      RexLocalRef rexLocalRef = program.getProjectList().get( i );
+
+      RexNode rexNode = program.getExprList().get( rexLocalRef.getIndex() );
+
+      if( rexNode instanceof RexCall )
+        {
+        RexNode rexNode2 = rexNode.accept(shuttle);
+        builder.addProject( rexNode2, outputRowType.getFieldList().get( i ).getName() );
+        }
       }
 
     return builder.getProgram();
