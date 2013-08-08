@@ -33,6 +33,7 @@ import cascading.lingual.catalog.target.SchemaTarget;
 import cascading.lingual.catalog.target.StereotypeTarget;
 import cascading.lingual.catalog.target.TableTarget;
 import cascading.lingual.common.Main;
+import cascading.lingual.common.Target;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import com.google.common.base.Throwables;
@@ -129,24 +130,32 @@ public class Catalog extends Main<CatalogOptions>
 
     try
       {
-      if( getOptions().isDDL() )
-        return handleDDL( platformBroker );
-      if( getOptions().isListSchemas() || getOptions().isSchemaActions() )
-        return handleSchema( platformBroker );
-      else if( getOptions().isListTables() || getOptions().isTableActions() )
-        return handleTable( platformBroker );
-      else if( getOptions().isListStereotypes() || getOptions().isStereotypeActions() )
-        return handleStereotype( platformBroker );
-      else if( getOptions().isListFormats() || getOptions().isFormatActions() )
-        return handleFormat( platformBroker );
-      else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
-        return handleProtocol( platformBroker );
-      else if( getOptions().isListProviders() || getOptions().isProviderActions() )
-        return handleProvider( platformBroker );
-      else if( getOptions().isListRepos() || getOptions().isRepoActions() )
-        return handleMavenRepo( platformBroker );
+      Target target = null;
 
-      getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update, --validate, --show" );
+      if( getOptions().isDDL() )
+        target = new DDLTarget( getPrinter(), getOptions() );
+      if( getOptions().isListSchemas() || getOptions().isSchemaActions() )
+        target = new SchemaTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListTables() || getOptions().isTableActions() )
+        target = new TableTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListStereotypes() || getOptions().isStereotypeActions() )
+        target = new StereotypeTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListFormats() || getOptions().isFormatActions() )
+        target = new FormatTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListProtocols() || getOptions().isProtocolActions() )
+        target = new ProtocolTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListProviders() || getOptions().isProviderActions() )
+        target = new ProviderTarget( getPrinter(), getOptions() );
+      else if( getOptions().isListRepos() || getOptions().isRepoActions() )
+        target = new RepoTarget( getPrinter(), getOptions() );
+
+      if( target == null )
+        return getOptions().printInvalidOptionMessage( getErrPrintStream(), "no command given: missing --add, --rename, --remove, --update, --validate, --show" );
+
+      if( !( target instanceof ProtocolTarget || target instanceof FormatTarget ) && getOptions().hasProperties() )
+        return getOptions().printInvalidOptionMessage( getErrPrintStream(), "--properties may only be added to formats or protocols via --add or --update" );
+
+      return target.handle( platformBroker );
       }
     catch( Throwable throwable )
       {
@@ -161,48 +170,6 @@ public class Catalog extends Main<CatalogOptions>
       if( !doNotWrite && platformBroker.catalogLoaded() )
         platformBroker.writeCatalog();
       }
-
-    return false;
-    }
-
-  private boolean handleDDL( PlatformBroker platformBroker )
-    {
-    return new DDLTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  private boolean handleSchema( PlatformBroker platformBroker )
-    {
-    return new SchemaTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  private boolean handleTable( PlatformBroker platformBroker )
-    {
-    return new TableTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  private boolean handleStereotype( PlatformBroker platformBroker )
-    {
-    return new StereotypeTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  private boolean handleFormat( PlatformBroker platformBroker )
-    {
-    return new FormatTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  protected boolean handleProtocol( PlatformBroker platformBroker )
-    {
-    return new ProtocolTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  protected boolean handleProvider( PlatformBroker platformBroker )
-    {
-    return new ProviderTarget( getPrinter(), getOptions() ).handle( platformBroker );
-    }
-
-  protected boolean handleMavenRepo( PlatformBroker platformBroker )
-    {
-    return new RepoTarget( getPrinter(), getOptions() ).handle( platformBroker );
     }
 
   private boolean init( PlatformBroker platformBroker )

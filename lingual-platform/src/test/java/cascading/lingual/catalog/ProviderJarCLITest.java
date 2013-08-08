@@ -128,7 +128,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     // intentionally fail
-    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "build/resources/test/jar/not-found-provider.jar" );
+    catalog( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "build/resources/test/jar/not-found-provider.jar" );
 
     // confirm that validate doesn't add any providers
     int finalSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
@@ -150,7 +150,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     assertFalse( SPEC + " provider found in catalog: " + getSchemaCatalog().getProviderNames(), getSchemaCatalog().getProviderNames().contains( SPEC ) );
 
     // fail a bogus spec
-    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "foo:bar:1.0" );
+    catalog( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "foo:bar:1.0" );
 
     // confirm that validate doesn't add any providers
     int finalSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
@@ -174,7 +174,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     // A provider defined entirely on the CLI always passes validation.
     // But this call to --properties without an arg should still get a CLI error.
-    catalogWithOptionalTest( false, "--schema", EXAMPLE_SCHEMA,
+    catalog( false, "--schema", EXAMPLE_SCHEMA,
       "--format", "psv", "--validate", "--extensions", ".tpsv", "--provider", "text",
       "--properties"
     );

@@ -72,21 +72,27 @@ public class Options
     return optionSet != null;
     }
 
-  public void printInvalidOptionMessage( PrintStream printStream, String message )
+  public boolean printInvalidOptionMessage( PrintStream printStream, String message )
     {
     printStream.println( "invalid option: " + message );
     printUsage( printStream );
+
+    return false;
     }
 
-  public void printInvalidOptionMessage( PrintStream printStream, Exception exception )
+  public boolean printInvalidOptionMessage( PrintStream printStream, Exception exception )
     {
     printStream.println( "invalid option: " + exception.getMessage() );
     printUsage( printStream );
+
+    return false;
     }
 
-  public void printErrorMessage( PrintStream printStream, Exception exception )
+  public boolean printErrorMessage( PrintStream printStream, Exception exception )
     {
     printStream.println( "error: " + exception.getMessage() );
+
+    return false;
     }
 
   protected void validate()

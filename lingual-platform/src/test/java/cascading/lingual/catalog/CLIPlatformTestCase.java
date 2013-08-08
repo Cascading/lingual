@@ -174,10 +174,10 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
 
   protected void catalog( String... args ) throws IOException
     {
-    catalogWithOptionalTest( true, args );
+    catalog( true, args );
     }
 
-  protected void catalogWithOptionalTest( boolean expectedResult, String... args ) throws IOException
+  protected void catalog( boolean expectedResult, String... args ) throws IOException
     {
     args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
     boolean result = createCatalog().execute( args );

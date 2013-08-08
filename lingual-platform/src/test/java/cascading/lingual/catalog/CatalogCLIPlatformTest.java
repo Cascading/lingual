@@ -79,6 +79,9 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA );
     assertTrue( AD_HOC_SCHEMA + " does not contain table " + TEST_TABLE_NAME + " in " + tableNames.toString(), tableNames.contains( TEST_TABLE_NAME ) );
 
+    catalog( false, "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME,
+      "--properties", "foo=bar" );
+
     catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text", "--properties", "someProperty=someValue" );
 
     assertEquals( Arrays.asList( "someValue" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, TABLE_FORMAT_NAME, "someProperty" ) );
@@ -129,7 +132,7 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
 
     // add the schema twice under different cases should get an error and produce only one with original case
     catalog( "--schema", AD_HOC_SCHEMA_MC, "--add" );
-    catalogWithOptionalTest( false, "--schema", AD_HOC_SCHEMA_UC, "--add" );
+    catalog( false, "--schema", AD_HOC_SCHEMA_UC, "--add" );
     schemaNames = schemaCatalog.getSchemaNames();
     assertEquals( "Case change should still have one schemas: " + schemaNames.toString(), 1, schemaNames.size() );
     assertEquals( "Case was not preserved for schema", AD_HOC_SCHEMA_MC, schemaNames.iterator().next() );
@@ -139,7 +142,7 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     Collection<String> tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA_LC );
     assertEquals( "Schema had tables at startup: " + tableNames.toString(), 0, tableNames.size() );
     catalog( "--schema", AD_HOC_SCHEMA_MC, "--table", TEST_TABLE_NAME_MC, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME );
-    catalogWithOptionalTest( false, "--schema", AD_HOC_SCHEMA_UC, "--table", TEST_TABLE_NAME_LC, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME );
+    catalog( false, "--schema", AD_HOC_SCHEMA_UC, "--table", TEST_TABLE_NAME_LC, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME );
     tableNames = schemaCatalog.getTableNames( AD_HOC_SCHEMA_LC );
     assertEquals( "Case change should still have one table: " + tableNames.toString(), 1, tableNames.size() );
     assertEquals( "Case was not preserved for table", TEST_TABLE_NAME_MC, tableNames.iterator().next() );
@@ -166,9 +169,16 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
       "--types", Joiner.on( "," ).join( EMPS_COLUMN_TYPES )
     );
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--add" );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", TEST_TABLE_NAME + RENAME_FROM_SUFFIX, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
-    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--add", "--schemes", "jdbc:,jdbcs:", "--provider", "text" );
+
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", TEST_TABLE_NAME + RENAME_FROM_SUFFIX,
+      "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX );
+
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX,
+      "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text" );
+
+    catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX,
+      "--add", "--schemes", "jdbc:,jdbcs:", "--provider", "text" );
+
     Collection<String> schemaNames = schemaCatalog.getSchemaNames();
     assertTrue( "initial schema missing from: " + schemaNames.toString(), schemaNames.contains( "adhoc_fr" ) );
     Collection<String> tableNames = schemaCatalog.getTableNames( "adhoc_fr" );

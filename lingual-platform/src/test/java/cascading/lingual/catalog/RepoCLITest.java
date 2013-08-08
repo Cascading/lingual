@@ -63,7 +63,7 @@ public class RepoCLITest extends CLIPlatformTestCase
     catalog( "--repo", "conjars", "--validate", "--add", "http://conjars.org/repo" );
 
     // this is not a valid repo and should fail.
-    catalogWithOptionalTest( false, "--repo", "conjars", "--validate", "--add", "http://conjars.org/not_a_valid_repo/" );
+    catalog( false, "--repo", "conjars", "--validate", "--add", "http://conjars.org/not_a_valid_repo/" );
 
     // confirm that validate doesn't add any any repos
     int finalSize = getSchemaCatalog().getMavenRepoNames().size();
