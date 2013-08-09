@@ -22,6 +22,7 @@ package cascading.lingual.common;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.Map;
 
 import com.google.common.base.Joiner;
@@ -154,7 +155,12 @@ public class Options
     if( !optionSet.has( config ) && System.getenv( "LINGUAL_CONFIG" ) != null )
       return Splitter.on( "," ).withKeyValueSeparator( "=" ).split( System.getenv( "LINGUAL_CONFIG" ) );
 
-    return optionSet.valueOf( config );
+    Map<String, String> config = optionSet.valueOf( this.config );
+
+    if( config == null )
+      return Collections.emptyMap();
+
+    return config;
     }
 
   protected String getConfigString()

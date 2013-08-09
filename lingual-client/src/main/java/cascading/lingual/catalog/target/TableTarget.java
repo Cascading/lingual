@@ -28,6 +28,7 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.catalog.builder.TableBuilder;
 import cascading.lingual.common.Printer;
@@ -50,7 +51,11 @@ public class TableTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.renameTableDef( getOptions().getSchemaName(), getOptions().getTableName(), getOptions().getRenameName() );
+    String schemaName = getOptions().getSchemaName();
+    String tableName = getOptions().getTableName();
+    String renameName = getOptions().getRenameName();
+
+    return catalog.renameTableDef( schemaName, tableName, renameName );
     }
 
   @Override
@@ -58,13 +63,17 @@ public class TableTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.removeTableDef( getOptions().getSchemaName(), getOptions().getTableName() );
+    String schemaName = getOptions().getSchemaName();
+    String tableName = getOptions().getTableName();
+
+    return catalog.removeTableDef( schemaName, tableName );
     }
 
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
+
     return catalog.getSchemaDef( getOptions().getSchemaName() ).getTable( getOptions().getTableName() );
     }
 
@@ -75,7 +84,7 @@ public class TableTarget extends CRUDTarget
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
 
-    TableDef tableDef = catalog.getSchemaDef( schemaName ).getTable( tableName );
+    TableDef tableDef = catalog.getSchemaDefChecked( schemaName ).getTableChecked( tableName );
 
     String addURI = getOptions().getAddOrUpdateURI();
 
@@ -103,10 +112,7 @@ public class TableTarget extends CRUDTarget
   @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
-    String addURI = getOptions().getAddOrUpdateURI();
-
-    if( addURI == null )
-      throw new IllegalArgumentException( "add action must have a uri value" );
+    notGiven( getOptions().getAddOrUpdateURI(), "add action must have a uri value" );
     }
 
   @Override
@@ -142,7 +148,10 @@ public class TableTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
-    TableDef tableDef = catalog.getSchemaDef( schemaName ).getTable( tableName );
+
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
+
+    TableDef tableDef = schemaDef.getTableChecked( tableName );
 
     return new TableBuilder().format( tableDef );
     }

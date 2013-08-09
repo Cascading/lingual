@@ -54,7 +54,10 @@ public class SchemaTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.renameSchemaDef( getOptions().getSchemaName(), getOptions().getRenameName() );
+    String schemaName = getOptions().getSchemaName();
+    String renameName = getOptions().getRenameName();
+
+    return catalog.renameSchemaDef( schemaName, renameName );
     }
 
   @Override
@@ -62,13 +65,16 @@ public class SchemaTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.removeSchemaDef( getOptions().getSchemaName() );
+    String schemaName = getOptions().getSchemaName();
+
+    return catalog.removeSchemaDef( schemaName );
     }
 
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
+
     return catalog.getSchemaDef( getOptions().getSchemaName() );
     }
 

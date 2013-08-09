@@ -22,6 +22,7 @@ package cascading.lingual.catalog;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 
 import cascading.lingual.catalog.target.DDLTarget;
@@ -36,6 +37,7 @@ import cascading.lingual.common.Main;
 import cascading.lingual.common.Target;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class Catalog extends Main<CatalogOptions>
   {
   private static final Logger LOG = LoggerFactory.getLogger( Catalog.class );
+  private Properties configProperties;
 
   public static void main( String[] args ) throws IOException
     {
@@ -112,10 +115,23 @@ public class Catalog extends Main<CatalogOptions>
     return false;
     }
 
+  private Properties getConfigProperties()
+    {
+    if( configProperties != null )
+      return configProperties;
+
+    configProperties = new Properties( getProperties() );
+
+    for( Map.Entry<String, String> entry : getOptions().getConfig().entrySet() )
+      configProperties.setProperty( entry.getKey(), Strings.emptyToNull( entry.getValue() ) );
+
+    return configProperties;
+    }
+
   @Override
   protected boolean handle() throws IOException
     {
-    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), properties );
+    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), getConfigProperties() );
 
     if( getOptions().isInit() )
       return init( platformBroker );

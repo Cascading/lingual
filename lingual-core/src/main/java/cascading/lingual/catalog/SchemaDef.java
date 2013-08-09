@@ -469,14 +469,24 @@ public class SchemaDef extends Def
     return true;
     }
 
-  public SchemaDef getSchema( String name )
+  public SchemaDef getSchema( String schemaName )
     {
-    return childSchemas.get( name );
+    return childSchemas.get( schemaName );
     }
 
-  public TableDef getTable( String name )
+  public TableDef getTable( String tableName )
     {
-    return childTables.get( name );
+    return childTables.get( tableName );
+    }
+
+  public TableDef getTableChecked( String tableName )
+    {
+    TableDef tableDef = getTable( tableName );
+
+    if( tableDef == null )
+      throw new IllegalArgumentException( "table does not exist: " + tableName + ", in schema: " + getName() );
+
+    return tableDef;
     }
 
   public boolean removeTable( String schemaName, String tableName )
@@ -545,6 +555,16 @@ public class SchemaDef extends Def
       }
 
     return null;
+    }
+
+  public Stereotype<Protocol, Format> getStereotypeChecked( String stereotypeName )
+    {
+    Stereotype<Protocol, Format> stereotype = getStereotype( stereotypeName );
+
+    if( stereotype == null )
+      throw new IllegalArgumentException( "stereotype does not exist: " + stereotype + ", in schema: " + getName() );
+
+    return stereotype;
     }
 
   public Stereotype<Protocol, Format> getStereotype( String stereotypeName )

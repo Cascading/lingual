@@ -55,7 +55,11 @@ public class StereotypeTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.renameStereotype( getOptions().getSchemaName(), getOptions().getStereotypeName(), getOptions().getRenameName() );
+    String schemaName = getOptions().getSchemaName();
+    String stereotypeName = getOptions().getStereotypeName();
+    String renameName = getOptions().getRenameName();
+
+    return catalog.renameStereotype( schemaName, stereotypeName, renameName );
     }
 
   @Override
@@ -63,7 +67,10 @@ public class StereotypeTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.removeStereotype( getOptions().getSchemaName(), getOptions().getStereotypeName() );
+    String schemaName = getOptions().getSchemaName();
+    String stereotypeName = getOptions().getStereotypeName();
+
+    return catalog.removeStereotype( schemaName, stereotypeName );
     }
 
   @Override
@@ -122,10 +129,9 @@ public class StereotypeTarget extends CRUDTarget
   protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-
     String schemaName = getOptions().getSchemaName();
-
-    Stereotype stereotype = catalog.getSchemaDef( schemaName ).getStereotype( getOptions().getStereotypeName() );
+    String stereotypeName = getOptions().getStereotypeName();
+    Stereotype stereotype = catalog.getSchemaDefChecked( schemaName ).getStereotypeChecked( stereotypeName );
 
     return new StereotypeBuilder().format( stereotype );
     }

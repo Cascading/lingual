@@ -143,7 +143,7 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handleRemove( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: remove", name );
+    LOG.debug( "{}: remove", getName() );
 
     if( getName() == null )
       throw new IllegalArgumentException( "remove action must have a remove target" );
@@ -167,7 +167,7 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handlePrint( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: print", name );
+    LOG.debug( "{}: print", getName() );
 
     getPrinter().printLines( getName(), '-', performGetNames( platformBroker ) );
 
@@ -178,7 +178,7 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handleValidateDependencies( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: validate", name );
+    LOG.debug( "{}: validate", getName() );
 
     boolean result = performValidateDependencies( platformBroker );
 
@@ -189,7 +189,10 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handleShow( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: show", name );
+    LOG.debug( "{}: show", getName() );
+
+    if( getName() == null )
+      throw new IllegalArgumentException( "show action must have a name" );
 
     Map output = performShow( platformBroker );
 
@@ -221,5 +224,11 @@ public abstract class CRUDTarget extends Target
       return null;
 
     return Joiner.on( ',' ).join( list );
+    }
+
+  protected void notGiven( Object argument, String message )
+    {
+    if( argument == null )
+      throw new IllegalArgumentException( message );
     }
   }

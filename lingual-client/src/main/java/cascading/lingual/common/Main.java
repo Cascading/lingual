@@ -74,6 +74,11 @@ public abstract class Main<O extends Options>
     return options;
     }
 
+  public Properties getProperties()
+    {
+    return properties;
+    }
+
   public Printer getPrinter()
     {
     return new Printer( getOutPrintStream() );
