@@ -46,7 +46,7 @@ fi
 PLATFORM=${LINGUAL_PLATFORM:-local}
 OPTIONS=
 
-ARGS="$@"
+ARGS=("$@")
 
 while [ -n "$1" ]
  do
@@ -81,4 +81,4 @@ case $PLATFORM in
        ;;
 esac
 
-$JAVA_EXEC -Xmx512m $OPTIONS -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN $ARGS
+$JAVA_EXEC -Xmx512m $OPTIONS -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"

@@ -40,8 +40,8 @@ public class ConverterTest extends TestCase
 
     result = newHashMap();
     result.put( "foo", "bar" );
-
-    assertTrue( difference( result, converter.convert( "foo=bar" ) ).areEqual() );
+    result.put( "man", "chu" );
+    assertTrue( difference( result, converter.convert( "foo=bar,man=chu" ) ).areEqual() );
 
     result = newHashMap();
     result.put( "delim", "" );
@@ -60,5 +60,10 @@ public class ConverterTest extends TestCase
     result.put( "delim", "" );
     result.put( "foo", "bar" );
     assertTrue( difference( result, converter.convert( "delim=,foo=bar" ) ).areEqual() );
+
+    result = newHashMap();
+    result.put( "foo", "split string" );
+    result.put( "bar", "42" );
+    assertTrue( difference( result, converter.convert( "foo=split string,bar=42" ) ).areEqual() );
     }
   }
