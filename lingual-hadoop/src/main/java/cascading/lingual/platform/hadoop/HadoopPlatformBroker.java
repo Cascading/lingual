@@ -66,7 +66,8 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   public static final String HADOOP_OVERRIDE_RESOURCE = "hadoop-override.properties";
   public static final String HADOOP_APP_JAR_FLAG_RESOURCE = "hadoop.job.properties";
 
-  private JobConf jobConf;
+  private JobConf systemJobConf; // for use by methods accessing the platform
+  private JobConf plannerJobConf; // for use by configuring the resulting Flow with job properties
 
   public HadoopPlatformBroker()
     {
@@ -104,38 +105,84 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     }
 
   @Override
-  public JobConf getConfig()
+  public JobConf getDefaultConfig()
     {
-    if( jobConf != null )
+    JobConf jobConf = new JobConf();
+    String fullConfigPath = getFullConfigFile();
+
+    try
+      {
+      if( !pathExists( fullConfigPath ) )
+        return jobConf;
+
+      LOG.info( "reading default configuration from: {}", fullConfigPath );
+
+      InputStream inputStream = getInputStream( fullConfigPath );
+
+      Properties properties = loadPropertiesFrom( new Properties(), inputStream );
+
+      jobConf = HadoopUtil.createJobConf( properties, jobConf );
+
       return jobConf;
+      }
+    finally
+      {
+      if( LOG.isDebugEnabled() )
+        LOG.debug( "default job config properties: {}", HadoopUtil.createProperties( jobConf ) );
+      }
+    }
+
+  @Override
+  public synchronized JobConf getSystemConfig()
+    {
+    if( systemJobConf != null )
+      return systemJobConf;
 
     // may consider providing aliases for these properties on Driver
     // mapred.job.tracker
     // fs.default.name
-    Properties properties = new Properties( getProperties() );
+    Properties configProperties = new Properties( getProperties() );
 
-    TupleSerializationProps.addSerialization( properties, BigDecimalSerialization.class.getName() );
+    // job configuration values
+    systemJobConf = HadoopUtil.createJobConf( configProperties, new JobConf() );
 
-    jobConf = HadoopUtil.createJobConf( properties, new JobConf() );
+    setUserName( systemJobConf );
+
+    LOG.info( "using user: {}", systemJobConf.getUser() == null ? "" : systemJobConf.getUser() );
+
+    if( LOG.isDebugEnabled() )
+      LOG.debug( "using system config properties: {}", HadoopUtil.createProperties( systemJobConf ) );
+
+    return systemJobConf;
+    }
+
+  @Override
+  public synchronized JobConf getPlannerConfig()
+    {
+    if( plannerJobConf != null )
+      return plannerJobConf;
+
+    // may consider providing aliases for these properties on Driver
+    // mapred.job.tracker
+    // fs.default.name
+    Properties configProperties = new Properties( getProperties() );
+
+    // job configuration values
+
+    TupleSerializationProps.addSerialization( configProperties, BigDecimalSerialization.class.getName() );
+
+    plannerJobConf = HadoopUtil.createJobConf( configProperties, getDefaultConfig() );
+
+    setUserName( plannerJobConf );
+
+    LOG.info( "using user: {}", plannerJobConf.getUser() == null ? "" : plannerJobConf.getUser() );
 
     String appJar = findAppJar();
 
-    if( jobConf.getJar() == null && appJar != null )
-      jobConf.setJar( appJar );
+    if( plannerJobConf.getJar() == null && appJar != null )
+      plannerJobConf.setJar( appJar );
 
-    String userName = findUserName();
-
-    if( jobConf.getUser() == null && userName != null )
-      {
-      jobConf.setUser( userName );
-
-      // a hack for hadoop to see the user
-      // jobconf user is ignored when formulating the working user directory
-      System.setProperty( HADOOP_USER_ENV, userName );
-      }
-
-    LOG.info( "using app jar: {}", jobConf.getJar() );
-    LOG.info( "using user: {}", jobConf.getUser() == null ? "" : jobConf.getUser() );
+    LOG.info( "using app jar: {}", plannerJobConf.getJar() );
 
     URL url = getResource( HADOOP_OVERRIDE_RESOURCE );
 
@@ -146,35 +193,32 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       Properties overrideProperties = loadPropertiesFrom( url );
 
       for( String propertyName : overrideProperties.stringPropertyNames() )
-        jobConf.set( propertyName, overrideProperties.getProperty( propertyName ) );
+        plannerJobConf.set( propertyName, overrideProperties.getProperty( propertyName ) );
       }
 
     if( LOG.isDebugEnabled() )
-      LOG.debug( "job conf properties: {}", HadoopUtil.createProperties( jobConf ) );
+      LOG.debug( "using job config properties: {}", HadoopUtil.createProperties( plannerJobConf ) );
 
-    return jobConf;
+    return plannerJobConf;
+    }
+
+  private void setUserName( JobConf jobConf )
+    {
+    String userName = findUserName();
+
+    if( jobConf.getUser() == null && userName != null )
+      {
+      jobConf.setUser( userName );
+
+      // a hack for hadoop to see the user
+      // jobconf user is ignored when formulating the working user directory
+      System.setProperty( HADOOP_USER_ENV, userName );
+      }
     }
 
   private URL getResource( String resourceName )
     {
     return Thread.currentThread().getContextClassLoader().getResource( resourceName );
-    }
-
-
-  private Properties loadPropertiesFrom( URL url )
-    {
-    Properties properties = new Properties();
-
-    try
-      {
-      properties.load( url.openStream() );
-      }
-    catch( IOException exception )
-      {
-      LOG.warn( "unable to open resource file" );
-      }
-
-    return properties;
     }
 
   private String findAppJar()
@@ -259,7 +303,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public FlowConnector getFlowConnector()
     {
-    return new HadoopFlowConnector( HadoopUtil.createProperties( getConfig() ) );
+    return new HadoopFlowConnector( HadoopUtil.createProperties( getPlannerConfig() ) );
     }
 
   @Override
@@ -271,13 +315,13 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   protected URLStreamHandlerFactory getURLStreamHandlerFactory()
     {
-    return new FsUrlStreamHandlerFactory( getConfig() );
+    return new FsUrlStreamHandlerFactory( getSystemConfig() );
     }
 
   @Override
   public FlowProcess<JobConf> getFlowProcess()
     {
-    return new HadoopFlowProcess( getConfig() );
+    return new HadoopFlowProcess( getPlannerConfig() );
     }
 
   @Override
@@ -295,7 +339,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public boolean createPath( String path )
     {
-    FileSystem fileSystem = getFileSystem( getConfig(), path );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), path );
 
     try
       {
@@ -310,7 +354,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public boolean deletePath( String path )
     {
-    FileSystem fileSystem = getFileSystem( getConfig(), path );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), path );
 
     try
       {
@@ -325,7 +369,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public String getTempPath()
     {
-    return Hfs.getTempPath( getConfig() ).toString();
+    return Hfs.getTempPath( getSystemConfig() ).toString();
     }
 
   @Override
@@ -335,7 +379,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       return null;
 
     // allows us to get the actual case for the path
-    FileSystem fileSystem = getFileSystem( getConfig(), identifier );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), identifier );
     Path path = fileSystem.makeQualified( new Path( identifier ) );
 
     return findActualPath( path.getParent().toString(), path.toString() );
@@ -344,7 +388,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   @Override
   public boolean pathExists( String path )
     {
-    FileSystem fileSystem = getFileSystem( getConfig(), path );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), path );
 
     try
       {
@@ -362,7 +406,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( path == null || path.isEmpty() )
       return null;
 
-    FileSystem fileSystem = getFileSystem( getConfig(), path );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), path );
 
     try
       {
@@ -383,7 +427,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( stringPath == null || stringPath.isEmpty() )
       return null;
 
-    FileSystem fileSystem = getFileSystem( getConfig(), stringPath );
+    FileSystem fileSystem = getFileSystem( getSystemConfig(), stringPath );
 
     try
       {

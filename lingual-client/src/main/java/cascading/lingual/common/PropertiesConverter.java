@@ -49,6 +49,6 @@ public class PropertiesConverter implements ValueConverter<Map<String, String>>
   @Override
   public String valuePattern()
     {
-    return "name=value,name=value1|value2";
+    return "name=value,name=value2";
     }
   }

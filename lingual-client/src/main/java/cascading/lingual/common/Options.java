@@ -22,7 +22,10 @@ package cascading.lingual.common;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Map;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -39,21 +42,25 @@ public class Options
   protected OptionParser parser = new OptionParser();
   protected OptionSet optionSet;
 
-  protected OptionSpec<Void> version;
-  protected OptionSpec<Void> help;
-  protected OptionSpec<Void> debug;
-  protected OptionSpec<String> verbose;
-  protected OptionSpec<String> platform;
+  protected final OptionSpec<Void> version;
+  protected final OptionSpec<Void> help;
+  protected final OptionSpec<Void> debug;
+  protected final OptionSpec<String> verbose;
+  protected final OptionSpec<String> platform;
+  private final OptionSpec<Map<String, String>> config;
 
   public Options()
     {
     help = parser.accepts( "help" ).forHelp();
-    debug = parser.accepts( "debug" ); // does nothing but hold the space
+    debug = parser.accepts( "debug" ); // does nothing but hold the space, caught by the shell
     verbose = parser.accepts( "verbose" ).withOptionalArg().defaultsTo( "info" );
     version = parser.accepts( "version" );
 
     platform = parser.accepts( "platform", "platform planner to use, optionally set LINGUAL_PLATFORM env variable" )
       .withRequiredArg().defaultsTo( "local" );
+
+    config = parser.accepts( "config", "key=value pairs" )
+      .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
     }
 
   public boolean parse( PrintStream printStream, String... args ) throws IOException
@@ -135,6 +142,24 @@ public class Options
       return System.getenv( "LINGUAL_PLATFORM" );
 
     return optionSet.valueOf( platform );
+    }
+
+  public boolean hasConfig()
+    {
+    return optionSet.has( config ) || System.getenv( "LINGUAL_CONFIG" ) != null;
+    }
+
+  public Map<String, String> getConfig()
+    {
+    if( !optionSet.has( config ) && System.getenv( "LINGUAL_CONFIG" ) != null )
+      return Splitter.on( "," ).withKeyValueSeparator( "=" ).split( System.getenv( "LINGUAL_CONFIG" ) );
+
+    return optionSet.valueOf( config );
+    }
+
+  protected String getConfigString()
+    {
+    return Joiner.on( ";" ).withKeyValueSeparator( "=" ).join( getConfig() );
     }
 
   protected boolean isSetWithNoArg( OptionSpec<String> spec )

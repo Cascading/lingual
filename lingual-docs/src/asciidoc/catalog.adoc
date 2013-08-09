@@ -32,13 +32,13 @@ root
                titles  <- user table
 ----
 
-*Format* is the format or encoding of a Table URI. Tab delimited (TSV) and comma delimited (CSV) are common text formats
-can be identified by the file extension on the URI (`employees/titles.csv`). Format maps to a Cascading Scheme
-instance internally (like `TextDelimited` for CSV).
+*Format* is the file format or encoding of a Table URI. Tab delimited (TSV) and comma delimited (CSV) are common text
+formats that can be identified by the file extension on the URI (`employees/titles.csv`). Format maps to a Cascading
+Scheme instances internally (like `TextDelimited` for CSV).
 
 *Protocol* is how a Table URI is accessed. If on Hadoop, the default is HDFS. If in Local mode, the default is through
-the local filesystem. Protocols can be identified the the URI 'scheme'. `hdfs:/...` for HDFS and `file:/...` for the
-local filesystem. Protocol maps to a Cascading Tap type internally (like `HFS` for HDFS).
+the local filesystem. Protocols can be identified by the the URI 'scheme'. `hdfs:/...` for HDFS and `file:/...` for the
+local filesystem. Protocol maps to a Cascading Tap type internally (like `Hfs` for HDFS).
 
 A *Stereotype* represents the meta-data associated with a Table, the table definition, which includes column names
 and column types. Stereotypes have a name, may be nested in a Schema, and may be shared between Tables.
@@ -51,7 +51,7 @@ Catalog is invoked from the command line via:
 
     lingual catalog [switches]*
 
-To create a new catalog in the user root directory on HDFS:
+To create a new catalog in the user home directory on HDFS:
 
     lingual catalog --platform hadoop --init
 
@@ -142,9 +142,6 @@ To add new table to an existing schema:
 |                      | --remove                     |
 |                      | --rename [new name]          |
 |                      | --show                       | shows detailed information about a format. requires the [name] param for format
-|                      |                              |
-| --config [name|uri]* |                              | config properties file to use instead of .lingual/config/default.properties
-|                      |                              |
 |===
 
 __* currently unsupported__

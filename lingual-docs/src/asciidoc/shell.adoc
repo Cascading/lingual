@@ -1,13 +1,23 @@
 [id="shell"]
 ## Lingual Shell
 
-Lingual Shell is an interactive SQL command shell based on http://sqlline.sourceforge.net[SQLLine].
+Lingual Shell is an interactive SQL command shell.
 
-Lingual Shell expects to find a catalog configuration that defines available Schemas and Tables.
+Lingual Shell expects to find a catalog configuration that defines available Schemas and Tables in the current
+directory for the specified platform.
 
-For more information, visit [Cascading Lingual](http://cascading.org/lingual).
+The catalog information is created and maintained by the <<catalog,Catalog>> utility. By default, the catalog utility
+will create a directory named `.lingual` in the current directory with additional directories and files.
 
-Or see the <<getting_started,Getting Started>> guide.
+### Setting Job Properties
+
+After using the <<catalog,Catalog>> to initialize a new catalog (in the `.lingual` directory),
+a `.lingual/config/default.properties` file will be created. Edit this file to add new properties to be used by the
+underlying platform. In the case of Hadoop, the number of reducers to use for all jobs could be set here.
+
+The `LINGUAL_CONFIG` environment variable may also be used to provide _bootstrap_ properties to Shell.
+
+See the notes on <<hadoop,Hadoop>> for more information on setting properties.
 
 ### CLI Usage
 
@@ -22,23 +32,21 @@ To start the shell for running queries on Apache Hadoop:
 ### CLI Options Reference
 
 [width="100%",cols="<30m,<40d",frame="topbot",options="header"]
-|=========================================================================================================
+|===
 | switch               | description
 |                      |
 | --platform [name]    | use the named platform
 |                      |
 | --schema [name]      | name of the default schema (same as `set schema _name_`)
 |                      |
-| --schemas [uri,...]  | root path for each schema to use, will use base directory as schema name
+| --schemas [uri,...]  | root path for each schema to use, will use base directory as schema name. sub-directories will be treated as tables
 |                      |
 | --sql [file]         | file with SQL commands to execute
 |                      |
 | --resultPath [dir]   | where to store temporary result sets
 | --flowPlanPath [dir] | where to write out the Cascading planner DOT file for debugging
 | --sqlPlanPath [dir ] | where to write out the Optiq planner plan file for debugging
-|                      |
-| --config [file]      | config properties file to use instead of .lingual/config/default.properties
-|=========================================================================================================
+|===
 
 ### Configuration
 

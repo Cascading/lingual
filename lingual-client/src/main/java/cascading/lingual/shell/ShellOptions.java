@@ -33,7 +33,6 @@ import joptsimple.OptionSpec;
  */
 public class ShellOptions extends Options
   {
-  private final OptionSpec<String> config;
   private final OptionSpec<String> username;
   private final OptionSpec<String> password;
   private final OptionSpec<String> schema;
@@ -46,9 +45,6 @@ public class ShellOptions extends Options
 
   public ShellOptions()
     {
-    config = parser.accepts( "config", "platform path to config properties file" )
-      .withRequiredArg();
-
     username = parser.accepts( "username", "name of remote user" )
       .withRequiredArg();
 
@@ -101,15 +97,14 @@ public class ShellOptions extends Options
       addProperty( builder, Driver.SQL_PLAN_PATH_PROP, properties, getSQLPlanPath() );
 
     if( getSqlFile() != null )
-      {
-      builder
-        .append( ";" ).append( Driver.COLLECTOR_CACHE_PROP ).append( "=true" );
-      }
+      builder.append( ";" ).append( Driver.COLLECTOR_CACHE_PROP ).append( "=true" );
 
     if( hasConfig() )
-      addProperty( builder, Driver.CONFIG_PROP, properties, getConfig() );
+      builder.append( ";" ).append( getConfigString() );
 
-    addProperty( builder, "urlProperties", properties, null );
+    // pass through from tests
+    if( getProperty( "urlProperties", properties, null ) != null )
+      builder.append( ";" ).append( getProperty( "urlProperties", properties, null ) );
 
     return builder.toString();
     }
@@ -118,12 +113,12 @@ public class ShellOptions extends Options
     {
     String actual = getProperty( property, properties, value );
 
-    if( actual != null )
-      {
-      builder
-        .append( ";" ).append( property ).append( "=" )
-        .append( actual );
-      }
+    if( actual == null )
+      return;
+
+    builder
+      .append( ";" ).append( property ).append( "=" )
+      .append( actual );
     }
 
   private String getProperty( String property, Properties properties, String value )
@@ -143,16 +138,6 @@ public class ShellOptions extends Options
     }
 
   /////
-
-  public boolean hasConfig()
-    {
-    return optionSet.has( config );
-    }
-
-  public String getConfig()
-    {
-    return optionSet.valueOf( config );
-    }
 
   public boolean hasUsername()
     {

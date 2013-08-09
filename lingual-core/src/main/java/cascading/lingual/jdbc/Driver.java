@@ -79,7 +79,7 @@ public class Driver extends UnregisteredDriver
 
   public static final String PLATFORM_PROP = "platform";
   public static final String CATALOG_PROP = "catalog"; // root directory of catalog data
-  public static final String CONFIG_PROP = "config";
+  //  public static final String CONFIG_PROP = "config";
   public static final String SCHEMA_PROP = "schema";
   public static final String SCHEMAS_PROP = "schemas";
   public static final String TABLES_PROP = "tables";

@@ -76,7 +76,7 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
   @Override
   public FlowProcess<Properties> getFlowProcess()
     {
-    return new LocalFlowProcess( getConfig() );
+    return new LocalFlowProcess( getPlannerConfig() );
     }
 
   @Override
@@ -86,7 +86,19 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  public Properties getConfig()
+  public Properties getDefaultConfig()
+    {
+    return new Properties(); // unused
+    }
+
+  @Override
+  public Properties getSystemConfig()
+    {
+    return getProperties();
+    }
+
+  @Override
+  public Properties getPlannerConfig()
     {
     return getProperties();
     }

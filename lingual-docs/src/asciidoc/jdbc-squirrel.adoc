@@ -1,5 +1,5 @@
 [id="jdbc_squirrel"]
-## Using JDBC with Squirrel SQL
+## Using JDBC with Squirrel SQL with Apache Hadoop
 
 The Lingual Drivers work great with http://squirrel-sql.sourceforge.net[Squirrel SQL] as a desktop client.
 

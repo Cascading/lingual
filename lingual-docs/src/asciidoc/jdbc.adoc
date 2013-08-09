@@ -10,7 +10,7 @@ Additional JDBC properties may be set using the form:
 
     jdbc:lingual:[platform];[property]=[value];[property]=[value];...
 
-Where the property keys are:
+Where the property keys are, in part:
 
   * `catalog=[path]` - the working directory where your .lingual workspace is kept, default is `./`.
   * `schema=[name]` - set the default schema name to use
@@ -19,8 +19,11 @@ Where the property keys are:
   * `flowPlanPath=[path]` - for debugging, print the corresponding Flow dot file here
   * `sqlPlanPath=[path]` - for debugging, print the corresponding SQL plan file here
 
-Platform is required to help the driver distinguish between either backend when more than one JDBC Driver is in
+`platform` is required to help the driver distinguish between either backend when more than one JDBC Driver is in
 the CLASSPATH.
+
+Any other properties will be passed down to the underlying platform. In the case of Apache Hadoop, specific
+connection properties can be passed. See the <<hadoop,Notes on Hadoop>> documentation for more details.
 
 ### Using the JDBC Driver In Your Project
 

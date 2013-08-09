@@ -35,8 +35,6 @@ import static java.util.Arrays.asList;
  */
 public class CatalogOptions extends Options
   {
-  private final OptionSpec<String> config;
-
   private final OptionSpec<Void> init;
 
   private final OptionSpec<String> ddl;
@@ -68,9 +66,6 @@ public class CatalogOptions extends Options
 
   public CatalogOptions()
     {
-    config = parser.accepts( "config", "platform path to config properties file" )
-      .withRequiredArg();
-
     init = parser.accepts( "init", "initializes meta-data store" );
 
     uri = parser.accepts( "uri", "path to catalog location, defaults is current directory on current platform" )
@@ -139,16 +134,6 @@ public class CatalogOptions extends Options
     }
 
   /////
-
-  public boolean hasConfig()
-    {
-    return optionSet.has( config );
-    }
-
-  public String getConfig()
-    {
-    return optionSet.valueOf( config );
-    }
 
   public boolean isInit()
     {

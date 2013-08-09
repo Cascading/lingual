@@ -1,12 +1,43 @@
 [id="hadoop"]
 ## Notes on using with Apache Hadoop
 
-When using with Apache Hadoop, the Shell expects the following environment variable so that the correct Hadoop
+### Using with Lingual Shell
+
+When using with Apache Hadoop, the Lingual Shell expects the following environment variable so that the correct Hadoop
 version and configuration may be included in the CLASSPATH.
 
-  * `HADOOP_HOME` - path to local Hadoop installation
+  * `HADOOP_HOME` - path to local Hadoop installation, or
   * `HADOOP_CONF_DIR` - defaults to `$HADOOP_HOME/conf`
   * `HADOOP_USER_NAME` - the username to use when submitting Hadoop jobs
+
+To pass custom Hadoop properties to the Hadoop platform in Lingual, use:
+
+    > export LINGUAL_CONFIG=property=value,property=value
+
+### Setting default properties
+
+By default, Lingual creates a base `JobConf` instance, which in turn is populated (per the Hadoop API) by
+all configuration information found in the `CLASSPATH`.
+
+Lingual Shell constructs the `CLASSPATH` in part with the value of `HADOOP_CONF_DIR`.
+
+Outside of Lingual Shell, the `CLASSPATH` is a function of the tools using the Lingual JDBC drivers. For example, with
+<<jdbc-squirrel,Squirrel>>, the `conf` directory must be added explicitly.
+
+After the `JobConf` is constructed, any values found in the Lingual catalog directory will be applied. By default,
+these values are located in `.lingual/config/default.properties` on HDFS.
+
+Which leaves the tricky problem of letting Lingual know how to reach HDFS.
+
+Hadoop relies on a single property to reach HDFS, `fs.default.name`. And if not set in the `default.properties` or
+`CLASSPATH`, Lingual needs to also know how to reach the Hadoop "job tracker" using the `mapred.job.tracker` property.
+
+For example, to connect to a vagrant based Hadoop cluster as user `vagrant`:
+
+    > HADOOP_USER_NAME=vagrant
+    > export LINGUAL_CONFIG=fs.default.name=hdfs://master.local:9000,mapred.job.tracker=master.local:9001
+
+Any additional use specific properties can be stuffed into the `default.properties` file.
 
 ### AWS EMR
 

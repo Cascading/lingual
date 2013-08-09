@@ -26,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -86,22 +88,18 @@ public abstract class PlatformBroker<Config>
   public static final String META_DATA_DIR_NAME = ".lingual"; // under path pointed to by Driver.CATALOG_ROOT_PATH_PROP
 
   public static final String CATALOG_FILE_NAME_PROP = "lingual.catalog.name";
-  public static final String CATALOG_FILE_NAME = "catalog"; // .json, under META_DATA_DIR_NAME
+  public static final String CATALOG_FILE_NAME = "catalog"; // json, under META_DATA_DIR_NAME
 
-  public static final String PROVIDER_DIR_NAME_PROP = "lingual.providers.name";
+  public static final String PROVIDER_DIR_NAME_PROP = "lingual.providers.dir";
   public static final String PROVIDER_DIR_NAME = "providers"; // dir for provider (fat) jars installed with --provider --add
 
   public static final String PLANNER_DEBUG_PROP = "lingual.planner.debug";
 
   public static final String CONFIG_DIR_NAME_PROP = "lingual.config.dir";
-  public static final String CONFIG_DIR_NAME = "config";
+  public static final String CONFIG_DIR_NAME = "config"; // dir under META_DATA_DIR_NAME
 
-  public static final String CONFIG_FILE_NAME_PROP = "lingual.config.file";
+  public static final String CONFIG_FILE_NAME_PROP = "lingual.config.name";
   public static final String CONFIG_FILE_NAME = "default.properties";
-
-  public static final String LOCAL_REPO_DIR_NAME_PROP = "lingual.local.repo.dir";
-  public static final String LOCAL_REPO_DIR_NAME = "repo"; // local maven repository for provider jars with dependencies
-  public static final String LOCAL_REPO_FULL_PATH_PROP = "lingual.local.repo.full.path";
 
   protected Properties properties;
 
@@ -136,9 +134,18 @@ public abstract class PlatformBroker<Config>
     return properties.getProperty( propertyName );
     }
 
+  protected String getStringProperty( String propertyName, String defaultString )
+    {
+    return properties.getProperty( propertyName, defaultString );
+    }
+
   public abstract String getName();
 
-  public abstract Config getConfig();
+  public abstract Config getDefaultConfig();
+
+  public abstract Config getSystemConfig();
+
+  public abstract Config getPlannerConfig();
 
   public CascadingServices getCascadingServices()
     {
@@ -245,7 +252,18 @@ public abstract class PlatformBroker<Config>
     if( !createPath( path ) )
       throw new RuntimeException( "unable to create catalog: " + path );
 
+    writeDefaultConfigFile();
+
     return true;
+    }
+
+  private void writeDefaultConfigFile()
+    {
+    if( !createPath( getFullConfigPath() ) )
+      throw new RuntimeException( "unable to create config path: " + getFullConfigPath() );
+
+    if( !writeToFile( getFullConfigFile(), "# place all default properties here, for example\n# some.property=someValue\n" ) )
+      throw new RuntimeException( "unable to create config file: " + getFullConfigFile() );
     }
 
   public String getFullMetadataPath()
@@ -267,6 +285,18 @@ public abstract class PlatformBroker<Config>
     String catalogPath = getStringProperty( CATALOG_PROP );
 
     return makeFullProviderDirPath( catalogPath );
+    }
+
+  public String getFullConfigPath()
+    {
+    String catalogPath = getStringProperty( CATALOG_PROP );
+
+    return makeFullConfigPath( catalogPath );
+    }
+
+  public String getFullConfigFile()
+    {
+    return makePath( getFullConfigPath(), getStringProperty( CONFIG_FILE_NAME_PROP, CONFIG_FILE_NAME ) );
     }
 
   public void writeCatalog()
@@ -324,16 +354,23 @@ public abstract class PlatformBroker<Config>
 
   private String makeFullCatalogFilePath( String catalogPath )
     {
-    String metaDataFile = properties.getProperty( CATALOG_FILE_NAME_PROP, CATALOG_FILE_NAME );
+    String catalogFile = properties.getProperty( CATALOG_FILE_NAME_PROP, CATALOG_FILE_NAME );
 
-    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), metaDataFile ) );
+    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), catalogFile ) );
     }
 
   private String makeFullProviderDirPath( String catalogPath )
     {
-    String metaDataFile = properties.getProperty( PROVIDER_DIR_NAME_PROP, PROVIDER_DIR_NAME );
+    String providerDir = properties.getProperty( PROVIDER_DIR_NAME_PROP, PROVIDER_DIR_NAME );
 
-    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), metaDataFile ) );
+    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), providerDir ) );
+    }
+
+  private String makeFullConfigPath( String catalogPath )
+    {
+    String configDir = properties.getProperty( CONFIG_DIR_NAME_PROP, CONFIG_DIR_NAME );
+
+    return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), configDir ) );
     }
 
   public String getResultPath( String name )
@@ -389,6 +426,25 @@ public abstract class PlatformBroker<Config>
   public abstract InputStream getInputStream( String path );
 
   public abstract OutputStream getOutputStream( String path );
+
+  private boolean writeToFile( String fileName, String string )
+    {
+    try
+      {
+      Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
+
+      writer.write( string );
+      writer.flush();
+      writer.close();
+      }
+    catch( IOException exception )
+      {
+      LOG.warn( "unable to write to file: {}", fileName );
+      return false;
+      }
+
+    return true;
+    }
 
   public String retrieveInstallProvider( String sourcePath )
     {
@@ -528,10 +584,10 @@ public abstract class PlatformBroker<Config>
 
   public String[] getChildIdentifiers( FileType<Config> fileType ) throws IOException
     {
-    if( !( (Tap) fileType ).resourceExists( getConfig() ) )
-      throw new IllegalStateException( "resource does not exist: " + ( (Tap) fileType ).getFullIdentifier( getConfig() ) );
+    if( !( (Tap) fileType ).resourceExists( getSystemConfig() ) )
+      throw new IllegalStateException( "resource does not exist: " + ( (Tap) fileType ).getFullIdentifier( getSystemConfig() ) );
 
-    return fileType.getChildIdentifiers( getConfig() );
+    return fileType.getChildIdentifiers( getSystemConfig() );
     }
 
   public PlatformInfo getPlatformInfo()
@@ -610,7 +666,7 @@ public abstract class PlatformBroker<Config>
     {
     try
       {
-      String[] childIdentifiers = getFileTypeFor( parentIdentifier ).getChildIdentifiers( getConfig() );
+      String[] childIdentifiers = getFileTypeFor( parentIdentifier ).getChildIdentifiers( getSystemConfig() );
 
       for( String child : childIdentifiers )
         {
@@ -685,4 +741,37 @@ public abstract class PlatformBroker<Config>
   protected abstract URI toURI( String qualifiedPath );
 
   protected abstract URLStreamHandlerFactory getURLStreamHandlerFactory();
+
+  protected Properties loadPropertiesFrom( URL url )
+    {
+    Properties properties = new Properties();
+
+    InputStream inputStream = null;
+
+    try
+      {
+      inputStream = url.openStream();
+      }
+    catch( IOException exception )
+      {
+      LOG.warn( "unable to open resource file" );
+      }
+
+    return loadPropertiesFrom( properties, inputStream );
+    }
+
+  protected Properties loadPropertiesFrom( Properties properties, InputStream inputStream )
+    {
+    try
+      {
+      if( inputStream != null )
+        properties.load( inputStream );
+      }
+    catch( IOException exception )
+      {
+      LOG.warn( "unable to read resource file" );
+      }
+
+    return properties;
+    }
   }
