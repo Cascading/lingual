@@ -148,7 +148,8 @@ public class Driver extends UnregisteredDriver
     {
     if( !acceptsURL( url ) )
       {
-      LOG.error( "invalid connection url {}", url );
+      // DriverManager walks all the drivers and attempts to connect, so don't report a nasty error
+      LOG.debug( "invalid connection url {}", url );
       return null;
       }
 

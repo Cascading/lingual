@@ -47,6 +47,7 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tap.type.FileType;
 import cascading.tuple.hadoop.BigDecimalSerialization;
 import cascading.tuple.hadoop.TupleSerializationProps;
+import com.google.common.base.Strings;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsUrlStreamHandlerFactory;
 import org.apache.hadoop.fs.Path;
@@ -289,9 +290,12 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     // HADOOP_USER_NAME
     String envUser = System.getenv( HADOOP_USER_ENV );
     String propertyUser = System.getProperty( HADOOP_USER_PROPERTY, envUser );
-    String user = getProperties().getProperty( "user", propertyUser );
+    String user = getProperties().getProperty( "user" );
 
-    if( user == null || user.isEmpty() )
+    if( Strings.isNullOrEmpty( user ) )
+      user = propertyUser;
+
+    if( Strings.isNullOrEmpty( user ) )
       {
       LOG.info( "user not supplied, using OS user" );
       user = System.getProperty( "user.name", "" );
