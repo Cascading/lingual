@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import cascading.bind.catalog.Resource;
 import cascading.bind.process.FlowFactory;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -85,6 +86,11 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     addJars( jarPaths );
 
     addSourceResource( sourceName, catalog.getResourceFor( tableDef, SinkMode.KEEP ) );
+    }
+
+  public void addSink( String sinkName, Resource resource )
+    {
+    addSinkResource( sinkName, resource );
     }
 
   public void addSink( String sinkName, String identifier )

@@ -51,7 +51,7 @@ public class ShellOptions extends Options
     password = parser.accepts( "password", "password of remote user" )
       .withRequiredArg();
 
-    schema = parser.accepts( "schema", "name of current schema" )
+    schema = parser.accepts( "schema", "name of schema to make default" )
       .withRequiredArg();
 
     schemas = parser.accepts( "schemas", "platform path for each schema to use" )

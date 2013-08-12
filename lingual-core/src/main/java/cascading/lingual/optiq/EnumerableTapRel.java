@@ -87,7 +87,7 @@ class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
     }
 
   @Override
-  public BlockExpression implement( EnumerableRelImplementor implementor )
+  public BlockExpression implement( EnumerableRelImplementor implementer )
     {
     LOG.debug( "implementing enumerable" );
 

@@ -84,7 +84,7 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     }
 
   @Override
-  public BlockExpression implement( EnumerableRelImplementor implementor )
+  public BlockExpression implement( EnumerableRelImplementor implementer )
     {
     LOG.debug( "implementing enumerable" );
 

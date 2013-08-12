@@ -740,6 +740,30 @@ public class SchemaDef extends Def
     return null;
     }
 
+  public ProviderDef getProtocolProvider( Protocol protocol )
+    {
+    List<String> providers = getProtocolProperty( protocol, ProtocolProperties.PROVIDER );
+
+    if( providers.isEmpty() )
+      return null;
+
+    String providerName = providers.get( 0 );
+
+    return findProviderDefFor( providerName );
+    }
+
+  public ProviderDef getFormatProvider( Format format )
+    {
+    List<String> providers = getFormatProperty( format, ProtocolProperties.PROVIDER );
+
+    if( providers.isEmpty() )
+      return null;
+
+    String providerName = providers.get( 0 );
+
+    return findProviderDefFor( providerName );
+    }
+
   public ProviderDef findProviderDefFor( Protocol protocol )
     {
     List<String> providers = findAllProtocolProperties( protocol ).get( SchemaProperties.PROVIDER );

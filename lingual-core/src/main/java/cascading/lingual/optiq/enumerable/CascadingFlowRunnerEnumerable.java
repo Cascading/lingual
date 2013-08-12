@@ -29,15 +29,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
 import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.FormatProperties;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.meta.Branch;
@@ -152,7 +155,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       flowFactory.addSource( head.name, tableDefFor, jarPath );
       }
 
-    if( branch.tailTableDef != null )
+    TableDef tailTableDef = branch.tailTableDef;
+
+    if( tailTableDef != null )
       {
       TableDef tableDef = branch.tailTableDef;
       String[] jarPath = getJarPaths( tableDef );
@@ -161,7 +166,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       }
     else
       {
-      flowFactory.addSink( branch.current.getName(), platformBroker.getResultPath( flowFactory.getName() ) );
+      Resource<Protocol, Format, SinkMode> resource = createResultResource( platformBroker, flowFactory );
+
+      flowFactory.addSink( branch.current.getName(), resource );
       }
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
@@ -231,6 +238,21 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapObjectEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     else
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
+    }
+
+  private Resource<Protocol, Format, SinkMode> createResultResource( PlatformBroker platformBroker, LingualFlowFactory flowFactory )
+    {
+    SchemaDef schemaDef = platformBroker.getCatalog().getSchemaDef( null ); // todo: grab the results schema
+    Protocol protocol = schemaDef.getDefaultProtocol();
+    Format format = schemaDef.getDefaultFormat();
+
+    String resultPath = platformBroker.getResultPath( flowFactory.getName() );
+    String extension = FormatProperties.findExtensionFor( schemaDef, format );
+
+    if( extension != null )
+      resultPath += extension;
+
+    return new Resource<Protocol, Format, SinkMode>( resultPath, protocol, format, SinkMode.REPLACE );
     }
 
   private String[] getJarPaths( TableDef tableDef )

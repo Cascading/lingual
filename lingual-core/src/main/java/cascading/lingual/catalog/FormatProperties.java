@@ -30,6 +30,19 @@ public class FormatProperties extends SchemaProperties
   {
   public static final String EXTENSIONS = "extensions";
 
+  public static String findExtensionFor( SchemaDef schemaDef, Format format )
+    {
+    if( schemaDef == null )
+      return null;
+
+    List<String> extensions = schemaDef.getFormatProperty( format, EXTENSIONS );
+
+    if( extensions.isEmpty() )
+      return null;
+
+    return extensions.get( 0 );
+    }
+
   public static Format findFormatFor( SchemaDef schemaDef, String identifier )
     {
     if( schemaDef == null )

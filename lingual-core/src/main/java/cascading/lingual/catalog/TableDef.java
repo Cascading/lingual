@@ -20,8 +20,6 @@
 
 package cascading.lingual.catalog;
 
-import java.util.List;
-
 import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
 import cascading.tap.SinkMode;
@@ -145,30 +143,12 @@ public class TableDef extends Def
 
   public ProviderDef getProtocolProvider()
     {
-    Protocol protocol = getActualProtocol();
-
-    List<String> providers = parentSchema.getProtocolProperty( protocol, ProtocolProperties.PROVIDER );
-
-    if( providers.isEmpty() )
-      return null;
-
-    String providerName = providers.get( 0 );
-
-    return parentSchema.findProviderDefFor( providerName );
+    return parentSchema.getProtocolProvider( getActualProtocol() );
     }
 
   public ProviderDef getFormatProvider()
     {
-    Format format = getActualFormat();
-
-    List<String> providers = parentSchema.getFormatProperty( format, ProtocolProperties.PROVIDER );
-
-    if( providers.isEmpty() )
-      return null;
-
-    String providerName = providers.get( 0 );
-
-    return parentSchema.findProviderDefFor( providerName );
+    return parentSchema.getFormatProvider( getActualFormat() );
     }
 
   @Override
