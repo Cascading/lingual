@@ -24,10 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+
 import cascading.lingual.common.Options;
 import cascading.lingual.common.PropertiesConverter;
+import cascading.lingual.common.PropertiesFileConverter;
 import joptsimple.OptionSpec;
-
 import static java.util.Arrays.asList;
 
 /**
@@ -55,6 +57,7 @@ public class CatalogOptions extends Options
   private final OptionSpec<Void> show;
 
   private final OptionSpec<Map<String, String>> properties;
+  private final OptionSpec<Map<String, String>> propertiesFromFile;
 
   private final OptionSpec<String> extensions;
   private final OptionSpec<String> schemes;
@@ -110,6 +113,9 @@ public class CatalogOptions extends Options
 
     properties = parser.acceptsAll( asList( "props", "properties" ), "key=value pairs" )
       .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
+    
+    propertiesFromFile = parser.accepts( "properties-file", "filename" )
+        .withRequiredArg().withValuesConvertedBy( new PropertiesFileConverter() );
 
     extensions = parser.acceptsAll( asList( "exts", "extensions" ), "file name extension to associate with format, .csv, .tsv, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
@@ -248,16 +254,22 @@ public class CatalogOptions extends Options
 
   public boolean hasProperties()
     {
-    return optionSet.has( properties );
+    return optionSet.has( properties ) || optionSet.has( propertiesFromFile );
     }
 
   public Map<String, String> getProperties()
     {
-    List<Map<String, String>> maps = optionSet.valuesOf( properties );
+    List<Map<String, String>> allMaps = Lists.newArrayList();
+    List<Map<String, String>> propertiesMaps = optionSet.valuesOf( properties );
+    if (propertiesMaps != null)
+      allMaps.addAll( propertiesMaps );
+    List<Map<String, String>> propertiesFromFileMaps = optionSet.valuesOf( propertiesFromFile );
+    if (propertiesFromFileMaps != null)
+      allMaps.addAll( propertiesFromFileMaps );
 
     Map<String, String> results = new LinkedHashMap<String, String>();
 
-    for( Map<String, String> map : maps )
+    for( Map<String, String> map : allMaps )
       results.putAll( map );
 
     return results;
