@@ -49,6 +49,7 @@ import cascading.lingual.platform.LingualFormatHandler;
 import cascading.lingual.platform.LingualProtocolHandler;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
+import cascading.lingual.tap.TapTable;
 import cascading.lingual.util.InsensitiveMap;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
@@ -287,10 +288,15 @@ public abstract class SchemaCatalog implements Serializable
 
   public String createSchemaDefAndTableDefsFor( String schemaIdentifier )
     {
-    return createSchemaDefAndTableDefsFor( null, null, null, schemaIdentifier );
+    return createSchemaDefAndTableDefsFor( null, null, null, schemaIdentifier, false );
     }
 
-  public String createSchemaDefAndTableDefsFor( String schemaName, String protocolName, String formatName, String schemaIdentifier )
+  public String createResultsSchemaDef( String schemaName, String schemaIdentifier )
+    {
+    return createSchemaDefAndTableDefsFor( schemaName, null, null, schemaIdentifier, true );
+    }
+
+  public String createSchemaDefAndTableDefsFor( String schemaName, String protocolName, String formatName, String schemaIdentifier, boolean mixedIdentifierOK )
     {
     schemaIdentifier = getFullPath( schemaIdentifier );
 
@@ -303,7 +309,7 @@ public abstract class SchemaCatalog implements Serializable
 
     if( schemaDef == null )
       schemaDef = createSchemaDef( schemaName, protocolName, formatName, schemaIdentifier );
-    else if( !schemaIdentifier.equalsIgnoreCase( schemaDef.getIdentifier() ) )
+    else if( !mixedIdentifierOK && !schemaIdentifier.equalsIgnoreCase( schemaDef.getIdentifier() ) )
       throw new IllegalArgumentException( "schema exists: " + schemaName + ", with differing identifier: " + schemaIdentifier );
 
     if( !platformBroker.pathExists( schemaIdentifier ) )
@@ -351,7 +357,7 @@ public abstract class SchemaCatalog implements Serializable
     createTableDefFor( getRootSchemaDef(), null, identifier, null, null, null, null );
     }
 
-  public void createTableDefFor( String schemaName, String tableName, String tableIdentifier, Fields fields, String protocolName, String formatName )
+  public String createTableDefFor( String schemaName, String tableName, String tableIdentifier, Fields fields, String protocolName, String formatName )
     {
     Point<Protocol, Format> point = getPointFor( tableIdentifier, schemaName, Protocol.getProtocol( protocolName ), Format.getFormat( formatName ) );
 
@@ -362,7 +368,7 @@ public abstract class SchemaCatalog implements Serializable
     if( schemaDef == null )
       throw new IllegalStateException( "no schema for: " + schemaName );
 
-    createTableDefFor( schemaDef, tableName, tableIdentifier, null, fields, point.protocol, point.format );
+    return createTableDefFor( schemaDef, tableName, tableIdentifier, null, fields, point.protocol, point.format );
     }
 
   public boolean removeTableDef( String schemaName, String tableName )
@@ -457,28 +463,64 @@ public abstract class SchemaCatalog implements Serializable
 
     for( SchemaDef childSchemaDef : schemaDefs )
       {
-      TapSchema childSchema = (TapSchema) currentSchema.getSubSchema( childSchemaDef.getName() );
+      TapSchema childTapSchema = addTapSchema( connection, currentSchema, currentSchemaDef, childSchemaDef );
 
-      if( childSchema == null )
-        {
-        childSchema = new TapSchema( currentSchema, connection, childSchemaDef );
-        currentSchema.addSchema( childSchemaDef.getName(), childSchema );
+      addSchemas( connection, childTapSchema, childSchemaDef );
+      }
+    }
 
+  private TapSchema addTapSchema( LingualConnection connection, MapSchema currentMapSchema, SchemaDef currentSchemaDef, SchemaDef childSchemaDef )
+    {
+    TapSchema childTapSchema = (TapSchema) currentMapSchema.getSubSchema( childSchemaDef.getName() );
 
-        String childSchemaDescription;
-        if( currentSchemaDef.getIdentifier() != null )
-          childSchemaDescription = String.format( "'%s' ( %s )", childSchemaDef.getName(), currentSchemaDef.getIdentifier() );
-        else
-          childSchemaDescription = String.format( "'%s'", childSchemaDef.getName() );
+    if( childTapSchema == null )
+      {
+      childTapSchema = new TapSchema( currentMapSchema, connection, childSchemaDef );
+      currentMapSchema.addSchema( childSchemaDef.getName(), childTapSchema );
 
-        String name = currentSchemaDef.getName() == null ? "root" : currentSchemaDef.getName();
+      String childSchemaDescription;
 
-        LOG.info( "added schema: {}, to: '{}'", childSchemaDescription, name );
-        }
+      if( currentSchemaDef.getIdentifier() != null )
+        childSchemaDescription = String.format( "'%s' ( %s )", childSchemaDef.getName(), currentSchemaDef.getIdentifier() );
+      else
+        childSchemaDescription = String.format( "'%s'", childSchemaDef.getName() );
 
-      childSchema.addTapTablesFor( childSchemaDef );
+      String name = currentSchemaDef.getName() == null ? "root" : currentSchemaDef.getName();
 
-      addSchemas( connection, childSchema, childSchemaDef );
+      LOG.info( "added schema: {}, to: '{}'", childSchemaDescription, name );
+      }
+
+    childTapSchema.addTapTablesFor( childSchemaDef );
+
+    return childTapSchema;
+    }
+
+  public void addTapToConnection( LingualConnection connection, String schemaName, Tap tap, String tableAlias )
+    {
+    MapSchema rootSchema = (MapSchema) connection.getRootSchema();
+    TapSchema subSchema = (TapSchema) rootSchema.getSubSchema( schemaName );
+    SchemaDef schemaDef = getSchemaDef( schemaName );
+
+    if( tableAlias != null && schemaDef.getTable( tableAlias ) != null )
+      {
+      TapTable table = (TapTable) subSchema.getTable( tableAlias, Object.class );
+
+      if( table.getName().equals( tableAlias ) )
+        LOG.debug( "table exists: {}, discarding", tableAlias );
+      else
+        LOG.debug( "replacing alias: {}, for: {} ", tableAlias, table.getName() );
+      }
+
+    String currentTableName = createTableDefFor( schemaName, null, tap.getIdentifier(), tap.getSinkFields(), null, null );
+    TableDef tableDef = schemaDef.getTable( currentTableName );
+    TapTable tapTable = subSchema.addTapTableFor( tableDef ); // add table named after flow
+
+    LOG.debug( "adding table:{}", tableDef.getName() );
+
+    if( tableAlias != null && !tapTable.getName().equals( tableAlias ) )
+      {
+      LOG.debug( "adding alias: {}, for table: {}", tableAlias, tapTable.getName() );
+      subSchema.addTable( tableAlias, tapTable ); // add names after given tableName (LAST)
       }
     }
 
@@ -1005,5 +1047,4 @@ public abstract class SchemaCatalog implements Serializable
     result = 31 * result + ( nameFieldsMap != null ? nameFieldsMap.hashCode() : 0 );
     return result;
     }
-
   }

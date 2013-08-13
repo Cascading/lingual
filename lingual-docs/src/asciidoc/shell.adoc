@@ -9,6 +9,25 @@ directory for the specified platform.
 The catalog information is created and maintained by the <<catalog,Catalog>> utility. By default, the catalog utility
 will create a directory named `.lingual` in the current directory with additional directories and files.
 
+### Reusing results
+
+By default, the results of `SELECT` queries will be stored in the `results` directory in current working path
+on the current platform. On screen the `max rows` number of rows will be displayed.
+
+If the `--resultSchema` argument is used, the named schema will be used to store results, where each table name
+will be a unique timestamp. Additionally, the last result will be also references as the table alias `LAST`.
+
+That is, after running any complex query, `select * from results.last` will re-print the results of the last query,
+assuming shell was started with the argument
+
+    > lingual shell --resultSchema RESULTS
+
+This remains true even if the `RESULTS` schema was not previously created with the `catalog` tool.
+
+Note that no tables are added to the persistent version of catalog meta-data (saved to disk). They are only available
+at runtime, subsequently if any files are deleted from the result path, they will not be visible as tables in the
+result schema and queries on subsequent shell runs.
+
 ### Setting Job Properties
 
 After using the <<catalog,Catalog>> to initialize a new catalog (in the `.lingual` directory),
@@ -33,19 +52,27 @@ To start the shell for running queries on Apache Hadoop:
 
 [width="100%",cols="<30m,<40d",frame="topbot",options="header"]
 |===
-| switch               | description
-|                      |
-| --platform [name]    | use the named platform
-|                      |
-| --schema [name]      | name of the default schema (same as `set schema _name_`)
-|                      |
-| --schemas [uri,...]  | root path for each schema to use, will use base directory as schema name. sub-directories will be treated as tables
-|                      |
-| --sql [file]         | file with SQL commands to execute
-|                      |
-| --resultPath [dir]   | where to store temporary result sets
-| --flowPlanPath [dir] | where to write out the Cascading planner DOT file for debugging
-| --sqlPlanPath [dir ] | where to write out the Optiq planner plan file for debugging
+| switch                | description
+|                       |
+| --platform [name]     | use the named platform
+|                       |
+| --username [name]     | name of remote user to use
+| --password [password] | password of remote user
+|                       |
+| --schema [name]       | name of the default schema (same as `set schema _name_`)
+|                       |
+| --schemas [uri,...]   | root path for each schema to use, will use base directory as schema name. sub-directories will be treated as tables
+|                       |
+| --sql [file]          | file with SQL commands to execute
+|                       |
+| --maxRows [num]       | the maximum number of rows to print to the console
+|                       |
+| --resultSchema [name] | schema name to store temporary result sets within, uses `--resultPath` if no schema exists
+|                       |
+| --resultPath [dir]    | platform path to store temporary result sets in, `results` is default
+|                       |
+| --flowPlanPath [dir]  | where to write out the Cascading planner DOT file for debugging
+| --sqlPlanPath [dir ]  | where to write out the Optiq planner plan file for debugging
 |===
 
 ### Configuration

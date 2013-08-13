@@ -106,12 +106,12 @@ public class TapSchema extends MapSchema
       addTapTableFor( tableDef );
     }
 
-  public void addTapTableFor( TableDef tableDef )
+  public TapTable addTapTableFor( TableDef tableDef )
     {
-    addTapTableFor( tableDef, false );
+    return addTapTableFor( tableDef, false );
     }
 
-  public void addTapTableFor( TableDef tableDef, boolean useFullName )
+  public TapTable addTapTableFor( TableDef tableDef, boolean useFullName )
     {
     TapTable found = (TapTable) getTable( tableDef.getName(), Object.class );
 
@@ -124,6 +124,18 @@ public class TapSchema extends MapSchema
     LOG.info( "adding table on schema: {}, table: {}, fields: {}, identifier: {}",
       new Object[]{getFullName(), table.getName(), table.getFields(), table.getIdentifier()} );
 
-    addTable( new TableInSchemaImpl( this, table.getName(), TableType.TABLE, table ) );
+    addTable( table.getName(), table );
+
+    return table;
+    }
+
+  public void addTable( String tableName, TapTable tapTable )
+    {
+    addTable( createTableInSchema( tableName, tapTable ) );
+    }
+
+  protected TableInSchemaImpl createTableInSchema( String tableName, TapTable table )
+    {
+    return new TableInSchemaImpl( this, tableName, TableType.TABLE, table );
     }
   }

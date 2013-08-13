@@ -51,6 +51,7 @@ import cascading.lingual.catalog.FileCatalogManager;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
@@ -111,6 +112,8 @@ public abstract class PlatformBroker<Config>
   private Map<String, TupleEntryCollector> collectorCache;
 
   private WeakReference<LingualConnection> defaultConnection;
+
+  private String resultsSchemaName;
 
   protected PlatformBroker()
     {
@@ -315,12 +318,20 @@ public abstract class PlatformBroker<Config>
     // they are transient to the session
     // todo: wrap transient catalog data around persistent catalog data
     if( getProperties().containsKey( SCHEMAS_PROP ) )
-      loadSchemas( catalog );
+      loadTransientSchemas( catalog );
 
     if( getProperties().containsKey( TABLES_PROP ) )
-      loadTables( catalog );
+      loadTransientTables( catalog );
+
+    if( getProperties().containsKey( RESULT_SCHEMA_PROP ) )
+      loadTransientResultSchema( catalog );
 
     return catalog;
+    }
+
+  public void addResultToSchema( Tap tap )
+    {
+    getCatalog().addTapToConnection( defaultConnection.get(), resultsSchemaName, tap, "LAST" );
     }
 
   protected synchronized CatalogManager getCatalogManager()
@@ -373,16 +384,27 @@ public abstract class PlatformBroker<Config>
     return getFullPath( makePath( makeFullMetadataFilePath( catalogPath ), configDir ) );
     }
 
+  public boolean hasResultSchemaDef()
+    {
+    return resultsSchemaName != null;
+    }
+
+  public SchemaDef getResultSchemaDef()
+    {
+    return getCatalog().getSchemaDef( resultsSchemaName );
+    }
+
   public String getResultPath( String name )
     {
-    String path = getTempPath();
+    return makePath( getRootResultPath(), name );
+    }
 
-    path = getProperties().getProperty( Driver.RESULT_PATH_PROP, path );
-
-    if( !path.endsWith( "/" ) )
-      path += "/";
-
-    return getFullPath( path + name );
+  protected String getRootResultPath()
+    {
+    if( resultsSchemaName != null )
+      return getCatalog().getSchemaDef( resultsSchemaName ).getIdentifier();
+    else
+      return getProperties().getProperty( Driver.RESULT_PATH_PROP, getTempPath() );
     }
 
   public String getTempPath( String name )
@@ -555,7 +577,24 @@ public abstract class PlatformBroker<Config>
     return tableName;
     }
 
-  private void loadSchemas( SchemaCatalog catalog )
+  private void loadTransientResultSchema( SchemaCatalog catalog )
+    {
+    String schemaProperty = getStringProperty( RESULT_SCHEMA_PROP );
+
+    if( schemaProperty == null )
+      return;
+
+    String[] schemaNames = schemaProperty.split( "," );
+
+    if( schemaNames.length > 1 )
+      throw new IllegalStateException( "may only have one result schema" );
+
+    String resultPath = getRootResultPath();
+
+    resultsSchemaName = catalog.createResultsSchemaDef( schemaNames[ 0 ], resultPath );
+    }
+
+  private void loadTransientSchemas( SchemaCatalog catalog )
     {
     String schemaProperty = getStringProperty( SCHEMAS_PROP );
     String[] schemaIdentifiers = schemaProperty.split( "," );
@@ -564,7 +603,7 @@ public abstract class PlatformBroker<Config>
       catalog.createSchemaDefAndTableDefsFor( schemaIdentifier );
     }
 
-  private void loadTables( SchemaCatalog catalog )
+  private void loadTransientTables( SchemaCatalog catalog )
     {
     String tableProperty = getStringProperty( TABLES_PROP );
     String[] tableIdentifiers = tableProperty.split( "," );

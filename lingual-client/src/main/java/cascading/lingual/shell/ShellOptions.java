@@ -37,6 +37,7 @@ public class ShellOptions extends Options
   private final OptionSpec<String> password;
   private final OptionSpec<String> schema;
   private final OptionSpec<String> schemas;
+  private final OptionSpec<String> resultSchema;
   private final OptionSpec<String> resultPath;
   private final OptionSpec<String> flowPlanPath;
   private final OptionSpec<String> sqlPlanPath;
@@ -54,8 +55,11 @@ public class ShellOptions extends Options
     schema = parser.accepts( "schema", "name of schema to make default" )
       .withRequiredArg();
 
-    schemas = parser.accepts( "schemas", "platform path for each schema to use" )
+    schemas = parser.accepts( "schemas", "platform path for each schema to add" )
       .withRequiredArg().withValuesSeparatedBy( ',' );
+
+    resultSchema = parser.accepts( "resultSchema", "the schema to store SELECT query results into" )
+      .withOptionalArg().defaultsTo( "results" ).describedAs( "schema name" );
 
     resultPath = parser.accepts( "resultPath", "platform path to store results of SELECT queries" )
       .withOptionalArg().defaultsTo( "results" ).describedAs( "directory" );
@@ -64,7 +68,7 @@ public class ShellOptions extends Options
       .withOptionalArg().defaultsTo( "flowPlanFiles" ).describedAs( "directory" );
 
     sqlPlanPath = parser.accepts( "sqlPlanPath", "platform path to write SQL plan files" )
-      .withOptionalArg().defaultsTo( "sqlPlanPath" ).describedAs( "directory" );
+      .withOptionalArg().defaultsTo( "sqlPlanFiles" ).describedAs( "directory" );
 
     sqlFile = parser.accepts( "sql", "file with sql commands to execute, '-' for stdin" )
       .withRequiredArg().describedAs( "filename" );
@@ -85,6 +89,8 @@ public class ShellOptions extends Options
     addProperty( builder, Driver.CATALOG_PROP, properties, null ); // currently for testing
 
     addProperty( builder, Driver.SCHEMAS_PROP, properties, Util.join( getSchemas(), "," ) );
+
+    addProperty( builder, Driver.RESULT_SCHEMA_PROP, properties, getResultSchema() );
 
     addProperty( builder, Driver.RESULT_PATH_PROP, properties, getResultPath() );
 
@@ -167,6 +173,11 @@ public class ShellOptions extends Options
   public List<String> getSchemas()
     {
     return optionSet.valuesOf( schemas );
+    }
+
+  public String getResultSchema()
+    {
+    return optionSet.valueOf( resultSchema );
     }
 
   public String getResultPath()

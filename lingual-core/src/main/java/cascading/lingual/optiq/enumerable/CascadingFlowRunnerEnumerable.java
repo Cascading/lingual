@@ -32,6 +32,7 @@ import java.util.Set;
 import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
+import cascading.flow.FlowListener;
 import cascading.flow.FlowStep;
 import cascading.flow.StepCounters;
 import cascading.flow.planner.PlannerException;
@@ -155,9 +156,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       flowFactory.addSource( head.name, tableDefFor, jarPath );
       }
 
-    TableDef tailTableDef = branch.tailTableDef;
+    FlowListener flowListener = null;
 
-    if( tailTableDef != null )
+    if( branch.tailTableDef != null )
       {
       TableDef tableDef = branch.tailTableDef;
       String[] jarPath = getJarPaths( tableDef );
@@ -169,6 +170,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       Resource<Protocol, Format, SinkMode> resource = createResultResource( platformBroker, flowFactory );
 
       flowFactory.addSink( branch.current.getName(), resource );
+
+      if( platformBroker.hasResultSchemaDef() )
+        flowListener = new AddResultTableListener( platformBroker );
       }
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
@@ -198,10 +202,15 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       flow.writeDOT( flowPlanPath );
       }
 
+    if( flowListener != null )
+      flow.addListener( flowListener );
+
     try
       {
       LOG.debug( "starting flow: {}", flow.getName() );
-      flow.complete(); // need to block
+
+      flow.complete(); // intentionally blocks
+
       LOG.debug( "completed flow: {}", flow.getName() );
       }
     catch( Exception exception )
@@ -242,11 +251,17 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
   private Resource<Protocol, Format, SinkMode> createResultResource( PlatformBroker platformBroker, LingualFlowFactory flowFactory )
     {
-    SchemaDef schemaDef = platformBroker.getCatalog().getSchemaDef( null ); // todo: grab the results schema
-    Protocol protocol = schemaDef.getDefaultProtocol();
-    Format format = schemaDef.getDefaultFormat();
+    SchemaDef schemaDef = platformBroker.getResultSchemaDef();
+    Protocol protocol = schemaDef.findDefaultProtocol();
+    Format format = schemaDef.findDefaultFormat();
 
-    String resultPath = platformBroker.getResultPath( flowFactory.getName() );
+    String resultPath;
+
+    if( schemaDef.isRoot() )
+      resultPath = platformBroker.getResultPath( flowFactory.getName() );
+    else
+      resultPath = platformBroker.makePath( schemaDef.getIdentifier(), flowFactory.getName() );
+
     String extension = FormatProperties.findExtensionFor( schemaDef, format );
 
     if( extension != null )

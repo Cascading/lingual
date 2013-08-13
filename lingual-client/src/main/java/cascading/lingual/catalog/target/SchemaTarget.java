@@ -102,7 +102,7 @@ public class SchemaTarget extends CRUDTarget
       return null;
       }
 
-    return asList( catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI ) );
+    return asList( catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI, false ) );
     }
 
   @Override
