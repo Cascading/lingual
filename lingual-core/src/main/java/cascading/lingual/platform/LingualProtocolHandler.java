@@ -24,11 +24,15 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import cascading.bind.catalog.Resource;
 import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.util.MultiProperties;
+import cascading.scheme.Scheme;
+import cascading.tap.SinkMode;
+import cascading.tap.Tap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,12 @@ public abstract class LingualProtocolHandler implements ProtocolHandler<Protocol
     {
     return providerDef;
     }
+
+  /**
+   * Wrap the resulting Tap in a proxy that swaps out the context classloader when the tap is used for reading
+   * and writing
+   */
+  public abstract Tap createLoadableTap( Scheme scheme, Resource<Protocol, Format, SinkMode> resource );
 
   public void addProperties( Protocol protocol, Map<String, List<String>> values )
     {

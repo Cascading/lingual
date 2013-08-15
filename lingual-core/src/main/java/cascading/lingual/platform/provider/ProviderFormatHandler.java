@@ -109,4 +109,10 @@ public class ProviderFormatHandler extends LingualFormatHandler
 
     return getProviderProxy().createScheme( stereotype, protocol, format, properties );
     }
+
+  @Override
+  public Scheme createLoadableScheme( Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format )
+    {
+    return getProviderProxy().createSchemeProxy( createScheme( stereotype, protocol, format ) );
+    }
   }

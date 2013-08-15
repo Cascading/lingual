@@ -28,22 +28,32 @@ import javassist.util.proxy.MethodHandler;
 /**
  *
  */
-class ProviderHandler implements MethodHandler, Serializable
+class ProxyClassLoaderHandler implements MethodHandler, Serializable
   {
+  private final ClassLoader classLoader;
+  private final Object parent;
+
+  public ProxyClassLoaderHandler( ClassLoader classLoader, Object parent )
+    {
+    this.classLoader = classLoader;
+    this.parent = parent;
+    }
+
   public Object invoke( Object self, Method calling, Method proceed, Object[] args ) throws Throwable
     {
-    if( proceed != null )
-      return proceed.invoke( self, args );  // execute the original method.
+    ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader( classLoader );
 
-    if( calling.getName().equals( "getDescription" ) )
-      return null;
+    try
+      {
+      if( calling != null )
+        return calling.invoke( parent, args );  // execute the original method.
+      }
+    finally
+      {
+      Thread.currentThread().setContextClassLoader( currentClassLoader );
+      }
 
-    if( calling.getName().equals( "createTap" ) )
-      return null;
-
-    if( calling.getName().equals( "createScheme" ) )
-      return null;
-
-    throw new IllegalStateException( "unknown method name: " + calling.getName() );
+    throw new IllegalStateException( "unknown method name: " + proceed.getName() );
     }
   }

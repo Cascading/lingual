@@ -24,11 +24,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import cascading.bind.catalog.Stereotype;
 import cascading.bind.catalog.handler.FormatHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.util.MultiProperties;
+import cascading.scheme.Scheme;
 
 /**
  *
@@ -52,6 +54,13 @@ public abstract class LingualFormatHandler implements FormatHandler<Protocol, Fo
     {
     return providerDef;
     }
+
+  /**
+   * Wrap the resulting Scheme in a proxy that swaps out the context classloader.
+   * <p/>
+   * Currently unused, but here for completeness
+   */
+  public abstract Scheme createLoadableScheme( Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format );
 
   public void addProperties( Format format, Map<String, List<String>> values )
     {

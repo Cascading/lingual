@@ -81,4 +81,10 @@ public class ProviderProtocolHandler extends LingualProtocolHandler
 
     return getProviderProxy().createTap( resource, scheme, properties );
     }
+
+  @Override
+  public Tap createLoadableTap( Scheme scheme, Resource<Protocol, Format, SinkMode> resource )
+    {
+    return getProviderProxy().createTapProxy( createTap( scheme, resource ) );
+    }
   }

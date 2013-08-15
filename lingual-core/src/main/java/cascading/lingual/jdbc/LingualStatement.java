@@ -216,12 +216,12 @@ public class LingualStatement implements Statement
       }
     catch( SQLException exception )
       {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
+      LOG.error( "failed executing statement", exception );
       throw exception;
       }
     catch( Throwable exception )
       {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
+      LOG.error( "failed executing statement", exception );
       Throwables.propagate( exception );
       }
 

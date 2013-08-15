@@ -313,9 +313,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     SchemaCatalog catalog = platformBroker.getCatalog();
     String identifier = getIdentifierFor( platformBroker, head );
 
-    createTableFor( catalog, head, identifier );
+    TableDef tableDef = createTableFor( catalog, head, identifier );
 
-    TupleEntryCollector collector = catalog.createTapFor( identifier, SinkMode.KEEP ).openForWrite( platformBroker.getFlowProcess() );
+    TupleEntryCollector collector = catalog.createTapFor( tableDef, SinkMode.KEEP ).openForWrite( platformBroker.getFlowProcess() );
 
     for( List<RexLiteral> values : head.tuples )
       collector.add( EnumerableUtil.createTupleFrom( values ) );
@@ -323,7 +323,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     collector.close();
     }
 
-  private void createTableFor( SchemaCatalog catalog, Ref head, String identifier )
+  private TableDef createTableFor( SchemaCatalog catalog, Ref head, String identifier )
     {
     String stereotypeName = head.name;
     Stereotype stereotype = catalog.getStereoTypeFor( null, head.fields );
@@ -336,7 +336,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     Protocol protocol = catalog.getRootSchemaDef().getDefaultProtocol();
     Format format = catalog.getRootSchemaDef().getDefaultFormat();
 
-    catalog.createTableDefFor( null, head.name, identifier, stereotypeName, protocol, format );
+    String tableName = catalog.createTableDefFor( null, head.name, identifier, stereotypeName, protocol, format );
+
+    return catalog.getSchemaDef( null ).getTable( tableName );
     }
 
   private String setFlowPlanPath( Properties properties, String name )

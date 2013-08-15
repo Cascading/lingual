@@ -804,16 +804,6 @@ public abstract class SchemaCatalog implements Serializable
       }
     }
 
-  public Tap createTapFor( String identifier, SinkMode sinkMode )
-    {
-    TableDef tableDef = findTableDefFor( identifier );
-
-    if( tableDef == null )
-      throw new IllegalArgumentException( "no table for identifier: " + identifier );
-
-    return createTapFor( tableDef, sinkMode );
-    }
-
   public Tap createTapFor( TableDef tableDef, SinkMode sinkMode )
     {
     Protocol protocol = tableDef.getActualProtocol();
@@ -828,11 +818,12 @@ public abstract class SchemaCatalog implements Serializable
     if( formatHandler == null )
       throw new IllegalArgumentException( "no format handler for format: " + format );
 
+    // do not make loadable, tap loadable will handle dynamic classloader issues
     Scheme scheme = formatHandler.createScheme( tableDef.getStereotype(), protocol, format );
 
     Resource<Protocol, Format, SinkMode> resource = tableDef.getResourceWith( sinkMode );
 
-    return protocolHandler.createTap( scheme, resource );
+    return ( (LingualProtocolHandler) protocolHandler ).createLoadableTap( scheme, resource );
     }
 
   private Tap createTapFor( SchemaDef schemaDef, Stereotype<Protocol, Format> stereotype, Resource<Protocol, Format, SinkMode> resource )
@@ -843,9 +834,10 @@ public abstract class SchemaCatalog implements Serializable
     if( protocolHandler == null || formatHandler == null )
       return null;
 
+    // do not make loadable, tap loadable will handle dynamic classloader issues
     Scheme scheme = formatHandler.createScheme( stereotype, resource.getProtocol(), resource.getFormat() );
 
-    return protocolHandler.createTap( scheme, resource );
+    return ( (LingualProtocolHandler) protocolHandler ).createLoadableTap( scheme, resource );
     }
 
   public Resource<Protocol, Format, SinkMode> getResourceFor( String identifier, SinkMode mode )

@@ -743,7 +743,7 @@ public abstract class PlatformBroker<Config>
 
   Map<String, URLClassLoader> classLoaderMap = new HashMap<String, URLClassLoader>();
 
-  private synchronized URLClassLoader getUrlClassLoader( String qualifiedPath ) throws MalformedURLException
+  public synchronized URLClassLoader getUrlClassLoader( String qualifiedPath )
     {
     if( classLoaderMap.containsKey( qualifiedPath ) )
       return classLoaderMap.get( qualifiedPath );
@@ -762,19 +762,26 @@ public abstract class PlatformBroker<Config>
     return urlClassLoader;
     }
 
-  protected URL toURL( String qualifiedPath ) throws MalformedURLException
+  protected URL toURL( String qualifiedPath )
     {
-    URI uri = toURI( qualifiedPath );
+    try
+      {
+      URI uri = toURI( qualifiedPath );
 
-    if( !uri.getScheme().equals( "file" ) )
-      return retrieveTempProvider( qualifiedPath ).toURL();
+      if( !uri.getScheme().equals( "file" ) )
+        return retrieveTempProvider( qualifiedPath ).toURL();
 
-    URLStreamHandlerFactory handlerFactory = getURLStreamHandlerFactory();
+      URLStreamHandlerFactory handlerFactory = getURLStreamHandlerFactory();
 
-    if( handlerFactory == null )
-      return uri.toURL();
+      if( handlerFactory == null )
+        return uri.toURL();
 
-    return new URL( null, uri.toString(), handlerFactory.createURLStreamHandler( uri.getScheme() ) );
+      return new URL( null, uri.toString(), handlerFactory.createURLStreamHandler( uri.getScheme() ) );
+      }
+    catch( MalformedURLException exception )
+      {
+      throw new IllegalStateException( "unable to parse path: " + qualifiedPath, exception );
+      }
     }
 
   protected abstract URI toURI( String qualifiedPath );

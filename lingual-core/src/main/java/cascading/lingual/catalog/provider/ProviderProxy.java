@@ -44,6 +44,7 @@ public class ProviderProxy
   private final ProviderDef providerDef;
 
   private ProviderFactory factoryObject;
+  private ClassLoader classLoader = null;
 
   public ProviderProxy( PlatformBroker platformBroker, ProviderDef providerDef )
     {
@@ -64,10 +65,10 @@ public class ProviderProxy
     if( factoryClass == null )
       throw new RuntimeException( "unable to load factory class: " + factoryClassName );
 
-    return createProxy( factoryClass );
+    return createProviderFactoryProxy( factoryClass );
     }
 
-  private ProviderFactory createProxy( Class factoryClass )
+  private ProviderFactory createProviderFactoryProxy( Class factoryClass )
     {
     ProxyFactory proxyFactory = new ProxyFactory();
 
@@ -76,7 +77,7 @@ public class ProviderProxy
 
     try
       {
-      return (ProviderFactory) proxyFactory.create( new Class[]{}, new Object[]{}, getMethodHandler() );
+      return (ProviderFactory) proxyFactory.create( new Class[]{}, new Object[]{}, getProviderFactoryMethodHandler() );
       }
     catch( Exception exception )
       {
@@ -84,9 +85,40 @@ public class ProviderProxy
       }
     }
 
-  private MethodHandler getMethodHandler()
+  private MethodHandler getProviderFactoryMethodHandler()
     {
-    return new ProviderHandler();
+    return new ProviderFactoryHandler();
+    }
+
+  public Tap createTapProxy( Tap parentTap )
+    {
+    return createProxy( parentTap, Tap.class );
+    }
+
+  public Scheme createSchemeProxy( Scheme parentScheme )
+    {
+    return createProxy( parentScheme, Scheme.class );
+    }
+
+  private <T> T createProxy( T parentTap, Class<T> type )
+    {
+    ProxyFactory proxyFactory = new ProxyFactory();
+
+    proxyFactory.setSuperclass( type );
+
+    try
+      {
+      return (T) proxyFactory.create( new Class[]{}, new Object[]{}, getClassLoaderMethodHandler( parentTap ) );
+      }
+    catch( Exception exception )
+      {
+      throw new RuntimeException( "failed to create proxy", exception );
+      }
+    }
+
+  private MethodHandler getClassLoaderMethodHandler( Object parent )
+    {
+    return new ProxyClassLoaderHandler( classLoader, parent );
     }
 
   public String getDescription()
@@ -140,10 +172,27 @@ public class ProviderProxy
     LOG.debug( "loading: {} from: {}", className, jarPath );
 
     if( jarPath == null ) // its a default factory
-      return Reflection.loadClass( Thread.currentThread().getContextClassLoader(), className );
+      {
+      classLoader = Thread.currentThread().getContextClassLoader();
+      return Reflection.loadClass( classLoader, className );
+      }
 
     String qualifiedPath = platformBroker.makePath( platformBroker.getFullProviderPath(), jarPath );
 
-    return platformBroker.loadClass( qualifiedPath, className );
+    try
+      {
+      return platformBroker.loadClass( qualifiedPath, className );
+      }
+    finally
+      {
+      try
+        {
+        classLoader = platformBroker.getUrlClassLoader( qualifiedPath );
+        }
+      catch( Exception exception )
+        {
+        // do nothing
+        }
+      }
     }
   }
