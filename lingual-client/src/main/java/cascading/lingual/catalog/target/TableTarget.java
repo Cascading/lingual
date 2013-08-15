@@ -78,6 +78,12 @@ public class TableTarget extends CRUDTarget
     }
 
   @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getTableName();
+    }
+
+  @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();

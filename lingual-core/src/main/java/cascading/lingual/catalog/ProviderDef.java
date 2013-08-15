@@ -90,6 +90,11 @@ public class ProviderDef extends Def
     return new ProviderDefinition( getName(), properties ).getDescription();
     }
 
+  public String getFileHash()
+    {
+    return fileHash;
+    }
+
   @Override
   public boolean equals( Object object )
     {

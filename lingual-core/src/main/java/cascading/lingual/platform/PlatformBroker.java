@@ -473,6 +473,12 @@ public abstract class PlatformBroker<Config>
     File sourceFile = new File( sourcePath );
     String targetPath = makePath( getFullProviderPath(), sourceFile.getName() );
 
+    if( pathExists( targetPath ) )
+      {
+      LOG.info( "replacing target {}", targetPath );
+      deletePath( targetPath );
+      }
+
     long bytesCopied;
     InputStream inputStream = null;
     OutputStream outputStream = null;

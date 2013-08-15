@@ -132,6 +132,8 @@ public class Catalog extends Main<CatalogOptions>
   protected boolean handle() throws IOException
     {
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), getConfigProperties() );
+    // force a read to init dynamic enums.
+    platformBroker.getCatalog();
 
     if( getOptions().isInit() )
       return init( platformBroker );

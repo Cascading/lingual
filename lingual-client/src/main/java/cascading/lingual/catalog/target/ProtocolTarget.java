@@ -51,6 +51,7 @@ public class ProtocolTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     Protocol oldProtocol = Protocol.getProtocol( getOptions().getProtocolName() );
+
     Protocol newProtocol = Protocol.getProtocol( getOptions().getRenameName() );
     return catalog.renameProtocol( schemaName, oldProtocol, newProtocol );
     }
@@ -61,6 +62,7 @@ public class ProtocolTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+
     return catalog.removeProtocol( schemaName, protocol );
     }
 
@@ -82,12 +84,21 @@ public class ProtocolTarget extends CRUDTarget
     }
 
   @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getProtocolName();
+    }
+
+  @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
 
-    if( protocol == null )
+    String protocolName = getOptions().getProtocolName();
+
+    if( protocolName == null )
       throw new IllegalArgumentException( "update action must have a protocol name value" );
+
+    Protocol protocol = Protocol.getProtocol( protocolName );
 
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
@@ -149,7 +160,8 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    String protocolName = getOptions().getProtocolName();
+    Protocol protocol = Protocol.getProtocol( protocolName );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );

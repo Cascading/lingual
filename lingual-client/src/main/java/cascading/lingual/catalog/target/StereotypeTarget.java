@@ -82,6 +82,12 @@ public class StereotypeTarget extends CRUDTarget
     }
 
   @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getStereotypeName();
+    }
+
+  @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();

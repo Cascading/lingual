@@ -79,6 +79,12 @@ public class SchemaTarget extends CRUDTarget
     }
 
   @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getSchemaName();
+    }
+
+  @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
     }

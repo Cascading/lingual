@@ -83,6 +83,12 @@ public class RepoTarget extends CRUDTarget
     }
 
   @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getRepoName();
+    }
+
+  @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();

@@ -561,37 +561,37 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getProviderNames( String schemaName )
     {
-    return getSchemaDefChecked( schemaName ).getProviderNames();
+    return getSchemaDef( schemaName ).getProviderNames();
     }
 
   public void addProviderDef( String schemaName, ProviderDef providerDef )
     {
-    getSchemaDefChecked( schemaName ).addProviderDef( providerDef );
+    getSchemaDef( schemaName ).addProviderDef( providerDef );
     }
 
   public ProviderDef findProviderDefFor( String schemaName, Format format )
     {
-    return getSchemaDefChecked( schemaName ).findProviderDefFor( format );
+    return getSchemaDef( schemaName ).findProviderDefFor( format );
     }
 
   public ProviderDef findProviderDefFor( String schemaName, Protocol protocol )
     {
-    return getSchemaDefChecked( schemaName ).findProviderDefFor( protocol );
+    return getSchemaDef( schemaName ).findProviderDefFor( protocol );
     }
 
   public ProviderDef findProviderFor( String schemaName, String providerName )
     {
-    return getSchemaDefChecked( schemaName ).findProviderDefFor( providerName );
+    return getSchemaDef( schemaName ).findProviderDefFor( providerName );
     }
 
   public boolean removeProviderDef( String schemaName, String providerName )
     {
-    return getSchemaDefChecked( schemaName ).removeProviderDef( providerName );
+    return getSchemaDef( schemaName ).removeProviderDef( providerName );
     }
 
   public boolean renameProviderDef( String schemaName, String oldProviderName, String newProviderName )
     {
-    return getSchemaDefChecked( schemaName ).renameProviderDef( oldProviderName, newProviderName );
+    return getSchemaDef( schemaName ).renameProviderDef( oldProviderName, newProviderName );
     }
 
   public Collection<String> getMavenRepoNames()

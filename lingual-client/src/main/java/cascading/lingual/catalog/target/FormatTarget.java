@@ -61,6 +61,10 @@ public class FormatTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     Format format = Format.getFormat( getOptions().getFormatName() );
+
+    if( format == null )
+      throw new IllegalArgumentException( "format: " + format + " not found" );
+
     return catalog.removeFormat( schemaName, format );
     }
 
@@ -78,17 +82,25 @@ public class FormatTarget extends CRUDTarget
         return formatName;
       }
 
-    return null;
+    throw new IllegalArgumentException( "format: " + formatName + " not found" );
+    }
+
+  @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getFormatName();
     }
 
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-    Format format = Format.getFormat( getOptions().getFormatName() );
 
-    if( format == null )
+    String formatName = getOptions().getFormatName();
+
+    if( formatName == null )
       throw new IllegalArgumentException( "update action must have a format name value" );
 
+    Format format = Format.getFormat( formatName );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     String providerName = getOptions().getProviderName();
@@ -148,7 +160,8 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    Format format = Format.getFormat( getOptions().getFormatName() );
+    String formatName = getOptions().getFormatName();
+    Format format = Format.getFormat( formatName );
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );

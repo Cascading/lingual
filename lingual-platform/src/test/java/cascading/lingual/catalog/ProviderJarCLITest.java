@@ -54,13 +54,14 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
   private static final String SPEC = "com.test.provider:test-provider:1.0.0";
   private static final String EXAMPLE_SCHEMA = "example";
   private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLITest.class );
+  private static final String DEFAULT_PROVIDER_FACTORY_NAME = "ProviderFactory";
 
   public ProviderJarCLITest()
     {
     super( true );
     }
 
-  private Collection<File> compileFactory( String path )
+  private Collection<File> compileFactory( String path, String simpleClassName )
     {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
@@ -74,7 +75,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     out.println( "import cascading.tap.Tap;" );
     out.println( "import cascading.tuple.Fields;" );
     out.println( "import cascading.tap.MultiSourceTap;" );
-    out.println( "public class ProviderFactory extends cascading.lingual.catalog.TestProviderFactory" );
+    out.println( "public class " + simpleClassName + " extends cascading.lingual.catalog.TestProviderFactory" );
     out.println( "  {" );
     out.println( "  public Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties )" );
     out.println( "    {" );
@@ -86,7 +87,7 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     out.println( "  }" );
     out.close();
 
-    String className = "lingual.test.ProviderFactory";
+    String className = "lingual.test." + simpleClassName;
     JavaFileObject file = new JavaSourceFromString( className, writer.toString() );
 
     new File( path ).mkdirs();
@@ -112,6 +113,11 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     assertTrue( "compile failed", success );
 
     return FileUtils.listFiles( new File( path ), null, true );
+    }
+
+  private Collection<File> compileFactory( String path )
+    {
+    return compileFactory( path, DEFAULT_PROVIDER_FACTORY_NAME );
     }
 
   @Test
@@ -213,6 +219,31 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
     }
 
   @Test
+  public void testUpdateProviderCLI() throws IOException
+    {
+    Collection<File> classPath = compileFactory( getFactoryPath() );
+    String firstFileHash = createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+
+    initCatalog();
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    Collection<String> jarProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    assertTrue( "first provider not added to catalog: " + jarProviderNames.toString(), jarProviderNames.contains( getSpecProviderName() ) );
+
+    classPath = compileFactory( getFactoryPath(), DEFAULT_PROVIDER_FACTORY_NAME + "New" );
+    String secondFileHash = createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    assertFalse( "second compiled provider showed same md5 sum as first:", secondFileHash.equals( firstFileHash ) );
+
+    // since upload happens before catalog add, this would have throw an exception out if we didn't replace the jar. \
+    // but check that the catalog got updated properly.
+    catalog( "--schema", EXAMPLE_SCHEMA, "--provider", getSpecProviderName(), "--update", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
+    jarProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
+    ProviderDef providerDef = getSchemaCatalog().getSchemaDef( EXAMPLE_SCHEMA ).getProviderDef( jarProviderNames.iterator().next() );
+    assertEquals( "provider description not updated in catalog", secondFileHash, providerDef.getFileHash() );
+    }
+
+  @Test
   public void testRenameProviderCLI() throws IOException
     {
     makeTestMavenRepo();
@@ -232,7 +263,11 @@ public class ProviderJarCLITest extends CLIPlatformTestCase
 
     ProviderDef providerDef = getSchemaCatalog().findProviderFor( EXAMPLE_SCHEMA, "renamed-spec" );
     Map<String, String> providerProps = providerDef.getProperties();
-    String keyName = "cascading.bind.provider.pipe-local.format.tpsv.delimiter";
+    String keyName;
+    if( getPlatform().getName().equals( "local" ) )
+      keyName = "cascading.bind.provider.pipe-local.format.tpsv.delimiter";
+    else
+      keyName = "cascading.bind.provider.pipe-hadoop.format.tpsv.delimiter";
     assertTrue( "renamed provider did not retain properties in " + providerProps.toString(), providerProps.containsKey( keyName ) );
     assertEquals( "renamed provider did not retain value in " + providerProps.toString(), "|", providerProps.get( keyName ) );
     }

@@ -39,7 +39,7 @@ public abstract class Target
     this.options = options;
     }
 
-  public String getName()
+  public String getTargetType()
     {
     return name;
     }

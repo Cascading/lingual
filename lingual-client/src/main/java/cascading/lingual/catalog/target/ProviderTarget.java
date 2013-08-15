@@ -67,14 +67,9 @@ public class ProviderTarget extends CRUDTarget
     }
 
   @Override
-  public boolean updateIsNoop()
-    {
-    return true;
-    }
-
-  @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
+    doAdd( platformBroker, false );
     }
 
   @Override
@@ -96,6 +91,9 @@ public class ProviderTarget extends CRUDTarget
     {
     String providerName = getOptions().getProviderName();
 
+    if( providerName == null )
+      throw new IllegalArgumentException( "name of provider to remove must be given" );
+
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
 
@@ -107,6 +105,12 @@ public class ProviderTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     return catalog.getSchemaDef( getOptions().getSchemaName() ).getProviderDef( getOptions().getProviderName() );
+    }
+
+  @Override
+  protected String getRequestedSourceName()
+    {
+    return getOptions().getProviderName();
     }
 
   @Override
@@ -182,10 +186,13 @@ public class ProviderTarget extends CRUDTarget
 
   protected File getLocalJarFile( PlatformBroker platformBroker )
     {
-    String jarOrSpec = getOptions().getAddURI();
+    String addJarOrSpec = getOptions().getAddURI();
+    String updateJarOrSpec = getOptions().getUpdateURI();
 
-    if( jarOrSpec == null )
+    if( ( addJarOrSpec == null && updateJarOrSpec == null ) || ( addJarOrSpec != null && updateJarOrSpec != null ) )
       throw new IllegalArgumentException( "either jar uri or maven spec is required to define a provider" );
+
+    String jarOrSpec = addJarOrSpec != null ? addJarOrSpec : updateJarOrSpec;
 
     if( !jarOrSpec.endsWith( ".jar" ) )
       return retrieveSpec( platformBroker, jarOrSpec );

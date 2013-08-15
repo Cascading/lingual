@@ -40,6 +40,7 @@ import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.shell.Shell;
 import cascading.lingual.util.Logging;
+import cascading.lingual.util.Misc;
 import com.google.common.collect.ObjectArrays;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -96,7 +97,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return getRootPath() + "/factory/" + getTestName() + "/";
     }
 
-  protected void createProviderJar( String propertiesPath, Collection<File> classPath, String providerPath ) throws IOException
+  protected String createProviderJar( String propertiesPath, Collection<File> classPath, String providerPath ) throws IOException
     {
     List<File> contents = new ArrayList<File>();
     List<File> locations = new ArrayList<File>();
@@ -155,6 +156,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     out.close();
     stream.close();
     LOG.debug( "adding completed OK" );
+    return Misc.getHash( jarFile );
     }
 
   protected void initCatalog() throws IOException
@@ -162,6 +164,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     PlatformBrokerFactory.instance().reloadBrokers();
     getPlatform().remoteRemove( getCatalogPath(), true );
     catalog( "--init" );
+    getSchemaCatalog();
     }
 
   protected SchemaCatalog getSchemaCatalog()

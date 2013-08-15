@@ -86,7 +86,7 @@ public abstract class CRUDTarget extends Target
     List<String> names = performAdd( platformBroker );
 
     for( String name : names )
-      getPrinter().printFormatted( "added %s: %s", getName(), name );
+      getPrinter().printFormatted( "added %s: %s", getTargetType(), name );
 
     return true;
     }
@@ -105,7 +105,7 @@ public abstract class CRUDTarget extends Target
     List<String> names = performUpdate( platformBroker );
 
     for( String name : names )
-      getPrinter().printFormatted( "updated %s: %s", getName(), name );
+      getPrinter().printFormatted( "updated %s: %s", getTargetType(), name );
 
     return true;
     }
@@ -127,14 +127,17 @@ public abstract class CRUDTarget extends Target
       throw new IllegalArgumentException( "rename action must have a rename target" );
 
     if( getSource( platformBroker ) == null )
-      throw new IllegalArgumentException( "original " + getName() + " not found for renaming" );
+      {
+      getPrinter().printFormatted( "original %s: %s not found for renaming", getTargetType(), getRequestedSourceName() );
+      return false;
+      }
 
     boolean result = performRename( platformBroker );
 
     if( result )
-      getPrinter().printFormatted( "successfully renamed %s to: %s", getName(), renameName );
+      getPrinter().printFormatted( "successfully renamed %s to: %s", getTargetType(), renameName );
     else
-      getPrinter().printFormatted( "failed to rename %s to: %s", getName(), renameName );
+      getPrinter().printFormatted( "failed to rename %s to: %s", getTargetType(), renameName );
 
     return result;
     }
@@ -143,20 +146,23 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handleRemove( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: remove", getName() );
+    LOG.debug( "{}: remove", getTargetType() );
 
-    if( getName() == null )
+    if( getTargetType() == null )
       throw new IllegalArgumentException( "remove action must have a remove target" );
 
     if( getSource( platformBroker ) == null )
-      throw new IllegalArgumentException( "original " + getName() + " not found for removal" );
+      {
+      getPrinter().printFormatted( "original %s: %s not found for removal", getTargetType(), getRequestedSourceName() );
+      return false;
+      }
 
     boolean result = performRemove( platformBroker );
 
     if( result )
-      getPrinter().printFormatted( "successfully removed %s", getName() );
+      getPrinter().printFormatted( "successfully removed %s: %s", getTargetType(), getRequestedSourceName() );
     else
-      getPrinter().printFormatted( "failed to remove %s", getName() );
+      getPrinter().printFormatted( "failed to remove %s: %s", getTargetType(), getRequestedSourceName() );
 
     return result;
     }
@@ -165,11 +171,13 @@ public abstract class CRUDTarget extends Target
 
   protected abstract Object getSource( PlatformBroker platformBroker );
 
+  protected abstract String getRequestedSourceName();
+
   protected boolean handlePrint( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: print", getName() );
+    LOG.debug( "{}: print", getTargetType() );
 
-    getPrinter().printLines( getName(), '-', performGetNames( platformBroker ) );
+    getPrinter().printLines( getTargetType(), '-', performGetNames( platformBroker ) );
 
     return true;
     }
@@ -178,25 +186,25 @@ public abstract class CRUDTarget extends Target
 
   protected boolean handleValidateDependencies( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: validate", getName() );
+    LOG.debug( "{}: validate", getTargetType() );
 
     boolean result = performValidateDependencies( platformBroker );
 
-    getPrinter().printFormatted( "%s validation returned: %b", getName(), result );
+    getPrinter().printFormatted( "%s validation returned: %b", getTargetType(), result );
 
     return result;
     }
 
   protected boolean handleShow( PlatformBroker platformBroker )
     {
-    LOG.debug( "{}: show", getName() );
+    LOG.debug( "{}: show", getTargetType() );
 
-    if( getName() == null )
+    if( getTargetType() == null )
       throw new IllegalArgumentException( "show action must have a name" );
 
     Map output = performShow( platformBroker );
 
-    getPrinter().printMap( getName(), output );
+    getPrinter().printMap( getTargetType(), output );
 
     return true;
     }
