@@ -121,12 +121,12 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     SchemaCatalog schemaCatalog = platformBroker.getCatalog();
     Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
 
-    String identifier = tableDef.getIdentifier();
-
     TupleEntryCollector collector;
 
     try
       {
+      String identifier = tableDef.getIdentifier();
+
       if( cache != null && cache.containsKey( identifier ) )
         {
         LOG.debug( "inserting into (cached): {}", identifier );
@@ -135,7 +135,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       else
         {
         LOG.debug( "inserting into: {}", identifier );
-        collector = schemaCatalog.createTapFor( identifier, SinkMode.KEEP ).openForWrite( flowProcess );
+        collector = schemaCatalog.createTapFor( tableDef, SinkMode.KEEP ).openForWrite( flowProcess );
         }
 
       if( cache != null )
