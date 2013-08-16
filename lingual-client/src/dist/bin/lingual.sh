@@ -68,7 +68,7 @@ while [ -n "$1" ]
      esac
  done
 
-LINGUAL_CLASSPATH="$BASE_DIR/platform/$PLATFORM/*:$BASE_DIR/lib/*:$BASE_DIR/bin/*"
+LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/platform/$PLATFORM/*:$BASE_DIR/bin/*"
 
 case $PLATFORM in
    local)
