@@ -34,7 +34,7 @@ Hadoop relies on a single property to reach HDFS, `fs.default.name`. And if not 
 
 For example, to connect to a vagrant based Hadoop cluster as user `vagrant`:
 
-    > HADOOP_USER_NAME=vagrant
+    > export HADOOP_USER_NAME=vagrant
     > export LINGUAL_CONFIG=fs.default.name=hdfs://master.local:9000,mapred.job.tracker=master.local:9001
 
 Any additional use specific properties can be stuffed into the `default.properties` file.
