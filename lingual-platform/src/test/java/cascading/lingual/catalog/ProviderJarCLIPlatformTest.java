@@ -46,17 +46,17 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class ProviderJarCLITest extends CLIPlatformTestCase
+public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
   {
   private static final String MAVEN_LIKE_PATH = "repo/com/test/provider/test-provider/1.0.0/";
   private static final String JAR_NAME = MAVEN_LIKE_PATH + "test-provider-1.0.0.jar";
   private static final String POM = MAVEN_LIKE_PATH + "test-provider-1.0.0.pom";
   private static final String SPEC = "com.test.provider:test-provider:1.0.0";
   private static final String EXAMPLE_SCHEMA = "example";
-  private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLITest.class );
+  private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLIPlatformTest.class );
   private static final String DEFAULT_PROVIDER_FACTORY_NAME = "ProviderFactory";
 
-  public ProviderJarCLITest()
+  public ProviderJarCLIPlatformTest()
     {
     super( true );
     }

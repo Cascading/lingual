@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 import org.junit.Test;
 
 /** Tests that statements are executed using a particular plan. */
-public class ExplainTest extends JDBCPlatformTestCase
+public class ExplainPlatformTest extends JDBCPlatformTestCase
   {
   protected String getDefaultSchemaPath()
     {
@@ -37,7 +37,7 @@ public class ExplainTest extends JDBCPlatformTestCase
     {
     assertPlan2( "select * from sales.emps",
       "EnumerableCalcRel(expr#0..9=[{inputs}], proj#0..9=[{exprs}])\n"
-        + "  TapEnumerableRel(table=[[SALES, EMPS]])\n" );
+        + "  EnumerableTapRel(table=[[SALES, EMPS]])\n" );
     }
 
   @Test

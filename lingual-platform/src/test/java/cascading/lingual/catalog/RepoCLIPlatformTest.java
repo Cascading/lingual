@@ -32,7 +32,7 @@ import static org.junit.Assume.assumeTrue;
 /**
  *
  */
-public class RepoCLITest extends CLIPlatformTestCase
+public class RepoCLIPlatformTest extends CLIPlatformTestCase
   {
 
   public static final String PROP_OMIT_REPO_NETWORK_TEST = "lingual.test.repo.network.omit";

@@ -27,7 +27,7 @@ project.ext.setTestingProperties = {
 
   // hadoop hard codes 'build/test' into its test harness, so might as well play along
   System.properties[ 'test.data.path' ] = new String( "${projectDir}/../lingual-platform/src/test/resources/data/" )
-  System.properties[ 'test.providerjar.path' ] = new String( "${projectDir}/../lingual-platform/build/resources/main/" )
+  System.properties[ 'test.providerjar.path' ] = new String( "${projectDir}/../lingual-platform/src/test/resources/provider/" )
   System.properties[ 'test.output.root' ] = new String( "${buildDir}/test/output/" )
 
   System.properties

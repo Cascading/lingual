@@ -35,7 +35,7 @@ import cascading.lingual.platform.PlatformBroker;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.IBiblioResolver;
-import org.apache.ivy.plugins.resolver.RepositoryResolver;
+import org.apache.ivy.plugins.resolver.URLResolver;
 
 import static java.util.Arrays.asList;
 
@@ -102,10 +102,15 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performValidateDependencies( PlatformBroker platformBroker )
     {
-    RepositoryResolver repositoryResolver = getRepositoryResolver( getRepoFromArgs() );
+    IBiblioResolver iBiblioResolver = getRepositoryResolver( getRepoFromArgs() );
+    // IBiblioResolver doesn't support listOrganisations() so use a resolver that supports simple checks.
+    URLResolver resolver = new URLResolver();
+    resolver.setM2compatible( iBiblioResolver.isM2compatible() );
+    resolver.setName( iBiblioResolver.getName() );
     IvySettings ivySettings = new IvySettings();
-    ivySettings.addResolver( repositoryResolver );
-    ivySettings.setDefaultResolver( repositoryResolver.getName() );
+    ivySettings.addResolver( resolver );
+    ivySettings.setDefaultResolver( resolver.getName() );
+    resolver.addArtifactPattern( iBiblioResolver.getRoot() + M2_PATTERN );
     Ivy ivy = Ivy.newInstance( ivySettings );
 
     return ivy.listOrganisations().length > 0;
@@ -136,7 +141,7 @@ public class RepoTarget extends CRUDTarget
     return new Repo( repoName, repoUrl );
     }
 
-  protected static RepositoryResolver getRepositoryResolver( Repo repo )
+  protected static IBiblioResolver getRepositoryResolver( Repo repo )
     {
     String repoUrl = repo.getRepoUrl();
 
