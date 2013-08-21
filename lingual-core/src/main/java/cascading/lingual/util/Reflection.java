@@ -138,6 +138,18 @@ public class Reflection
     return invokeInstanceMethod( target, methodName, new Object[]{parameter}, new Class[]{parameterType} );
     }
 
+  public static <T> T invokeInstanceMethodSafe( Object target, String methodName, Object parameter, Class parameterType )
+    {
+    try
+      {
+      return invokeInstanceMethod( target, methodName, new Object[]{parameter}, new Class[]{parameterType} );
+      }
+    catch( Exception exception )
+      {
+      return null;
+      }
+    }
+
   public static <T> T invokeInstanceMethod( Object target, String methodName, Object[] parameters, Class[] parameterTypes )
     {
     try

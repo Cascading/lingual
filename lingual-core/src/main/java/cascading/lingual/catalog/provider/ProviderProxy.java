@@ -32,6 +32,7 @@ import cascading.lingual.util.Reflection;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.type.FileType;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import org.slf4j.Logger;
@@ -92,6 +93,9 @@ public class ProviderProxy
 
   public Tap createTapProxy( Tap parentTap )
     {
+    if( parentTap instanceof FileType )
+      return createProxy( parentTap, Tap.class, FileType.class );
+
     return createProxy( parentTap, Tap.class );
     }
 
@@ -100,11 +104,14 @@ public class ProviderProxy
     return createProxy( parentScheme, Scheme.class );
     }
 
-  private <T> T createProxy( T parentTap, Class<T> type )
+  private <T> T createProxy( T parentTap, Class<T> type, Class... interfaces )
     {
     ProxyFactory proxyFactory = new ProxyFactory();
 
     proxyFactory.setSuperclass( type );
+
+    if( interfaces.length != 0 )
+      proxyFactory.setInterfaces( interfaces );
 
     try
       {

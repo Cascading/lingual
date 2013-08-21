@@ -56,6 +56,7 @@ import cascading.lingual.util.InsensitiveMap;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.type.FileType;
 import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -772,8 +773,11 @@ public abstract class SchemaCatalog implements Serializable
 
     Tap tap = createTapFor( schemaDef, schemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
 
-    if( !resourceExists( tap ) )
+    if( !resourceExistsAndNotEmpty( tap ) )
+      {
+      LOG.debug( "not loading fields for: {}, tap does not exist or is empty", tap );
       return null;
+      }
 
     Fields fields = tap.retrieveSourceFields( platformBroker.getFlowProcess() );
 
@@ -782,14 +786,22 @@ public abstract class SchemaCatalog implements Serializable
     return fields;
     }
 
-  private boolean resourceExists( Tap tap )
+  private boolean resourceExistsAndNotEmpty( Tap tap )
     {
     if( tap == null )
       return false;
 
     try
       {
-      return tap.resourceExists( platformBroker.getFlowProcess().getConfigCopy() );
+      Object configCopy = platformBroker.getFlowProcess().getConfigCopy();
+
+      if( !tap.resourceExists( configCopy ) )
+        return false;
+
+      if( !( tap instanceof FileType ) )
+        return true;
+
+      return ( (FileType) tap ).getSize( configCopy ) != 0;
       }
     catch( IOException exception )
       {
