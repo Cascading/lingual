@@ -62,6 +62,11 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
 
     catalog.createTableDefFor( "TEST", null, SALES_DEPTS_TABLE, (Fields) null, null, null );
 
+    catalog.createStereotype( "TEST", "testStereoType", new Fields( "a", "b", "c" ) );
+
+    assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "testStereoType" ) );
+    assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "TESTSTEREOTYPE" ) );
+
     assertEquals( "SALES", catalog.createSchemaDefAndTableDefsFor( SALES_SCHEMA ) );
 
     broker.writeCatalog();
@@ -78,6 +83,9 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
 
     assertTrue( catalog.getSchemaNames().contains( "TEST" ) );
     assertTrue( catalog.getSchemaDef( "TEST" ).getChildTableNames().contains( "DEPTS" ) );
+
+    assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "testStereoType" ) );
+    assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "TESTSTEREOTYPE" ) );
 
     catalog.renameSchemaDef( "TEST", "NEWTEST" );
     assertFalse( catalog.getSchemaNames().contains( "TEST" ) );

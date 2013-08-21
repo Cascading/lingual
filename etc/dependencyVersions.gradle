@@ -28,7 +28,7 @@ ext.cascadingVersion = '2.2.0-+'
 if( System.properties[ 'lingual.release.local' ] )
   ext.cascadingVersion = '2.2.0-wip-dev'
 
-ext.bindVersion = "wip-81"
+ext.bindVersion = "wip-106"
 ext.bindChanging = false
 ext.linq4jVersion = '0.1.5'
 ext.linq4jChanging = false
