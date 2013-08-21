@@ -48,6 +48,8 @@ import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.LingualFormatHandler;
 import cascading.lingual.platform.LingualProtocolHandler;
 import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.platform.provider.ProviderFormatHandler;
+import cascading.lingual.platform.provider.ProviderProtocolHandler;
 import cascading.lingual.tap.TapSchema;
 import cascading.lingual.tap.TapTable;
 import cascading.lingual.util.InsensitiveMap;
@@ -58,6 +60,7 @@ import cascading.tuple.Fields;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 import net.hydromatic.optiq.impl.java.MapSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,28 +195,18 @@ public abstract class SchemaCatalog implements Serializable
 
   public ProtocolHandlers<Protocol, Format> getProtocolHandlers( Def def )
     {
-    return new ProtocolHandlers<Protocol, Format>( createProtocolHandlers( def ) );
-    }
+    if( def instanceof TableDef ) // we aren't storing provider properties in TableDef
+      def = def.getParentSchema();
 
-  private List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( Def def )
-    {
-    if( def instanceof TableDef )
-      return createProtocolHandlers( (TableDef) def );
-
-    return createProtocolHandlers( ( (SchemaDef) def ) );
+    return new ProtocolHandlers<Protocol, Format>( createProtocolHandlers( (SchemaDef) def ) );
     }
 
   public FormatHandlers<Protocol, Format> getFormatHandlersFor( Def def )
     {
-    return new FormatHandlers<Protocol, Format>( createFormatHandlers( def ) );
-    }
+    if( def instanceof TableDef ) // we aren't storing provider properties in TableDef
+      def = def.getParentSchema();
 
-  private List<FormatHandler<Protocol, Format>> createFormatHandlers( Def def )
-    {
-    if( def instanceof TableDef )
-      return createFormatHandlers( (TableDef) def );
-
-    return createFormatHandlers( ( (SchemaDef) def ) );
+    return new FormatHandlers<Protocol, Format>( createFormatHandlers( (SchemaDef) def ) );
     }
 
   public SchemaDef getRootSchemaDef()
@@ -858,83 +851,159 @@ public abstract class SchemaCatalog implements Serializable
     return new Resource<Protocol, Format, SinkMode>( tableDef.getParentSchema().getName(), tableDef.identifier, protocol, format, mode );
     }
 
-  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( TableDef tableDef )
-    {
-    Protocol protocol = tableDef.getActualProtocol();
-    ProviderDef providerDef = tableDef.getParentSchema().findProviderDefFor( protocol );
-    ProtocolHandler<Protocol, Format> handler = createProtocolHandler( providerDef );
-
-    Map<String, List<String>> properties = tableDef.getParentSchema().findAllProtocolProperties( protocol );
-
-    ( (LingualProtocolHandler) handler ).addProperties( protocol, properties );
-
-    return Arrays.asList( handler );
-    }
-
   protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
     {
     Map<String, ProtocolHandler<Protocol, Format>> handlers = new HashMap<String, ProtocolHandler<Protocol, Format>>();
-    Collection<Protocol> protocols = Arrays.asList( schemaDef.findDefaultProtocol() );
 
-    for( Protocol protocol : protocols )
+    Map<String, ProviderDef> providerDefs = schemaDef.getAllProviderDefsMap();
+
+    for( Map.Entry<String, ProviderDef> entry : providerDefs.entrySet() ) // retain insert order
       {
-      ProviderDef providerDef = schemaDef.findProviderDefFor( protocol );
-      ProtocolHandler protocolHandler = handlers.get( providerDef.getName() );
+      ProviderDef providerDef = entry.getValue();
 
-      if( protocolHandler == null )
+      ProtocolHandler<Protocol, Format> handler;
+
+      ProviderDef extendsDef = null;
+
+      if( providerDef.getExtends() != null )
         {
-        protocolHandler = createProtocolHandler( providerDef );
-        handlers.put( providerDef.getName(), protocolHandler );
+        extendsDef = providerDefs.get( providerDef.getExtends() );
+
+        if( extendsDef == null )
+          throw new IllegalStateException( "provider: " + providerDef.getName() + " extends: " + providerDef.getExtends() + ", was not found" );
+
+        handler = createProtocolHandler( extendsDef );
+        }
+      else
+        {
+        handler = createProtocolHandler( providerDef );
         }
 
-      Map<String, List<String>> protocolProperties = schemaDef.findAllProtocolProperties( protocol );
+      String providerName = providerDef.getName();
 
-      ( (LingualProtocolHandler) protocolHandler ).addProperties( protocol, protocolProperties );
+      if( extendsDef != null )
+        {
+        Map<Protocol, Map<String, List<String>>> properties = providerDef.getProtocolProperties();
+
+        for( Protocol protocol : properties.keySet() )
+          ( (LingualProtocolHandler) handler ).addProperties( protocol, properties.get( protocol ) );
+        }
+
+      handlers.put( providerName, handler );
+      }
+
+    Collection<Protocol> allProtocols = schemaDef.getAllProtocols();
+
+    for( Protocol protocol : allProtocols )
+      {
+      Map<String, List<String>> schemaProperties = schemaDef.findProtocolProperties( protocol );
+
+      if( schemaProperties.isEmpty() )
+        continue;
+
+      List<String> providerNames = schemaProperties.get( SchemaProperties.PROVIDER );
+
+      if( providerNames == null || providerNames.isEmpty() )
+        {
+        LOG.debug( "no providers found for format: " + protocol );
+        continue;
+        }
+
+      if( providerNames.size() != 1 )
+        throw new IllegalStateException( "for protocol: " + protocol + ", found multiple providers: [" + Joiner.on( ',' ).join( providerNames ) + "]" );
+
+      ProtocolHandler<Protocol, Format> handler = handlers.get( providerNames.get( 0 ) );
+
+      if( handler == null )
+        throw new IllegalStateException( "no provider found for: " + providerNames.get( 0 ) );
+
+      ( (LingualProtocolHandler) handler ).addProperties( protocol, schemaProperties );
       }
 
     return new ArrayList<ProtocolHandler<Protocol, Format>>( handlers.values() );
     }
 
-  protected List<FormatHandler<Protocol, Format>> createFormatHandlers( TableDef tableDef )
-    {
-    Format format = tableDef.getActualFormat();
-    ProviderDef providerDef = tableDef.getParentSchema().findProviderDefFor( format );
-    FormatHandler<Protocol, Format> handler = createFormatHandler( providerDef );
-
-    Map<String, List<String>> properties = tableDef.getParentSchema().findAllFormatProperties( format );
-
-    ( (LingualFormatHandler) handler ).addProperties( format, properties );
-
-    return Arrays.asList( handler );
-    }
-
   protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
     {
     Map<String, FormatHandler<Protocol, Format>> handlers = new HashMap<String, FormatHandler<Protocol, Format>>();
-    Collection<Format> formats = Arrays.asList( schemaDef.findDefaultFormat() );
 
-    for( Format format : formats )
+    Map<String, ProviderDef> providerDefs = schemaDef.getAllProviderDefsMap();
+
+    for( Map.Entry<String, ProviderDef> entry : providerDefs.entrySet() ) // retain insert order
       {
-      ProviderDef providerDef = schemaDef.findProviderDefFor( format );
-      FormatHandler formatHandler = handlers.get( providerDef.getName() );
+      ProviderDef providerDef = entry.getValue();
 
-      if( formatHandler == null )
+      FormatHandler<Protocol, Format> handler;
+
+      ProviderDef extendsDef = null;
+
+      if( providerDef.getExtends() != null )
         {
-        formatHandler = createFormatHandler( providerDef );
-        handlers.put( providerDef.getName(), formatHandler );
+        extendsDef = providerDefs.get( providerDef.getExtends() );
+
+        if( extendsDef == null )
+          throw new IllegalStateException( "provider: " + providerDef.getName() + " extends: " + providerDef.getExtends() + ", was not found" );
+
+        handler = createFormatHandler( extendsDef );
+        }
+      else
+        {
+        handler = createFormatHandler( providerDef );
         }
 
-      Map<String, List<String>> formatProperties = schemaDef.findAllFormatProperties( format );
+      String providerName = providerDef.getName();
 
-      ( (LingualFormatHandler) formatHandler ).addProperties( format, formatProperties );
+      if( extendsDef != null )
+        {
+        Map<Format, Map<String, List<String>>> properties = providerDef.getFormatProperties();
+
+        for( Format format : properties.keySet() )
+          ( (LingualFormatHandler) handler ).addProperties( format, properties.get( format ) );
+        }
+
+      handlers.put( providerName, handler );
+      }
+
+    Collection<Format> allFormats = schemaDef.getAllFormats();
+
+    for( Format format : allFormats )
+      {
+      Map<String, List<String>> schemaProperties = schemaDef.findFormatProperties( format );
+
+      if( schemaProperties.isEmpty() )
+        continue;
+
+      List<String> providerNames = schemaProperties.get( SchemaProperties.PROVIDER );
+
+      if( providerNames == null || providerNames.isEmpty() )
+        {
+        LOG.debug( "no providers found for format: " + format );
+        continue;
+        }
+
+      if( providerNames.size() != 1 )
+        throw new IllegalStateException( "for format: " + format + ", found multiple providers: [" + Joiner.on( ',' ).join( providerNames ) + "]" );
+
+      FormatHandler<Protocol, Format> handler = handlers.get( providerNames.get( 0 ) );
+
+      if( handler == null )
+        throw new IllegalStateException( "no provider found for: " + providerNames.get( 0 ) );
+
+      ( (LingualFormatHandler) handler ).addProperties( format, schemaProperties );
       }
 
     return new ArrayList<FormatHandler<Protocol, Format>>( handlers.values() );
     }
 
-  protected abstract ProtocolHandler<Protocol, Format> createProtocolHandler( ProviderDef providerDef );
+  protected ProtocolHandler<Protocol, Format> createProtocolHandler( ProviderDef providerDef )
+    {
+    return new ProviderProtocolHandler( getPlatformBroker(), providerDef );
+    }
 
-  protected abstract FormatHandler<Protocol, Format> createFormatHandler( ProviderDef providerDef );
+  protected FormatHandler<Protocol, Format> createFormatHandler( ProviderDef providerDef )
+    {
+    return new ProviderFormatHandler( getPlatformBroker(), providerDef );
+    }
 
   public void addUpdateFormat( String schemaName, Format format, List<String> extensions, Map<String, String> properties, String providerName )
     {

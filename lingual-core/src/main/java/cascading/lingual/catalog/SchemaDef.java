@@ -220,7 +220,7 @@ public class SchemaDef extends Def
       {
       LOG.info( "no provider set for protocol: " + protocol + ", in schema: " + getName() );
 
-      if( providerProperties.keySet().size() == 0)
+      if( providerProperties.keySet().size() == 0 )
         throw new IllegalStateException( "protocol: " + protocol + " not available from provider" );
 
       if( providerProperties.keySet().size() > 1 )
@@ -249,7 +249,7 @@ public class SchemaDef extends Def
     return allProperties;
     }
 
-  private Map<String, List<String>> findProtocolProperties( Protocol protocol )
+  protected Map<String, List<String>> findProtocolProperties( Protocol protocol )
     {
     Map<String, List<String>> result = new LinkedHashMap<String, List<String>>();
 
@@ -271,19 +271,26 @@ public class SchemaDef extends Def
     return result;
     }
 
-  public Map<Protocol, List<String>> getPropertyByProtocols( String property )
+  public Map<Protocol, List<String>> findPropertyByProtocols( String property )
     {
     Map<Protocol, List<String>> values = new HashMap<Protocol, List<String>>();
 
-    populateProtocolProperty( values, property );
+    findProtocolProperty( values, property );
 
     return values;
     }
 
-  private void populateProtocolProperty( Map<Protocol, List<String>> values, String property )
+  private void findProtocolProperty( Map<Protocol, List<String>> values, String property )
     {
     if( !isRoot() )
-      getParentSchema().populateProtocolProperty( values, property );
+      getParentSchema().findProtocolProperty( values, property );
+
+    for( ProviderDef providerDef : getProviderDefs() )
+      {
+      MultiProperties<Protocol> providerProperties = MultiProperties.create( providerDef.getProtocolProperties() );
+
+      values.putAll( providerProperties.getKeyFor( property ) );
+      }
 
     values.putAll( protocolProperties.getKeyFor( property ) );
     }
@@ -377,7 +384,8 @@ public class SchemaDef extends Def
     return allProperties;
     }
 
-  private Map<String, List<String>> findFormatProperties( Format format )
+  // format properties, excluding defaults from providers
+  protected Map<String, List<String>> findFormatProperties( Format format )
     {
     Map<String, List<String>> result = new LinkedHashMap<String, List<String>>();
 
@@ -399,19 +407,26 @@ public class SchemaDef extends Def
     return result;
     }
 
-  public Map<Format, List<String>> getPropertyByFormats( String property )
+  public Map<Format, List<String>> findPropertyByFormats( String property )
     {
     Map<Format, List<String>> values = new HashMap<Format, List<String>>();
 
-    populateFormatProperty( values, property );
+    findFormatProperty( values, property );
 
     return values;
     }
 
-  private void populateFormatProperty( Map<Format, List<String>> values, String property )
+  private void findFormatProperty( Map<Format, List<String>> values, String property )
     {
     if( !isRoot() )
-      getParentSchema().populateFormatProperty( values, property );
+      getParentSchema().findFormatProperty( values, property );
+
+    for( ProviderDef providerDef : getProviderDefs() )
+      {
+      MultiProperties<Format> providerProperties = MultiProperties.create( providerDef.getFormatProperties() );
+
+      values.putAll( providerProperties.getKeyFor( property ) );
+      }
 
     values.putAll( formatProperties.getKeyFor( property ) );
     }
@@ -730,6 +745,25 @@ public class SchemaDef extends Def
     return new ArrayList<ProviderDef>( providerDefs );
     }
 
+  public Map<String, ProviderDef> getAllProviderDefsMap()
+    {
+    // top down, topmost take precedence
+    Map<String, ProviderDef> providerDefs = new LinkedHashMap<String, ProviderDef>( providers );
+
+    if( !isRoot() )
+      {
+      Map<String, ProviderDef> parentMap = getParentSchema().getAllProviderDefsMap();
+
+      for( String name : parentMap.keySet() )
+        {
+        if( !providerDefs.containsKey( name ) )
+          providerDefs.put( name, parentMap.get( name ) );
+        }
+      }
+
+    return providerDefs;
+    }
+
   public ProviderDef getProviderDef( String providerDefName )
     {
     return providers.get( providerDefName );
@@ -748,7 +782,8 @@ public class SchemaDef extends Def
 
   public ProviderDef getProtocolProvider( Protocol protocol )
     {
-    List<String> providers = getProtocolProperty( protocol, ProtocolProperties.PROVIDER );
+    Map<Protocol, List<String>> map = findPropertyByProtocols( FormatProperties.PROVIDER );
+    List<String> providers = map.get( protocol );
 
     if( providers.isEmpty() )
       return null;
@@ -760,7 +795,8 @@ public class SchemaDef extends Def
 
   public ProviderDef getFormatProvider( Format format )
     {
-    List<String> providers = getFormatProperty( format, ProtocolProperties.PROVIDER );
+    Map<Format, List<String>> map = findPropertyByFormats( FormatProperties.PROVIDER );
+    List<String> providers = map.get( format );
 
     if( providers.isEmpty() )
       return null;

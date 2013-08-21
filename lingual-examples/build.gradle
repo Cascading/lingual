@@ -30,3 +30,5 @@ fatJar {
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
 }
+
+platformTest.enabled = false

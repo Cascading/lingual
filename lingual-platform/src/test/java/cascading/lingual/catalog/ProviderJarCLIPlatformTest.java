@@ -127,7 +127,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     initCatalog();
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
 
     // validate a jar provider
@@ -147,7 +147,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     makeTestMavenRepo();
     initCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
 
@@ -168,7 +168,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     {
     initCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     int initialSize = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA ).size();
 
     // A provider defined entirely on the CLI always passes validation but should
@@ -198,7 +198,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     makeTestMavenRepo();
     initCatalog();
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
 
     // spec-based
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
@@ -225,7 +225,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     String firstFileHash = createProviderJar( TEST_PROPERTIES_FACTORY_LOCATION, classPath, getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
     initCatalog();
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
 
     catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
     Collection<String> jarProviderNames = getSchemaCatalog().getProviderNames( EXAMPLE_SCHEMA );
@@ -249,7 +249,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     makeTestMavenRepo();
     initCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
 
     catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", SPEC );
@@ -293,7 +293,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
@@ -308,7 +308,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     SchemaCatalog schemaCatalog = getSchemaCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
 
     catalog( "--schema", EXAMPLE_SCHEMA,
       "--format", "psv", "--add", "--extensions", ".tpsv", "--provider", "text",
@@ -336,10 +336,10 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     initCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", getProviderPath( TEST_PROVIDER_JAR_NAME ) );
 
-    catalog( "--schema", "results", "--add" );
+    catalog( "--schema", "results", "--add", getSchemaPath( "results" ) );
     catalog(
       "--stereotype", "results", "--add",
       "--columns", Joiner.on( "," ).join( PRODUCTS_COLUMNS ),
@@ -361,11 +361,11 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
-//    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
     // spawn a job
     assertTrue( shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) );
     // spawn results into a unique table/scheme with differing providers meta-data
-//    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
+    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
     }
 
   @Test
@@ -375,11 +375,11 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     makeTestMavenRepo();
     initCatalog();
 
-    catalog( "--schema", EXAMPLE_SCHEMA, "--add" );
+    catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     catalog( "--repo", "testRepo", "--add", new File( getProviderPath( "repo" ) ).getAbsolutePath() );
     catalog( "--schema", EXAMPLE_SCHEMA, "--provider", "--add", SPEC );
 
-    catalog( "--schema", "results", "--add" );
+    catalog( "--schema", "results", "--add", getSchemaPath( "results" ) );
     catalog(
       "--stereotype", "results", "--add",
       "--columns", Joiner.on( "," ).join( PRODUCTS_COLUMNS ),

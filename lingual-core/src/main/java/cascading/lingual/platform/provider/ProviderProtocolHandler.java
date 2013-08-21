@@ -49,8 +49,6 @@ public class ProviderProtocolHandler extends LingualProtocolHandler
     {
     super( providerDef );
     this.platformBroker = platformBroker;
-
-    getProviderProxy();
     }
 
   private ProviderProxy getProviderProxy()

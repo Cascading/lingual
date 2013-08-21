@@ -72,7 +72,7 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
 
     catalog( "--stereotype" );
 
-    catalog( "--schema", AD_HOC_SCHEMA, "--add" );
+    catalog( "--schema", AD_HOC_SCHEMA, "--add", getSchemaPath( AD_HOC_SCHEMA ) );
     catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--add", SALES_EMPS_TABLE, "--stereotype", EMPS_STEREOTYPE_NAME );
     catalog( "--schema", AD_HOC_SCHEMA, "--table" );
 

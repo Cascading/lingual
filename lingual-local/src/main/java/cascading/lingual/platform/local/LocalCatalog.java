@@ -20,14 +20,9 @@
 
 package cascading.lingual.platform.local;
 
-import cascading.bind.catalog.handler.FormatHandler;
-import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.platform.provider.ProviderFormatHandler;
-import cascading.lingual.platform.provider.ProviderProtocolHandler;
 
 /**
  *
@@ -47,17 +42,5 @@ public class LocalCatalog extends SchemaCatalog
   public LocalCatalog()
     {
     super( DEFAULT_PROTOCOL, DEFAULT_FORMAT );
-    }
-
-  @Override
-  protected ProtocolHandler createProtocolHandler( ProviderDef providerDef )
-    {
-    return new ProviderProtocolHandler( getPlatformBroker(), providerDef );
-    }
-
-  @Override
-  protected FormatHandler createFormatHandler( ProviderDef providerDef )
-    {
-    return new ProviderFormatHandler( getPlatformBroker(), providerDef );
     }
   }

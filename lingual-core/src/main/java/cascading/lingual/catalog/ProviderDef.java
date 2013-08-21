@@ -70,6 +70,11 @@ public class ProviderDef extends Def
     return properties;
     }
 
+  public String getExtends()
+    {
+    return new ProviderDefinition( getName(), properties ).getExtends();
+    }
+
   public String getFactoryClassName()
     {
     return new ProviderDefinition( getName(), properties ).getFactoryClassName();
@@ -94,6 +99,16 @@ public class ProviderDef extends Def
     {
     return fileHash;
     }
+
+//  public boolean handlesProtocols()
+//    {
+//    return !getProtocolProperties().keySet().isEmpty();
+//    }
+
+//  public boolean handlesFormats()
+//    {
+//    return !getFormatProperties().keySet().isEmpty();
+//    }
 
   @Override
   public boolean equals( Object object )

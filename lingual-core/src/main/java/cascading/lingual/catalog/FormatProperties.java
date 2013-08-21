@@ -48,7 +48,7 @@ public class FormatProperties extends SchemaProperties
     if( schemaDef == null )
       return null;
 
-    Map<Format, List<String>> extensions = schemaDef.getPropertyByFormats( EXTENSIONS );
+    Map<Format, List<String>> extensions = schemaDef.findPropertyByFormats( EXTENSIONS );
 
     String extension = identifier.replaceAll( ".*\\.([^.]+)$", ".$1" );
 

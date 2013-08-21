@@ -42,6 +42,15 @@ public class MultiProperties<K> implements Serializable
   @JsonIgnore
   private Table<K, String, List<String>> properties = HashBasedTable.create();
 
+  public static <K> MultiProperties<K> create( Map<K, Map<String, List<String>>> map )
+    {
+    MultiProperties<K> multiProperties = new MultiProperties<K>();
+
+    multiProperties.setProperties( map );
+
+    return multiProperties;
+    }
+
   public MultiProperties()
     {
     }

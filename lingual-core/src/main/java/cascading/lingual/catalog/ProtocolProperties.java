@@ -36,7 +36,7 @@ public class ProtocolProperties extends SchemaProperties
     if( schemaDef == null )
       return null;
 
-    Map<Protocol, List<String>> uris = schemaDef.getPropertyByProtocols( SCHEMES );
+    Map<Protocol, List<String>> uris = schemaDef.findPropertyByProtocols( SCHEMES );
 
     URI uri = URI.create( identifier );
     String scheme = uri.getScheme();

@@ -92,6 +92,11 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return getRootPath() + "/table/" + getTestName() + "/result.tcsv";
     }
 
+  protected String getSchemaPath( String schemaName )
+    {
+    return getRootPath() + "/table/" + getTestName() + "/" + schemaName;
+    }
+
   protected String getFactoryPath()
     {
     return getRootPath() + "/factory/" + getTestName() + "/";
@@ -196,7 +201,8 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
 
   protected boolean shellSQL( String sql ) throws IOException
     {
-    String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName()};
+    String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName(),
+                                 "--resultPath", getResultPath()};
     Shell shell = createShell( new ByteArrayInputStream( sql.concat( "\n" ).getBytes() ) );
     return shell.execute( args );
     }
