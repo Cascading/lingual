@@ -34,6 +34,7 @@ import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 /**
  *
@@ -50,8 +51,12 @@ public class FormatTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    Format oldFormat = Format.getFormat( getOptions().getFormatName() );
+    Format oldFormat = getSource( platformBroker );
     Format newFormat = Format.getFormat( getOptions().getRenameName() );
+
+    if( oldFormat == null )
+      return false;
+
     return catalog.renameFormat( schemaName, oldFormat, newFormat );
     }
 
@@ -60,29 +65,26 @@ public class FormatTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    Format format = Format.getFormat( getOptions().getFormatName() );
-
-    if( format == null )
-      throw new IllegalArgumentException( "format: " + format + " not found" );
+    Format format = getSource( platformBroker );
 
     return catalog.removeFormat( schemaName, format );
     }
 
   @Override
-  protected String getSource( PlatformBroker platformBroker )
+  protected Format getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    String schemaName = getOptions().getSchemaName();
-    String formatName = getOptions().getFormatName();
-    Collection<Format> formats = catalog.getSchemaDef( schemaName ).getAllFormats();
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
 
-    for( Format format : formats )
-      {
-      if( format.getName().equals( formatName ) )
-        return formatName;
-      }
+    if( getRequestedSourceName() == null )
+      return null;
 
-    throw new IllegalArgumentException( "format: " + formatName + " not found" );
+    Format format = Format.getFormat( getRequestedSourceName() );
+
+    if( !schemaDef.getSchemaDefinedFormats().contains( format ) )
+      return null;
+
+    return format;
     }
 
   @Override
@@ -94,13 +96,16 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-
     String formatName = getOptions().getFormatName();
 
     if( formatName == null )
       throw new IllegalArgumentException( "update action must have a format name value" );
 
-    Format format = Format.getFormat( formatName );
+    Format format = getSource( platformBroker );
+
+    if( format == null )
+      return emptyList();
+
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
     String providerName = getOptions().getProviderName();
@@ -117,10 +122,10 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
-    Format format = Format.getFormat( getOptions().getFormatName() );
+    String formatName = getRequestedSourceName();
 
-    if( format == null )
-      throw new IllegalArgumentException( "add action must have a format name value" );
+    if( formatName == null )
+      throw new IllegalArgumentException( "add action must have a valid format name value" );
 
     String providerName = getOptions().getProviderName();
 
@@ -160,11 +165,12 @@ public class FormatTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    String formatName = getOptions().getFormatName();
-    Format format = Format.getFormat( formatName );
+    Format format = Format.getFormat( getRequestedSourceName() );
     SchemaCatalog catalog = platformBroker.getCatalog();
-    String schemaName = getOptions().getSchemaName();
-    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( getOptions().getSchemaName() );
+
+    if( !schemaDef.getAllFormats().contains( format ) )
+      return null;
 
     return new FormatBuilder( schemaDef, getOptions().getProviderName() ).format( format );
     }

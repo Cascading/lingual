@@ -133,11 +133,12 @@ public class ProviderTarget extends CRUDTarget
   protected Map performShow( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    String schemaName = getOptions().getSchemaName();
-    ProviderDef providerDef = catalog.findProviderFor( schemaName, getOptions().getProviderName() );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( getOptions().getSchemaName() );
+
+    ProviderDef providerDef = schemaDef.findProviderDefFor( getOptions().getProviderName() );
 
     if( providerDef == null )
-      throw new IllegalStateException( "provider not found: " + getOptions().getProviderName() );
+      return null;
 
     return new ProviderBuilder().format( providerDef );
     }

@@ -639,7 +639,7 @@ public class SchemaDef extends Def
     return stereotypes.getStereotypeFor( name ) != null;
     }
 
-  public Collection<Protocol> getAllProtocols()
+  public Collection<Protocol> getSchemaDefinedProtocols()
     {
     Set<Protocol> protocols = new HashSet<Protocol>();
 
@@ -648,13 +648,20 @@ public class SchemaDef extends Def
 
     protocols.addAll( protocolProperties.getKeys() );
 
+    return protocols;
+    }
+
+  public Collection<Protocol> getAllProtocols()
+    {
+    Collection<Protocol> protocols = getSchemaDefinedProtocols();
+
     if( !isRoot() )
       protocols.addAll( getParentSchema().getAllProtocols() );
 
     return protocols;
     }
 
-  public Collection<Format> getAllFormats()
+  public Collection<Format> getSchemaDefinedFormats()
     {
     Set<Format> formats = new HashSet<Format>();
 
@@ -662,6 +669,13 @@ public class SchemaDef extends Def
       formats.addAll( providerDef.getFormatProperties().keySet() );
 
     formats.addAll( formatProperties.getKeys() );
+
+    return formats;
+    }
+
+  public Collection<Format> getAllFormats()
+    {
+    Collection<Format> formats = getSchemaDefinedFormats();
 
     if( !isRoot() )
       formats.addAll( getParentSchema().getAllFormats() );
@@ -679,7 +693,7 @@ public class SchemaDef extends Def
     return names;
     }
 
-  public Collection<String> getProtocolNames()
+  public Collection<String> getAllProtocolNames()
     {
     Set<String> names = new TreeSet<String>();
 

@@ -534,7 +534,7 @@ public abstract class SchemaCatalog implements Serializable
 
   public Collection<String> getProtocolNames( String schemaName )
     {
-    return getSchemaDefChecked( schemaName ).getProtocolNames();
+    return getSchemaDefChecked( schemaName ).getAllProtocolNames();
     }
 
   public List<String> getProtocolProperty( String schemeName, String protocol, String propertyName )
@@ -587,7 +587,7 @@ public abstract class SchemaCatalog implements Serializable
     return getSchemaDef( schemaName ).renameProviderDef( oldProviderName, newProviderName );
     }
 
-  public Collection<String> getMavenRepoNames()
+  public Collection<String> getRepoNames()
     {
     return repositories.keySet();
     }
@@ -597,7 +597,7 @@ public abstract class SchemaCatalog implements Serializable
     return repositories.values();
     }
 
-  public Repo getMavenRepo( String repoName )
+  public Repo getRepo( String repoName )
     {
     return repositories.get( repoName );
     }
@@ -607,12 +607,12 @@ public abstract class SchemaCatalog implements Serializable
     repositories.put( repo.getRepoName(), repo );
     }
 
-  public void removeMavenRepo( String repoName )
+  public void removeRepo( String repoName )
     {
     repositories.remove( repoName );
     }
 
-  public boolean renameMavenRepo( String oldName, String newName )
+  public boolean renameRepo( String oldName, String newName )
     {
     Repo oldRepo = repositories.get( oldName );
 

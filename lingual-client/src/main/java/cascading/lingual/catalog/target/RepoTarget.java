@@ -73,13 +73,13 @@ public class RepoTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
 
-    return catalog.renameMavenRepo( getOptions().getRepoName(), getOptions().getRenameName() );
+    return catalog.renameRepo( getOptions().getRepoName(), getOptions().getRenameName() );
     }
 
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getMavenRepo( getOptions().getRepoName() );
+    return platformBroker.getCatalog().getRepo( getOptions().getRepoName() );
     }
 
   @Override
@@ -94,7 +94,7 @@ public class RepoTarget extends CRUDTarget
     SchemaCatalog catalog = platformBroker.getCatalog();
     String repoName = getOptions().getRepoName();
 
-    catalog.removeMavenRepo( repoName );
+    catalog.removeRepo( repoName );
 
     return true;
     }
@@ -119,13 +119,20 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getMavenRepoNames();
+    return platformBroker.getCatalog().getRepoNames();
     }
 
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    return new RepoBuilder().format( getRepoFromArgs() );
+    SchemaCatalog catalog = platformBroker.getCatalog();
+    String repoName = getOptions().getRepoName();
+    Repo repo = catalog.getRepo( repoName );
+
+    if( repo == null )
+      return null;
+
+    return new RepoBuilder().format( repo );
     }
 
   private Repo getRepoFromArgs()
@@ -135,6 +142,7 @@ public class RepoTarget extends CRUDTarget
 
     if( repoName == null )
       throw new IllegalArgumentException( "repo add action must have a repo name" );
+
     if( repoUrl == null )
       throw new IllegalArgumentException( "repo add action must have an url" );
 

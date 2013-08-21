@@ -190,7 +190,15 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     Collection<String> stereotypeNames = schemaCatalog.getStereotypeNames();
     assertTrue( "initial stereotype missing from: " + stereotypeNames.toString(), stereotypeNames.contains( "emps_fr" ) );
 
-    // do renames
+    // renaming no-existing targets should fail
+    catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", "fakeprotocol", "--rename", JDBC_PROTOCOL_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", "fakeformat", "--rename", TABLE_FORMAT_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", "faketable", "--rename", TEST_TABLE_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--stereotype", "fakestereotype", "--rename", EMPS_STEREOTYPE_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--schema", "fakeschema", "--rename", AD_HOC_SCHEMA + RENAME_TO_SUFFIX );
+
+
+    // valid renames should work
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--rename", JDBC_PROTOCOL_NAME + RENAME_TO_SUFFIX );
     protocolNames = getSchemaCatalog().getProtocolNames( "adhoc_fr" );
     assertTrue( "renamed protocol missing from: " + protocolNames.toString(), protocolNames.contains( "jdbc_to" ) );
@@ -281,7 +289,6 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     assertTrue( "protocol properties missing values from " + protocolProperties.toString(), protocolProperties.containsAll( expectedProtocolProperties ) );
     }
 
-
   @Test
   public void testShowCommandCLI() throws IOException
     {
@@ -315,6 +322,11 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", AD_HOC_SCHEMA, "--table", TEST_TABLE_NAME, "--show" );
     catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--show" );
     catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--show" );
-    }
 
+    // commands for invalid targets should fail
+    catalog( false, "--provider", "badprovider", "--show" );
+    catalog( false, "--schema", AD_HOC_SCHEMA, "--table", "badtable", "--show" );
+    catalog( false, "--schema", AD_HOC_SCHEMA, "--format", "badformat", "--show" );
+    catalog( false, "--schema", AD_HOC_SCHEMA, "--protocol", "badprotocol", "--show" );
+    }
   }

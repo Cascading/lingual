@@ -33,6 +33,8 @@ import com.google.common.base.Joiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Collections.emptyList;
+
 /**
  *
  */
@@ -102,6 +104,12 @@ public abstract class CRUDTarget extends Target
     if( updateIsNoop() )
       return true;
 
+    if( getSource( platformBroker ) == null )
+      {
+      getPrinter().printFormatted( "%s: %s does not exist or is not owned by specified schema", getTargetType(), getRequestedSourceName() );
+      return false;
+      }
+
     List<String> names = performUpdate( platformBroker );
 
     for( String name : names )
@@ -112,9 +120,10 @@ public abstract class CRUDTarget extends Target
 
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-    performRemove( platformBroker );
+    if( performRemove( platformBroker ) )
+      return performAdd( platformBroker );
 
-    return performAdd( platformBroker );
+    return emptyList();
     }
 
   protected boolean handleRename( PlatformBroker platformBroker )
@@ -128,7 +137,7 @@ public abstract class CRUDTarget extends Target
 
     if( getSource( platformBroker ) == null )
       {
-      getPrinter().printFormatted( "original %s: %s not found for renaming", getTargetType(), getRequestedSourceName() );
+      getPrinter().printFormatted( "%s: %s does not exist or is not owned by specified schema", getTargetType(), getRequestedSourceName() );
       return false;
       }
 
@@ -153,7 +162,7 @@ public abstract class CRUDTarget extends Target
 
     if( getSource( platformBroker ) == null )
       {
-      getPrinter().printFormatted( "original %s: %s not found for removal", getTargetType(), getRequestedSourceName() );
+      getPrinter().printFormatted( "%s: %s does not exist or is not owned by specified schema", getTargetType(), getRequestedSourceName() );
       return false;
       }
 
@@ -203,6 +212,12 @@ public abstract class CRUDTarget extends Target
       throw new IllegalArgumentException( "show action must have a name" );
 
     Map output = performShow( platformBroker );
+
+    if( output == null )
+      {
+      getPrinter().printFormatted( "%s: %s not found", getTargetType(), getRequestedSourceName() );
+      return false;
+      }
 
     getPrinter().printMap( getTargetType(), output );
 

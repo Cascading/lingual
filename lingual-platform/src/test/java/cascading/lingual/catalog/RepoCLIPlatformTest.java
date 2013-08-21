@@ -57,7 +57,7 @@ public class RepoCLIPlatformTest extends CLIPlatformTestCase
       }
 
     initCatalog();
-    int initialSize = getSchemaCatalog().getMavenRepoNames().size();
+    int initialSize = getSchemaCatalog().getRepoNames().size();
 
     // a legit repo that should pass
     catalog( "--repo", "conjars", "--validate", "--add", "http://conjars.org/repo" );
@@ -66,7 +66,7 @@ public class RepoCLIPlatformTest extends CLIPlatformTestCase
     catalog( false, "--repo", "conjars", "--validate", "--add", "http://conjars.org/not_a_valid_repo/" );
 
     // confirm that validate doesn't add any any repos
-    int finalSize = getSchemaCatalog().getMavenRepoNames().size();
+    int finalSize = getSchemaCatalog().getRepoNames().size();
     assertEquals( "repo list should not have changed size", initialSize, finalSize );
 
     }
@@ -78,7 +78,7 @@ public class RepoCLIPlatformTest extends CLIPlatformTestCase
 
     // check we start with default repos.
     SchemaCatalog schemaCatalog = getSchemaCatalog();
-    Collection<String> mavenRepoNames = schemaCatalog.getMavenRepoNames();
+    Collection<String> mavenRepoNames = schemaCatalog.getRepoNames();
     assertEquals( "values found in " + mavenRepoNames.toString(), 3, mavenRepoNames.size() );
     assertTrue( "missing mavencentral", mavenRepoNames.contains( "mavencentral" ) );
     assertTrue( "missing mavenlocal", mavenRepoNames.contains( "mavenlocal" ) );
@@ -86,13 +86,13 @@ public class RepoCLIPlatformTest extends CLIPlatformTestCase
 
     // add in a repo at root level
     catalog( "--repo", "testrootrepo", "--add", "http://foo.root.com" );
-    mavenRepoNames = schemaCatalog.getMavenRepoNames();
+    mavenRepoNames = schemaCatalog.getRepoNames();
     assertTrue( "On root add, testrootrepo not found in " + mavenRepoNames.toString(), mavenRepoNames.contains( "testrootrepo" ) );
 
     // remove a repo
     catalog( "--repo", "testrootrepo", "--remove" );
     // should be gone
-    mavenRepoNames = schemaCatalog.getMavenRepoNames();
+    mavenRepoNames = schemaCatalog.getRepoNames();
     assertFalse( "On root remove, testrootrepo still found in " + mavenRepoNames.toString(), mavenRepoNames.contains( "testrootrepo" ) );
     // should still have the default repos
     assertEquals( "On root remove, wrong # of repos found in " + mavenRepoNames.toString(), 3, mavenRepoNames.size() );

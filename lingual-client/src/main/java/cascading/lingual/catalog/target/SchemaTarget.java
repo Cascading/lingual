@@ -122,7 +122,8 @@ public class SchemaTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
+
     return new SchemaBuilder().format( schemaDef );
     }
   }

@@ -34,6 +34,7 @@ import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 /**
  *
@@ -50,9 +51,12 @@ public class ProtocolTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    Protocol oldProtocol = Protocol.getProtocol( getOptions().getProtocolName() );
-
+    Protocol oldProtocol = getSource( platformBroker );
     Protocol newProtocol = Protocol.getProtocol( getOptions().getRenameName() );
+
+    if( oldProtocol == null )
+      return false;
+
     return catalog.renameProtocol( schemaName, oldProtocol, newProtocol );
     }
 
@@ -61,26 +65,26 @@ public class ProtocolTarget extends CRUDTarget
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    Protocol protocol = getSource( platformBroker );
 
     return catalog.removeProtocol( schemaName, protocol );
     }
 
   @Override
-  protected Object getSource( PlatformBroker platformBroker )
+  protected Protocol getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
-    String sourceProtocol = getOptions().getProtocolName();
-    String schemaName = getOptions().getSchemaName();
-    Collection<Protocol> protocols = catalog.getSchemaDef( schemaName ).getAllProtocols();
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
 
-    for( Protocol protocol : protocols )
-      {
-      if( protocol.getName().equals( sourceProtocol ) )
-        return sourceProtocol;
-      }
+    if( getRequestedSourceName() == null )
+      return null;
 
-    return null;
+    Protocol protocol = Protocol.getProtocol( getRequestedSourceName() );
+
+    if( !schemaDef.getSchemaDefinedProtocols().contains( protocol ) )
+      return null;
+
+    return protocol;
     }
 
   @Override
@@ -92,13 +96,15 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-
     String protocolName = getOptions().getProtocolName();
 
     if( protocolName == null )
       throw new IllegalArgumentException( "update action must have a protocol name value" );
 
-    Protocol protocol = Protocol.getProtocol( protocolName );
+    Protocol protocol = getSource( platformBroker );
+
+    if( protocol == null )
+      return emptyList();
 
     SchemaCatalog catalog = platformBroker.getCatalog();
     String schemaName = getOptions().getSchemaName();
@@ -116,10 +122,10 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
-    Protocol protocol = Protocol.getProtocol( getOptions().getProtocolName() );
+    String protocolName = getRequestedSourceName();
 
-    if( protocol == null )
-      throw new IllegalArgumentException( "add action must have a protocol name value" );
+    if( protocolName == null )
+      throw new IllegalArgumentException( "add action must have a valid protocol name value" );
 
     String providerName = getOptions().getProviderName();
 
@@ -160,11 +166,12 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    String protocolName = getOptions().getProtocolName();
-    Protocol protocol = Protocol.getProtocol( protocolName );
+    Protocol protocol = Protocol.getProtocol( getRequestedSourceName() );
     SchemaCatalog catalog = platformBroker.getCatalog();
-    String schemaName = getOptions().getSchemaName();
-    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
+    SchemaDef schemaDef = catalog.getSchemaDefChecked( getOptions().getSchemaName() );
+
+    if( !schemaDef.getAllProtocols().contains( protocol ) )
+      return null;
 
     return new ProtocolBuilder( schemaDef, getOptions().getProviderName() ).format( protocol );
     }
