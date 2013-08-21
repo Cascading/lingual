@@ -22,6 +22,7 @@ package cascading.lingual.optiq.enumerable;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -177,6 +178,8 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
 
+    ClassLoader jarLoader = getJarClassLoader( platformBroker, flowFactory );
+
     Flow flow;
 
     try
@@ -209,6 +212,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       {
       LOG.debug( "starting flow: {}", flow.getName() );
 
+      if( jarLoader != null )
+        Thread.currentThread().setContextClassLoader( jarLoader );
+
       flow.complete(); // intentionally blocks
 
       LOG.debug( "completed flow: {}", flow.getName() );
@@ -223,6 +229,11 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
         LOG.error( "with root cause", rootCause );
 
       throw new RuntimeException( "flow failed", exception );
+      }
+    finally
+      {
+      if( jarLoader != null )
+        Thread.currentThread().setContextClassLoader( jarLoader.getParent() );
       }
 
     LOG.debug( "reading results fields: {}", flow.getSink().getSinkFields().printVerbose() );
@@ -247,6 +258,18 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapObjectEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     else
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
+    }
+
+  private ClassLoader getJarClassLoader( PlatformBroker platformBroker, LingualFlowFactory flowFactory )
+    {
+    if( flowFactory.getJars().isEmpty() ) // will retrieve remote jars and make them local
+      return null;
+
+    String[] jarsArray = flowFactory.getJarsArray();
+
+    LOG.debug( "creating context loader for: {}", Arrays.toString( jarsArray ) );
+
+    return platformBroker.getUrlClassLoader( jarsArray );
     }
 
   private Resource<Protocol, Format, SinkMode> createResultResource( PlatformBroker platformBroker, LingualFlowFactory flowFactory )

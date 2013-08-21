@@ -40,6 +40,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.FlowConnector;
@@ -747,14 +749,16 @@ public abstract class PlatformBroker<Config>
       }
     }
 
-  Map<String, URLClassLoader> classLoaderMap = new HashMap<String, URLClassLoader>();
+  Map<Set<String>, URLClassLoader> classLoaderMap = new HashMap<Set<String>, URLClassLoader>();
 
-  public synchronized URLClassLoader getUrlClassLoader( String qualifiedPath )
+  public synchronized URLClassLoader getUrlClassLoader( String... qualifiedPaths )
     {
-    if( classLoaderMap.containsKey( qualifiedPath ) )
-      return classLoaderMap.get( qualifiedPath );
+    Set<String> key = new TreeSet<String>( Arrays.asList( qualifiedPaths ) );
 
-    URL[] urls = new URL[]{toURL( qualifiedPath )};
+    if( classLoaderMap.containsKey( key ) )
+      return classLoaderMap.get( key );
+
+    URL[] urls = toURLs( qualifiedPaths );
 
     if( LOG.isDebugEnabled() )
       LOG.debug( "loading from: {}", Arrays.toString( urls ) );
@@ -763,9 +767,19 @@ public abstract class PlatformBroker<Config>
 
     URLClassLoader urlClassLoader = new URLClassLoader( urls, classLoader, null );
 
-    classLoaderMap.put( qualifiedPath, urlClassLoader );
+    classLoaderMap.put( key, urlClassLoader );
 
     return urlClassLoader;
+    }
+
+  public URL[] toURLs( String... qualifiedPaths )
+    {
+    URL[] results = new URL[ qualifiedPaths.length ];
+
+    for( int i = 0; i < qualifiedPaths.length; i++ )
+      results[ i ] = toURL( qualifiedPaths[ i ] );
+
+    return results;
     }
 
   protected URL toURL( String qualifiedPath )

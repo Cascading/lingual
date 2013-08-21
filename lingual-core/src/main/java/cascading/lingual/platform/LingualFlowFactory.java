@@ -110,6 +110,16 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     Collections.addAll( jars, jarPaths );
     }
 
+  public Set<String> getJars()
+    {
+    return jars;
+    }
+
+  public String[] getJarsArray()
+    {
+    return jars.toArray( new String[ jars.size() ] );
+    }
+
   @Override
   public Flow create()
     {
