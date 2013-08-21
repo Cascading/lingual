@@ -33,6 +33,7 @@ import org.junit.Test;
  */
 public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   {
+  @Override
   protected String getDefaultSchemaPath()
     {
     return SALES_SCHEMA;

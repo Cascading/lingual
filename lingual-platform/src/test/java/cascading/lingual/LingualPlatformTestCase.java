@@ -46,6 +46,9 @@ public abstract class LingualPlatformTestCase extends PlatformTestCase
   public static final String SIMPLE_SALES_FACT_TABLE = SIMPLE_SCHEMA + "sales_fact_1997.tcsv";
   public static final String SIMPLE_PRODUCTS_TABLE = SIMPLE_SCHEMA + "products.tpsv";
 
+  public static final String EXAMPLE_SCHEMA = "example";
+
+
   public static final String[] EMPS_COLUMNS = new String[]{
     "EMPNO", "NAME", "DEPTNO", "GENDER", "CITY", "EMPID", "AGE", "SLACKER", "MANAGER"
   };

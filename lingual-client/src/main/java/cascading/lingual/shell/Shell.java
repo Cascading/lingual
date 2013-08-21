@@ -172,15 +172,17 @@ public class Shell extends Main<ShellOptions>
 
     String sql = getOptions().getSqlFile();
 
+    boolean result = false;
     if( sql == null )
       {
+      result = true; // interactive use assumes interactive validation.
       LOG.info( "starting shell" );
       SqlLine.main( sqlLineArgs );
       }
     else if( "-".equals( sql ) )
       {
       LOG.info( "reading from stdin" );
-      SqlLine.mainWithInputRedirection( sqlLineArgs, inputStream );
+      result = SqlLine.mainWithInputRedirection( sqlLineArgs, inputStream );
       }
     else
       {
@@ -189,7 +191,7 @@ public class Shell extends Main<ShellOptions>
       InputStream commandStream = new ByteArrayInputStream( runCommand.getBytes() );
       try
         {
-        SqlLine.mainWithInputRedirection( sqlLineArgs, commandStream );
+        result = SqlLine.mainWithInputRedirection( sqlLineArgs, commandStream );
         }
       finally
         {
@@ -197,6 +199,6 @@ public class Shell extends Main<ShellOptions>
         }
       }
 
-    return true;
+    return result;
     }
   }

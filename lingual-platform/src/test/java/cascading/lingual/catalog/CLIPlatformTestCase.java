@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -189,34 +190,28 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     {
     args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
     boolean result = createCatalog().execute( args );
-    assertEquals( "executeCatalog returned false", expectedResult, result );
+    assertEquals( "'catalog " + Arrays.deepToString( args ) + "' returned incorrect status ", expectedResult, result );
     }
 
-  protected boolean shell( String... args ) throws IOException
+  protected void shellSQL( String sql ) throws IOException
     {
-    args = ObjectArrays.concat( new String[]{"--verbose", "debug"}, args, String.class );
-    Shell shell = createShell();
-    return shell.execute( args );
+    shellSQL( true, sql );
     }
 
-  protected boolean shellSQL( String sql ) throws IOException
+  protected void shellSQL( boolean expectedResult, String sql ) throws IOException
     {
     String[] args = new String[]{"--verbose", "debug", "--sql", "-", "--platform", getPlatformName(),
                                  "--resultPath", getResultPath()};
     Shell shell = createShell( new ByteArrayInputStream( sql.concat( "\n" ).getBytes() ) );
-    return shell.execute( args );
+    boolean result = shell.execute( args );
+    assertEquals( "'" + sql + "' returned incorrect status", expectedResult, result );
     }
+
 
   protected Catalog createCatalog()
     {
     Properties platformProperties = getPlatformProperties();
     return new Catalog( System.out, System.err, platformProperties );
-    }
-
-  private Shell createShell()
-    {
-    Properties platformProperties = getPlatformProperties();
-    return new Shell( System.out, System.err, platformProperties );
     }
 
   private Shell createShell( InputStream inputStream )

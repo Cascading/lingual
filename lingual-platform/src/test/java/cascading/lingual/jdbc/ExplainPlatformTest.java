@@ -27,6 +27,7 @@ import org.junit.Test;
 /** Tests that statements are executed using a particular plan. */
 public class ExplainPlatformTest extends JDBCPlatformTestCase
   {
+  @Override
   protected String getDefaultSchemaPath()
     {
     return SALES_SCHEMA;

@@ -188,12 +188,6 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     assertTablesEqual( expectedTable, sqlQuery );
     }
 
-  protected void assertExecutes( String sqlQuery ) throws Exception
-    {
-    ResultSet result = executeSql( sqlQuery );
-    Table resultTable = createTable( result );
-    }
-
   protected void assertTableValuesEqual( Table expectedTable, String sqlQuery ) throws Exception
     {
     ResultSet result = executeSql( sqlQuery );
@@ -206,17 +200,6 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     {
     ResultSet result = executeSql( sqlQuery );
     Table resultTable = createTable( result );
-
-    assertEquals( expectedTable, resultTable );
-    }
-
-  protected void assertNamedTablesEqual( String expectedTableName, String resultTableName ) throws Exception
-    {
-    TupleEntryIterator expectedIterator = getTable( expectedTableName );
-    TupleEntryIterator resultIterator = getTable( resultTableName );
-
-    Table expectedTable = createTable( expectedIterator );
-    Table resultTable = createTable( resultIterator );
 
     assertEquals( expectedTable, resultTable );
     }

@@ -52,7 +52,6 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
   private static final String JAR_NAME = MAVEN_LIKE_PATH + "test-provider-1.0.0.jar";
   private static final String POM = MAVEN_LIKE_PATH + "test-provider-1.0.0.pom";
   private static final String SPEC = "com.test.provider:test-provider:1.0.0";
-  private static final String EXAMPLE_SCHEMA = "example";
   private static final Logger LOG = LoggerFactory.getLogger( ProviderJarCLIPlatformTest.class );
   private static final String DEFAULT_PROVIDER_FACTORY_NAME = "ProviderFactory";
 
@@ -296,7 +295,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--add", getSchemaPath( EXAMPLE_SCHEMA ) );
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
-    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    shellSQL( "select * from \"example\".\"products\";" );
     }
 
   @Test
@@ -323,7 +322,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     catalog( "--provider", providerDef.getName(), "--show" );
 
-    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    shellSQL( "select * from \"example\".\"products\";" );
     }
 
   @Test
@@ -361,11 +360,11 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
-    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    shellSQL( "select * from \"example\".\"products\";" ) ;
     // spawn a job
-    assertTrue( shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) );
+    shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) ;
     // spawn results into a unique table/scheme with differing providers meta-data
-    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
+    shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" );
     }
 
   @Test
@@ -401,11 +400,11 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
-    assertTrue( shellSQL( "select * from \"example\".\"products\";" ) );
+    shellSQL( "select * from \"example\".\"products\";" );
     // spawn a job
-    assertTrue( shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) );
+    shellSQL( "select * from \"example\".\"products\" where SKU is not null;" );
     // spawn results into a unique table/scheme with differing providers meta-data
-    assertTrue( shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" ) );
+    shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" );
     }
 
   protected void makeTestMavenRepo() throws IOException
