@@ -59,7 +59,6 @@ import org.eigenbase.rex.RexNode;
 import org.eigenbase.rex.RexProgram;
 import org.eigenbase.rex.RexProgramBuilder;
 import org.eigenbase.util.Pair;
-import org.eigenbase.util.Permutation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +73,7 @@ class CalcProjectUtil
   {
   private static final Logger LOG = LoggerFactory.getLogger( CalcProjectUtil.class );
 
-  static Branch resolveBranch( Stack stack, CascadingRelNode node, RexProgram program )
+  static Branch resolveBranch0( Stack stack, CascadingRelNode node, RexProgram program )
     {
     CascadingRelNode child = (CascadingRelNode) ( (SingleRel) node ).getChild();
     CalcProjectUtil.checkRowType( node );
@@ -97,55 +96,85 @@ class CalcProjectUtil
 //    Fields outputProjects = createTypedFields( cluster, getOutputProjectsRowType( program ) );
     ///////////////////////
 
-    boolean isPermutation = program.isPermutation();
-    Permutation permutation = program.getPermutation();
-    boolean isFilter = program.getCondition() != null;
-    boolean isComplex = ProgramUtil.isComplex( program );
-    boolean onlyProjectsNarrow = ProgramUtil.isOnlyProjectsNarrow( program );
-    boolean hasConstants = ProgramUtil.hasConstants( program );
-    boolean hasFunctions = ProgramUtil.hasFunctions( program );
+    final Analyzed analyze = ProgramUtil.analyze( program );
 
     Pair<? extends Pipe, RelDataType> pair = Pair.of( branch.current, incomingRowType );
-    if( isPermutation && !permutation.isIdentity() )
+    if( analyze.permutation != null && !analyze.permutation.isIdentity() )
       {
-      if( hasConstants || hasFunctions )
+      if( analyze.hasConstants || analyze.hasFunctions )
         throw new IllegalStateException( "permutation projection has constant and function transforms" );
 
-      Fields permutationFields = createPermutationFields( incomingFields, permutation );
+      Fields permutationFields = createPermutationFields( incomingFields, analyze.permutation );
 
       pair = Pair.of( new Rename( pair.left, permutationFields, resultFields ), pair.right );
       }
     else
       {
-      if( isFilter )
-        pair = addFilter( cluster, program, pair.left, pair.right );
+      if( analyze.isFilter )
+        {
+        Pipe filter = addFilter( cluster, program, pair.left );
+        pair = Pair.of( filter, null );
+        }
 
-      if( isComplex )
+      if( analyze.isComplex )
         {
         pair = addFunction( cluster, program, pair.left, false, pair.right );
         }
       else
         {
-        if( hasFunctions )
+        if( analyze.hasFunctions )
           pair = addFunction( cluster, program, pair.left, true, pair.right );
 
-        if( hasConstants )
+        if( analyze.hasConstants )
           pair = addConstants( node, program, pair.left, pair.right );
 
-        boolean isRename = ProgramUtil.isOnlyRename( program );
+        boolean isRename = analyze.isOnlyRename;
         if( isRename )
           pair = addRename( cluster, program, pair.left, pair.right );
 
-        if( onlyProjectsNarrow ) // discard constants etc
+        if( analyze.onlyProjectsNarrow ) // discard constants etc
           resultFields = getNarrowFields( cluster, program );
         }
       }
 
-    pair = addRetain( cluster, resultFields, pair.left, pair.right );
+    // TODO: create program that just projects resultFields
+    RexProgram retainProgram = RexProgram.createIdentity( null );
+    Pipe retain = addRetain( cluster, retainProgram, pair.left );
+    pair = Pair.of( retain, null );
 
     Pipe pipe = stack.addDebug( node, pair.left );
 
     return new Branch( pipe, branch );
+    }
+
+  static Branch resolveBranch( Stack stack, CascadingRelNode node, RexProgram program )
+    {
+    final RelOptCluster cluster = node.getCluster();
+    Split split = Split.of( program, cluster.getRexBuilder() );
+
+    CascadingRelNode child = (CascadingRelNode) ( (SingleRel) node ).getChild();
+    Branch branch = child.visitChild( stack );
+    Pipe pipe = branch.current;
+    for( Pair<Op, RexProgram> pair : split.list )
+      {
+      pipe = addProgram( cluster, pipe, pair.left, pair.right );
+      }
+    pipe = stack.addDebug( node, pipe );
+
+    return new Branch( pipe, branch );
+    }
+
+  static Pipe addProgram( RelOptCluster cluster, Pipe pipe, Op op, RexProgram program )
+    {
+    switch( op )
+      {
+      case FILTER:
+        return addFilter( cluster, program, pipe );
+      case RETAIN:
+        return addRetain( cluster, program, pipe );
+      default:
+        throw new AssertionError( op ); // TODO:
+      }
     }
 
   private static boolean isRenameDuplicate( RelOptCluster cluster, RelDataType incomingRowType, RexProgram program )
@@ -163,20 +192,19 @@ class CalcProjectUtil
     return false;
     }
 
-  private static Pair<Pipe, RelDataType> addRetain( RelOptCluster cluster, Fields resultFields, Pipe pipe, RelDataType incomingRowType )
+  private static Pipe addRetain( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    Retain retain = new Retain( pipe, resultFields );
-    RelDataType outRowType = incomingRowType; // FIXME
-    return Pair.of( (Pipe) retain, outRowType );
+    assert ProgramUtil.analyze( program ).isPureRetain();
+    Fields resultFields = createTypedFields( cluster, program.getOutputRowType() );
+    return new Retain( pipe, resultFields );
     }
 
   private static Pair<Pipe, RelDataType> addRename( RelOptCluster cluster, RexProgram program, Pipe pipe, RelDataType incomingRowType )
     {
     boolean isRenameDuplicate = isRenameDuplicate( cluster, incomingRowType, program );
-    boolean hasConstants = ProgramUtil.hasConstants( program );
-    boolean hasFunctions = ProgramUtil.hasFunctions( program );
+    final Analyzed analyze = ProgramUtil.analyze( program );
     final List<Integer> deletedFields;
-    if( isRenameDuplicate && !( hasFunctions || hasConstants ) ) // are renaming into an existing field [city0->city]
+    if( isRenameDuplicate && !( analyze.hasFunctions || analyze.hasConstants ) ) // are renaming into an existing field [city0->city]
       {
       RelDataType outputProjects = removeIdentity( incomingRowType, program );
       RelDataType duplicatesRowType = getDuplicatesRowType( incomingRowType, outputProjects );
@@ -241,9 +269,9 @@ class CalcProjectUtil
     return Pair.of( each, outRowType );
     }
 
-  private static Pair<Pipe, RelDataType> addFilter( RelOptCluster cluster, RexProgram program, Pipe pipe, RelDataType incomingRowType )
+  private static Pipe addFilter( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    final Fields incomingFields = createTypedFields( cluster, incomingRowType );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
     BlockBuilder statements = new BlockBuilder();
 
     Expression condition = RexToLixTranslator.translateCondition(
@@ -262,7 +290,7 @@ class CalcProjectUtil
     boolean keepsAllRecords = condition instanceof ConstantExpression && Boolean.TRUE.equals( ( (ConstantExpression) condition ).value );
 
     if( keepsAllRecords )
-      return Pair.of( pipe, incomingRowType );
+      return pipe;
 
     // create a filter to remove records that don't meet the expression
     Expression nullToFalse = Expressions.call( Functions.class, "falseIfNull", condition );
@@ -278,7 +306,7 @@ class CalcProjectUtil
     Filter expressionFilter = new ScriptFilter( expression, incomingFields.getTypesClasses() ); // handles coercions
 
     Each each = new Each( pipe, expressionFilter );
-    return Pair.of( (Pipe) each, incomingRowType );
+    return each;
     }
 
   private static Pair<Pipe, RelDataType> addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe, boolean narrow, RelDataType incomingRowType )

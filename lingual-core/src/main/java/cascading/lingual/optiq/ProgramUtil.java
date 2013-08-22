@@ -20,25 +20,22 @@
 
 package cascading.lingual.optiq;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import net.hydromatic.linq4j.Ord;
 import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.reltype.RelDataTypeField;
 import org.eigenbase.reltype.RelRecordType;
 import org.eigenbase.rex.*;
+import org.eigenbase.util.Pair;
+import org.eigenbase.util.Permutation;
 
 /**
  *
  */
 class ProgramUtil
   {
-  public static boolean hasFunctions( RexProgram program )
+  private static boolean hasFunctions( RexProgram program )
     {
     List<RexLocalRef> projects = program.getProjectList();
     RelDataType inputRowType = program.getInputRowType();
@@ -53,7 +50,7 @@ class ProgramUtil
     return false;
     }
 
-  public static boolean hasConstants( RexProgram program )
+  private static boolean hasConstants( RexProgram program )
     {
     List<RexLocalRef> projects = program.getProjectList();
 
@@ -82,7 +79,7 @@ class ProgramUtil
     };
     }
 
-  public static boolean isOnlyRename( RexProgram program )
+  private static boolean isOnlyRename( RexProgram program )
     {
     RelDataType inputProjects = getInputProjectsRowType( program );
     RelDataType outputProjects = getOutputProjectsRowType( program );
@@ -112,7 +109,28 @@ class ProgramUtil
     return false;
     }
 
-  public static boolean isComplex( RexProgram program )
+  /** Returns whether a program returns a subset of its input fields. Fields
+   * are in the same order, and no input field is output more than once.
+   * There is no condition or non-trivial expressions. */
+  private static boolean isRetain( RexProgram program )
+    {
+    if( program.getCondition() != null )
+      return false;
+    if( program.getExprList().size() > program.getInputRowType().getFieldCount() )
+      return false;
+    final HashSet<Integer> used = new HashSet<Integer>();
+    for( Pair<RexLocalRef, String> pair : program.getNamedProjects() )
+      {
+      final int index = pair.left.getIndex();
+      if( !used.add( index ) )
+        return false; // field used more than once
+      if( !program.getInputRowType().getFieldNames().get( index ).equals( pair.right ) )
+        return false; // field projected with different name
+      }
+    return true;
+    }
+
+  private static boolean isComplex( RexProgram program )
     {
     RelDataType inputProjects = getInputProjectsRowType( program );
     RelDataType outputProjects = getOutputProjectsRowType( program );
@@ -131,7 +149,7 @@ class ProgramUtil
     return false;
     }
 
-  public static boolean isOnlyProjectsNarrow( RexProgram program )
+  private static boolean isOnlyProjectsNarrow( RexProgram program )
     {
     List<RexLocalRef> projects = program.getProjectList();
     RelDataType inputRowType = program.getInputRowType();
@@ -312,13 +330,13 @@ class ProgramUtil
 
     final List<RexNode> exprList = program.getExprList();
     final RexShuttle shuttle = new RexShuttle()
+    {
+    @Override
+    public RexNode visitLocalRef( RexLocalRef localRef )
       {
-      @Override
-      public RexNode visitLocalRef( RexLocalRef localRef )
-        {
-        return exprList.get( localRef.getIndex() ).accept( this );
-        }
-      };
+      return exprList.get( localRef.getIndex() ).accept( this );
+      }
+    };
 
     for( int i = 0; i < program.getProjectList().size(); i++ )
       {
@@ -334,5 +352,278 @@ class ProgramUtil
       }
 
     return builder.getProgram();
+    }
+
+  public static Analyzed analyze( RexProgram program )
+    {
+    return new Analyzed(
+        program,
+        hasFunctions( program ),
+        hasConstants( program ),
+        isComplex( program ),
+        isOnlyProjectsNarrow( program ),
+        isOnlyRename( program ),
+        program.getPermutation() );
+    }
+
+  static class Analyzed
+    {
+    public final boolean hasFunctions;
+    public final boolean hasConstants;
+    public final boolean isComplex;
+    public final boolean isFilter;
+    public final boolean onlyProjectsNarrow;
+    public final boolean isOnlyRename;
+    public final Permutation permutation;
+
+    public Analyzed(
+        RexProgram program,
+        boolean hasFunctions,
+        boolean hasConstants,
+        boolean isComplex,
+        boolean onlyProjectsNarrow,
+        boolean isOnlyRename,
+        Permutation permutation )
+      {
+      this.hasFunctions = hasFunctions;
+      this.hasConstants = hasConstants;
+      this.isComplex = isComplex;
+      this.onlyProjectsNarrow = onlyProjectsNarrow;
+      this.isOnlyRename = isOnlyRename;
+      this.permutation = permutation;
+      this.isFilter = program.getCondition() != null;
+      }
+
+    public boolean isPureFilter()
+      {
+      return !hasFunctions && !hasConstants && !isComplex && !isOnlyRename && isFilter;
+      }
+
+    public boolean isPureConstant()
+      {
+      return !hasFunctions && hasConstants && !isComplex && !onlyProjectsNarrow && !isOnlyRename && !isFilter;
+      }
+
+    public boolean isPureRename()
+      {
+      return !hasFunctions && !hasConstants && !isComplex && !onlyProjectsNarrow && isOnlyRename && !isFilter;
+      }
+
+    public boolean isPureRetain()
+      {
+      return !hasFunctions && !hasConstants && !isComplex && !isOnlyRename && !isFilter;
+      }
+
+    public boolean isPureFunction()
+      {
+      return !hasFunctions && !hasConstants && !isComplex && !onlyProjectsNarrow && !isOnlyRename && !isFilter;
+      }
+
+    public boolean isPureDiscard()
+      {
+      return !hasFunctions && !hasConstants && !isComplex && !isFilter;
+      }
+    }
+
+  /*
+  if is non-trivial permutation
+    add Rename
+  else
+    if has filter
+      add ScriptFilter        # addFilter
+    if is complex
+      add ScriptTupleFunction # addFunction
+    else
+      if has functions
+        add function
+      if has constants
+        add Insert (addConstants)
+      if is rename
+        if duplicate fields
+          add Discard
+        add Rename
+  add Retain
+  add Debug
+   */
+
+  enum Op
+    {
+      FILTER,
+      FUNCTION,
+      CONSTANT,
+      DISCARD,
+      RENAME,
+      RETAIN
+    }
+
+  /** A program decomposed into several programs, each of which can be
+   * implemented in a single Cascading operation. */
+  public static class Split
+    {
+    public final List<Pair<Op, RexProgram>> list;
+
+    public Split( List<Pair<Op, RexProgram>> list )
+      {
+      this.list = list;
+
+      /*
+      assert filter == null
+             || analyze( filter ).isPureFilter();
+      assert function == null
+             || analyze( function ).isPureFunction();
+      assert constant == null
+             || analyze( constant ).isPureConstant();
+      assert discard == null
+             || analyze( discard ).isPureDiscard();
+      assert rename == null
+             || analyze( rename ).isPureRename();
+      assert retain == null
+             || analyze( retain ).isPureRetain();
+*/
+
+      Pair<Op, RexProgram> previous = null;
+      for( Pair<Op, RexProgram> pair : list )
+        {
+        if( previous != null )
+          assert previous.right.getOutputRowType().equals( pair.right.getInputRowType() );
+        previous = pair;
+        }
+      }
+
+    public static Split of( RexProgram program, RexBuilder rexBuilder )
+      {
+      final RexProgram program0 = program;
+      final List<Pair<Op, RexProgram>> list = new ArrayList<Pair<Op, RexProgram>>();
+      final Analyzed analyze = ProgramUtil.analyze( program );
+
+      // Holds the previous link in the chain. The initial identity program is
+      // not used, but is a convenient place to hold the row type.
+      RexProgram previous = RexProgram.createIdentity( program.getInputRowType() );
+
+      if( analyze.permutation != null && !analyze.permutation.isIdentity() )
+        {
+        if( analyze.hasConstants || analyze.hasFunctions )
+          throw new IllegalStateException( "permutation projection has constant and function transforms" );
+
+        final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+        for( int i = 0; i < analyze.permutation.getTargetCount(); i++ )
+          {
+          final int target = analyze.permutation.getTarget( i );
+          builder.addProject( target, null );
+          }
+
+        previous = builder.getProgram();
+        list.add( Pair.of( Op.RENAME, previous ) );
+        }
+      else
+        {
+        if( analyze.isFilter )
+          {
+          // Build a program that has a condition (a possibly complex expression)
+          // but projects all inputs.
+          final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+          builder.addIdentity();
+          builder.addCondition( program.gatherExpr( program.getCondition() ) );
+          previous = builder.getProgram();
+          list.add( Pair.of( Op.FILTER, previous ) );
+
+          // Remove condition from the remaining program.
+          final RexProgramBuilder builder2 = RexProgramBuilder.forProgram( program, rexBuilder, false);
+          builder2.clearCondition();
+          program = builder2.getProgram( true );
+          }
+
+        if( analyze.isComplex )
+          {
+          final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+          if( true ) throw new AssertionError(); // TODO:
+          previous = builder.getProgram();
+          list.add( Pair.of( Op.FUNCTION, previous ) );
+          }
+        else
+          {
+          if( analyze.hasFunctions )
+            {
+            final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+            if( true ) throw new AssertionError(); // TODO:
+            previous = builder.getProgram();
+            list.add( Pair.of( Op.FUNCTION, previous ) );
+            }
+
+          if( analyze.hasConstants )
+            {
+            final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+            if( true ) throw new AssertionError(); // TODO:
+            previous = builder.getProgram();
+            list.add( Pair.of( Op.CONSTANT, previous ) );
+            }
+
+          if( isRetain( program ) )
+            {
+            final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+            builder.addIdentity();
+            builder.clearProjects();
+            for( Pair<RexNode, String> pair : getNamedProjects( program ) )
+              {
+              builder.addProject( pair.left, pair.right );
+              }
+            previous = builder.getProgram();
+            list.add( Pair.of( Op.RETAIN, previous ) );
+
+            program = RexProgram.createIdentity( previous.getOutputRowType() );
+            }
+          else
+            {
+            if( analyze.isOnlyRename )
+              {
+              // Create a program that projects all of its inputs, in order, but with different names.
+              final RexProgramBuilder builder = new RexProgramBuilder( previous.getOutputRowType(), rexBuilder );
+              final List<String> outputFieldNames = new ArrayList<String>( program.getInputRowType().getFieldNames() );
+              for( Ord<String> name : Ord.zip( program.getOutputRowType().getFieldNames() ) )
+                {
+                final int source = program.getSourceField( name.i );
+                if( source >= 0 )
+                  outputFieldNames.set( source, name.e );
+                }
+              for( int i = 0; i < outputFieldNames.size(); i++ )
+                {
+                builder.addProject( i, outputFieldNames.get( i ) );
+                }
+              previous = builder.getProgram();
+              list.add( Pair.of( Op.RENAME, previous ) );
+
+              // Remaining program now has identical input and output type.
+              program = new RexProgram( previous.getOutputRowType(), program.getExprList(), program.getProjectList(), program.getCondition(), previous.getOutputRowType() );
+              }
+            }
+
+          if( !program.isTrivial() )
+            {
+            previous = program;
+            list.add( Pair.of( Op.DISCARD, previous ) );
+            }
+          }
+        }
+
+      return new Split( list );
+      }
+
+    private static List<Pair<RexNode, String>> getNamedProjects( final RexProgram program )
+      {
+      return Pair.zip(
+          new AbstractList<RexNode>()
+          {
+          public RexNode get( int index )
+            {
+            return program.gatherExpr( program.getProjectList().get( index ) );
+            }
+
+          public int size()
+            {
+            return program.getProjectList().size();
+            }
+          },
+          program.getOutputRowType().getFieldNames() );
+      }
     }
   }

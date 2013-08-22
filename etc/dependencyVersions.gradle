@@ -32,7 +32,7 @@ ext.bindVersion = "wip-106"
 ext.bindChanging = false
 ext.linq4jVersion = '0.1.8'
 ext.linq4jChanging = false
-ext.optiqVersion = '0.4.10-SNAPSHOT'
+ext.optiqVersion = '0.4.11-SNAPSHOT'
 ext.optiqChanging = false
 
 // set the following property in $root/gradle.properties to use local installs of optiq/linq4j
