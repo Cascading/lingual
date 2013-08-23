@@ -1,14 +1,18 @@
 package cascading.lingual.optiq;
 
-import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.reltype.RelDataTypeFactory;
-import org.eigenbase.rex.*;
-
-import org.eigenbase.util.NlsString;
-import org.junit.Test;
-
 import java.math.BigDecimal;
 import java.util.Collections;
+
+import org.eigenbase.reltype.RelDataType;
+import org.eigenbase.reltype.RelDataTypeFactory;
+import org.eigenbase.rex.RexBuilder;
+import org.eigenbase.rex.RexLocalRef;
+import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexProgram;
+import org.eigenbase.rex.RexProgramBuilder;
+import org.eigenbase.util.NlsString;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -39,6 +43,7 @@ public class CalcProjectUtilTest
     assertFalse( analyze.isComplex );
     }
 
+  @Ignore
   @Test
   /** Tests that we can analyze a program with no inputs that outputs two
    * constants. */

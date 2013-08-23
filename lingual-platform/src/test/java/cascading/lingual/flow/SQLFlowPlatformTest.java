@@ -146,7 +146,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Tap empTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
     Tap salesTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
 
-    Comparable[] names = {"CUST_ID", "PROD_ID", "EMP_ID", "NAME"};
+    Comparable[] names = {"CUST_ID", "PROD_ID", "EMPID", "NAME"};
     Type[] types = {Integer.class, Integer.class, Integer.class, String.class};
     Fields sinkFields = new Fields( names, types );
     Tap resultsTap = getPlatform().getDelimitedFile( sinkFields, true, ",", "\"", null, getOutputPath( "insert" ), SinkMode.REPLACE );
