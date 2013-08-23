@@ -407,24 +407,24 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testSelfLeftJoin2() throws Exception
     {
-    String query = "SELECT q1.empno, p0.empno FROM sales.emps AS p0 " +
+    String query = "SELECT p0.empno as y, q1.empno as x FROM sales.emps AS p0 " +
       "LEFT JOIN sales.emps AS q1 ON (q1.gender =  'M' AND p0.city = 'Vancouver' AND p0.deptno = 40) " + 
       "WHERE p0.gender = 'M' "; 
 
-    assertTablesEqual( "emps-depts-self-join", query );
+    assertTablesEqual( "emps-depts-self-join-2", query );
     }
   
   @Test
   public void testSelfLeftJoin3() throws Exception
     {
-    String query = "SELECT q1.empno, p0.empno FROM sales.emps AS p0 " +
+    String query = "SELECT q1.empno AS x, p0.empno FROM sales.emps AS p0 " +
       "LEFT JOIN sales.emps AS q1 ON (q1.gender =  'M' " + 
       "AND CASE " +
       "WHEN p0.city = 'Vancouver' AND p0.deptno = 40 " +
       "THEN  1=1  END) " +
       "WHERE p0.gender = 'M' "; 
 
-    assertTablesEqual( "emps-depts-self-join", query );
+    assertTablesEqual( "emps-depts-self-join-3", query );
     }
   
   }

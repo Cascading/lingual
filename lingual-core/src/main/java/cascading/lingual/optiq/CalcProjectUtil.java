@@ -110,7 +110,7 @@ class CalcProjectUtil
       }
     else
       {
-      if( analyze.isFilter )
+      if( analyze.isFilter() )
         {
         Pipe filter = addFilter( cluster, program, pair.left );
         pair = Pair.of( filter, null );
@@ -118,19 +118,26 @@ class CalcProjectUtil
 
       if( analyze.isComplex )
         {
-        pair = addFunction( cluster, program, pair.left, false, pair.right );
+        Pipe pipe = addFunction( cluster, program, pair.left, false );
+        pair = Pair.of( pipe, null );
         }
       else
         {
         if( analyze.hasFunctions )
-          pair = addFunction( cluster, program, pair.left, true, pair.right );
+          {
+          Pipe pipe = addFunction( cluster, program, pair.left, true );
+          pair = Pair.of( pipe, null );
+          }
 
         if( analyze.hasConstants )
           pair = addConstants( node, program, pair.left, pair.right );
 
         boolean isRename = analyze.isOnlyRename;
         if( isRename )
-          pair = addRename( cluster, program, pair.left, pair.right );
+          {
+          Pipe pipe = addRename( cluster, program, pair.left );
+          pair = Pair.of( pipe, null );
+          }
 
         if( analyze.onlyProjectsNarrow ) // discard constants etc
           resultFields = getNarrowFields( cluster, program );
@@ -172,6 +179,10 @@ class CalcProjectUtil
         return addFilter( cluster, program, pipe );
       case RETAIN:
         return addRetain( cluster, program, pipe );
+      case RENAME:
+        return addRename( cluster, program, pipe );
+      case FUNCTION:
+        return addFunction( cluster, program, pipe, false );
       default:
         throw new AssertionError( op ); // TODO:
       }
@@ -199,11 +210,13 @@ class CalcProjectUtil
     return new Retain( pipe, resultFields );
     }
 
-  private static Pair<Pipe, RelDataType> addRename( RelOptCluster cluster, RexProgram program, Pipe pipe, RelDataType incomingRowType )
+  private static Pipe addRename0( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
+    final RelDataType incomingRowType = program.getInputRowType();
     boolean isRenameDuplicate = isRenameDuplicate( cluster, incomingRowType, program );
     final Analyzed analyze = ProgramUtil.analyze( program );
     final List<Integer> deletedFields;
+    final RelDataType midRowType;
     if( isRenameDuplicate && !( analyze.hasFunctions || analyze.hasConstants ) ) // are renaming into an existing field [city0->city]
       {
       RelDataType outputProjects = removeIdentity( incomingRowType, program );
@@ -225,21 +238,35 @@ class CalcProjectUtil
       RelDataType outputRowType = cluster.getTypeFactory().createStructType( list );
 
       pipe = discard;
-      incomingRowType = outputRowType;
+      midRowType = outputRowType;
       }
     else
       {
       program = renameProgramInputFields( program, incomingRowType );
       deletedFields = Collections.emptyList();
+      midRowType = incomingRowType;
       }
 
     // todo: remove identity renames
-    RelDataType inputProjects = getInputProjectsRowType( program, incomingRowType, deletedFields );
+    RelDataType inputProjects = getInputProjectsRowType( program, midRowType, deletedFields );
     Fields incomingFields = createTypedFields( cluster, inputProjects );
 
     Fields renameFields = getNarrowFields( cluster, program );
-    RelDataType renameRowType = incomingRowType; // FIXME;
-    return Pair.of( (Pipe) new Rename( pipe, incomingFields, renameFields ), renameRowType );
+    return new Rename( pipe, incomingFields, renameFields );
+    }
+
+  private static Pipe addRename( RelOptCluster cluster, RexProgram program, Pipe pipe )
+    {
+    // We know that the input has unique field names, and the output has unique
+    // field names.
+    if( !unique( program.getInputRowType().getFieldNames() ) )
+      throw new AssertionError();
+    if( !unique( program.getOutputRowType().getFieldNames() ) )
+      throw new AssertionError();
+
+    Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
+    Fields renameFields = createTypedFields( cluster, program.getOutputRowType() );
+    return new Rename( pipe, incomingFields, renameFields );
     }
 
   private static RexProgram renameProgramInputFields( RexProgram program, RelDataType incomingRowType )
@@ -309,9 +336,9 @@ class CalcProjectUtil
     return each;
     }
 
-  private static Pair<Pipe, RelDataType> addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe, boolean narrow, RelDataType incomingRowType )
+  private static Pipe addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe, boolean narrow )
     {
-    final Fields incomingFields = createTypedFields( cluster, incomingRowType );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
 
     // only project the result of any expressions
     if( narrow )
@@ -344,14 +371,14 @@ class CalcProjectUtil
 
     Fields outgoingFields = createTypedFields( cluster, program.getOutputRowType() );
 
-    LOG.debug( "function parameters: {}", incomingRowType );
+    LOG.debug( "function parameters: {}", program.getInputRowType() );
     LOG.debug( "function results: {}", outgoingFields );
     LOG.debug( "function expression: {}", expression );
 
     Function scriptFunction = new ScriptTupleFunction( outgoingFields, expression, incomingFields.getTypesClasses() );
     Fields outputSelector = narrow ? Fields.ALL : Fields.SWAP;
 
-    return Pair.of( (Pipe) new Each( pipe, scriptFunction, outputSelector ), incomingRowType );
+    return new Each( pipe, scriptFunction, outputSelector );
     }
 
   private static Constructor<Tuple> getConstructor()
@@ -397,7 +424,7 @@ class CalcProjectUtil
   public static void checkRowType( RelNode rel )
     {
     final List<String> fieldNames = rel.getRowType().getFieldNames();
-    if( new HashSet<String>( fieldNames ).size() < fieldNames.size() )
+    if( !unique( fieldNames ) )
       throw new IllegalArgumentException( "field names are not unique in row type: " + rel.getRowType() );
     }
   }
