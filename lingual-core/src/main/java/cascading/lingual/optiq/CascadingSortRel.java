@@ -45,11 +45,13 @@ import org.eigenbase.rex.RexNode;
  */
 class CascadingSortRel extends SortRel implements CascadingRelNode
   {
-  public CascadingSortRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RelCollation collation )
+  public CascadingSortRel( RelOptCluster cluster, RelTraitSet traits, RelNode child, RelCollation collation, RexNode offset, RexNode fetch )
     {
-    super( cluster, traits, child, collation );
+    super( cluster, traits, child, collation, offset, fetch );
 
     assert child.getTraitSet().contains( Cascading.CONVENTION );
+    assert offset == null;
+    assert fetch == null;
     }
 
   @Override
@@ -59,9 +61,9 @@ class CascadingSortRel extends SortRel implements CascadingRelNode
     }
 
   @Override
-  public SortRel copy( RelTraitSet traitSet, RelNode newInput, RelCollation newCollation )
+  public SortRel copy( RelTraitSet traitSet, RelNode newInput, RelCollation newCollation, RexNode offset, RexNode fetch )
     {
-    return new CascadingSortRel( getCluster(), traitSet, newInput, newCollation );
+    return new CascadingSortRel( getCluster(), traitSet, newInput, newCollation, offset, fetch );
     }
 
   public Branch visitChild( Stack stack )

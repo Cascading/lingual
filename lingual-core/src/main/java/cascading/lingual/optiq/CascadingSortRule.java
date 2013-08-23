@@ -42,12 +42,18 @@ class CascadingSortRule extends RelOptRule
     {
     SortRel rel = call.rel( 0 );
 
+    // Cascading sort does not implement limits
+    if( rel.offset != null || rel.fetch != null )
+      return;
+
     RelTraitSet newTraits = rel.getTraitSet().plus( Cascading.CONVENTION );
 
     call.transformTo( new CascadingSortRel(
       rel.getCluster(),
       newTraits,
       convert( rel.getChild(), newTraits ),
-      rel.getCollation() ) );
+      rel.getCollation(),
+      rel.offset,
+      rel.fetch ) );
     }
   }

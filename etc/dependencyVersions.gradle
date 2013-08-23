@@ -32,7 +32,7 @@ ext.bindVersion = "wip-106"
 ext.bindChanging = false
 ext.linq4jVersion = '0.1.8'
 ext.linq4jChanging = false
-ext.optiqVersion = '0.4.11-SNAPSHOT'
+ext.optiqVersion = '0.4.11'
 ext.optiqChanging = false
 
 // set the following property in $root/gradle.properties to use local installs of optiq/linq4j
@@ -72,7 +72,7 @@ ext.jsrVersion = '1.1.1'
 ext.junitVersion = '4.11'
 ext.log4jVersion = '1.2.17'
 ext.slf4jVersion = '1.6.1'
-ext.sqllineVersion = '1.1.5'
+ext.sqllineVersion = '1.1.6'
 
 if( System.properties[ 'hadoop.release.final' ] )
   ext.hadoopVersion = System.properties[ 'hadoop.release.final' ]
