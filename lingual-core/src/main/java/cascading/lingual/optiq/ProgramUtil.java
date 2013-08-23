@@ -63,22 +63,6 @@ class ProgramUtil
     return false;
     }
 
-  public static <K, V> List<K> leftSlice( final List<? extends Map.Entry<K, V>> pairs )
-    {
-    return new AbstractList<K>()
-    {
-    public K get( int index )
-      {
-      return pairs.get( index ).getKey();
-      }
-
-    public int size()
-      {
-      return pairs.size();
-      }
-    };
-    }
-
   private static boolean isOnlyRename( RexProgram program )
     {
     final List<String> inputFieldNames = program.getInputRowType().getFieldNames();
@@ -114,112 +98,12 @@ class ProgramUtil
 
   private static boolean isComplex( RexProgram program )
     {
-    RelDataType inputProjects = getInputProjectsRowType( program );
-    RelDataType outputProjects = getOutputProjectsRowType( program );
+    final List<String> inputFieldNames = program.getInputRowType().getFieldNames();
+    final List<String> outputFieldNames = program.getOutputRowType().getFieldNames();
 
-    final List<String> inputFieldNames = inputProjects.getFieldNames();
-    final List<String> outputFieldNames = outputProjects.getFieldNames();
-
-    return inputFieldNames.size() != outputFieldNames.size()
-        || !unique( inputProjects.getFieldNames() )
-        || !unique( outputProjects.getFieldNames() );
-    }
-
-  private static boolean isOnlyProjectsNarrow( RexProgram program )
-    {
-    List<RexLocalRef> projects = program.getProjectList();
-    RelDataType inputRowType = program.getInputRowType();
-    int fieldCount = inputRowType.getFieldCount();
-
-    for( RexLocalRef project : projects )
-      {
-      if( project.getIndex() >= fieldCount )
-        return false;
-      }
-
-    return true;
-    }
-
-  public static RelDataType removeIdentity( RelDataType incomingRowType, RexProgram program )
-    {
-    RelDataType inputProjects = getInputProjectsRowType(program,
-        incomingRowType,
-        Collections.<Integer>emptyList());
-    RelDataType outputProjects = getOutputProjectsRowType(program);
-
-    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
-
-    for( int i = 0; i < inputProjects.getFieldCount(); i++ )
-      {
-      RelDataTypeField inputField = inputProjects.getFieldList().get( i );
-      RelDataTypeField outputField = outputProjects.getFieldList().get( i );
-
-      if( !inputField.getKey().equals( outputField.getKey() ) )
-        fields.add( outputField );
-      }
-
-    return new RelRecordType( fields );
-    }
-
-  public static RelDataType getDuplicatesRowType( RelDataType inputRowType, RelDataType outputRowType )
-    {
-    Set<String> outputNames = new HashSet<String>( outputRowType.getFieldNames() );
-
-    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
-    for( RelDataTypeField typeField : inputRowType.getFieldList() )
-      {
-      if( outputNames.contains( typeField.getKey() ) )
-        fields.add( typeField );
-      }
-
-    return new RelRecordType( fields );
-    }
-
-  public static RelDataType getInputProjectsRowType( RexProgram program )
-    {
-    return getInputProjectsRowType( program, program.getInputRowType(), Collections.<Integer>emptyList() );
-    }
-
-  public static RelDataType getInputProjectsRowType( RexProgram program, RelDataType inputRowType, List<Integer> deletedFields )
-    {
-    int fieldCount = inputRowType.getFieldCount();
-    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
-    List<RexLocalRef> projectList = program.getProjectList();
-
-    for( RexLocalRef ref : projectList )
-      {
-      int index = ref.getIndex();
-      for( int deletedField : deletedFields )
-        if( index > deletedField )
-          --index;
-
-      if( program.isConstant( ref ) || index >= fieldCount )
-        continue;
-
-      fields.add( inputRowType.getFieldList().get( index ) );
-      }
-
-    return new RelRecordType( fields );
-    }
-
-  public static RelDataType getOutputProjectsRowType( RexProgram program )
-    {
-    RelDataType outputRowType = program.getOutputRowType();
-    int fieldCount = program.getInputRowType().getFieldCount(); // must use input field count
-    List<RelDataTypeField> fields = new ArrayList<RelDataTypeField>();
-    List<RexLocalRef> projectList = program.getProjectList();
-
-    for( int i = 0; i < projectList.size(); i++ )
-      {
-      RexLocalRef ref = projectList.get( i );
-
-      if( program.isConstant( ref ) || ref.getIndex() >= fieldCount )
-        continue;
-
-      fields.add( outputRowType.getFieldList().get( i ) );
-      }
-
-    return new RelRecordType( fields );
+    return !( inputFieldNames.size() == outputFieldNames.size()
+        && unique( inputFieldNames )
+        && unique( outputFieldNames ) );
     }
 
   public static RelDataType getOutputConstantsRowType( RexProgram program )
@@ -269,65 +153,9 @@ class ProgramUtil
     return values;
     }
 
-  public static RexProgram createNarrowProgram0( RexProgram program, RexBuilder rexBuilder )
+  static <E> boolean unique( List<E> elements )
     {
-    RelDataType inputRowType = program.getInputRowType();
-    RelDataType outputRowType = program.getOutputRowType();
-
-    RexProgramBuilder builder = new RexProgramBuilder( inputRowType, rexBuilder );
-
-    for( int i = 0; i < program.getExprList().size(); i++ )
-      {
-      RexNode rexNode = program.getExprList().get( i );
-
-      if( rexNode instanceof RexCall )
-        builder.addExpr( rexNode );
-      }
-
-    for( int i = 0; i < program.getProjectList().size(); i++ )
-      {
-      RexLocalRef rexLocalRef = program.getProjectList().get( i );
-
-      RexNode rexNode = program.getExprList().get( rexLocalRef.getIndex() );
-
-      if( rexNode instanceof RexCall )
-        builder.addProject( rexNode, outputRowType.getFieldList().get( i ).getName() );
-      }
-
-    return builder.getProgram();
-    }
-
-  public static RexProgram createNarrowProgram( RexProgram program, RexBuilder rexBuilder )
-    {
-    RelDataType inputRowType = program.getInputRowType();
-    RelDataType outputRowType = program.getOutputRowType();
-
-    RexProgramBuilder builder = new RexProgramBuilder( inputRowType, rexBuilder );
-
-    final List<RexNode> exprList = program.getExprList();
-    final RexShuttle shuttle = new RexShuttle()
-    {
-    @Override
-    public RexNode visitLocalRef( RexLocalRef localRef )
-      {
-      return exprList.get( localRef.getIndex() ).accept( this );
-      }
-    };
-
-    for( int i = 0; i < program.getProjectList().size(); i++ )
-      {
-      RexLocalRef rexLocalRef = program.getProjectList().get( i );
-
-      RexNode rexNode = program.getExprList().get( rexLocalRef.getIndex() );
-
-      if( rexNode instanceof RexCall )
-        {
-        RexNode rexNode2 = rexNode.accept(shuttle);
-        builder.addProject( rexNode2, outputRowType.getFieldList().get( i ).getName() );
-        }
-      }
-
-    return builder.getProgram();
+    return new HashSet<E>( elements ).size() == elements.size();
     }
 
   public static Analyzed analyze( RexProgram program )
@@ -337,14 +165,8 @@ class ProgramUtil
         hasFunctions( program ),
         hasConstants( program ),
         isComplex( program ),
-        isOnlyProjectsNarrow( program ),
         isOnlyRename( program ),
         program.getPermutation() );
-    }
-
-  static <E> boolean unique( List<E> elements )
-    {
-    return new HashSet<E>( elements ).size() == elements.size();
     }
 
   static class Analyzed
@@ -353,7 +175,6 @@ class ProgramUtil
     public final boolean hasFunctions;
     public final boolean hasConstants;
     public final boolean isComplex;
-    public final boolean onlyProjectsNarrow;
     public final boolean isOnlyRename;
     public final Permutation permutation;
 
@@ -362,7 +183,6 @@ class ProgramUtil
         boolean hasFunctions,
         boolean hasConstants,
         boolean isComplex,
-        boolean onlyProjectsNarrow,
         boolean isOnlyRename,
         Permutation permutation )
       {
@@ -370,7 +190,6 @@ class ProgramUtil
       this.hasFunctions = hasFunctions;
       this.hasConstants = hasConstants;
       this.isComplex = isComplex;
-      this.onlyProjectsNarrow = onlyProjectsNarrow;
       this.isOnlyRename = isOnlyRename;
       this.permutation = permutation;
       }
@@ -378,41 +197,6 @@ class ProgramUtil
     public boolean isFilter()
       {
       return program.getCondition() != null;
-      }
-
-    public boolean isPureFilter()
-      {
-      return !hasFunctions && !hasConstants && !isComplex && !isOnlyRename && isFilter();
-      }
-
-    public boolean isPureConstant()
-      {
-      return !hasFunctions && hasConstants && !isComplex && !onlyProjectsNarrow && !isOnlyRename && !isFilter();
-      }
-
-    public boolean isPureRename()
-      {
-      return !hasFunctions && !hasConstants && !isComplex && !onlyProjectsNarrow && isOnlyRename && !isFilter();
-      }
-
-    public boolean isPureRetain()
-      {
-      return !hasFunctions && !hasConstants && !isComplex && !isOnlyRename && !isFilter();
-      }
-
-    public boolean isPureFunction()
-      {
-      return !hasFunctions && !hasConstants && !isComplex && !onlyProjectsNarrow && !isOnlyRename && !isFilter();
-      }
-
-    public boolean isPureDiscard()
-      {
-      return !hasFunctions && !hasConstants && !isComplex && !isFilter();
-      }
-
-    public boolean isRetain()
-      {
-      return ProgramUtil.isRetain( program, false );
       }
 
     public boolean isRetainWithRename()
@@ -504,7 +288,7 @@ class ProgramUtil
 
     public static Split of( RexProgram program, RexBuilder rexBuilder )
       {
-      final RexProgram program0 = program;
+      final RexProgram program0 = program; // for debug
       program = normalize( program, rexBuilder );
       final List<Pair<Op, RexProgram>> list = new ArrayList<Pair<Op, RexProgram>>();
 
@@ -627,24 +411,6 @@ class ProgramUtil
         }
 
       return new Split( list );
-      }
-
-    private static List<Pair<RexNode, String>> getNamedProjects( final RexProgram program )
-      {
-      return Pair.zip(
-          new AbstractList<RexNode>()
-          {
-          public RexNode get( int index )
-            {
-            return program.gatherExpr( program.getProjectList().get( index ) );
-            }
-
-          public int size()
-            {
-            return program.getProjectList().size();
-            }
-          },
-          program.getOutputRowType().getFieldNames() );
       }
     }
 
