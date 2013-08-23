@@ -54,7 +54,7 @@ asciidoctor {
           analyticsid: System.properties[ 'analytics.id' ],
           analyticsdomain: System.properties[ 'analytics.domain' ]
 
-          // disabled till attributes in docinfo is supported
+          // disabled till attributes in docinfo are supported
 //          docinfo1: '',
   ]
   options = [
