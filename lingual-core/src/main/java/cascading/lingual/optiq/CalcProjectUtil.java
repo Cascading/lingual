@@ -22,6 +22,7 @@ package cascading.lingual.optiq;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import cascading.lingual.optiq.meta.Branch;
@@ -32,6 +33,7 @@ import cascading.operation.expression.ScriptFilter;
 import cascading.operation.expression.ScriptTupleFunction;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.pipe.Splice;
 import cascading.pipe.assembly.Rename;
 import cascading.pipe.assembly.Retain;
 import cascading.tuple.Fields;
@@ -45,13 +47,12 @@ import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.rules.java.RexToLixTranslator;
 import org.eigenbase.rel.SingleRel;
 import org.eigenbase.relopt.RelOptCluster;
+import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.rex.RexInputRef;
-import org.eigenbase.rex.RexLiteral;
-import org.eigenbase.rex.RexNode;
-import org.eigenbase.rex.RexProgram;
-import org.eigenbase.rex.RexProgramBuilder;
+import org.eigenbase.rex.*;
 import org.eigenbase.util.Pair;
+import org.eigenbase.util.Permutation;
+import org.eigenbase.util.mapping.Mappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,11 +69,16 @@ class CalcProjectUtil
   static Branch resolveBranch( Stack stack, CascadingRelNode node, RexProgram program )
     {
     final RelOptCluster cluster = node.getCluster();
-    Split split = Split.of( program, cluster.getRexBuilder() );
 
     CascadingRelNode child = (CascadingRelNode) ( (SingleRel) node ).getChild();
     Branch branch = child.visitChild( stack );
     Pipe pipe = branch.current;
+
+    final List<String> names = getIncomingFieldNames( pipe );
+    if( names != null && !names.equals( program.getInputRowType().getFieldNames() ) )
+      program = renameInputs( program, cluster.getRexBuilder(), names );
+
+    Split split = Split.of( program, cluster.getRexBuilder() );
     for( Pair<Op, RexProgram> pair : split.list )
       {
       pipe = addProgram( cluster, pipe, pair.left, pair.right );
@@ -80,6 +86,44 @@ class CalcProjectUtil
     pipe = stack.addDebug( node, pipe );
 
     return new Branch( pipe, branch );
+    }
+
+  private static List<String> getIncomingFieldNames( Pipe pipe )
+    {
+    if( pipe.getPrevious().length != 1 )
+      return null;
+    final Pipe previous = pipe.getPrevious()[ 0 ];
+    if( !( previous instanceof Splice ) )
+      return null;
+    final Splice splice = ( Splice ) previous;
+    if( splice.getDeclaredFields() == null )
+      return null;
+    return fieldNames( splice.getDeclaredFields() );
+    }
+
+  private static RexProgram renameInputs( RexProgram program, RexBuilder rexBuilder, List<String> names )
+    {
+    final RelDataType inputRowType = program.getInputRowType();
+    if( inputRowType.getFieldNames().equals( names ) )
+      return program;
+    final RexProgramBuilder builder = RexProgramBuilder.create(
+        rexBuilder,
+        rexBuilder.getTypeFactory().createStructType(
+            Pair.zip( names, RelOptUtil.getFieldTypeList( inputRowType ) ) ),
+        program.getExprList(),
+        program.getProjectList(),
+        program.getCondition(),
+        program.getOutputRowType(),
+        false );
+    return builder.getProgram();
+    }
+
+  private static List<String> fieldNames( Fields fields )
+    {
+    final List<String> names = new ArrayList<String>();
+    for( Comparable field : fields )
+      names.add( field.toString() );
+    return names;
     }
 
   static Pipe addProgram( RelOptCluster cluster, Pipe pipe, Op op, RexProgram program )
@@ -114,7 +158,11 @@ class CalcProjectUtil
     if( !unique( program.getOutputRowType().getFieldNames() ) )
       throw new AssertionError();
 
-    Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
+    final Permutation permutation = program.getPermutation();
+    if( permutation == null )
+      throw new AssertionError();
+
+    Fields incomingFields = createTypedFields( cluster, Mappings.apply( permutation.inverse(), program.getInputRowType().getFieldList() ) );
     Fields renameFields = createTypedFields( cluster, program.getOutputRowType() );
     return new Rename( pipe, incomingFields, renameFields );
     }

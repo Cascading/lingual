@@ -36,12 +36,12 @@ import org.eigenbase.util.Permutation;
  */
 class RelUtil
   {
-  public static Fields createTypedFieldsFor( RelOptCluster cluster, List<Integer> keys, RelDataType rowType )
+  public static Fields createTypedFieldsFor( RelOptCluster cluster, List<Integer> keys, RelDataType rowType, boolean numeric )
     {
     Fields fields = Fields.NONE;
 
     for( Integer key : keys )
-      fields = fields.append( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ) ) );
+      fields = fields.append( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ), numeric) );
 
     return fields;
     }
@@ -56,20 +56,28 @@ class RelUtil
 
   public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType )
     {
+    return createTypedFields( cluster, rowType.getFieldList() );
+    }
+
+  public static Fields createTypedFields( RelOptCluster cluster, List<RelDataTypeField> typeFields )
+    {
     Fields fields = Fields.NONE;
 
-    for( RelDataTypeField typeField : rowType.getFieldList() )
-      fields = fields.append( createTypedFieldsFor( cluster, typeField ) );
+    for( RelDataTypeField typeField : typeFields )
+      fields = fields.append( createTypedFieldsFor( cluster, typeField, false ) );
 
     return fields;
     }
 
-  public static Fields createTypedFieldsFor( RelOptCluster cluster, RelDataTypeField typeField )
+  // Using numeric fields is more robust if we're not sure of input row types
+  // but more difficult for humans to debug.
+  public static Fields createTypedFieldsFor( RelOptCluster cluster, RelDataTypeField typeField, boolean numeric )
     {
-    String name = typeField.getName();
-    Class type = getJavaType( cluster, typeField.getType() );
-
-    return new Fields( name, type );
+    Class type = getJavaType(cluster, typeField.getType());
+    if( numeric )
+      return new Fields( typeField.getIndex(), type );
+    else
+      return new Fields( typeField.getName(), type );
     }
 
   public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, Iterable<Integer> fieldList )
