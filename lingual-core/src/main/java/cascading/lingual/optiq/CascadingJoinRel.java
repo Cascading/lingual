@@ -101,10 +101,8 @@ class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Pipe rightPipe = new Pipe( "rhs", rhsBranch.current );
     rightPipe = stack.addDebug( this, rightPipe, "rhs" );
 
-    Fields lhsGroup = createTypedFieldsFor( getCluster(), leftKeys, left.getRowType(),
-        false);
-    Fields rhsGroup = createTypedFieldsFor( getCluster(), rightKeys, right.getRowType(),
-        false);
+    Fields lhsGroup = createTypedFieldsFor( getCluster(), leftKeys, left.getRowType(), true );
+    Fields rhsGroup = createTypedFieldsFor( getCluster(), rightKeys, right.getRowType(), true );
 
     Joiner joiner = getJoiner();
 
