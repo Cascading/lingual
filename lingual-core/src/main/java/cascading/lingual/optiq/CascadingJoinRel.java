@@ -44,7 +44,7 @@ import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.relopt.RelTraitSet;
 import org.eigenbase.rex.RexNode;
 
-import static cascading.lingual.optiq.RelUtil.createTypedFieldsFor;
+import static cascading.lingual.optiq.RelUtil.createTypedFieldsSelectorFor;
 
 /** Join implemented in Cascading. */
 class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
@@ -101,8 +101,8 @@ class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
     Pipe rightPipe = new Pipe( "rhs", rhsBranch.current );
     rightPipe = stack.addDebug( this, rightPipe, "rhs" );
 
-    Fields lhsGroup = createTypedFieldsFor( getCluster(), leftKeys, left.getRowType(), true );
-    Fields rhsGroup = createTypedFieldsFor( getCluster(), rightKeys, right.getRowType(), true );
+    Fields lhsGroup = createTypedFieldsSelectorFor( getCluster(), leftKeys, left.getRowType(), true );
+    Fields rhsGroup = createTypedFieldsSelectorFor( getCluster(), rightKeys, right.getRowType(), true );
 
     Joiner joiner = getJoiner();
 

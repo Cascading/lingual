@@ -205,7 +205,7 @@ class CascadingAggregateRel extends AggregateRelBase implements CascadingRelNode
       Fields uniqueFields = argFields;
 
       if( !groupFields.equals( Fields.NONE ) )
-        uniqueFields = groupFields.append( uniqueFields );
+        uniqueFields = groupFields.appendSelector( uniqueFields );
 
       Fields aggResultFields = makeFieldsFor( aggCall );
 

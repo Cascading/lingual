@@ -41,7 +41,17 @@ class RelUtil
     Fields fields = Fields.NONE;
 
     for( Integer key : keys )
-      fields = fields.append( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ), numeric) );
+      fields = fields.append( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ), numeric ) );
+
+    return fields;
+    }
+
+  public static Fields createTypedFieldsSelectorFor( RelOptCluster cluster, List<Integer> keys, RelDataType rowType, boolean numeric )
+    {
+    Fields fields = Fields.NONE;
+
+    for( Integer key : keys )
+      fields = fields.appendSelector( createTypedFieldsFor( cluster, rowType.getFieldList().get( key ), numeric ) );
 
     return fields;
     }
@@ -73,7 +83,8 @@ class RelUtil
   // but more difficult for humans to debug.
   public static Fields createTypedFieldsFor( RelOptCluster cluster, RelDataTypeField typeField, boolean numeric )
     {
-    Class type = getJavaType(cluster, typeField.getType());
+    Class type = getJavaType( cluster, typeField.getType() );
+
     if( numeric )
       return new Fields( typeField.getIndex(), type );
     else
