@@ -56,25 +56,48 @@ class RelUtil
     return fields;
     }
 
-  public static Fields createTypedFieldsFor( RelNode relNode )
+  public static Fields createTypedFieldsFor( RelNode relNode, boolean numeric )
     {
     RelDataType rowType = relNode.getRowType();
     RelOptCluster cluster = relNode.getCluster();
 
-    return createTypedFields( cluster, rowType );
+    return createTypedFields( cluster, rowType, numeric );
     }
 
-  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType )
+  public static Fields createTypedFieldsSelectorFor( RelNode relNode, boolean numeric )
     {
-    return createTypedFields( cluster, rowType.getFieldList() );
+    RelDataType rowType = relNode.getRowType();
+    RelOptCluster cluster = relNode.getCluster();
+
+    return createTypedFieldsSelector( cluster, rowType, numeric );
     }
 
-  public static Fields createTypedFields( RelOptCluster cluster, List<RelDataTypeField> typeFields )
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, boolean numeric )
+    {
+    return createTypedFields( cluster, rowType.getFieldList(), numeric );
+    }
+
+  public static Fields createTypedFieldsSelector( RelOptCluster cluster, RelDataType rowType, boolean numeric )
+    {
+    return createTypedFieldsSelector( cluster, rowType.getFieldList(), numeric );
+    }
+
+  public static Fields createTypedFields( RelOptCluster cluster, List<RelDataTypeField> typeFields, boolean numeric )
     {
     Fields fields = Fields.NONE;
 
     for( RelDataTypeField typeField : typeFields )
-      fields = fields.append( createTypedFieldsFor( cluster, typeField, false ) );
+      fields = fields.append( createTypedFieldsFor( cluster, typeField, numeric ) );
+
+    return fields;
+    }
+
+  public static Fields createTypedFieldsSelector( RelOptCluster cluster, List<RelDataTypeField> typeFields, boolean numeric )
+    {
+    Fields fields = Fields.NONE;
+
+    for( RelDataTypeField typeField : typeFields )
+      fields = fields.appendSelector( createTypedFieldsFor( cluster, typeField, numeric ) );
 
     return fields;
     }
@@ -91,7 +114,7 @@ class RelUtil
       return new Fields( typeField.getName(), type );
     }
 
-  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, Iterable<Integer> fieldList )
+  public static Fields createTypedFields( RelOptCluster cluster, RelDataType rowType, Iterable<Integer> fieldList, boolean numeric )
     {
     List<Fields> fields = new ArrayList<Fields>();
 
@@ -102,7 +125,10 @@ class RelUtil
       String fieldName = relDataTypeField.getName();
       Class fieldType = getJavaType( cluster, relDataTypeField.getType() );
 
-      fields.add( new Fields( fieldName, fieldType ) );
+      if( !numeric )
+        fields.add( new Fields( fieldName, fieldType ) );
+      else
+        fields.add( new Fields( index, fieldType ) );
       }
 
     // hides duplicate names

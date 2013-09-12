@@ -61,7 +61,7 @@ class CascadingValuesRel extends ValuesRelBase implements CascadingRelNode
   public Branch visitChild( Stack stack )
     {
     String pipeName = createUniqueName();
-    Fields fields = RelUtil.createTypedFieldsFor( this );
+    Fields fields = RelUtil.createTypedFieldsFor( this, false );
 
     return new Branch( stack.heads, pipeName, fields, tuples );
     }

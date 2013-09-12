@@ -49,7 +49,12 @@ import org.eigenbase.rel.SingleRel;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptUtil;
 import org.eigenbase.reltype.RelDataType;
-import org.eigenbase.rex.*;
+import org.eigenbase.rex.RexBuilder;
+import org.eigenbase.rex.RexInputRef;
+import org.eigenbase.rex.RexLiteral;
+import org.eigenbase.rex.RexNode;
+import org.eigenbase.rex.RexProgram;
+import org.eigenbase.rex.RexProgramBuilder;
 import org.eigenbase.util.Pair;
 import org.eigenbase.util.Permutation;
 import org.eigenbase.util.mapping.Mappings;
@@ -58,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.optiq.ProgramUtil.*;
 import static cascading.lingual.optiq.RelUtil.createTypedFields;
+import static cascading.lingual.optiq.RelUtil.createTypedFieldsSelector;
 
 /**
  *
@@ -75,14 +81,15 @@ class CalcProjectUtil
     Pipe pipe = branch.current;
 
     final List<String> names = getIncomingFieldNames( pipe );
+
     if( names != null && !names.equals( program.getInputRowType().getFieldNames() ) )
       program = renameInputs( program, cluster.getRexBuilder(), names );
 
     Split split = Split.of( program, cluster.getRexBuilder() );
+
     for( Pair<Op, RexProgram> pair : split.list )
-      {
       pipe = addProgram( cluster, pipe, pair.left, pair.right );
-      }
+
     pipe = stack.addDebug( node, pipe );
 
     return new Branch( pipe, branch );
@@ -92,12 +99,17 @@ class CalcProjectUtil
     {
     if( pipe.getPrevious().length != 1 )
       return null;
+
     final Pipe previous = pipe.getPrevious()[ 0 ];
+
     if( !( previous instanceof Splice ) )
       return null;
-    final Splice splice = ( Splice ) previous;
+
+    final Splice splice = (Splice) previous;
+
     if( splice.getDeclaredFields() == null )
       return null;
+
     return fieldNames( splice.getDeclaredFields() );
     }
 
@@ -107,14 +119,14 @@ class CalcProjectUtil
     if( inputRowType.getFieldNames().equals( names ) )
       return program;
     final RexProgramBuilder builder = RexProgramBuilder.create(
-        rexBuilder,
-        rexBuilder.getTypeFactory().createStructType(
-            Pair.zip( names, RelOptUtil.getFieldTypeList( inputRowType ) ) ),
-        program.getExprList(),
-        program.getProjectList(),
-        program.getCondition(),
-        program.getOutputRowType(),
-        false );
+      rexBuilder,
+      rexBuilder.getTypeFactory().createStructType(
+        Pair.zip( names, RelOptUtil.getFieldTypeList( inputRowType ) ) ),
+      program.getExprList(),
+      program.getProjectList(),
+      program.getCondition(),
+      program.getOutputRowType(),
+      false );
     return builder.getProgram();
     }
 
@@ -145,7 +157,7 @@ class CalcProjectUtil
 
   private static Pipe addRetain( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    Fields resultFields = createTypedFields( cluster, program.getOutputRowType() );
+    Fields resultFields = createTypedFields( cluster, program.getOutputRowType(), false );
     return new Retain( pipe, resultFields );
     }
 
@@ -155,22 +167,25 @@ class CalcProjectUtil
     // field names.
     if( !unique( program.getInputRowType().getFieldNames() ) )
       throw new AssertionError();
+
     if( !unique( program.getOutputRowType().getFieldNames() ) )
       throw new AssertionError();
 
     final Permutation permutation = program.getPermutation();
+
     if( permutation == null )
       throw new AssertionError();
 
-    Fields incomingFields = createTypedFields( cluster, Mappings.apply( permutation.inverse(), program.getInputRowType().getFieldList() ) );
-    Fields renameFields = createTypedFields( cluster, program.getOutputRowType() );
+    Fields incomingFields = createTypedFields( cluster, Mappings.apply( permutation.inverse(), program.getInputRowType().getFieldList() ), false );
+    Fields renameFields = createTypedFieldsSelector( cluster, program.getOutputRowType(), false );
+
     return new Rename( pipe, incomingFields, renameFields );
     }
 
   private static Pair<Each, RelDataType> addConstants( CascadingRelNode node, RexProgram program, Pipe pipe, RelDataType incomingRowType )
     {
     RelDataType constantsRowType = ProgramUtil.getOutputConstantsRowType( program );
-    Fields constantFields = createTypedFields( node.getCluster(), constantsRowType );
+    Fields constantFields = createTypedFields( node.getCluster(), constantsRowType, false );
     List<RexLiteral> constantsLiterals = ProgramUtil.getOutputConstantsLiterals( program );
     List<Object> values = ProgramUtil.asValues2( constantsLiterals );
 
@@ -181,7 +196,7 @@ class CalcProjectUtil
 
   private static Pipe addFilter( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType(), false );
     BlockBuilder statements = new BlockBuilder();
 
     Expression condition = RexToLixTranslator.translateCondition(
@@ -220,7 +235,7 @@ class CalcProjectUtil
 
   private static Pipe addFunction( RelOptCluster cluster, RexProgram program, Pipe pipe )
     {
-    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType() );
+    final Fields incomingFields = createTypedFields( cluster, program.getInputRowType(), false );
 
     BlockBuilder statements = new BlockBuilder();
 
@@ -247,7 +262,7 @@ class CalcProjectUtil
     BlockStatement block = statements.toBlock();
     String expression = Expressions.toString( block );
 
-    Fields outgoingFields = createTypedFields( cluster, program.getOutputRowType() );
+    Fields outgoingFields = createTypedFields( cluster, program.getOutputRowType(), false );
 
     LOG.debug( "function parameters: {}", program.getInputRowType() );
     LOG.debug( "function results: {}", outgoingFields );
@@ -255,7 +270,7 @@ class CalcProjectUtil
 
     Function scriptFunction = new ScriptTupleFunction( outgoingFields, expression, incomingFields.getTypesClasses() );
 
-    return new Each( pipe, scriptFunction, Fields.SWAP );
+    return new Each( pipe, scriptFunction, Fields.RESULTS );
     }
 
   private static Constructor<Tuple> getConstructor()

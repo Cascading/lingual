@@ -106,7 +106,7 @@ class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
 
     Joiner joiner = getJoiner();
 
-    Fields declaredFields = RelUtil.createTypedFieldsFor( this );
+    Fields declaredFields = RelUtil.createTypedFieldsFor( this, false );
 
     // need to parse lhs rhs fields from condition
     String name = stack.getNameFor( CoGroup.class, leftPipe, rightPipe );
