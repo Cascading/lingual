@@ -31,6 +31,8 @@ dependencies {
   testCompile group: 'log4j', name: 'log4j', version: log4jVersion // for setting log level as a cli option
   testCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
   testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: slf4jVersion
+
+  testCompile group: 'com.mchange', name: 'c3p0', version: c3p0Version
 }
 
 platformTest.enabled = false

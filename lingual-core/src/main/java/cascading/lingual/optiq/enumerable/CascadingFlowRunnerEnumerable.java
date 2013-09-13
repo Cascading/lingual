@@ -173,7 +173,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       flowFactory.addSink( branch.current.getName(), resource );
 
       if( platformBroker.hasResultSchemaDef() )
-        flowListener = new AddResultTableListener( platformBroker );
+        flowListener = new AddResultTableListener( platformBroker, flowFactory.getLingualConnection() );
       }
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );

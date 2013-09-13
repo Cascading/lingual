@@ -113,7 +113,7 @@ public abstract class PlatformBroker<Config>
 
   private Map<String, TupleEntryCollector> collectorCache;
 
-  private WeakReference<LingualConnection> defaultConnection;
+  private WeakReference<LingualConnection> nextConnection; // Only used to bind a CTRL-C listener in single-connection CLI usage.
 
   private String resultsSchemaName;
 
@@ -162,14 +162,33 @@ public abstract class PlatformBroker<Config>
 
   public void startConnection( LingualConnection connection ) throws SQLException
     {
-    getCatalog().addSchemasTo( connection );
-    defaultConnection = new WeakReference<LingualConnection>( connection );
+    LOG.debug( "starting connection" );
+    try
+      {
+      getCatalog().addSchemasTo( connection );
+      nextConnection = new WeakReference<LingualConnection>( connection );
+      }
+    catch( Throwable t )
+      {
+      LOG.error( "error starting connection ", t );
+      throw new SQLException( t );
+      }
+    LOG.debug( "connection started" );
     }
 
   public synchronized void closeConnection( LingualConnection connection )
     {
-    closeCollectorCache();
-    defaultConnection.clear();
+    LOG.info( "closing connection" );
+    try
+      {
+      closeCollectorCache();
+      nextConnection.clear();
+      }
+    catch( Throwable t )
+      {
+      LOG.error( "unable to close connection", t );
+      throw new RuntimeException( "unable to close connection", t );
+      }
     }
 
   public synchronized void enableCollectorCache()
@@ -331,9 +350,9 @@ public abstract class PlatformBroker<Config>
     return catalog;
     }
 
-  public void addResultToSchema( Tap tap )
+  public void addResultToSchema( Tap tap, LingualConnection lingualConnection )
     {
-    getCatalog().addTapToConnection( defaultConnection.get(), resultsSchemaName, tap, "LAST" );
+    getCatalog().addTapToConnection( lingualConnection, resultsSchemaName, tap, "LAST" );
     }
 
   protected synchronized CatalogManager getCatalogManager()
@@ -646,8 +665,7 @@ public abstract class PlatformBroker<Config>
 
   public LingualFlowFactory getFlowFactory( Branch branch )
     {
-    LingualConnection lingualConnection = defaultConnection.get();
-    LingualFlowFactory lingualFlowFactory = new LingualFlowFactory( this, lingualConnection, createUniqueName(), branch.current );
+    LingualFlowFactory lingualFlowFactory = new LingualFlowFactory( this, nextConnection.get(), createUniqueName(), branch.current );
 
     for( Ref head : branch.heads.keySet() )
       {

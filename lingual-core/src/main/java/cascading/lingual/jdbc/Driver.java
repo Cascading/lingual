@@ -110,7 +110,7 @@ public class Driver extends UnregisteredDriver
       {
       DriverManager.registerDriver( this );
       }
-    catch( SQLException exception )
+    catch( Exception exception )
       {
       LOG.error( "error occurred while registering JDBC driver " + this + ": " + exception.toString() );
       }

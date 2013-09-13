@@ -59,6 +59,7 @@ ext.cascadingBindVersion = "1.0.0-${bindVersion}"
 ext.hadoopVersion = '1.1.2'
 
 ext.apacheCommonsVersion = '3.1'
+ext.c3p0Version = '0.9.2.1'
 ext.commonsIoVersion = '2.4'
 ext.commonsLangVersion = '3.1'
 ext.guavaVersion = '14.0.1'

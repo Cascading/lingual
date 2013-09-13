@@ -120,6 +120,11 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     return jars.toArray( new String[ jars.size() ] );
     }
 
+  public LingualConnection getLingualConnection()
+    {
+    return lingualConnection;
+    }
+
   @Override
   public Flow create()
     {

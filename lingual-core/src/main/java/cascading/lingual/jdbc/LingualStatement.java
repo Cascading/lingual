@@ -380,12 +380,13 @@ public class LingualStatement implements Statement
 
   public void closeOnCompletion() throws SQLException
     {
-    throw new UnsupportedOperationException( "This JDK 1.7 feature is not supported" );
+    LOG.debug( "This JDK 1.7 feature is not supported" );
     }
 
   public boolean isCloseOnCompletion() throws SQLException
     {
-    throw new UnsupportedOperationException( "This JDK 1.7 feature is  not supported" );
+    LOG.debug( "This JDK 1.7 feature is not supported" );
+    return false; // JDK 1.7 feature not supported so tell client to explicitly close.
     }
 
   @Override

@@ -20,8 +20,11 @@
 
 package cascading.lingual.optiq.enumerable;
 
+import java.lang.ref.WeakReference;
+
 import cascading.flow.Flow;
 import cascading.flow.FlowListener;
+import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
@@ -30,10 +33,12 @@ import cascading.lingual.platform.PlatformBroker;
 public class AddResultTableListener implements FlowListener
   {
   private final PlatformBroker platformBroker;
+  private final WeakReference<LingualConnection> lingualConnection;
 
-  public AddResultTableListener( PlatformBroker platformBroker )
+  public AddResultTableListener( PlatformBroker platformBroker, LingualConnection lingualConnection )
     {
     this.platformBroker = platformBroker;
+    this.lingualConnection = new WeakReference<LingualConnection>( lingualConnection );
     }
 
   @Override
@@ -52,7 +57,7 @@ public class AddResultTableListener implements FlowListener
     if( !flow.getStats().isSuccessful() )
       return;
 
-    platformBroker.addResultToSchema( flow.getSink() );
+    platformBroker.addResultToSchema( flow.getSink(), lingualConnection.get() );
     }
 
   @Override

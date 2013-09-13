@@ -159,7 +159,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   protected void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws Exception
     {
     LingualConnection connection = (LingualConnection) getConnection();
-    connection.addTable( schemaName, tableName, identifier, fields, protocolName, formatName );
+    connection.addTableForTest( schemaName, tableName, identifier, fields, protocolName, formatName );
     }
 
   protected ResultSet executeSql( String sql ) throws Exception
@@ -227,12 +227,12 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     assertEquals( expectedRowCount, rowCount );
     }
 
-  private Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator )
+  protected Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator )
     {
     return createTable( entryIterator, false );
     }
 
-  private Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator, boolean useOrdinal )
+  protected Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator, boolean useOrdinal )
     {
     Table<Integer, Comparable, Object> table = createNullableTable();
 
@@ -343,7 +343,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     return table;
     }
 
-  private Table<Integer, Comparable, Object> createNullableTable()
+  protected Table<Integer, Comparable, Object> createNullableTable()
     {
     return Tables.newCustomTable(
       Maps.<Integer, Map<Comparable, Object>>newLinkedHashMap(),
