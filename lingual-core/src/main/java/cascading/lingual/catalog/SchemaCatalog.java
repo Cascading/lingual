@@ -90,8 +90,7 @@ public abstract class SchemaCatalog implements Serializable
   @JsonProperty
   private SchemaDef rootSchemaDef;
 
-  @JsonProperty
-  private Map<String, Fields> nameFieldsMap = new InsensitiveMap<Fields>();
+  private transient Map<String, Fields> nameFieldsMap = new InsensitiveMap<Fields>(); // do not persist
 
   protected SchemaCatalog()
     {
