@@ -79,7 +79,7 @@ class CascadingProjectRel extends ProjectRelBase implements CascadingRelNode
 
   public Branch visitChild( Stack stack )
     {
-    RexProgram program = CalcProjectUtil.createRexProgram( this );
+    RexProgram program = RexProgram.create( getChild().getRowType(), exps, null, getRowType(), getCluster().getRexBuilder() );
 
     return CalcProjectUtil.resolveBranch( stack, this, program );
     }
