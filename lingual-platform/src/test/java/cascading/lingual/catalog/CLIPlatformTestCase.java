@@ -207,7 +207,6 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     assertEquals( "'" + sql + "' returned incorrect status", expectedResult, result );
     }
 
-
   protected Catalog createCatalog()
     {
     Properties platformProperties = getPlatformProperties();

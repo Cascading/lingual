@@ -22,6 +22,7 @@ package cascading.lingual.platform;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import cascading.bind.catalog.Resource;
@@ -33,6 +34,7 @@ import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.TableDef;
+import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.util.Version;
 import cascading.pipe.Pipe;
@@ -66,13 +68,14 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
    */
   public LingualFlowFactory( PlatformBroker platformBroker, LingualConnection lingualConnection, String name, Pipe tail )
     {
-    super( platformBroker.getProperties(), name );
+    super( new Properties( platformBroker.getProperties() ), name );
     this.platformBroker = platformBroker;
     this.catalog = platformBroker.getCatalog();
     this.lingualConnection = lingualConnection;
     this.tail = tail;
 
     AppProps.addApplicationFramework( getProperties(), Version.getName() + ":" + Version.getVersionString() );
+    AppProps.addApplicationTag( getProperties(), getProperties().getProperty( Driver.TAGS_PROP ) );
     }
 
   @Override

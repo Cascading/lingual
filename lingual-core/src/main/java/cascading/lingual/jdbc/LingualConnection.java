@@ -84,8 +84,10 @@ public abstract class LingualConnection implements Connection
     catch( SQLException sqlException )
       {
       String providerError = String.format( "connection failed: %s ( provider %s error code %d).", sqlException.getMessage(), parent.getMetaData().getDatabaseProductName(), sqlException.getErrorCode() );
+
       LOG.error( providerError );
       LOG.error( "\tconnection URL: " + parent.getMetaData().getURL() );
+
       if( platformBroker != null )
         {
         LOG.error( "\tread catalog from: " + platformBroker.getFullCatalogPath() );
@@ -98,6 +100,7 @@ public abstract class LingualConnection implements Connection
         {
         LOG.error( "\tunable to create platform " + getStringProperty( PLATFORM_PROP ) + ": {}", sqlException.getMessage() );
         }
+
       throw sqlException;
       }
     }

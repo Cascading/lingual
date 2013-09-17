@@ -43,6 +43,7 @@ public class ShellOptions extends Options
   private final OptionSpec<String> sqlPlanPath;
   private final OptionSpec<String> sqlFile;
   private final OptionSpec<Integer> maxRows;
+  private final OptionSpec<String> tags;
 
   public ShellOptions()
     {
@@ -75,6 +76,9 @@ public class ShellOptions extends Options
 
     maxRows = parser.accepts( "maxRows", "number of results to limit. 0 for unlimited" )
       .withRequiredArg().ofType( Integer.TYPE ).defaultsTo( 10000 ).describedAs( "number of records" );
+
+    tags = parser.accepts( "tags", "tags to annotate running processes with" )
+      .withRequiredArg().withValuesSeparatedBy( ',' );
     }
 
   public String createJDBCUrl( Properties properties )
@@ -101,6 +105,9 @@ public class ShellOptions extends Options
 
     if( hasSQLPlanPath() )
       addProperty( builder, Driver.SQL_PLAN_PATH_PROP, properties, getSQLPlanPath() );
+
+    if( hasTags() )
+      addProperty( builder, Driver.TAGS_PROP, properties, Util.join( getTags(), "," ) );
 
     if( getSqlFile() != null )
       builder.append( ";" ).append( Driver.COLLECTOR_CACHE_PROP ).append( "=true" );
@@ -216,6 +223,16 @@ public class ShellOptions extends Options
       return null;
 
     return optionSet.valueOf( maxRows );
+    }
+
+  public boolean hasTags()
+    {
+    return optionSet.has( tags );
+    }
+
+  public List<String> getTags()
+    {
+    return optionSet.valuesOf( tags );
     }
 
   /////

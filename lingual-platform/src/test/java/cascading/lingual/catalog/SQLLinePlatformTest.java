@@ -29,7 +29,6 @@ import org.junit.Test;
  */
 public class SQLLinePlatformTest extends CLIPlatformTestCase
   {
-
   @Test
   public void testGoodQueryReturnsTrue() throws IOException
     {
@@ -60,5 +59,4 @@ public class SQLLinePlatformTest extends CLIPlatformTestCase
     initCatalog();
     shellSQL( false, "select * from \"example\".\"oops\";" );
     }
-
   }

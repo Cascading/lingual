@@ -83,6 +83,7 @@ public class Driver extends UnregisteredDriver
   public static final String SCHEMA_PROP = "schema";
   public static final String SCHEMAS_PROP = "schemas";
   public static final String TABLES_PROP = "tables";
+  public static final String TAGS_PROP = "tags";
   public static final String VERBOSE_PROP = "verbose";
   public static final String RESULT_SCHEMA_PROP = "resultSchema";
   public static final String RESULT_PATH_PROP = "resultPath";

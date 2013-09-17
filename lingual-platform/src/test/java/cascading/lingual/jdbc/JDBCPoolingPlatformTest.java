@@ -25,7 +25,6 @@ import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Time;
-import java.util.HashMap;
 
 import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBrokerFactory;
@@ -33,7 +32,6 @@ import cascading.lingual.type.SQLDateTimeCoercibleType;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.type.CoercibleType;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Table;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.ConnectionCustomizer;
@@ -44,8 +42,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.collect.Maps.newHashMap;
 
 public class JDBCPoolingPlatformTest extends JDBCPlatformTestCase
   {
@@ -117,7 +113,6 @@ public class JDBCPoolingPlatformTest extends JDBCPlatformTestCase
   @Test
   public void runQueriesWithNoConnectionClosing() throws Exception
     {
-
     assertTablesEqual( "emps-select", "select empno, name from sales.emps", false, true );
     assertTablesEqual( "emps-filter-one", "select name from sales.emps where empno = 120", false, true );
     assertTablesEqual( "emps-filter-one", "select name from sales.emps where name = 'Wilma'", false, true );
@@ -141,8 +136,8 @@ public class JDBCPoolingPlatformTest extends JDBCPlatformTestCase
 
   protected void assertTablesEqual( Table expectedTable, String sqlQuery, boolean closeConnection, boolean expectSuccess ) throws Exception
     {
-
     Connection connection = getConnection( expectSuccess );
+
     try
       {
       ResultSet result = executeSql( sqlQuery, connection );
@@ -160,24 +155,6 @@ public class JDBCPoolingPlatformTest extends JDBCPlatformTestCase
   protected ResultSet executeSql( String sql, Connection connection ) throws Exception
     {
     return connection.createStatement().executeQuery( sql );
-    }
-
-  public String getConnectionString()
-    {
-    String platformName = getPlatformName();
-
-    HashMap<Object, Object> values = newHashMap();
-
-    values.put( Driver.SCHEMAS_PROP, getDefaultSchemaPath() );
-    values.put( Driver.CATALOG_PROP, getCatalogPath() );
-    values.put( Driver.RESULT_PATH_PROP, getResultPath() );
-    values.put( Driver.FLOW_PLAN_PATH, getFlowPlanPath() );
-    values.put( Driver.SQL_PLAN_PATH_PROP, getSQLPlanPath() );
-    values.put( Driver.PLANNER_DEBUG, getPlannerDebug() );
-
-    String properties = Joiner.on( ';' ).withKeyValueSeparator( "=" ).join( values );
-
-    return String.format( "%s:%s;%s", URI, platformName, properties );
     }
 
   protected synchronized Connection getConnection( boolean expectSuccess ) throws Exception
