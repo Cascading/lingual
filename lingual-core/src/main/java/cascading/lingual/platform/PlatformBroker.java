@@ -684,7 +684,10 @@ public abstract class PlatformBroker<Config>
         addHandlers( lingualFlowFactory, tableDef );
       }
 
-    lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
+    if( branch.tailTableDef != null )
+      lingualFlowFactory.setSinkStereotype( branch.current.getName(), branch.tailTableDef.getStereotype() );
+    else
+      lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
 
     if( branch.tailTableDef != null )
       addHandlers( lingualFlowFactory, branch.tailTableDef );
