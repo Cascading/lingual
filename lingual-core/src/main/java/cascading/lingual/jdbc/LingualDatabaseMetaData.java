@@ -60,7 +60,8 @@ class LingualDatabaseMetaData implements DatabaseMetaData
   @Override
   public String getURL() throws SQLException
     {
-    return parent.getURL();
+    // optiq doesn't support this so get it from the connection.
+    return connection.getMetaData().getURL();
     }
 
   @Override
