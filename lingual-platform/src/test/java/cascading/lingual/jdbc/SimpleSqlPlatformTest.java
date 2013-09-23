@@ -20,6 +20,9 @@
 
 package cascading.lingual.jdbc;
 
+import cascading.lingual.type.SQLDateCoercibleType;
+import cascading.lingual.type.SQLTimeCoercibleType;
+import cascading.lingual.type.SQLTimestampCoercibleType;
 import cascading.tuple.Fields;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -251,6 +254,14 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
 
     assertUpdate( 5, "insert into test.results values (100,'Fred'),(110,'Eric'),(110,'John'),(120,'Wilma'),(130,'Alice')" );
+    }
+
+  @Test
+  public void testIntoSelectValuesDate() throws Exception
+    {
+    setResultsTo( "TEST", "RESULTS", new Fields( "DATE", "TIME", "DATETIME" ).applyTypes( new SQLDateCoercibleType(), new SQLTimeCoercibleType(), new SQLTimestampCoercibleType() ) );
+
+    assertUpdate( 1, "insert into test.results values (DATE '2013-07-07', TIME '15:15:01.01', TIMESTAMP '2013-07-07 15:15:01.01')" );
     }
 
   @Test

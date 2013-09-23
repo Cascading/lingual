@@ -20,7 +20,7 @@
 
 package cascading.lingual.optiq;
 
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.platform.PlatformBroker;
@@ -130,7 +130,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     if( platformBroker == null )
       return super.getRows();
 
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalogManager catalog = platformBroker.getCatalogManager();
 
     if( catalog == null )
       return super.getRows();

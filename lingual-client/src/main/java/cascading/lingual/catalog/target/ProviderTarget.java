@@ -81,7 +81,7 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     return catalog.renameProviderDef( schemaName, getOptions().getProviderName(), getOptions().getRenameName() );
     }
@@ -94,7 +94,7 @@ public class ProviderTarget extends CRUDTarget
     if( providerName == null )
       throw new IllegalArgumentException( "name of provider to remove must be given" );
 
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
 
     return catalog.removeProviderDef( schemaName, providerName );
@@ -103,13 +103,11 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
-    if( schemaDef == null )
-      return null;
+    getSchemaDefChecked( catalog, getOptions().getSchemaName(), false );
 
-    return catalog.getSchemaDef( getOptions().getSchemaName() ).getProviderDef( getOptions().getProviderName() );
+    return catalog.getProviderDef( getOptions().getSchemaName(), getOptions().getProviderName() );
     }
 
   @Override
@@ -128,7 +126,7 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
 
     return catalog.getProviderNames( schemaName );
@@ -137,8 +135,8 @@ public class ProviderTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDefChecked( getOptions().getSchemaName() );
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, getOptions().getSchemaName(), false );
 
     ProviderDef providerDef = schemaDef.findProviderDefFor( getOptions().getProviderName() );
 
@@ -150,8 +148,7 @@ public class ProviderTarget extends CRUDTarget
 
   protected List<String> doAdd( PlatformBroker platformBroker, boolean doActualInstall )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String providerName = getOptions().getProviderName();
     File jarFile = getLocalJarFile( platformBroker );
@@ -181,7 +178,7 @@ public class ProviderTarget extends CRUDTarget
       names.add( name );
 
       if( doActualInstall )
-        schemaDef.addProviderDef( name, jarFile.getName(), propertyMap, md5Hash );
+        catalog.addProviderDef( getOptions().getSchemaName(), name, jarFile.getName(), propertyMap, md5Hash );
       }
 
     if( names.size() == 0 )
@@ -279,7 +276,7 @@ public class ProviderTarget extends CRUDTarget
 
   private List<RepositoryResolver> getResolvers( PlatformBroker platformBroker )
     {
-    Collection<Repo> repositories = platformBroker.getCatalog().getRepositories();
+    Collection<Repo> repositories = platformBroker.getSchemeCatalog().getRepositories();
     List<RepositoryResolver> resolvers = new ArrayList<RepositoryResolver>();
 
     for( Repo repo : repositories )

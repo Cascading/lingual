@@ -132,8 +132,6 @@ public class Catalog extends Main<CatalogOptions>
   protected boolean handle() throws IOException
     {
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getOptions().getPlatform(), getConfigProperties() );
-    // force a read to init dynamic enums.
-    platformBroker.getCatalog();
 
     if( getOptions().isInit() )
       return init( platformBroker );
@@ -183,10 +181,10 @@ public class Catalog extends Main<CatalogOptions>
       }
     finally
       {
-      LOG.info( "catalog loaded: {}", platformBroker.catalogLoaded() );
+      LOG.info( "catalog loaded: {}", platformBroker.catalogManagerLoaded() );
 
-      if( !doNotWrite && platformBroker.catalogLoaded() )
-        platformBroker.writeCatalog();
+      if( !doNotWrite && platformBroker.catalogManagerLoaded() )
+        platformBroker.commitCatalog();
       }
     }
 
@@ -197,7 +195,7 @@ public class Catalog extends Main<CatalogOptions>
     boolean success = platformBroker.initializeMetaData();
 
     if( success )
-      platformBroker.writeCatalog();
+      platformBroker.commitCatalog();
 
     if( !success )
       getPrinter().printFormatted( "path: %s has already been initialized", platformBroker.getFullMetadataPath() );

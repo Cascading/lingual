@@ -84,12 +84,12 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
 
     catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--add", "--extensions", ".jdbc,.jdbc.lzo", "--provider", "text", "--properties", "someProperty=someValue" );
 
-    assertEquals( Arrays.asList( "someValue" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, TABLE_FORMAT_NAME, "someProperty" ) );
+    assertEquals( Arrays.asList( "someValue" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, Format.getFormat( TABLE_FORMAT_NAME ), "someProperty" ) );
 
     catalog( "--schema", AD_HOC_SCHEMA, "--format", TABLE_FORMAT_NAME, "--update", "--properties", "someProperty2=someValue2" );
 
-    assertEquals( Arrays.asList( "someValue" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, TABLE_FORMAT_NAME, "someProperty" ) );
-    assertEquals( Arrays.asList( "someValue2" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, TABLE_FORMAT_NAME, "someProperty2" ) );
+    assertEquals( Arrays.asList( "someValue" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, Format.getFormat( TABLE_FORMAT_NAME ), "someProperty" ) );
+    assertEquals( Arrays.asList( "someValue2" ), schemaCatalog.getFormatProperty( AD_HOC_SCHEMA, Format.getFormat( TABLE_FORMAT_NAME ), "someProperty2" ) );
 
     catalog( "--schema", AD_HOC_SCHEMA, "--protocol", JDBC_PROTOCOL_NAME, "--add", "--schemes", "jdbc:,jdbcs:", "--provider", "text" );
 
@@ -282,13 +282,13 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
 
     // renaming a format should not affect the properties
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_TO_SUFFIX, "--format", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--rename", TABLE_FORMAT_NAME + RENAME_TO_SUFFIX );
-    List<String> formatProperties = schemaCatalog.getFormatProperty( "adhoc_to", "table_to", FormatProperties.EXTENSIONS );
+    List<String> formatProperties = schemaCatalog.getFormatProperty( "adhoc_to", Format.getFormat( "table_to" ), FormatProperties.EXTENSIONS );
     List<String> expectedFormatProperties = Lists.newArrayList( ".jdbc", ".jdbc.lzo" );
     assertTrue( "format properties missing values from " + formatProperties.toString(), formatProperties.containsAll( expectedFormatProperties ) );
 
     // renaming a protocol should not affect the properties
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_TO_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--rename", JDBC_PROTOCOL_NAME + RENAME_TO_SUFFIX );
-    List<String> protocolProperties = schemaCatalog.getProtocolProperty( "adhoc_to", "jdbc_to", ProtocolProperties.SCHEMES );
+    List<String> protocolProperties = schemaCatalog.getProtocolProperty( "adhoc_to", Protocol.getProtocol( "jdbc_to" ), ProtocolProperties.SCHEMES );
     List<String> expectedProtocolProperties = Lists.newArrayList( "jdbc:", "jdbcs:" );
     assertTrue( "protocol properties missing values from " + protocolProperties.toString(), protocolProperties.containsAll( expectedProtocolProperties ) );
     }

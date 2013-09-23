@@ -54,7 +54,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
     String stereotypeName = getOptions().getStereotypeName();
@@ -66,7 +66,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
     String stereotypeName = getOptions().getStereotypeName();
@@ -77,7 +77,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
 
     if( schemaDef == null )
@@ -95,7 +95,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected void validateAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String providerName = getOptions().getProviderName();
 
@@ -111,7 +111,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String stereotypeName = getOptions().getStereotypeName();
     List<String> columns = getOptions().getColumns();
@@ -126,7 +126,7 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
 
@@ -139,10 +139,11 @@ public class StereotypeTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String stereotypeName = getOptions().getStereotypeName();
-    Stereotype stereotype = catalog.getSchemaDefChecked( schemaName ).getStereotypeChecked( stereotypeName );
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, schemaName, true );
+    Stereotype stereotype = schemaDef.getStereotypeChecked( stereotypeName );
 
     return new StereotypeBuilder().format( stereotype );
     }

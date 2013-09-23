@@ -22,6 +22,7 @@ package cascading.lingual.common;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.platform.PlatformBroker;
 
 /**
@@ -56,12 +57,14 @@ public abstract class Target
 
   public abstract boolean handle( PlatformBroker platformBroker );
 
-  protected void verifySchema( SchemaCatalog catalog, String schemaName )
+  protected SchemaDef getSchemaDefChecked( SchemaCatalog catalog, String schemaName, boolean noRootSchema )
     {
-    if( schemaName == null )
+    if( noRootSchema && schemaName == null )
       throw new IllegalArgumentException( "schema name must be specified" );
 
-    if( !catalog.getSchemaNames().contains( schemaName.toLowerCase() ) )
+    if( !catalog.schemaExists( schemaName ) )
       throw new IllegalArgumentException( "schema does not exist: " + schemaName );
+
+    return catalog.getSchemaDef( schemaName );
     }
   }

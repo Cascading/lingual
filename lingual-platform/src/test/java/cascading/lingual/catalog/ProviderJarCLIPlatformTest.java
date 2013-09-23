@@ -152,7 +152,8 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     // validate an actual spec
     catalog( "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", SPEC );
-    assertFalse( SPEC + " provider found in catalog: " + getSchemaCatalog().getProviderNames(), getSchemaCatalog().getProviderNames().contains( SPEC ) );
+    Collection<String> providerNames = getSchemaCatalog().getProviderNames( null );
+    assertFalse( SPEC + " provider found in catalog: " + providerNames, providerNames.contains( SPEC ) );
 
     // fail a bogus spec
     catalog( false, "--schema", EXAMPLE_SCHEMA, "--validate", "--provider", "--add", "foo:bar:1.0" );
@@ -360,9 +361,9 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     catalog( "--schema", EXAMPLE_SCHEMA, "--table", "products", "--add", SIMPLE_PRODUCTS_TABLE );
 
     // read a file
-    shellSQL( "select * from \"example\".\"products\";" ) ;
+    shellSQL( "select * from \"example\".\"products\";" );
     // spawn a job
-    shellSQL( "select * from \"example\".\"products\" where SKU is not null;" ) ;
+    shellSQL( "select * from \"example\".\"products\" where SKU is not null;" );
     // spawn results into a unique table/scheme with differing providers meta-data
     shellSQL( "insert into \"results\".\"results\" select * from \"example\".\"products\" where SKU is not null;" );
     }

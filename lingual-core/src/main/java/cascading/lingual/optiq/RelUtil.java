@@ -20,10 +20,12 @@
 
 package cascading.lingual.optiq;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import cascading.tuple.Fields;
+import cascading.tuple.type.CoercibleType;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import org.eigenbase.rel.RelNode;
 import org.eigenbase.relopt.RelOptCluster;
@@ -106,7 +108,14 @@ class RelUtil
   // but more difficult for humans to debug.
   public static Fields createTypedFieldsFor( RelOptCluster cluster, RelDataTypeField typeField, boolean numeric )
     {
-    Class type = getJavaType( cluster, typeField.getType() );
+    RelDataType relDataType = typeField.getType();
+
+    Type type;
+
+    if( relDataType instanceof CoercibleType )
+      type = (Type) relDataType;
+    else
+      type = getJavaType( cluster, relDataType );
 
     if( numeric )
       return new Fields( typeField.getIndex(), type );

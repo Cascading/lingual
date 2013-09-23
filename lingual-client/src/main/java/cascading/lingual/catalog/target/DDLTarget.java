@@ -26,6 +26,7 @@ import java.util.List;
 
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.ddl.DDLParser;
 import cascading.lingual.catalog.ddl.DDLTable;
 import cascading.lingual.common.Printer;
@@ -49,16 +50,18 @@ public class DDLTarget extends Target
   @Override
   public boolean handle( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String protocolName = getOptions().getProtocolName();
     String formatName = getOptions().getFormatName();
 
-    verifySchema( catalog, schemaName );
+    getSchemaDefChecked( catalog, schemaName, true );
 
     LOG.info( "loading ddl from: {}", getOptions().getDDL() );
 
-    DDLParser parser = new DDLParser( catalog, schemaName, protocolName, formatName );
+    SchemaCatalogManager catalogManager = platformBroker.getCatalogManager();
+
+    DDLParser parser = new DDLParser( catalogManager, schemaName, protocolName, formatName );
 
     try
       {

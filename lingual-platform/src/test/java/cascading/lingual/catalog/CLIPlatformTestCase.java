@@ -178,7 +178,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     Properties platformProperties = getPlatformProperties();
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), platformProperties );
 
-    return platformBroker.getCatalog();
+    return platformBroker.getCatalogManager().getSchemaCatalog();
     }
 
   protected void catalog( String... args ) throws IOException

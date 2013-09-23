@@ -41,11 +41,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import cascading.flow.Flow;
-import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.optiq.FieldTypeFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.platform.PlatformBrokerFactory;
-import cascading.tuple.Fields;
 import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.jdbc.OptiqConnection;
 import org.slf4j.Logger;
@@ -89,18 +87,9 @@ public abstract class LingualConnection implements Connection
       LOG.error( "\tconnection URL: " + getMetaData().getURL() );
 
       if( platformBroker != null )
-        {
         LOG.error( "\tread catalog from: " + platformBroker.getFullCatalogPath() );
-
-        if( platformBroker.getCatalog() != null && platformBroker.getCatalog().getRootSchemaDef() != null )
-          LOG.error( "\tused root schema from: " + platformBroker.getCatalog().getRootSchemaDef().getIdentifier() );
-        else
-          LOG.error( "\teither catalog or root schema not set." );
-        }
       else
-        {
         LOG.error( "\tunable to create platform " + getStringProperty( PLATFORM_PROP ) + ": {}", sqlException.getMessage() );
-        }
 
       throw sqlException;
       }
@@ -272,7 +261,8 @@ public abstract class LingualConnection implements Connection
   public void close() throws SQLException
     {
     // force a re-read of the catalog when returned to a JDBC pool.
-    platformBroker.getCatalog().addSchemasTo( this );
+    platformBroker.getCatalogManager().addSchemasTo( this );
+
     try
       {
       parent.close();
@@ -514,18 +504,6 @@ public abstract class LingualConnection implements Connection
   public Struct createStruct( String typeName, Object[] attributes ) throws SQLException
     {
     return parent.createStruct( typeName, attributes );
-    }
-
-  // method to simplify testing. since this isn't part of the Connection interface using this
-  // for features can break JDBC compatibility.
-  public void addTableForTest( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws SQLException
-    {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    if( catalog.getSchemaDef( schemaName ) == null )
-      catalog.addSchemaDef( schemaName, protocolName, formatName );
-
-    catalog.createTableDefFor( schemaName, tableName, identifier, fields, protocolName, formatName );
-    catalog.addSchemasTo( this );
     }
 
   public <T> T unwrap( Class<T> iface ) throws SQLException

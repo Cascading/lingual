@@ -47,14 +47,14 @@ import cascading.bind.catalog.Stereotype;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.planner.PlatformInfo;
-import cascading.lingual.catalog.CatalogManager;
-import cascading.lingual.catalog.Def;
-import cascading.lingual.catalog.FileCatalogManager;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
+import cascading.lingual.catalog.service.CatalogService;
+import cascading.lingual.catalog.service.FileCatalogService;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.optiq.meta.Branch;
@@ -107,9 +107,9 @@ public abstract class PlatformBroker<Config>
   protected Properties properties;
 
   private CascadingServices cascadingServices;
-  private CatalogManager catalogManager;
+  private CatalogService catalogService;
 
-  private SchemaCatalog catalog;
+  private SchemaCatalogManager catalogManager;
 
   private Map<String, TupleEntryCollector> collectorCache;
 
@@ -152,6 +152,10 @@ public abstract class PlatformBroker<Config>
 
   public abstract Config getPlannerConfig();
 
+  public abstract Format getDefaultFormat();
+
+  public abstract Protocol getDefaultProtocol();
+
   public CascadingServices getCascadingServices()
     {
     if( cascadingServices == null )
@@ -166,7 +170,7 @@ public abstract class PlatformBroker<Config>
 
     try
       {
-      getCatalog().addSchemasTo( connection );
+      getCatalogManager().addSchemasTo( connection );
       nextConnection = new WeakReference<LingualConnection>( connection );
       }
     catch( Throwable throwable )
@@ -246,20 +250,25 @@ public abstract class PlatformBroker<Config>
     return DebugLevel.valueOf( plannerVerbose.toUpperCase() );
     }
 
-  public boolean catalogLoaded()
+  public SchemaCatalog getSchemeCatalog()
     {
-    return catalog != null;
+    return getCatalogManager().getSchemaCatalog();
     }
 
-  public synchronized SchemaCatalog getCatalog()
+  public boolean catalogManagerLoaded()
+    {
+    return catalogManager != null;
+    }
+
+  public synchronized SchemaCatalogManager getCatalogManager()
     {
     // this will only be null on startup so exit the sync block asap.
-    if( catalog != null )
-      return catalog;
+    if( catalogManager != null )
+      return catalogManager;
 
-    catalog = loadCatalog();
+    catalogManager = loadCatalogManager();
 
-    return catalog;
+    return catalogManager;
     }
 
   public boolean confirmMetaData()
@@ -326,58 +335,69 @@ public abstract class PlatformBroker<Config>
     return makePath( getFullConfigPath(), getStringProperty( CONFIG_FILE_NAME_PROP, CONFIG_FILE_NAME ) );
     }
 
-  public void writeCatalog()
+  public void commitCatalog()
     {
-    getCatalogManager().writeCatalog( getCatalog() );
+    getCatalogService().commitCatalog( getCatalogManager().getSchemaCatalog() );
     }
 
-  protected SchemaCatalog loadCatalog()
+  protected SchemaCatalogManager loadCatalogManager()
     {
-    SchemaCatalog catalog = getCatalogManager().readCatalog();
+    SchemaCatalog catalog = getCatalogService().openSchemaCatalog();
+
+    boolean performInit = catalog == null;
 
     if( catalog == null )
-      catalog = newCatalogInstance();
+      catalog = getCatalogService().createSchemaCatalog( getDefaultProtocol(), getDefaultFormat() );
+
+    SchemaCatalogManager catalogManager = new SchemaCatalogManager( catalog );
+
+    catalogManager.setPlatformBroker( this );
+
+    if( performInit )
+      catalogManager.initializeNew(); // initialize defaults for a new catalog and root schema
 
     // schema and tables beyond here are not persisted in the catalog
     // they are transient to the session
     // todo: wrap transient catalog data around persistent catalog data
     if( getProperties().containsKey( SCHEMAS_PROP ) )
-      loadTransientSchemas( catalog );
+      loadTransientSchemas( catalogManager );
 
     if( getProperties().containsKey( TABLES_PROP ) )
-      loadTransientTables( catalog );
+      loadTransientTables( catalogManager );
 
     if( getProperties().containsKey( RESULT_SCHEMA_PROP ) )
-      loadTransientResultSchema( catalog );
-
-    return catalog;
-    }
-
-  public void addResultToSchema( Tap tap, LingualConnection lingualConnection )
-    {
-    getCatalog().addTapToConnection( lingualConnection, resultsSchemaName, tap, "LAST" );
-    }
-
-  protected synchronized CatalogManager getCatalogManager()
-    {
-    if( catalogManager != null )
-      return catalogManager;
-
-    catalogManager = loadCatalogManagerPlugin();
-
-    if( catalogManager == null )
-      catalogManager = new FileCatalogManager( this );
+      loadTransientResultSchema( catalogManager );
 
     return catalogManager;
     }
 
-  private CatalogManager loadCatalogManagerPlugin()
+  public void addResultToSchema( Tap tap, LingualConnection lingualConnection )
+    {
+    getCatalogManager().addTapToConnection( lingualConnection, resultsSchemaName, tap, "LAST" );
+    }
+
+  protected synchronized CatalogService getCatalogService()
+    {
+    if( catalogService != null )
+      return catalogService;
+
+    catalogService = loadCatalogServicePlugin();
+
+    if( catalogService == null )
+      catalogService = new FileCatalogService();
+
+    catalogService.setPlatformBroker( this );
+
+    return catalogService;
+    }
+
+  private CatalogService loadCatalogServicePlugin()
     {
     // getServiceUtil is a private method, this allows for an impl to be loaded from an internal classloader
     ServiceLoader loader = Reflection.invokeInstanceMethod( getCascadingServices(), "getServiceUtil" );
     Properties defaultProperties = Reflection.getStaticField( getCascadingServices().getClass(), "defaultProperties" );
 
-    return (CatalogManager) loader.loadServiceFrom( defaultProperties, getProperties(), CatalogManager.CATALOG_SERVICE_CLASS_PROPERTY );
+    return (CatalogService) loader.loadServiceFrom( defaultProperties, getProperties(), CatalogService.CATALOG_SERVICE_CLASS_PROPERTY );
     }
 
   private String makeFullMetadataFilePath( String catalogPath )
@@ -415,7 +435,7 @@ public abstract class PlatformBroker<Config>
 
   public SchemaDef getResultSchemaDef()
     {
-    return getCatalog().getSchemaDef( resultsSchemaName );
+    return getCatalogManager().getSchemaDef( resultsSchemaName );
     }
 
   public String getResultPath( String name )
@@ -426,7 +446,7 @@ public abstract class PlatformBroker<Config>
   protected String getRootResultPath()
     {
     if( resultsSchemaName != null )
-      return getCatalog().getSchemaDef( resultsSchemaName ).getIdentifier();
+      return getCatalogManager().getSchemaIdentifier( resultsSchemaName );
     else
       return getProperties().getProperty( Driver.RESULT_PATH_PROP, getTempPath() );
     }
@@ -607,7 +627,7 @@ public abstract class PlatformBroker<Config>
     return tableName;
     }
 
-  private void loadTransientResultSchema( SchemaCatalog catalog )
+  private void loadTransientResultSchema( SchemaCatalogManager catalog )
     {
     String schemaProperty = getStringProperty( RESULT_SCHEMA_PROP );
 
@@ -624,7 +644,7 @@ public abstract class PlatformBroker<Config>
     resultsSchemaName = catalog.createResultsSchemaDef( schemaNames[ 0 ], resultPath );
     }
 
-  private void loadTransientSchemas( SchemaCatalog catalog )
+  private void loadTransientSchemas( SchemaCatalogManager catalog )
     {
     String schemaProperty = getStringProperty( SCHEMAS_PROP );
     String[] schemaIdentifiers = schemaProperty.split( "," );
@@ -633,7 +653,7 @@ public abstract class PlatformBroker<Config>
       catalog.createSchemaDefAndTableDefsFor( schemaIdentifier );
     }
 
-  private void loadTransientTables( SchemaCatalog catalog )
+  private void loadTransientTables( SchemaCatalogManager catalog )
     {
     String tableProperty = getStringProperty( TABLES_PROP );
     String[] tableIdentifiers = tableProperty.split( "," );
@@ -641,8 +661,6 @@ public abstract class PlatformBroker<Config>
     for( String tableIdentifier : tableIdentifiers )
       catalog.createTableDefFor( tableIdentifier );
     }
-
-  public abstract Class<? extends SchemaCatalog> getCatalogClass();
 
   public String[] getChildIdentifiers( String identifier ) throws IOException
     {
@@ -677,60 +695,38 @@ public abstract class PlatformBroker<Config>
       TableDef tableDef = head.tableDef;
 
       if( tableDef == null )
-        stereotypeFor = catalog.getRootSchemaDef().findStereotypeFor( head.fields ); // do not use head name
+        stereotypeFor = catalogManager.findStereotypeFor( head.fields ); // do not use head name
       else
         stereotypeFor = tableDef.getStereotype();
 
       lingualFlowFactory.setSourceStereotype( head.name, stereotypeFor );
 
       if( tableDef != null )
-        addHandlers( lingualFlowFactory, tableDef );
+        addHandlers( lingualFlowFactory, tableDef.getParentSchema() );
       }
 
     if( branch.tailTableDef != null )
       lingualFlowFactory.setSinkStereotype( branch.current.getName(), branch.tailTableDef.getStereotype() );
     else
-      lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalog.getStereoTypeFor( Fields.UNKNOWN ) );
+      lingualFlowFactory.setSinkStereotype( branch.current.getName(), catalogManager.getStereoTypeFor( Fields.UNKNOWN ) );
 
     if( branch.tailTableDef != null )
-      addHandlers( lingualFlowFactory, branch.tailTableDef );
+      addHandlers( lingualFlowFactory, branch.tailTableDef.getParentSchema() );
     else
-      addHandlers( lingualFlowFactory, catalog.getRootSchemaDef().getName(), catalog.getRootSchemaDef() );
+      addHandlers( lingualFlowFactory, getSchemeCatalog().getRootSchemaDef() );
 
     return lingualFlowFactory;
     }
 
-  private void addHandlers( LingualFlowFactory lingualFlowFactory, TableDef tableDef )
+  private void addHandlers( LingualFlowFactory lingualFlowFactory, SchemaDef schemaDef )
     {
-    addHandlers( lingualFlowFactory, tableDef.getParentSchema().getName(), tableDef );
-    }
+    String name = schemaDef == null ? null : schemaDef.getName();
 
-  private void addHandlers( LingualFlowFactory lingualFlowFactory, String schemaName, Def def )
-    {
-    if( !lingualFlowFactory.containsProtocolHandlers( schemaName ) )
-      lingualFlowFactory.addProtocolHandlers( schemaName, catalog.getProtocolHandlers( def ) );
+    if( !lingualFlowFactory.containsProtocolHandlers( name ) )
+      lingualFlowFactory.addProtocolHandlers( name, catalogManager.getProtocolHandlers( schemaDef ) );
 
-    if( !lingualFlowFactory.containsFormatHandlers( schemaName ) )
-      lingualFlowFactory.addFormatHandlers( schemaName, catalog.getFormatHandlersFor( def ) );
-    }
-
-  public SchemaCatalog newCatalogInstance()
-    {
-    try
-      {
-      LOG.info( "creating new SchemaCatalog at {}", getFullCatalogPath() );
-      SchemaCatalog schemaCatalog = getCatalogClass().getConstructor().newInstance();
-
-      schemaCatalog.setPlatformBroker( this );
-
-      schemaCatalog.initializeNew(); // initialize defaults for a new catalog and root schema
-
-      return schemaCatalog;
-      }
-    catch( Exception exception )
-      {
-      throw new RuntimeException( "unable to construct class: " + getCatalogClass().getName(), exception );
-      }
+    if( !lingualFlowFactory.containsFormatHandlers( name ) )
+      lingualFlowFactory.addFormatHandlers( name, catalogManager.getFormatHandlersFor( schemaDef ) );
     }
 
   protected String findActualPath( String parentIdentifier, String identifier )

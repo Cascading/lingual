@@ -30,6 +30,7 @@ import java.util.Set;
 
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.json.JSONFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
@@ -96,10 +97,13 @@ public class DDLParserTest extends TestCase
     {
     TestSchemaCatalog catalog = new TestSchemaCatalog( Protocol.getProtocol( "file" ), Format.getFormat( "csv" ) );
 
-    catalog.createSchemaDef( "test", null, null, null );
-    catalog.initializeNew();
+    catalog.addSchemaDef( "test", Protocol.getProtocol( null ), Format.getFormat( null ), "test" );
 
-    DDLParser parser = new DDLParser( catalog, "test", "test", "file", "csv" );
+    SchemaCatalogManager catalogManager = new SchemaCatalogManager( catalog );
+
+    catalogManager.initializeNew();
+
+    DDLParser parser = new DDLParser( catalogManager, "test", "test", "file", "csv" );
 
     parser.apply( new File( file ) );
 

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import cascading.flow.FlowProcess;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.ValuesHolder;
@@ -101,13 +101,23 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     Branch branch = getBranch();
     TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch.tailTableDef );
 
-    long rowCount = 0;
+    long rowCount;
 
-    for( List<RexLiteral> values : branch.tuples )
+    try
       {
-      collector.add( createTupleFrom( values ) );
+      rowCount = 0;
 
-      rowCount++;
+      for( List<RexLiteral> values : branch.tuples )
+        {
+        collector.add( createTupleFrom( values ) );
+
+        rowCount++;
+        }
+      }
+    finally
+      {
+      if( platformBroker.getCollectorCache() == null )
+        collector.close();
       }
 
     LOG.debug( "inserted {} rows", rowCount );
@@ -118,7 +128,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
   private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, TableDef tableDef )
     {
     FlowProcess flowProcess = platformBroker.getFlowProcess();
-    SchemaCatalog schemaCatalog = platformBroker.getCatalog();
+    SchemaCatalogManager schemaCatalog = platformBroker.getCatalogManager();
     Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();
 
     TupleEntryCollector collector;

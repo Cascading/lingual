@@ -18,29 +18,39 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.service;
 
 import java.util.Map;
 
-import cascading.management.CascadingServices;
-import cascading.management.DocumentService;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.provider.CascadingService;
 
 /**
  *
  */
-public abstract class CatalogManager implements CascadingService
+public abstract class CatalogService implements CascadingService
   {
   public static final String CATALOG_SERVICE_CLASS_PROPERTY = "cascading.management.catalog.service.classname";
+  PlatformBroker platformBroker;
 
   private Map<Object, Object> properties;
 
-  DocumentService documentService = new CascadingServices.NullDocumentService();
+  public CatalogService()
+    {
+    }
 
   @Override
   public void setProperties( Map<Object, Object> properties )
     {
     this.properties = properties;
+    }
+
+  public void setPlatformBroker( PlatformBroker platformBroker )
+    {
+    this.platformBroker = platformBroker;
     }
 
   @Override
@@ -59,7 +69,9 @@ public abstract class CatalogManager implements CascadingService
     return true;
     }
 
-  public abstract void writeCatalog( SchemaCatalog catalog );
+  public abstract SchemaCatalog createSchemaCatalog( Protocol defaultProtocol, Format defaultFormat );
 
-  public abstract SchemaCatalog readCatalog();
+  public abstract SchemaCatalog openSchemaCatalog();
+
+  public abstract void commitCatalog( SchemaCatalog catalog );
   }

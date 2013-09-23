@@ -18,14 +18,16 @@
  * limitations under the License.
  */
 
-package cascading.lingual.catalog;
+package cascading.lingual.catalog.service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.json.JSONFactory;
-import cascading.lingual.platform.PlatformBroker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,19 +36,21 @@ import org.slf4j.LoggerFactory;
  * Class FileCatalogManager can read and write the a meta-data catalog as JSON to an Input/Output stream provided
  * by the underlying platform.
  */
-public class FileCatalogManager extends CatalogManager
+public class FileCatalogService extends CatalogService
   {
-  private static final Logger LOG = LoggerFactory.getLogger( FileCatalogManager.class );
+  private static final Logger LOG = LoggerFactory.getLogger( FileCatalogService.class );
 
-  PlatformBroker platformBroker;
-
-  public FileCatalogManager( PlatformBroker platformBroker )
+  public FileCatalogService()
     {
-    this.platformBroker = platformBroker;
+    }
+
+  public SchemaCatalog createSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
+    {
+    return new JSONSchemaCatalog( defaultProtocol, defaultFormat );
     }
 
   @Override
-  public void writeCatalog( SchemaCatalog catalog )
+  public void commitCatalog( SchemaCatalog catalog )
     {
     String catalogPath = platformBroker.getFullCatalogPath();
     OutputStream outputStream = platformBroker.getOutputStream( catalogPath );
@@ -71,7 +75,7 @@ public class FileCatalogManager extends CatalogManager
     }
 
   @Override
-  public SchemaCatalog readCatalog()
+  public SchemaCatalog openSchemaCatalog()
     {
     String catalogPath = platformBroker.getFullCatalogPath();
 
@@ -94,11 +98,9 @@ public class FileCatalogManager extends CatalogManager
 
     try
       {
-      SchemaCatalog schemaCatalog = mapper.readValue( inputStream, (Class<SchemaCatalog>) platformBroker.getCatalogClass() );
+      JSONSchemaCatalog schemaCatalog = mapper.readValue( inputStream, JSONSchemaCatalog.class );
 
       inputStream.close();
-
-      schemaCatalog.setPlatformBroker( platformBroker );
 
       return schemaCatalog;
       }

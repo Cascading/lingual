@@ -20,7 +20,11 @@
 
 package cascading.lingual.flow;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
@@ -34,7 +38,6 @@ import com.google.common.base.Function;
 import net.hydromatic.optiq.Schema;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.jdbc.ConnectionProperty;
-import net.hydromatic.optiq.jdbc.OptiqConnection;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
 
 /**
@@ -143,7 +146,7 @@ class LingualContext implements OptiqPrepare.Context
   private SchemaDef createGetSchemaDef( SchemaDef parentSchemaDef, String schemaName )
     {
     if( parentSchemaDef.getSchema( schemaName ) == null )
-      parentSchemaDef.addSchema( schemaName, null, null );
+      parentSchemaDef.addSchema( schemaName, null, null, null );
 
     return parentSchemaDef.getSchema( schemaName );
     }

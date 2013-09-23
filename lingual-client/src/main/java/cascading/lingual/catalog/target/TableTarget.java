@@ -28,6 +28,7 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.catalog.builder.TableBuilder;
@@ -49,7 +50,7 @@ public class TableTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
@@ -61,7 +62,7 @@ public class TableTarget extends CRUDTarget
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
@@ -72,7 +73,7 @@ public class TableTarget extends CRUDTarget
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
 
@@ -91,11 +92,11 @@ public class TableTarget extends CRUDTarget
   @Override
   protected List<String> performUpdate( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
-
-    TableDef tableDef = catalog.getSchemaDefChecked( schemaName ).getTableChecked( tableName );
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, schemaName, true );
+    TableDef tableDef = schemaDef.getTableChecked( tableName );
 
     String addURI = getOptions().getAddOrUpdateURI();
 
@@ -129,8 +130,6 @@ public class TableTarget extends CRUDTarget
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
     String addURI = getOptions().getAddOrUpdateURI();
@@ -139,16 +138,20 @@ public class TableTarget extends CRUDTarget
 
     String stereotypeName = getOptions().getStereotypeName();
 
-    return asList( catalog.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format ) );
+    SchemaCatalogManager catalogManager = platformBroker.getCatalogManager();
+
+    getSchemaDefChecked( catalogManager.getSchemaCatalog(), getOptions().getSchemaName(), true );
+
+    return asList( catalogManager.createTableDefFor( schemaName, tableName, addURI, stereotypeName, protocol, format ) );
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
 
-    verifySchema( catalog, schemaName );
+    getSchemaDefChecked( catalog, schemaName, true );
 
     return catalog.getTableNames( schemaName );
     }
@@ -156,11 +159,12 @@ public class TableTarget extends CRUDTarget
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String tableName = getOptions().getTableName();
 
-    TableDef tableDef = catalog.getSchemaDefChecked( schemaName ).getTableChecked( tableName );
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, schemaName, true );
+    TableDef tableDef = schemaDef.getTableChecked( tableName );
 
     return new TableBuilder().format( tableDef );
     }

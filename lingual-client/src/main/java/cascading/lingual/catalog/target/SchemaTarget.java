@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import cascading.lingual.catalog.CatalogOptions;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.builder.SchemaBuilder;
 import cascading.lingual.common.Printer;
@@ -52,7 +55,7 @@ public class SchemaTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
     String renameName = getOptions().getRenameName();
@@ -63,7 +66,7 @@ public class SchemaTarget extends CRUDTarget
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     String schemaName = getOptions().getSchemaName();
 
@@ -73,7 +76,7 @@ public class SchemaTarget extends CRUDTarget
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     return catalog.getSchemaDef( getOptions().getSchemaName() );
     }
@@ -93,14 +96,14 @@ public class SchemaTarget extends CRUDTarget
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
     String addURI = getOptions().getAddOrUpdateURI();
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String protocol = getOptions().getProtocolName();
     String format = getOptions().getFormatName();
 
     if( addURI == null )
       {
-      boolean success = catalog.addSchemaDef( schemaName, protocol, format );
+      boolean success = catalog.addSchemaDef( schemaName, Protocol.getProtocol( protocol ), Format.getFormat( format ), null );
 
       if( success )
         return asList( schemaName );
@@ -108,21 +111,23 @@ public class SchemaTarget extends CRUDTarget
       return null;
       }
 
-    return asList( catalog.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI, false ) );
+    SchemaCatalogManager catalogManager = platformBroker.getCatalogManager();
+
+    return asList( catalogManager.createSchemaDefAndTableDefsFor( schemaName, protocol, format, addURI, false ) );
     }
 
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getSchemaNames();
+    return platformBroker.getSchemeCatalog().getSchemaNames();
     }
 
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
-    SchemaDef schemaDef = catalog.getSchemaDefChecked( schemaName );
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, getOptions().getSchemaName(), true );
 
     return new SchemaBuilder().format( schemaDef );
     }

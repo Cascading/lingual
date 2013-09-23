@@ -42,6 +42,7 @@ import cascading.lingual.catalog.FormatProperties;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
@@ -326,14 +327,12 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     if( head.tableDef != null )
       return head.tableDef;
 
-    String identifier = platformBroker.getTempPath( head.name );
-
-    return new TableDef( platformBroker.getCatalog().getRootSchemaDef(), head.name, identifier );
+    return platformBroker.getCatalogManager().createTempTableDef( head.name );
     }
 
   private void writeValuesTuple( PlatformBroker platformBroker, Ref head ) throws IOException
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalogManager catalog = platformBroker.getCatalogManager();
     String identifier = getIdentifierFor( platformBroker, head );
 
     TableDef tableDef = createTableFor( catalog, head, identifier );
@@ -346,22 +345,23 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     collector.close();
     }
 
-  private TableDef createTableFor( SchemaCatalog catalog, Ref head, String identifier )
+  private TableDef createTableFor( SchemaCatalogManager catalogManager, Ref head, String identifier )
     {
     String stereotypeName = head.name;
-    Stereotype stereotype = catalog.getStereoTypeFor( null, head.fields );
+    SchemaCatalog schemaCatalog = catalogManager.getSchemaCatalog();
+    Stereotype stereotype = schemaCatalog.getStereoTypeFor( null, head.fields );
 
     if( stereotype != null )
       stereotypeName = stereotype.getName();
     else
-      catalog.createStereotype( null, stereotypeName, head.fields );
+      schemaCatalog.createStereotype( null, stereotypeName, head.fields );
 
-    Protocol protocol = catalog.getRootSchemaDef().getDefaultProtocol();
-    Format format = catalog.getRootSchemaDef().getDefaultFormat();
+    Protocol protocol = schemaCatalog.getDefaultProtocol();
+    Format format = schemaCatalog.getDefaultFormat();
 
-    String tableName = catalog.createTableDefFor( null, head.name, identifier, stereotypeName, protocol, format );
+    String tableName = catalogManager.createTableDefFor( null, head.name, identifier, stereotypeName, protocol, format );
 
-    return catalog.getSchemaDef( null ).getTable( tableName );
+    return schemaCatalog.getTableDef( null, tableName );
     }
 
   private String setFlowPlanPath( Properties properties, String name )

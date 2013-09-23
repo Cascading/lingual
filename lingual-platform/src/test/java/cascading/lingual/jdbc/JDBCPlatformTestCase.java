@@ -32,6 +32,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.type.SQLDateTimeCoercibleType;
 import cascading.lingual.type.SQLTypeResolver;
@@ -159,7 +163,16 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
   protected void addTable( String schemaName, String tableName, String identifier, Fields fields, String protocolName, String formatName ) throws Exception
     {
     LingualConnection connection = (LingualConnection) getConnection();
-    connection.addTableForTest( schemaName, tableName, identifier, fields, protocolName, formatName );
+
+    SchemaCatalogManager catalogManager = connection.getPlatformBroker().getCatalogManager();
+    SchemaCatalog schemaCatalog = catalogManager.getSchemaCatalog();
+
+    if( !schemaCatalog.schemaExists( schemaName ) )
+      schemaCatalog.addSchemaDef( schemaName, Protocol.getProtocol( protocolName ), Format.getFormat( formatName ), null );
+
+    catalogManager.createTableDefFor( schemaName, tableName, identifier, fields, protocolName, formatName );
+
+    catalogManager.addSchemasTo( connection );
     }
 
   protected ResultSet executeSql( String sql ) throws Exception

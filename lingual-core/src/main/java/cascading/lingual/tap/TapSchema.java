@@ -20,6 +20,7 @@
 
 package cascading.lingual.tap;
 
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.LingualConnection;
@@ -100,10 +101,10 @@ public class TapSchema extends MapSchema
     return identifier;
     }
 
-  public void addTapTablesFor( SchemaDef schemaDef )
+  public void addTapTablesFor( SchemaCatalog schemeCatalog, SchemaDef schemaDef )
     {
-    for( TableDef tableDef : schemaDef.getChildTables() )
-      addTapTableFor( tableDef );
+    for( String tableName : schemaDef.getChildTableNames() )
+      addTapTableFor( schemeCatalog.getTableDef( schemaDef.getName(), tableName ) );
     }
 
   public TapTable addTapTableFor( TableDef tableDef )

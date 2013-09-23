@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.type.SQLDateCoercibleType;
 import cascading.lingual.type.SQLTimeCoercibleType;
@@ -59,41 +59,36 @@ public class DDLParser
   {
   private static final Logger LOG = LoggerFactory.getLogger( DDLParser.class );
 
-  private final SchemaCatalog catalog;
+  private final SchemaCatalogManager catalogManager;
   private final String schemaName;
   private final String schemaPath;
   private final Protocol protocol;
   private final Format format;
   private final String defaultExtension;
 
-  public DDLParser( SchemaCatalog catalog, String schemaName, String protocol, String format )
+  public DDLParser( SchemaCatalogManager catalogManager, String schemaName, String protocol, String format )
     {
-    this( catalog, schemaName, null, protocol, format );
+    this( catalogManager, schemaName, null, protocol, format );
     }
 
-  public DDLParser( SchemaCatalog catalog, String schemaName, String schemaPath, String protocol, String format )
+  public DDLParser( SchemaCatalogManager catalogManager, String schemaName, String schemaPath, String protocol, String format )
     {
-    this( catalog, schemaName, schemaPath, protocol, format, null );
+    this( catalogManager, schemaName, schemaPath, protocol, format, null );
     }
 
-  public DDLParser( SchemaCatalog catalog, String schemaName, String schemaPath, String protocol, String format, String defaultExtension )
+  public DDLParser( SchemaCatalogManager catalogManager, String schemaName, String schemaPath, String protocol, String format, String defaultExtension )
     {
-    this.catalog = catalog;
+    this.catalogManager = catalogManager;
     this.schemaName = schemaName;
-    this.schemaPath = schemaPath == null ? getSchemaIdentifier( catalog, schemaName ) : schemaPath;
+    this.schemaPath = schemaPath == null ? getSchemaIdentifier( catalogManager, schemaName ) : schemaPath;
     this.protocol = Protocol.getProtocol( protocol );
     this.format = Format.getFormat( format );
     this.defaultExtension = defaultExtension;
     }
 
-  private String getSchemaIdentifier( SchemaCatalog catalog, String schemaName )
+  private String getSchemaIdentifier( SchemaCatalogManager catalog, String schemaName )
     {
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
-
-    if( schemaDef == null )
-      throw new IllegalArgumentException( "schema does not exist: " + schemaName );
-
-    String identifier = schemaDef.getIdentifier();
+    String identifier = catalog.getSchemaIdentifier( schemaName );
 
     if( identifier != null )
       return identifier;
@@ -118,20 +113,20 @@ public class DDLParser
       switch( command.ddlAction )
         {
         case DROP:
-          catalog.removeTableDef( schemaName, name );
-          catalog.removeStereotype( schemaName, name );
+          catalogManager.getSchemaCatalog().removeTableDef( schemaName, name );
+          catalogManager.getSchemaCatalog().removeStereotype( schemaName, name );
           break;
         case CREATE:
           String stereotypeName = name;
           Fields fields = toFields( ddlColumns );
-          Stereotype stereotype = catalog.getStereoTypeFor( schemaName, fields );
+          Stereotype stereotype = catalogManager.getSchemaCatalog().getStereoTypeFor( schemaName, fields );
 
           if( stereotype != null )
             stereotypeName = stereotype.getName();
           else
-            catalog.createStereotype( schemaName, stereotypeName, fields );
+            catalogManager.getSchemaCatalog().createStereotype( schemaName, stereotypeName, fields );
 
-          catalog.createTableDefFor( schemaName, name, createTableIdentifier( name ), stereotypeName, protocol, format );
+          catalogManager.createTableDefFor( schemaName, name, createTableIdentifier( name ), stereotypeName, protocol, format );
           break;
         }
       }
@@ -139,7 +134,7 @@ public class DDLParser
 
   private void verifySchemaDef()
     {
-    SchemaDef schemaDef = catalog.getSchemaDef( schemaName );
+    SchemaDef schemaDef = catalogManager.getSchemaDef( schemaName );
 
     if( schemaDef == null )
       throw new IllegalStateException( "schema does not exist: " + schemaName );
@@ -149,7 +144,7 @@ public class DDLParser
 
   private String createTableIdentifier( String name )
     {
-    String result = getSchemaIdentifier( catalog, schemaName ) + "/" + name;
+    String result = getSchemaIdentifier( catalogManager, schemaName ) + "/" + name;
 
     if( defaultExtension != null )
       result += "." + defaultExtension;

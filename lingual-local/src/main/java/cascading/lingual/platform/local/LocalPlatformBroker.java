@@ -35,7 +35,8 @@ import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.flow.local.LocalFlowProcess;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.local.TextLine;
 import cascading.tap.SinkMode;
@@ -51,6 +52,9 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
   {
   private static final Logger LOG = LoggerFactory.getLogger( LocalPlatformBroker.class );
 
+  public static final Protocol DEFAULT_PROTOCOL = Protocol.getProtocol( "file" );
+  public static final Format DEFAULT_FORMAT = Format.getFormat( "tcsv" );
+
   public LocalPlatformBroker()
     {
     }
@@ -62,9 +66,15 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  public Class<? extends SchemaCatalog> getCatalogClass()
+  public Format getDefaultFormat()
     {
-    return LocalCatalog.class;
+    return DEFAULT_FORMAT;
+    }
+
+  @Override
+  public Protocol getDefaultProtocol()
+    {
+    return DEFAULT_PROTOCOL;
     }
 
   @Override

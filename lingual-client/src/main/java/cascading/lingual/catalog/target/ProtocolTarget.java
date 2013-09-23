@@ -49,7 +49,7 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     Protocol oldProtocol = getSource( platformBroker );
     Protocol newProtocol = Protocol.getProtocol( getOptions().getRenameName() );
@@ -63,7 +63,7 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     Protocol protocol = getSource( platformBroker );
 
@@ -73,15 +73,14 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected Protocol getSource( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     if( getRequestedSourceName() == null )
       return null;
 
     Protocol protocol = Protocol.getProtocol( getRequestedSourceName() );
 
-    if( !schemaDef.getSchemaDefinedProtocols().contains( protocol ) )
+    if( !catalog.getSchemaDefinedProtocols( getOptions().getSchemaName() ).contains( protocol ) )
       return null;
 
     return protocol;
@@ -106,7 +105,7 @@ public class ProtocolTarget extends CRUDTarget
     if( protocol == null )
       return emptyList();
 
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
     String providerName = getOptions().getProviderName();
 
@@ -132,7 +131,7 @@ public class ProtocolTarget extends CRUDTarget
     if( providerName == null )
       throw new IllegalArgumentException( "provider is required" );
 
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
 
     validateProviderName( catalog, schemaName, providerName );
@@ -141,7 +140,7 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String protocolName = getOptions().getProtocolName();
     Protocol protocol = Protocol.getProtocol( protocolName );
     String schemaName = getOptions().getSchemaName();
@@ -157,7 +156,7 @@ public class ProtocolTarget extends CRUDTarget
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String schemaName = getOptions().getSchemaName();
 
     return catalog.getProtocolNames( schemaName );
@@ -167,8 +166,8 @@ public class ProtocolTarget extends CRUDTarget
   protected Map performShow( PlatformBroker platformBroker )
     {
     Protocol protocol = Protocol.getProtocol( getRequestedSourceName() );
-    SchemaCatalog catalog = platformBroker.getCatalog();
-    SchemaDef schemaDef = catalog.getSchemaDefChecked( getOptions().getSchemaName() );
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
+    SchemaDef schemaDef = getSchemaDefChecked( catalog, getOptions().getSchemaName(), true );
 
     if( !schemaDef.getAllProtocols().contains( protocol ) )
       return null;

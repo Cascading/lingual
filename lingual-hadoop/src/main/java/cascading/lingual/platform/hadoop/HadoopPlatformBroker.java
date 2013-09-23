@@ -37,7 +37,8 @@ import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.Protocol;
 import cascading.lingual.jdbc.LingualConnection;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.scheme.hadoop.TextLine;
@@ -62,6 +63,9 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   {
   private static final Logger LOG = LoggerFactory.getLogger( HadoopPlatformBroker.class );
 
+  public static final Protocol DEFAULT_PROTOCOL = Protocol.getProtocol( "hdfs" );
+  public static final Format DEFAULT_FORMAT = Format.getFormat( "tcsv" );
+
   public static final String HADOOP_USER_ENV = "HADOOP_USER_NAME";
   public static final String HADOOP_USER_PROPERTY = "hadoop.username";
   public static final String HADOOP_OVERRIDE_RESOURCE = "hadoop-override.properties";
@@ -78,6 +82,18 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   public String getName()
     {
     return "hadoop";
+    }
+
+  @Override
+  public Format getDefaultFormat()
+    {
+    return DEFAULT_FORMAT;
+    }
+
+  @Override
+  public Protocol getDefaultProtocol()
+    {
+    return DEFAULT_PROTOCOL;
     }
 
   @Override
@@ -336,12 +352,6 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   public FlowProcess<JobConf> getFlowProcess()
     {
     return new HadoopFlowProcess( getPlannerConfig() );
-    }
-
-  @Override
-  public Class<? extends SchemaCatalog> getCatalogClass()
-    {
-    return HadoopCatalog.class;
     }
 
   @Override

@@ -431,7 +431,7 @@ public class SchemaDef extends Def
     values.putAll( formatProperties.getKeyFor( property ) );
     }
 
-  public Collection<SchemaDef> getChildSchemas()
+  protected Collection<SchemaDef> getChildSchemas()
     {
     return childSchemas.values();
     }
@@ -441,7 +441,7 @@ public class SchemaDef extends Def
     return getDefNames( childSchemas );
     }
 
-  public Collection<TableDef> getChildTables()
+  protected Collection<TableDef> getChildTables()
     {
     return childTables.values();
     }
@@ -449,16 +449,6 @@ public class SchemaDef extends Def
   public Collection<String> getChildTableNames()
     {
     return getDefNames( childTables );
-    }
-
-  public boolean addSchema( String name, Protocol protocol, Format format )
-    {
-    if( childSchemas.containsKey( name ) )
-      return false;
-
-    childSchemas.put( name, new SchemaDef( this, name, protocol, format ) );
-
-    return true;
     }
 
   public boolean addSchema( String name, Protocol protocol, Format format, String identifier )
@@ -744,12 +734,12 @@ public class SchemaDef extends Def
     providers.put( providerDef.getName(), providerDef );
     }
 
-  public List<ProviderDef> getProviderDefs()
+  protected List<ProviderDef> getProviderDefs()
     {
     return new ArrayList<ProviderDef>( providers.values() );
     }
 
-  public List<ProviderDef> getAllProviderDefs()
+  protected List<ProviderDef> getAllProviderDefs()
     {
     Set<ProviderDef> providerDefs = new LinkedHashSet<ProviderDef>( providers.values() );
 

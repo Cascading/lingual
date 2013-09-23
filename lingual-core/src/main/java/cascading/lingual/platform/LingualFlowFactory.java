@@ -32,7 +32,7 @@ import cascading.flow.FlowConnector;
 import cascading.flow.FlowDef;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.jdbc.LingualConnection;
@@ -55,7 +55,7 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
 
   PlatformBroker platformBroker;
   private Pipe tail;
-  private SchemaCatalog catalog;
+  private SchemaCatalogManager catalog;
   private LingualConnection lingualConnection;
   private Set<String> jars = new HashSet<String>();
 
@@ -70,7 +70,7 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     {
     super( new Properties( platformBroker.getProperties() ), name );
     this.platformBroker = platformBroker;
-    this.catalog = platformBroker.getCatalog();
+    this.catalog = platformBroker.getCatalogManager();
     this.lingualConnection = lingualConnection;
     this.tail = tail;
 

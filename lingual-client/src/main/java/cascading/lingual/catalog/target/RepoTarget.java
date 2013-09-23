@@ -60,10 +60,10 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected List<String> performAdd( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
     Repo repo = getRepoFromArgs();
-    catalog.addRepo( repo );
+    catalog.addRepository( repo );
 
     return asList( repo.getRepoName() );
     }
@@ -71,15 +71,15 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performRename( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
 
-    return catalog.renameRepo( getOptions().getRepoName(), getOptions().getRenameName() );
+    return catalog.renameRepository( getOptions().getRepoName(), getOptions().getRenameName() );
     }
 
   @Override
   protected Object getSource( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getRepo( getOptions().getRepoName() );
+    return platformBroker.getCatalogManager().getSchemaCatalog().getRepository( getOptions().getRepoName() );
     }
 
   @Override
@@ -91,10 +91,10 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected boolean performRemove( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String repoName = getOptions().getRepoName();
 
-    catalog.removeRepo( repoName );
+    catalog.removeRepository( repoName );
 
     return true;
     }
@@ -119,15 +119,15 @@ public class RepoTarget extends CRUDTarget
   @Override
   protected Collection<String> performGetNames( PlatformBroker platformBroker )
     {
-    return platformBroker.getCatalog().getRepoNames();
+    return platformBroker.getSchemeCatalog().getRepositoryNames();
     }
 
   @Override
   protected Map performShow( PlatformBroker platformBroker )
     {
-    SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaCatalog catalog = platformBroker.getSchemeCatalog();
     String repoName = getOptions().getRepoName();
-    Repo repo = catalog.getRepo( repoName );
+    Repo repo = catalog.getRepository( repoName );
 
     if( repo == null )
       return null;

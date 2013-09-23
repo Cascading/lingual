@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowProcess;
-import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.optiq.meta.TableHolder;
@@ -100,7 +100,7 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     Optiq.writeSQLPlan( properties, Misc.createUniqueName(), getVolcanoPlanner() );
 
     FlowProcess flowProcess = platformBroker.getFlowProcess();
-    SchemaCatalog schemaCatalog = platformBroker.getCatalog();
+    SchemaCatalogManager schemaCatalog = platformBroker.getCatalogManager();
 
     Tap tap = schemaCatalog.createTapFor( getTableDef(), SinkMode.KEEP );
     int size = tap.getSourceFields().size();

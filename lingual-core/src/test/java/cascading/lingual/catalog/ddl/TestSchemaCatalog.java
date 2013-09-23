@@ -21,27 +21,25 @@
 package cascading.lingual.catalog.ddl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import cascading.bind.catalog.handler.FormatHandler;
-import cascading.bind.catalog.handler.ProtocolHandler;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
-import cascading.lingual.catalog.SchemaCatalog;
-import cascading.lingual.catalog.SchemaDef;
+import cascading.lingual.catalog.service.JSONSchemaCatalog;
 
 /**
  *
  */
-public class TestSchemaCatalog extends SchemaCatalog
+public class TestSchemaCatalog extends JSONSchemaCatalog
   {
+  // required by jackson
   public TestSchemaCatalog()
     {
+    super();
     }
 
-  protected TestSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
+  public TestSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
     {
     super( defaultProtocol, defaultFormat );
 
@@ -56,17 +54,5 @@ public class TestSchemaCatalog extends SchemaCatalog
     formatProperties.put( "fakeProperty", new ArrayList<String>() );
 
     getRootSchemaDef().addFormatProperties( defaultFormat, formatProperties );
-    }
-
-  @Override
-  protected List<ProtocolHandler<Protocol, Format>> createProtocolHandlers( SchemaDef schemaDef )
-    {
-    return Collections.emptyList();
-    }
-
-  @Override
-  protected List<FormatHandler<Protocol, Format>> createFormatHandlers( SchemaDef schemaDef )
-    {
-    return Collections.emptyList();
     }
   }

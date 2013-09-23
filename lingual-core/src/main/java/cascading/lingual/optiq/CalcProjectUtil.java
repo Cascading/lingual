@@ -207,7 +207,7 @@ class CalcProjectUtil
       {
       public Expression field( BlockBuilder list, int index )
         {
-        return Expressions.parameter( incomingFields.getType( index ), incomingFields.get( index ).toString() );
+        return Expressions.parameter( incomingFields.getTypeClass( index ), incomingFields.get( index ).toString() );
         }
       } );
 

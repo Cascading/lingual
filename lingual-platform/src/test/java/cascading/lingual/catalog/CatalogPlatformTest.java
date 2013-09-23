@@ -54,28 +54,28 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
     if( broker.pathExists( catalogFilePath ) )
       broker.deletePath( catalogFilePath );
 
-    assertFalse( "catalog loaded", broker.catalogLoaded() );
+    assertFalse( "catalog loaded", broker.catalogManagerLoaded() );
 
-    SchemaCatalog catalog = broker.getCatalog();
+    SchemaCatalogManager catalog = broker.getCatalogManager();
 
-    catalog.addSchemaDef( "TEST", null, null );
+    catalog.addSchemaDef( "TEST", Protocol.getProtocol( null ), Format.getFormat( null ) );
 
     catalog.createTableDefFor( "TEST", null, SALES_DEPTS_TABLE, (Fields) null, null, null );
 
-    catalog.createStereotype( "TEST", "testStereoType", new Fields( "a", "b", "c" ) );
+    catalog.getSchemaCatalog().createStereotype( "TEST", "testStereoType", new Fields( "a", "b", "c" ) );
 
     assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "testStereoType" ) );
     assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "TESTSTEREOTYPE" ) );
 
     assertEquals( "SALES", catalog.createSchemaDefAndTableDefsFor( SALES_SCHEMA ) );
 
-    broker.writeCatalog();
+    broker.commitCatalog();
 
     PlatformBrokerFactory.instance().reloadBrokers();
 
     broker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), properties );
 
-    catalog = broker.getCatalog();
+    catalog = broker.getCatalogManager();
 
     assertTrue( catalog.getSchemaNames().contains( "SALES" ) );
     assertTrue( catalog.getSchemaDef( "SALES" ).getChildTableNames().contains( "EMPS" ) );
@@ -87,11 +87,11 @@ public class CatalogPlatformTest extends LingualPlatformTestCase
     assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "testStereoType" ) );
     assertNotNull( catalog.getSchemaDef( "TEST" ).getStereotype( "TESTSTEREOTYPE" ) );
 
-    catalog.renameSchemaDef( "TEST", "NEWTEST" );
+    catalog.getSchemaCatalog().renameSchemaDef( "TEST", "NEWTEST" );
     assertFalse( catalog.getSchemaNames().contains( "TEST" ) );
     assertTrue( catalog.getSchemaNames().contains( "NEWTEST" ) );
 
-    catalog.removeSchemaDef( "NEWTEST" );
+    catalog.getSchemaCatalog().removeSchemaDef( "NEWTEST" );
     assertFalse( catalog.getSchemaNames().contains( "NEWTEST" ) );
     }
   }
