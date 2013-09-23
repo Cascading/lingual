@@ -190,13 +190,17 @@ public class CatalogCLIPlatformTest extends CLIPlatformTestCase
     Collection<String> stereotypeNames = schemaCatalog.getStereotypeNames();
     assertTrue( "initial stereotype missing from: " + stereotypeNames.toString(), stereotypeNames.contains( "emps_fr" ) );
 
-    // renaming no-existing targets should fail
+    // renaming non-existing targets should fail
     catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", "fakeprotocol", "--rename", JDBC_PROTOCOL_NAME + RENAME_TO_SUFFIX );
     catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--format", "fakeformat", "--rename", TABLE_FORMAT_NAME + RENAME_TO_SUFFIX );
     catalog( false, "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--table", "faketable", "--rename", TEST_TABLE_NAME + RENAME_TO_SUFFIX );
     catalog( false, "--stereotype", "fakestereotype", "--rename", EMPS_STEREOTYPE_NAME + RENAME_TO_SUFFIX );
     catalog( false, "--schema", "fakeschema", "--rename", AD_HOC_SCHEMA + RENAME_TO_SUFFIX );
 
+    // renaming targets in wrong schema should fail
+    catalog( false, "--schema", "fakeschema", "--table", TABLE_FORMAT_NAME + RENAME_FROM_SUFFIX, "--rename", TEST_TABLE_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--schema", "fakeschema", "--stereotype", EMPS_STEREOTYPE_NAME + RENAME_FROM_SUFFIX, "--rename", EMPS_STEREOTYPE_NAME + RENAME_TO_SUFFIX );
+    catalog( false, "--schema", "fakeschema", "--rename", AD_HOC_SCHEMA + RENAME_TO_SUFFIX );
 
     // valid renames should work
     catalog( "--schema", AD_HOC_SCHEMA + RENAME_FROM_SUFFIX, "--protocol", JDBC_PROTOCOL_NAME + RENAME_FROM_SUFFIX, "--rename", JDBC_PROTOCOL_NAME + RENAME_TO_SUFFIX );

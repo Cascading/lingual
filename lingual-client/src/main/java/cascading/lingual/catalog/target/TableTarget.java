@@ -28,6 +28,7 @@ import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.catalog.builder.TableBuilder;
 import cascading.lingual.common.Printer;
@@ -72,6 +73,11 @@ public class TableTarget extends CRUDTarget
   protected Object getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
+
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+
+    if( schemaDef == null )
+      return null;
 
     return catalog.getSchemaDef( getOptions().getSchemaName() ).getTable( getOptions().getTableName() );
     }

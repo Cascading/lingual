@@ -29,6 +29,7 @@ import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.CatalogOptions;
 import cascading.lingual.catalog.ProviderDef;
 import cascading.lingual.catalog.SchemaCatalog;
+import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.builder.StereotypeBuilder;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
@@ -77,6 +78,10 @@ public class StereotypeTarget extends CRUDTarget
   protected Object getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+
+    if( schemaDef == null )
+      return null;
 
     return catalog.getSchemaDef( getOptions().getSchemaName() ).getStereotype( getOptions().getStereotypeName() );
     }

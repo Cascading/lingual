@@ -135,9 +135,11 @@ public abstract class CRUDTarget extends Target
     if( renameName == null )
       throw new IllegalArgumentException( "rename action must have a rename target" );
 
+    String schemaNameMsg = getOptions().getSchemaName() == null ? "" : "in schema: " + getOptions().getSchemaName() + "";
+
     if( getSource( platformBroker ) == null )
       {
-      getPrinter().printFormatted( "%s: %s does not exist or is not owned by specified schema", getTargetType(), getRequestedSourceName() );
+      getPrinter().printFormatted( "%s: %s does not exist %s", getTargetType(), getRequestedSourceName(), schemaNameMsg );
       return false;
       }
 
@@ -160,9 +162,11 @@ public abstract class CRUDTarget extends Target
     if( getTargetType() == null )
       throw new IllegalArgumentException( "remove action must have a remove target" );
 
+    String schemaNameMsg = getOptions().getSchemaName() == null ? "" : "in schema: " + getOptions().getSchemaName() + "";
+
     if( getSource( platformBroker ) == null )
       {
-      getPrinter().printFormatted( "%s: %s does not exist or is not owned by specified schema", getTargetType(), getRequestedSourceName() );
+      getPrinter().printFormatted( "%s: %s does not exist %s", getTargetType(), getRequestedSourceName(), schemaNameMsg );
       return false;
       }
 

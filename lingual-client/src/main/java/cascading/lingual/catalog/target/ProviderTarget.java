@@ -104,6 +104,11 @@ public class ProviderTarget extends CRUDTarget
   protected Object getSource( PlatformBroker platformBroker )
     {
     SchemaCatalog catalog = platformBroker.getCatalog();
+    SchemaDef schemaDef = catalog.getSchemaDef( getOptions().getSchemaName() );
+
+    if( schemaDef == null )
+      return null;
+
     return catalog.getSchemaDef( getOptions().getSchemaName() ).getProviderDef( getOptions().getProviderName() );
     }
 
