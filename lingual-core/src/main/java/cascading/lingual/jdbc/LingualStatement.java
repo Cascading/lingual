@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import cascading.flow.Flow;
 import com.google.common.base.Throwables;
+import org.eigenbase.sql.parser.SqlParseException;
+import org.eigenbase.util.EigenbaseContextException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,56 +69,6 @@ public class LingualStatement implements Statement
       {
       throw new RuntimeException( "unable set set max rows", exception );
       }
-    }
-
-  @Override
-  public ResultSet executeQuery( String sql ) throws SQLException
-    {
-    LOG.info( "executeQuery: {}", sql );
-
-    try
-      {
-      return parent.executeQuery( sql );
-      }
-    catch( SQLException exception )
-      {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
-      throw exception;
-      }
-    catch( OutOfMemoryError error )
-      {
-      throw error;
-      }
-    catch( Throwable throwable )
-      {
-      LOG.error( "failed with: {}", throwable.getMessage(), throwable );
-      Throwables.propagate( throwable );
-      }
-
-    return null;
-    }
-
-  @Override
-  public int executeUpdate( String sql ) throws SQLException
-    {
-    LOG.info( "executeUpdate: {}", sql );
-
-    try
-      {
-      return parent.executeUpdate( sql );
-      }
-    catch( SQLException exception )
-      {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
-      throw exception;
-      }
-    catch( Throwable exception )
-      {
-      LOG.error( "failed with: {}", exception.getMessage(), exception );
-      Throwables.propagate( exception );
-      }
-
-    return 0;
     }
 
   @Override
@@ -214,18 +166,68 @@ public class LingualStatement implements Statement
       {
       return parent.execute( sql );
       }
-    catch( SQLException exception )
+    catch( Throwable throwable )
       {
-      LOG.error( "failed executing statement", exception );
-      throw exception;
+      throw handleThrowable( throwable );
       }
-    catch( Throwable exception )
+    }
+
+  @Override
+  public ResultSet executeQuery( String sql ) throws SQLException
+    {
+    LOG.info( "executeQuery: {}", sql );
+
+    try
       {
-      LOG.error( "failed executing statement", exception );
-      Throwables.propagate( exception );
+      return parent.executeQuery( sql );
+      }
+    catch( Throwable throwable )
+      {
+      throw handleThrowable( throwable );
+      }
+    }
+
+  @Override
+  public int executeUpdate( String sql ) throws SQLException
+    {
+    LOG.info( "executeUpdate: {}", sql );
+
+    try
+      {
+      return parent.executeUpdate( sql );
+      }
+    catch( Throwable throwable )
+      {
+      throw handleThrowable( throwable );
+      }
+    }
+
+  private RuntimeException handleThrowable( Throwable throwable ) throws SQLException
+    {
+    // do not log an OOME
+    if( throwable instanceof OutOfMemoryError )
+      throw (OutOfMemoryError) throwable;
+
+    LOG.error( "failed with: {}", throwable.getMessage(), throwable );
+
+    if( throwable instanceof SQLException )
+      throw (SQLException) throwable;
+
+    if( throwable instanceof EigenbaseContextException )
+      {
+      String lineMessage = throwable.getMessage();
+      String validatorMessage = throwable.getCause() != null ? throwable.getCause().getMessage() : "";
+
+      throw new SQLException( lineMessage + ": \"" + validatorMessage + "\"", throwable );
       }
 
-    return false;
+    if( throwable.getCause() instanceof SqlParseException )
+      {
+      Throwable cause = throwable.getCause();
+      throw new SQLException( cause.getMessage(), cause );
+      }
+
+    throw Throwables.propagate( throwable );
     }
 
   @Override

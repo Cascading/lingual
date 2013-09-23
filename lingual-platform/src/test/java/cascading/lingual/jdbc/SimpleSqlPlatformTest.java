@@ -20,7 +20,6 @@
 
 package cascading.lingual.jdbc;
 
-import cascading.operation.DebugLevel;
 import cascading.tuple.Fields;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -163,31 +163,34 @@ public abstract class PlatformBroker<Config>
   public void startConnection( LingualConnection connection ) throws SQLException
     {
     LOG.debug( "starting connection" );
+
     try
       {
       getCatalog().addSchemasTo( connection );
       nextConnection = new WeakReference<LingualConnection>( connection );
       }
-    catch( Throwable t )
+    catch( Throwable throwable )
       {
-      LOG.error( "error starting connection ", t );
-      throw new SQLException( t );
+      LOG.error( "error starting connection", throwable );
+      throw new SQLException( throwable );
       }
+
     LOG.debug( "connection started" );
     }
 
   public synchronized void closeConnection( LingualConnection connection )
     {
     LOG.info( "closing connection" );
+
     try
       {
       closeCollectorCache();
       nextConnection.clear();
       }
-    catch( Throwable t )
+    catch( Throwable throwable )
       {
-      LOG.error( "unable to close connection", t );
-      throw new RuntimeException( "unable to close connection", t );
+      LOG.error( "unable to close connection", throwable );
+      throw new RuntimeException( "unable to close connection", throwable );
       }
     }
 

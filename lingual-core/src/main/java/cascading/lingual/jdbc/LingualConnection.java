@@ -83,14 +83,15 @@ public abstract class LingualConnection implements Connection
       }
     catch( SQLException sqlException )
       {
-      String providerError = String.format( "connection failed: %s ( provider %s error code %d).", sqlException.getMessage(), parent.getMetaData().getDatabaseProductName(), sqlException.getErrorCode() );
+      String providerError = String.format( "connection failed: %s (provider %s error code %d).", sqlException.getMessage(), getMetaData().getDatabaseProductName(), sqlException.getErrorCode() );
 
       LOG.error( providerError );
-      LOG.error( "\tconnection URL: " + parent.getMetaData().getURL() );
+      LOG.error( "\tconnection URL: " + getMetaData().getURL() );
 
       if( platformBroker != null )
         {
         LOG.error( "\tread catalog from: " + platformBroker.getFullCatalogPath() );
+
         if( platformBroker.getCatalog() != null && platformBroker.getCatalog().getRootSchemaDef() != null )
           LOG.error( "\tused root schema from: " + platformBroker.getCatalog().getRootSchemaDef().getIdentifier() );
         else
@@ -133,7 +134,17 @@ public abstract class LingualConnection implements Connection
 
     setAutoCommit( !isCollectorCacheEnabled() ); // this forces the default to true
 
-    platformBroker.startConnection( this );
+    try
+      {
+      platformBroker.startConnection( this );
+      }
+    catch( Exception exception )
+      {
+      if( exception instanceof SQLException )
+        throw (SQLException) exception;
+      else
+        throw new SQLException( "failed starting connection", exception );
+      }
     }
 
   protected boolean isCollectorCacheEnabled()

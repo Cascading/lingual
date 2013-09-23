@@ -97,6 +97,16 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
 
     try
       {
+      // first confirm we can talk to hadoop in general.
+      try
+        {
+        FileSystem.getAllStatistics();
+        }
+      catch( Exception exception )
+        {
+        throw new SQLException( "unable to connect to Hadoop at " + connection.getMetaData().getURL(), exception );
+        }
+
       super.startConnection( connection );
       }
     finally
@@ -502,7 +512,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
       }
     catch( IOException exception )
       {
-      throw new RuntimeException( "unable to get handle to underlying filesystem", exception );
+      throw new RuntimeException( "unable to get handle to underlying filesystem: " + exception.getMessage(), exception );
       }
     }
 

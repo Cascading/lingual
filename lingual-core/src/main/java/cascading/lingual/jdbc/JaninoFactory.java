@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import com.google.common.base.Throwables;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.Scanner;
@@ -47,9 +48,21 @@ class JaninoFactory implements Factory
         new Object[]{connection, connectionProperties}
       );
       }
-    catch( Exception exception )
+    catch( Throwable throwable )
       {
-      throw new SQLException( "could not create connection: " + exception.getMessage(), exception );
+      if( throwable instanceof InvocationTargetException )
+        throwable = ( (InvocationTargetException) throwable ).getTargetException();
+
+      if( throwable instanceof RuntimeException )
+        throw Throwables.propagate( throwable );
+
+      if( throwable instanceof SQLException )
+        throw (SQLException) throwable;
+
+      if( throwable.getCause() instanceof SQLException )
+        throw (SQLException) throwable.getCause();
+
+      throw new SQLException( "could not create connection: " + throwable.getMessage(), throwable );
       }
     }
 
