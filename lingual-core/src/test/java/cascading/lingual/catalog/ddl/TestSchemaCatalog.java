@@ -41,7 +41,7 @@ public class TestSchemaCatalog extends JSONSchemaCatalog
 
   public TestSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
     {
-    super( defaultProtocol, defaultFormat );
+    super( "test", defaultProtocol, defaultFormat );
 
     HashMap<String, List<String>> protocolProperties = new HashMap<String, List<String>>();
 

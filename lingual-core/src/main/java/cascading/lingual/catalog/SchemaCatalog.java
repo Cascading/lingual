@@ -33,6 +33,9 @@ import cascading.tuple.Fields;
  */
 public interface SchemaCatalog
   {
+
+  String getPlatformName();
+
   // Schema
 
   SchemaDef getRootSchemaDef();

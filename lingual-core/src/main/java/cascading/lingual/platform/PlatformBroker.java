@@ -356,6 +356,9 @@ public abstract class PlatformBroker<Config>
     if( performInit )
       catalogManager.initializeNew(); // initialize defaults for a new catalog and root schema
 
+    if( !getName().equals( catalog.getPlatformName() ) )
+      throw new IllegalStateException( "catalog was initialized for: " + catalog.getPlatformName() + ", current running on platform: " + getName() );
+
     // schema and tables beyond here are not persisted in the catalog
     // they are transient to the session
     // todo: wrap transient catalog data around persistent catalog data

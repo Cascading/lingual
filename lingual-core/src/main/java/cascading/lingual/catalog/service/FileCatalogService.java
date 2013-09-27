@@ -46,7 +46,7 @@ public class FileCatalogService extends CatalogService
 
   public SchemaCatalog createSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
     {
-    return new JSONSchemaCatalog( defaultProtocol, defaultFormat );
+    return new JSONSchemaCatalog( platformBroker.getName(), defaultProtocol, defaultFormat );
     }
 
   @Override

@@ -52,6 +52,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 )
 public class JSONSchemaCatalog implements Serializable, SchemaCatalog
   {
+  private String platformName;
+
   @JsonProperty
   private final SchemaDef rootSchemaDef;
 
@@ -64,9 +66,15 @@ public class JSONSchemaCatalog implements Serializable, SchemaCatalog
     this.rootSchemaDef = new SchemaDef();
     }
 
-  public JSONSchemaCatalog( Protocol defaultProtocol, Format defaultFormat )
+  public JSONSchemaCatalog( String platformName, Protocol defaultProtocol, Format defaultFormat )
     {
+    this.platformName = platformName;
     this.rootSchemaDef = new SchemaDef( defaultProtocol, defaultFormat );
+    }
+
+  public String getPlatformName()
+    {
+    return platformName;
     }
 
   @Override
