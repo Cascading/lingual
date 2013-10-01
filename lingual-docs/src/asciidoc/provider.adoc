@@ -40,14 +40,20 @@ Any dependent Java class files (or libraries) must be expanded into the final ja
 
 #### The Factory Class
 
-Below are the optional method signatures expected to be seen in a custom factory.
+Below are the optional method signatures expected to be seen in a custom factory. Custom factories are not required to
+implement any interface. Lingual is searching for the method signatures via reflection.
 
 If only creating a Protocol factory, only one of the `createTap` methods must be implemented. Similarly, if only
 creating a Format factory, only one of the `createScheme` methods must be implemented. Obviously if the Factory
 is providing a Protocol and a Format it must have one `createTap` and one `createScheme` method.
 
+The `identifier` parameter in the `createTap` signatures represents the native address of the resource, that your
+provider is talking to. This could be a `JDBC` URL or a http://zookeeper.apache,org[`zookeeper`] quorum for
+http://hbase.apache.org[`HBase`] or just the path in the filesystem.
+
 Note the Properties object is a `java.util.Properties` instance containing the key to value sets either defined in the
-`provider.properties` file (described below), or set from the Catalog tool command line.
+`provider.properties` file (described below), or set from the Catalog tool command line. These properties are typically
+used to give usernames, passwords or similar type of information to your Format and Protocol.
 
 [source,java]
 ----
@@ -70,6 +76,10 @@ public interface ProviderFactory
   Scheme createScheme( Fields fields );
   }
 ----
+
+Implementations of custom factories to guide you towards your own, can be found in
+https://github.com/Cascading/cascading.memcached/[cascading.memcached] and
+https://github.com/Cascading/cascading-jdbc/[cascading-jdbc].
 
 #### The provider.properties File
 

@@ -30,7 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * DefaultFactory is an internal implementation of the optional {@link cascading.lingual.catalog.provider.ProviderFactory}
+ * interface.
+ * <p/>
+ * It is not to be sub-classed by provider implementations. See the above interface for optional signatures.
  */
 public abstract class DefaultFactory<Config, Input, Output, SourceContext, SinkContext>
   {
@@ -58,8 +61,8 @@ public abstract class DefaultFactory<Config, Input, Output, SourceContext, SinkC
     if( LOG.isDebugEnabled() )
       {
       LOG.debug( "with protocol: {}, and format: {}", protocol, format );
-      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}", new Object[]{delimiter, quote,
-                                                                                              typed} );
+      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}",
+        new Object[]{delimiter, quote, typed} );
       }
 
     return newScheme( fields, delimiter, quote, typed );
