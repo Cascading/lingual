@@ -262,7 +262,7 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
         int columnPos = entry.getFields().getPos( field );
         Type type = entry.getFields().getType( columnPos );
 
-        if( type instanceof BasicSqlType )
+        if( value != null && type instanceof BasicSqlType )
           {
           value = ( (CoercibleType) type ).coerce( value, typeFactory.getJavaClass( ( (BasicSqlType) type ) ) );
 

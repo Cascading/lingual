@@ -37,6 +37,7 @@ public abstract class LingualPlatformTestCase extends PlatformTestCase
   public static final String SALES_SCHEMA_NAME = "SALES";
   public static final String SALES_SCHEMA = DATA_PATH + SALES_SCHEMA_NAME + "/";
   public static final String SALES_DEPTS_TABLE = SALES_SCHEMA + "DEPTS.tcsv";
+  public static final String SALES_DEPTS2_TABLE = SALES_SCHEMA + "DEPTS2.tcsv"; // deptno is Integer and nullable
   public static final String SALES_EMPS_TABLE = SALES_SCHEMA + "EMPS.tcsv";
   public static final String SALES_SALES_TABLE = SALES_SCHEMA + "SALES.tcsv";
 
