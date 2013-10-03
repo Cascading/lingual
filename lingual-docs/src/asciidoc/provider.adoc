@@ -18,7 +18,9 @@ Where a *protocol* is a label specifying a Cascading Tap, and a *format* is a la
 any relevant meta-data (text delimiters, username and password, etc) needed by the Tap or Scheme classes.
 
 By default Lingual supports multiple text formats like 'csv' and 'tsv' (comma separated values, and tab separated values,
-respectively). Files ending with '.csv' or '.tsv' are automatically mapped to the proper format.
+respectively). Files ending with '.csv' or '.tsv' are automatically mapped to the proper format. Lingual assumes that
+the first line of these files is a header line declaring the field name and type. If the first line is data then the
+<<catalog, Catalog Configuration>> for the provider for format should be set to have the parameter 'header=false'
 
 Cascading local mode supports the 'file' protocol via the `FileTap`, and Hadoop mode supports the 'hdfs' protocol
 via the `Hfs` Tap. URLs (identifiers) starting with 'file:' or 'hdfs:' are automatically mapped to the proper protocol.
