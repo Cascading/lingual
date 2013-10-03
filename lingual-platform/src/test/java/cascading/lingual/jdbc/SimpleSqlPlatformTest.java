@@ -146,7 +146,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testOuterJoin() throws Exception
     {
     // detps2 has Integer (a nullable value) in the deptno column.
-    assertTablesEqual( "emps-depts-join-outer", "select * from sales.emps full outer join sales.depts2 on emps.deptno = depts2.deptno" );
+    assertTablesEqual( "emps-depts-join-outer", "select * from sales.emps2 full outer join sales.depts2 on emps2.deptno = depts2.deptno" );
     }
 
   @Test

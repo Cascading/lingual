@@ -33,6 +33,7 @@ import cascading.pipe.joiner.LeftJoin;
 import cascading.pipe.joiner.OuterJoin;
 import cascading.pipe.joiner.RightJoin;
 import cascading.tuple.Fields;
+import cascading.util.NullNotEquivalentComparator;
 import org.eigenbase.rel.JoinRelBase;
 import org.eigenbase.rel.JoinRelType;
 import org.eigenbase.rel.RelNode;
@@ -103,6 +104,10 @@ class CascadingJoinRel extends JoinRelBase implements CascadingRelNode
 
     Fields lhsGroup = createTypedFieldsSelectorFor( getCluster(), leftKeys, left.getRowType(), true );
     Fields rhsGroup = createTypedFieldsSelectorFor( getCluster(), rightKeys, right.getRowType(), true );
+
+    NullNotEquivalentComparator comparator = new NullNotEquivalentComparator();
+    for( int i = 0; i < lhsGroup.size(); i++ )
+      lhsGroup.setComparator( i, comparator );
 
     Joiner joiner = getJoiner();
 
