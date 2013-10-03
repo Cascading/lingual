@@ -37,6 +37,11 @@ public class SQLTypedTextDelimited extends TextDelimited
     super( new SQLTypedDelimitedParser( delimiter, quote ) );
     }
 
+  public SQLTypedTextDelimited( Fields fields, String delimiter, String quote, boolean header, boolean strict, boolean safe )
+    {
+    super( fields, header, new SQLTypedDelimitedParser( delimiter, quote, strict, safe ) );
+    }
+
   public SQLTypedTextDelimited( Fields fields, String delimiter, String quote )
     {
     super( fields, true, new SQLTypedDelimitedParser( delimiter, quote ) );

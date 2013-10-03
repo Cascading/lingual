@@ -35,4 +35,10 @@ public class SQLTypedDelimitedParser extends DelimitedParser
     {
     super( delimiter, quote, new SQLTypeResolver() );
     }
+
+  public SQLTypedDelimitedParser( String delimiter, String quote, boolean strict, boolean safe )
+    {
+    super( delimiter, quote, null, strict, safe, new SQLTypeResolver() );
+    }
+
   }

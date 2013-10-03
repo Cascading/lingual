@@ -57,16 +57,19 @@ public abstract class DefaultFactory<Config, Input, Output, SourceContext, SinkC
     String delimiter = properties.getProperty( "delimiter", "," );
     String quote = properties.getProperty( "quote", "\"" );
     boolean typed = Boolean.parseBoolean( properties.getProperty( "typed", "false" ) );
+    boolean header = Boolean.parseBoolean( properties.getProperty( "header", "true" ) );
+    boolean strict = Boolean.parseBoolean( properties.getProperty( "strict", "true" ) );
+    boolean safe = Boolean.parseBoolean( properties.getProperty( "safe", "true" ) );
 
     if( LOG.isDebugEnabled() )
       {
       LOG.debug( "with protocol: {}, and format: {}", protocol, format );
-      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}",
-        new Object[]{delimiter, quote, typed} );
+      LOG.debug( "creating scheme with delimiter: '{}', quote: '{}', typed: {}, header: '{}', strict: '{}', safe: {}",
+        new Object[]{delimiter, quote, typed, header, strict, safe} );
       }
 
-    return newScheme( fields, delimiter, quote, typed );
+    return newScheme( fields, delimiter, quote, typed, header, strict, safe );
     }
 
-  protected abstract Scheme<Config, Input, Output, SourceContext, SinkContext> newScheme( Fields fields, String delimiter, String quote, boolean typed );
+  protected abstract Scheme<Config, Input, Output, SourceContext, SinkContext> newScheme( Fields fields, String delimiter, String quote, boolean typed, boolean hasHeader, boolean strict, boolean safe );
   }

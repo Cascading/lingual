@@ -74,7 +74,7 @@ public class ProviderFormatHandler extends LingualFormatHandler
       Map<String, List<String>> properties = formatProperties.getValueFor( format );
       List<Protocol> protocols = resolveProtocols( properties.get( "protocols" ) );
 
-      // if not protocols are specified, use those declared in the provider.properties
+      // if no protocols are specified, use those declared in the provider.properties
       if( protocols.isEmpty() )
         result.put( format, newCopyOnWriteArrayList( defaultProtocols ) );
       else

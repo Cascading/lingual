@@ -24,6 +24,7 @@ import cascading.lingual.platform.provider.DefaultFactory;
 import cascading.lingual.tap.hadoop.SQLTypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.hadoop.TextDelimited;
+import cascading.scheme.util.DelimitedParser;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
@@ -41,11 +42,12 @@ public class HadoopDefaultFactory extends DefaultFactory
     }
 
   @Override
-  protected Scheme newScheme( Fields fields, String delimiter, String quote, boolean typed )
+  protected Scheme newScheme( Fields fields, String delimiter, String quote, boolean typed, boolean header, boolean strict, boolean safe )
     {
     if( typed )
-      return new SQLTypedTextDelimited( fields, delimiter, quote );
+      return new SQLTypedTextDelimited( fields, delimiter, quote, header, strict, safe );
 
-    return new TextDelimited( fields, true, delimiter, quote );
+    DelimitedParser delimiterParser = new DelimitedParser( delimiter, quote, null, strict, safe );
+    return new TextDelimited( fields, header, delimiterParser );
     }
   }

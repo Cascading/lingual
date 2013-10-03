@@ -24,6 +24,7 @@ import cascading.lingual.platform.provider.DefaultFactory;
 import cascading.lingual.tap.local.SQLTypedTextDelimited;
 import cascading.scheme.Scheme;
 import cascading.scheme.local.TextDelimited;
+import cascading.scheme.util.DelimitedParser;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
@@ -41,11 +42,12 @@ public class LocalDefaultFactory extends DefaultFactory
     }
 
   @Override
-  protected Scheme newScheme( Fields fields, String delimiter, String quote, boolean typed )
+  protected Scheme newScheme( Fields fields, String delimiter, String quote, boolean typed, boolean header, boolean strict, boolean safe )
     {
     if( typed )
-      return new SQLTypedTextDelimited( fields, delimiter, quote );
+      return new SQLTypedTextDelimited( fields, delimiter, quote, header, strict, safe );
 
-    return new TextDelimited( fields, true, delimiter, quote );
+    DelimitedParser delimitedParser = new DelimitedParser( delimiter, quote, null, strict, safe );
+    return new TextDelimited( fields, header, delimitedParser );
     }
   }
