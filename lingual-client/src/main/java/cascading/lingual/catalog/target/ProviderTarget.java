@@ -37,9 +37,11 @@ import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.builder.ProviderBuilder;
 import cascading.lingual.catalog.provider.ProviderDefinition;
+import cascading.lingual.catalog.provider.ProviderProxy;
 import cascading.lingual.common.Printer;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Misc;
+
 import org.apache.ivy.Ivy;
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
@@ -177,6 +179,19 @@ public class ProviderTarget extends CRUDTarget
 
       names.add( name );
 
+      // make sure, it is actually a usable provider jar
+      try
+        {
+        ProviderDef providerDef = new ProviderDef( catalog.getSchemaDef( options.getSchemaName() ), name, jarFile.getName(), propertyMap );
+        if( providerDef.getExtends() == null )
+          new ProviderProxy( platformBroker, providerDef );
+        }
+      catch ( RuntimeException exception )
+        {
+        String addURI = getOptions().getAddURI();
+        throw new IllegalArgumentException( addURI + " does not return a valid provider jar: " + jarFile.getName(), exception );
+        }
+     
       if( doActualInstall )
         catalog.addProviderDef( getOptions().getSchemaName(), name, jarFile.getName(), propertyMap, md5Hash );
       }
