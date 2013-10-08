@@ -90,7 +90,7 @@ public class Options
 
   public boolean printInvalidOptionMessage( PrintStream printStream, Exception exception )
     {
-    printStream.println( "invalid option: " + exception.getMessage() );
+    printStream.println( "\ninvalid option: " + exception.getMessage() + "\n");
     printUsage( printStream );
 
     return false;
