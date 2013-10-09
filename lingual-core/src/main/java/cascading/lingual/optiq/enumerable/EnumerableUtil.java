@@ -43,7 +43,8 @@ public class EnumerableUtil
       {
       RexLiteral rexLiteral = values.get( i );
 
-      Object value;
+      Object value = null;
+      String result;
 
       // this overcomes an inconsistency in getValue2 with regard to date and time being
       // canonically integers, but getValue2 returning long values.
@@ -51,10 +52,18 @@ public class EnumerableUtil
       switch( rexLiteral.getType().getSqlTypeName() )
         {
         case DATE:
-          value = SQL_DATE_COERCIBLE_TYPE.canonical( rexLiteral.toString() );
+          result = rexLiteral.toString();
+
+          if( !result.equals( "null" ) ) // workaround till first class support in optiq
+            value = SQL_DATE_COERCIBLE_TYPE.canonical( result );
+
           break;
         case TIME:
-          value = SQL_TIME_COERCIBLE_TYPE.canonical( rexLiteral.toString() );
+          result = rexLiteral.toString();
+
+          if( !result.equals( "null" ) ) // workaround till first class support in optiq
+            value = SQL_TIME_COERCIBLE_TYPE.canonical( value );
+
           break;
         default:
           value = rexLiteral.getValue2();
