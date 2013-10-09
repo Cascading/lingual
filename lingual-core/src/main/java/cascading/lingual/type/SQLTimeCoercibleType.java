@@ -69,7 +69,7 @@ public class SQLTimeCoercibleType extends SQLDateTimeCoercibleType
     if( from == String.class )
       return (int) ( parse( (String) value ).getTimeValue() );
 
-    if( from == Date.class )
+    if( Date.class.isAssignableFrom( from ) )
       return (int) ( ( (Date) value ).getTime() % MILLIS_PER_DAY ); // in UTC
 
     if( from == Integer.class || from == int.class )
