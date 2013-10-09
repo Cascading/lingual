@@ -25,7 +25,7 @@ dependencies {
     exclude group: 'cascading' // prevents losing the current `cascadingVersion`
   }
 
-  compile( group: 'net.hydromatic', name: 'optiq', version: optiqVersion, changing: optiqChanging ) {
+  compile( group: 'net.hydromatic', name: 'optiq-core', version: optiqVersion, changing: optiqChanging ) {
     exclude group: 'xerces'
     exclude group: 'xalan'
     exclude group: 'org.apache.ant'

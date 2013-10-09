@@ -31,6 +31,7 @@ import cascading.lingual.optiq.EnumerableTapRule;
 import cascading.lingual.util.Logging;
 import cascading.lingual.util.Version;
 import net.hydromatic.linq4j.function.Function0;
+import net.hydromatic.linq4j.function.Function1;
 import net.hydromatic.optiq.jdbc.DriverVersion;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
 import net.hydromatic.optiq.jdbc.UnregisteredDriver;
@@ -217,21 +218,21 @@ public class Driver extends UnregisteredDriver
   private static class LingualPrepare extends OptiqPrepareImpl
     {
     @Override
-    protected List<Function0<RelOptPlanner>> createPlannerFactories()
+    protected List<Function1<Context, RelOptPlanner>> createPlannerFactories()
       {
       return Arrays.asList(
-        new Function0<RelOptPlanner>()
+        new Function1<Context, RelOptPlanner>()
         {
-        public RelOptPlanner apply()
+        public RelOptPlanner apply( Context context )
           {
           return createTapPlanner();
           }
         },
-        new Function0<RelOptPlanner>()
+        new Function1<Context, RelOptPlanner>()
         {
-        public RelOptPlanner apply()
+        public RelOptPlanner apply( Context context )
           {
-          return createPlanner();
+          return createPlanner( context );
           }
         }
       );

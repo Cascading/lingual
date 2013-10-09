@@ -118,6 +118,12 @@ class LingualContext implements OptiqPrepare.Context
     return ConnectionProperty.connectionConfig( new Properties() );
     }
 
+  @Override
+  public OptiqPrepare.SparkHandler spark()
+    {
+    return OptiqPrepare.Dummy.getSparkHandler();
+    }
+
   private void addTaps( SchemaDef parentSchemaDef, TapSchema parentTapSchema, Map<String, Tap> taps, Function<Tap, Fields> function )
     {
     for( String name : taps.keySet() )
