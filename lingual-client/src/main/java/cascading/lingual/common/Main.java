@@ -134,13 +134,11 @@ public abstract class Main<O extends Options>
     if( getOptions().isVerbose() )
       {
       setLogLevel( Main.class.getClassLoader(), "", getOptions().getVerbose() );
-      return;
       }
     if( getOptions().isShowStackTrace() )
       {
-      System.getenv().put( "optiq.debug", "true" );
-      setLogLevel( Main.class.getClassLoader(), "", "DEBUG" );
-      Eigenbase.setLogLevel( "DEBUG" );
+      setLogLevel( Main.class.getClassLoader(), "", "info" );
+      Eigenbase.setLogLevel( "info" );
       }
     else
       {
