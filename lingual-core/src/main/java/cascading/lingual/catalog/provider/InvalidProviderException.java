@@ -21,8 +21,8 @@
 package cascading.lingual.catalog.provider;
 
 /**
-*
-*/
+ *
+ */
 public class InvalidProviderException extends RuntimeException
   {
   InvalidProviderException( String message, Throwable cause )

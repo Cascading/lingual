@@ -213,7 +213,7 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     return new Catalog( System.out, System.err, platformProperties );
     }
 
-  private Shell createShell( InputStream inputStream)
+  private Shell createShell( InputStream inputStream )
     {
     Properties platformProperties = getPlatformProperties();
     return new Shell( inputStream, System.out, System.err, platformProperties );

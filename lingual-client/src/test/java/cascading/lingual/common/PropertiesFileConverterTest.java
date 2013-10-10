@@ -20,23 +20,19 @@
 
 package cascading.lingual.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.collect.Maps;
 import org.junit.Test;
 
-import com.google.common.collect.Maps;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-/***
- * Tests for {@link PropertiesFileConverter}.
- * 
- */
+/** Tests for {@link PropertiesFileConverter}. */
 public class PropertiesFileConverterTest
   {
 
@@ -66,21 +62,21 @@ public class PropertiesFileConverterTest
     {
     File propsFile = File.createTempFile( "lingual.test.properties", null );
     propsFile.deleteOnExit();
-    
+
     Properties testProps = new Properties();
-    
+
     testProps.setProperty( "test1", "some value" );
     testProps.setProperty( "test2", "some other value" );
-    
+
     testProps.store( new FileOutputStream( propsFile ), "" );
 
     PropertiesFileConverter pfc = new PropertiesFileConverter();
     Map<String, String> result = pfc.convert( propsFile.getAbsolutePath() );
-    
+
     Map<String, String> expected = Maps.newHashMap();
     expected.put( "test1", "some value" );
     expected.put( "test2", "some other value" );
-    
-    assertEquals(expected, result);
+
+    assertEquals( expected, result );
     }
   }

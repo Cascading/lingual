@@ -24,11 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-
 import cascading.lingual.common.Options;
 import cascading.lingual.common.PropertiesConverter;
 import cascading.lingual.common.PropertiesFileConverter;
+import com.google.common.collect.Lists;
 import joptsimple.OptionSpec;
 
 import static java.util.Arrays.asList;

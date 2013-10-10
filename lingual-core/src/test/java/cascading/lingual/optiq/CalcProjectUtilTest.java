@@ -16,9 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * Unit test for {@link CalcProjectUtil}.
- */
+/** Unit test for {@link CalcProjectUtil}. */
 public class CalcProjectUtilTest
   {
   @Test
@@ -29,11 +27,11 @@ public class CalcProjectUtilTest
     final RelDataType inputType = typeFactory.createStructType( new RelDataTypeFactory.FieldInfoBuilder() );
     final RelDataType outputType = typeFactory.createStructType( new RelDataTypeFactory.FieldInfoBuilder() );
     final RexProgram program = new RexProgram(
-        inputType,
-        Collections.<RexNode>emptyList(),
-        Collections.<RexLocalRef>emptyList(),
-        null,
-        outputType );
+      inputType,
+      Collections.<RexNode>emptyList(),
+      Collections.<RexLocalRef>emptyList(),
+      null,
+      outputType );
     final ProgramUtil.Analyzed analyze = ProgramUtil.analyze( program );
     assertFalse( analyze.hasConstants );
     assertFalse( analyze.hasFunctions );

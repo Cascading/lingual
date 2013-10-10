@@ -21,16 +21,13 @@
 package cascading.lingual.type;
 
 import java.lang.reflect.Type;
-import java.sql.Time;
 import java.util.Date;
 
 import cascading.CascadingException;
 import cascading.tuple.type.CoercibleType;
 import cascading.util.Util;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import org.eigenbase.sql.type.BasicSqlType;
 import org.eigenbase.sql.type.SqlTypeName;
 import org.eigenbase.util14.DateTimeUtil;

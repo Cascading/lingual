@@ -26,37 +26,34 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-import joptsimple.ValueConverter;
-
 import com.google.common.collect.Maps;
+import joptsimple.ValueConverter;
 
 
 /**
- * 
  * A {@link ValueConverter} implementation that reads a property file from a given path and return
  * a {@link Map} with all values in it.
- *
  */
 public class PropertiesFileConverter implements ValueConverter<Map<String, String>>
   {
 
   @Override
-  public Map<String, String> convert(String value)
+  public Map<String, String> convert( String value )
     {
     Properties properties = new Properties();
     try
       {
-      properties.load( new FileInputStream( new File(value) ) );
-      
-      Map<String,String> values = Maps.newHashMap();
-      for (String key: properties.stringPropertyNames())
+      properties.load( new FileInputStream( new File( value ) ) );
+
+      Map<String, String> values = Maps.newHashMap();
+      for( String key : properties.stringPropertyNames() )
         values.put( key, properties.getProperty( key ) );
-        
+
       return values;
       }
-    catch ( IOException ioe )
+    catch( IOException ioe )
       {
-      throw new IllegalArgumentException("problem while reading properties file " + value, ioe);
+      throw new IllegalArgumentException( "problem while reading properties file " + value, ioe );
       }
     }
 

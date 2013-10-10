@@ -25,7 +25,6 @@ import java.util.List;
 import cascading.lingual.type.SQLDateCoercibleType;
 import cascading.lingual.type.SQLTimeCoercibleType;
 import cascading.tuple.Tuple;
-import org.eigenbase.reltype.RelDataType;
 import org.eigenbase.rex.RexLiteral;
 
 /**

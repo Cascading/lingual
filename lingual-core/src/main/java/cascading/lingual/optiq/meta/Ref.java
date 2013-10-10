@@ -36,7 +36,7 @@ public class Ref
   public final Fields fields;
   public final List<List<RexLiteral>> tuples;
 
-  public Ref( String name, TableDef tableDef)
+  public Ref( String name, TableDef tableDef )
     {
     this.name = name;
     this.tableDef = tableDef;
