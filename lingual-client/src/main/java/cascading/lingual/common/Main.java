@@ -129,16 +129,24 @@ public abstract class Main<O extends Options>
     return errPrintStream;
     }
 
-  protected void setVerbose()
+  protected void setVerbosity()
     {
     if( getOptions().isVerbose() )
       {
       setLogLevel( Main.class.getClassLoader(), "", getOptions().getVerbose() );
       return;
       }
-
-    setLogLevel( Main.class.getClassLoader(), "", "off" );
-    Eigenbase.setLogLevel( "off" );
+    if( getOptions().isShowStackTrace() )
+      {
+      System.getenv().put( "optiq.debug", "true" );
+      setLogLevel( Main.class.getClassLoader(), "", "DEBUG" );
+      Eigenbase.setLogLevel( "DEBUG" );
+      }
+    else
+      {
+      setLogLevel( Main.class.getClassLoader(), "", "off" );
+      Eigenbase.setLogLevel( "off" );
+      }
     }
 
   protected void printFailure( PrintStream errPrintStream, Throwable throwable )

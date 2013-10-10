@@ -100,15 +100,14 @@ public class ProviderDef extends Def
     return fileHash;
     }
 
-//  public boolean handlesProtocols()
-//    {
-//    return !getProtocolProperties().keySet().isEmpty();
-//    }
-
-//  public boolean handlesFormats()
-//    {
-//    return !getFormatProperties().keySet().isEmpty();
-//    }
+  @Override
+  public String toString()
+    {
+    return "ProviderDef{" +
+      "name=" + name +
+      ", properties=" + properties +
+      "}";
+    }
 
   @Override
   public boolean equals( Object object )

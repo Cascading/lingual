@@ -30,6 +30,7 @@ import cascading.lingual.common.Options;
 import cascading.lingual.common.PropertiesConverter;
 import cascading.lingual.common.PropertiesFileConverter;
 import joptsimple.OptionSpec;
+
 import static java.util.Arrays.asList;
 
 /**
@@ -113,13 +114,14 @@ public class CatalogOptions extends Options
 
     properties = parser.acceptsAll( asList( "props", "properties" ), "key=value pairs" )
       .withRequiredArg().withValuesConvertedBy( new PropertiesConverter() );
-    
+
     propertiesFromFile = parser.accepts( "properties-file", "filename" )
-        .withRequiredArg().withValuesConvertedBy( new PropertiesFileConverter() );
+      .withRequiredArg().withValuesConvertedBy( new PropertiesFileConverter() );
 
     extensions = parser.acceptsAll( asList( "exts", "extensions" ), "file name extension to associate with format, .csv, .tsv, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
+    //TODO what is this. Invalid as command.properties-file
     schemes = parser.accepts( "schemes", "uri schemes to associate with protocol, http:, jdbc:, ..." )
       .withRequiredArg().withValuesSeparatedBy( ',' );
 
@@ -261,10 +263,10 @@ public class CatalogOptions extends Options
     {
     List<Map<String, String>> allMaps = Lists.newArrayList();
     List<Map<String, String>> propertiesMaps = optionSet.valuesOf( properties );
-    if (propertiesMaps != null)
+    if( propertiesMaps != null )
       allMaps.addAll( propertiesMaps );
     List<Map<String, String>> propertiesFromFileMaps = optionSet.valuesOf( propertiesFromFile );
-    if (propertiesFromFileMaps != null)
+    if( propertiesFromFileMaps != null )
       allMaps.addAll( propertiesFromFileMaps );
 
     Map<String, String> results = new LinkedHashMap<String, String>();

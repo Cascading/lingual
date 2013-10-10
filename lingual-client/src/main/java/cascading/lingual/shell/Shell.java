@@ -77,7 +77,7 @@ public class Shell extends Main<ShellOptions>
     if( !parse( args ) )
       return true;
 
-    setVerbose();
+    setVerbosity();
 
     if( printUsage() )
       return true;

@@ -47,6 +47,7 @@ public class Options
   protected final OptionSpec<Void> help;
   protected final OptionSpec<Void> debug;
   protected final OptionSpec<String> verbose;
+  protected final OptionSpec<Void> stacktrace;
   protected final OptionSpec<String> platform;
   private final OptionSpec<Map<String, String>> config;
 
@@ -56,6 +57,7 @@ public class Options
     debug = parser.accepts( "debug" ); // does nothing but hold the space, caught by the shell
     verbose = parser.accepts( "verbose" ).withOptionalArg().defaultsTo( "info" );
     version = parser.accepts( "version" );
+    stacktrace = parser.accepts( "showstacktrace" );
 
     platform = parser.accepts( "platform", "platform planner to use, optionally set LINGUAL_PLATFORM env variable" )
       .withRequiredArg().defaultsTo( "local" );
@@ -130,6 +132,11 @@ public class Options
   public String getVerbose()
     {
     return optionSet.valueOf( verbose );
+    }
+
+  public boolean isShowStackTrace()
+    {
+    return optionSet.has( stacktrace );
     }
 
   public boolean isListPlatforms()

@@ -729,7 +729,7 @@ public class SchemaDef extends Def
     if( providers.containsKey( providerDef.getName() ) )
       throw new IllegalArgumentException( "provider named: " + providerDef.getName() + " already exists in schema: " + getName() );
 
-    LOG.debug( "adding provider: {}, to schema: {}", providerDef.getName(), getName() );
+    LOG.debug( "adding provider: {}, to schema: {}", providerDef.toString(), getName() );
 
     providers.put( providerDef.getName(), providerDef );
     }
@@ -819,9 +819,12 @@ public class SchemaDef extends Def
       ProviderDef providerDef = findProviderDefFor( providerName );
 
       if( providerDef != null )
+        {
+        LOG.info( "provider {} found for {}", providerDef.getName(), protocol );
         return providerDef;
+        }
       }
-
+    LOG.info( "no provider associated with {}", protocol );
     return null;
     }
 
@@ -837,9 +840,12 @@ public class SchemaDef extends Def
       ProviderDef providerDef = findProviderDefFor( providerName );
 
       if( providerDef != null )
+        {
+        LOG.info( "provider {} found for {}", providerDef.getName(), format );
         return providerDef;
+        }
       }
-
+    LOG.info( "no provider associated with {}", format );
     return null;
     }
 

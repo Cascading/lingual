@@ -20,6 +20,7 @@
 
 package cascading.lingual.catalog.provider;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
 import cascading.bind.catalog.Resource;
@@ -33,6 +34,7 @@ import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.type.FileType;
+import com.google.common.base.Throwables;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import org.slf4j.Logger;
@@ -144,33 +146,63 @@ public class ProviderProxy
     Protocol protocol = resource.getProtocol();
     SinkMode mode = resource.getMode();
 
-    Tap tap = factoryObject.createTap( protocol.toString(), scheme, identifier, mode, properties );
+    Tap tap = null;
+    try
+      {
+      LOG.info( "using " + getDescription() + " to create tap for {} with properties: {}", resource, properties );
+      tap = factoryObject.createTap( protocol.toString(), scheme, identifier, mode, properties );
 
-    if( tap == null )
-      tap = factoryObject.createTap( scheme, identifier, mode, properties );
+      if( tap == null )
+        tap = factoryObject.createTap( scheme, identifier, mode, properties );
 
-    if( tap == null )
-      tap = factoryObject.createTap( scheme, identifier, properties );
+      if( tap == null )
+        tap = factoryObject.createTap( scheme, identifier, properties );
 
-    if( tap == null )
-      tap = factoryObject.createTap( scheme, identifier, mode );
+      if( tap == null )
+        tap = factoryObject.createTap( scheme, identifier, mode );
+      }
+    catch( Exception exception )
+      {
+      String errorMessage;
+      if( exception.getClass() == InvocationTargetException.class )
+        errorMessage = ( (InvocationTargetException) exception ).getTargetException().getMessage();
+      else
+        errorMessage = exception.getMessage();
 
+      LOG.error( String.format( "factory %s failed to create tap: %s ", factoryObject.getClass().getName(), errorMessage ), exception );
+      throw Throwables.propagate( exception );
+      }
     return tap;
     }
 
   public Scheme createScheme( Stereotype<Protocol, Format> stereotype, Protocol protocol, Format format, Properties properties )
     {
-    Scheme scheme = factoryObject.createScheme( protocol.toString(), format.toString(), stereotype.getFields(), properties );
+    Scheme scheme = null;
+    try
+      {
+      LOG.info( "using " + getDescription() + " to create scheme for stereotype {} with properties: {}", stereotype.getName(), properties );
+      scheme = factoryObject.createScheme( protocol.toString(), format.toString(), stereotype.getFields(), properties );
 
-    if( scheme == null )
-      scheme = factoryObject.createScheme( format.toString(), stereotype.getFields(), properties );
+      if( scheme == null )
+        scheme = factoryObject.createScheme( format.toString(), stereotype.getFields(), properties );
 
-    if( scheme == null )
-      scheme = factoryObject.createScheme( stereotype.getFields(), properties );
+      if( scheme == null )
+        scheme = factoryObject.createScheme( stereotype.getFields(), properties );
 
-    if( scheme == null )
-      scheme = factoryObject.createScheme( stereotype.getFields() );
+      if( scheme == null )
+        scheme = factoryObject.createScheme( stereotype.getFields() );
+      }
+    catch( Exception exception )
+      {
+      String errorMessage;
+      if( exception.getClass() == InvocationTargetException.class )
+        errorMessage = ( (InvocationTargetException) exception ).getTargetException().getMessage();
+      else
+        errorMessage = exception.getMessage();
 
+      LOG.error( String.format( "factory %s failed to create scheme: %s ", factoryObject.getClass().getName(), errorMessage ), exception );
+      throw Throwables.propagate( exception );
+      }
     return scheme;
     }
 

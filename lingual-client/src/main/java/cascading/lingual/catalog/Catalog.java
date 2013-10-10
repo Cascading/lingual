@@ -87,7 +87,7 @@ public class Catalog extends Main<CatalogOptions>
     if( !parse( args ) )
       return false;
 
-    setVerbose();
+    setVerbosity();
 
     if( printUsage() )
       return true;
