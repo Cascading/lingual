@@ -22,8 +22,6 @@ package cascading.lingual.optiq.enumerable;
 
 import java.util.List;
 
-import cascading.lingual.type.SQLDateCoercibleType;
-import cascading.lingual.type.SQLTimeCoercibleType;
 import cascading.tuple.Tuple;
 import org.eigenbase.rex.RexLiteral;
 
@@ -32,46 +30,12 @@ import org.eigenbase.rex.RexLiteral;
  */
 public class EnumerableUtil
   {
-  public static final SQLDateCoercibleType SQL_DATE_COERCIBLE_TYPE = new SQLDateCoercibleType();
-  public static final SQLTimeCoercibleType SQL_TIME_COERCIBLE_TYPE = new SQLTimeCoercibleType();
-
   static Tuple createTupleFrom( List<RexLiteral> values )
     {
     Tuple tuple = Tuple.size( values.size() );
 
     for( int i = 0; i < values.size(); i++ )
-      {
-      RexLiteral rexLiteral = values.get( i );
-
-      Object value = null;
-      String result;
-
-      // this overcomes an inconsistency in getValue2 with regard to date and time being
-      // canonically integers, but getValue2 returning long values.
-      // should be resolved in a future optiq release.
-      switch( rexLiteral.getType().getSqlTypeName() )
-        {
-        case DATE:
-          result = rexLiteral.toString();
-
-          if( !result.equals( "null" ) ) // workaround till first class support in optiq
-            value = SQL_DATE_COERCIBLE_TYPE.canonical( result );
-
-          break;
-        case TIME:
-          result = rexLiteral.toString();
-
-          if( !result.equals( "null" ) ) // workaround till first class support in optiq
-            value = SQL_TIME_COERCIBLE_TYPE.canonical( value );
-
-          break;
-        default:
-          value = rexLiteral.getValue2();
-          break;
-        }
-
-      tuple.set( i, value );
-      }
+      tuple.set( i, values.get( i ).getValue2() ); // seem to come out canonical, so bypassing using TupleEntry to set
 
     return tuple;
     }
