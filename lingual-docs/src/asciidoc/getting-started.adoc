@@ -117,6 +117,10 @@ Now execute the query:
 
 The results will be located in `working/unique-titles.csv`.
 
+Please note that the column names in your insert statement have to match the column names of the of the declared
+stereotype in the catalog. In the example above we call the function `count()` and add `as cnt` so that lingual is able
+to write the data to the correct table. Omitting the `as cnt` will result in an error.
+
 ### Using different file formats
 
 Lingual supports a <<provider,Data Provider>> mechanism that allows for new *formats* and *protocols* to be added
