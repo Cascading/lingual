@@ -97,6 +97,7 @@ ext.unshadeableDependencies = [
         "org.apache.hadoop.**",
         "org.apache.commons.codec.**",
         "org.apache.commons.logging.**",
+        "org.jets3t.**",
         "META**",
         "org.slf4j.**",
         "org.apache.log4j.**",
