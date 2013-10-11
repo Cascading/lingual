@@ -25,7 +25,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
+    classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.7.0'
   }
 }
 
@@ -36,29 +36,27 @@ asciidoctor {
   sourceDocumentName = file( 'src/asciidoc/index.adoc' )
 
   // http://asciidoc.org/userguide.html#X88
-  // attributed must all be lowercase
+  // attribute names are converted to lowercase
+
+  // relative paths are resolved relative to this subproject
+  // nested includes are resolved relative to their parent
 
   def attributes = [
-          toc2: '',
+          toc: 'left',
           revnumber: version,
           'source-highlighter': 'highlightjs',
           'highlightjs-theme': 'pojoaque',
-          'linkcss!': '',
-          stylesdir: 'lingual-docs/src/site/stylesheets/', // should not be relative to rootDir
+          stylesdir: 'src/site/stylesheets',
           stylesheet: 'cascading.css',
           'data-uri': '',
-          imagesdir: 'lingual-docs/src/site/images/', // should not be relative to rootDir
+          imagesdir: 'src/site/images',
           artifactsurl: project.s3Bucket,
           docsurl: project.s3BucketDocs,
-          projectroot: project.rootDir,
           analyticsid: System.properties[ 'analytics.id' ],
           analyticsdomain: System.properties[ 'analytics.domain' ]
-
-          // disabled till attributes in docinfo are supported
-//          docinfo1: '',
   ]
   options = [
-          template_dir: 'lingual-docs/src/templates/',
+          template_dir: 'lingual-docs/src/templates',
           eruby: 'erubis',
           attributes: attributes
   ]
