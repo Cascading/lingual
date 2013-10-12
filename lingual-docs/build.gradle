@@ -49,7 +49,7 @@ asciidoctor {
           stylesdir: 'src/site/stylesheets',
           stylesheet: 'cascading.css',
           'data-uri': '',
-          imagesdir: 'src/site/images',
+          imagesdir: "${project.projectDir}/src/site/images", // explicitly specify base_dir to work around bug in Asciidoctor
           artifactsurl: project.s3Bucket,
           docsurl: project.s3BucketDocs,
           analyticsid: System.properties[ 'analytics.id' ],

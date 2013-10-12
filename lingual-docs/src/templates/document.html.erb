@@ -32,7 +32,7 @@
     <%
        else %>
       <style>
-        <%= read_asset normalize_system_path(attr(:stylesheet), attr(:stylesdir, '')), true %>
+        <%= read_asset normalize_system_path(attr(:stylesheet), normalize_system_path(attr(:stylesdir, ''))), true %>
       </style>
     <%
        end
