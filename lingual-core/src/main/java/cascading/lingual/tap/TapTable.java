@@ -33,7 +33,6 @@ import cascading.lingual.platform.PlatformBroker;
 import cascading.tuple.Fields;
 import net.hydromatic.linq4j.BaseQueryable;
 import net.hydromatic.linq4j.QueryProvider;
-import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.ModifiableTable;
 import net.hydromatic.optiq.MutableSchema;
 import net.hydromatic.optiq.Statistic;
@@ -109,11 +108,6 @@ public class TapTable extends BaseQueryable implements TranslatableTable, Modifi
   public Fields getFields()
     {
     return tableDef.getFields();
-    }
-
-  public DataContext getDataContext()
-    {
-    return parentTableSchema;
     }
 
   public Statistic getStatistic()

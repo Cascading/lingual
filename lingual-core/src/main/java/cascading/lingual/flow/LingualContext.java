@@ -20,6 +20,8 @@
 
 package cascading.lingual.flow;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +37,7 @@ import cascading.lingual.tap.TapSchema;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import com.google.common.base.Function;
-import net.hydromatic.optiq.Schema;
+import net.hydromatic.optiq.*;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.jdbc.ConnectionProperty;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
@@ -122,6 +124,12 @@ class LingualContext implements OptiqPrepare.Context
   public OptiqPrepare.SparkHandler spark()
     {
     return OptiqPrepare.Dummy.getSparkHandler();
+    }
+
+  @Override
+  public DataContext createDataContext()
+    {
+    return Schemas.createDataContext( (Connection) rootMapSchema.getQueryProvider() );
     }
 
   private void addTaps( SchemaDef parentSchemaDef, TapSchema parentTapSchema, Map<String, Tap> taps, Function<Tap, Fields> function )
