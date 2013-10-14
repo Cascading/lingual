@@ -68,6 +68,7 @@ import cascading.tap.type.FileType;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryCollector;
 import cascading.util.Util;
+import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,11 +296,33 @@ public abstract class PlatformBroker<Config>
 
   private void writeDefaultConfigFile()
     {
-    if( !createPath( getFullConfigPath() ) )
-      throw new RuntimeException( "unable to create config path: " + getFullConfigPath() );
+    String configPath = null;
+    boolean pathCreated = false;
+    try
+      {
+      configPath = getFullConfigPath();
+      pathCreated = createPath( configPath );
+      }
+    catch( Exception exception )
+      {
+      LOG.error( "unable to create path {}: {} ", configPath, exception.getMessage() );
+      Throwables.propagate( exception );
+      }
 
-    if( !writeToFile( getFullConfigFile(), "# place all default properties here, for example\n# some.property=someValue\n" ) )
-      throw new RuntimeException( "unable to create config file: " + getFullConfigFile() );
+    if( !pathCreated )
+      throw new RuntimeException( "unable to create config path: " + configPath );
+
+    String configFile = null;
+    try
+      {
+      configFile = getFullConfigFile();
+      writeToFile( configFile, "# place all default properties here, for example\n# some.property=someValue\n" );
+      }
+    catch( Exception exception )
+      {
+      LOG.error( "unable to write to file {}: {} ", configFile, exception.getMessage() );
+      Throwables.propagate( exception );
+      }
     }
 
   public String getFullMetadataPath()
@@ -496,23 +519,13 @@ public abstract class PlatformBroker<Config>
 
   public abstract OutputStream getOutputStream( String path );
 
-  private boolean writeToFile( String fileName, String string )
+  private void writeToFile( String fileName, String string ) throws Exception
     {
-    try
-      {
       Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
 
       writer.write( string );
       writer.flush();
       writer.close();
-      }
-    catch( IOException exception )
-      {
-      LOG.warn( "unable to write to file: {}", fileName );
-      return false;
-      }
-
-    return true;
     }
 
   public String retrieveInstallProvider( String sourcePath )
