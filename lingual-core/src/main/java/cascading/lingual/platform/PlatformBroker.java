@@ -623,6 +623,9 @@ public abstract class PlatformBroker<Config>
   public String createTableNameFrom( String identifier )
     {
     String path = URI.create( identifier ).getPath();
+    if( path == null )
+      throw new IllegalArgumentException( "catalog does not know how to process tables specified by: " + identifier );
+
     String tableName = path.replaceAll( "^.*/([^/.]+)(\\.?.*$|/$)", "$1" );
 
     LOG.debug( "found table name: {} at: {}", tableName, path );

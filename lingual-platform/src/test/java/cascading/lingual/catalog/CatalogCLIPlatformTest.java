@@ -34,19 +34,19 @@ import org.junit.Test;
  */
 public class CatalogCLIPlatformTest extends CLIPlatformTestCase
   {
-  private static final String AD_HOC_SCHEMA = "adhoc";
-  private static final String AD_HOC_SCHEMA_LC = AD_HOC_SCHEMA.toLowerCase();
-  private static final String AD_HOC_SCHEMA_UC = AD_HOC_SCHEMA.toUpperCase();
-  private static final String AD_HOC_SCHEMA_MC = "aDHOc";
-  private static final String TEST_TABLE_NAME = "local";
-  private static final String TEST_TABLE_NAME_LC = TEST_TABLE_NAME.toLowerCase();
-  private static final String TEST_TABLE_NAME_UC = TEST_TABLE_NAME.toUpperCase();
-  private static final String TEST_TABLE_NAME_MC = "lOcAl";
-  private static final String EMPS_STEREOTYPE_NAME = "emps";
-  private static final String TABLE_FORMAT_NAME = "table";
-  private static final String JDBC_PROTOCOL_NAME = "jdbc";
-  private static final String RENAME_FROM_SUFFIX = "_fr";
-  private static final String RENAME_TO_SUFFIX = "_to";
+  protected static final String AD_HOC_SCHEMA = "adhoc";
+  protected static final String AD_HOC_SCHEMA_LC = AD_HOC_SCHEMA.toLowerCase();
+  protected static final String AD_HOC_SCHEMA_UC = AD_HOC_SCHEMA.toUpperCase();
+  protected static final String AD_HOC_SCHEMA_MC = "aDHOc";
+  protected static final String TEST_TABLE_NAME = "local";
+  protected static final String TEST_TABLE_NAME_LC = TEST_TABLE_NAME.toLowerCase();
+  protected static final String TEST_TABLE_NAME_UC = TEST_TABLE_NAME.toUpperCase();
+  protected static final String TEST_TABLE_NAME_MC = "lOcAl";
+  protected static final String EMPS_STEREOTYPE_NAME = "emps";
+  protected static final String TABLE_FORMAT_NAME = "table";
+  protected static final String JDBC_PROTOCOL_NAME = "jdbc";
+  protected static final String RENAME_FROM_SUFFIX = "_fr";
+  protected static final String RENAME_TO_SUFFIX = "_to";
 
   @Test
   public void testCLI() throws IOException

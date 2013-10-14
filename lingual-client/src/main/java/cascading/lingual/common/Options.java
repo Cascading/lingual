@@ -84,16 +84,16 @@ public class Options
 
   public boolean printInvalidOptionMessage( PrintStream printStream, String message )
     {
-    printStream.println( "invalid option: " + message );
-    printUsage( printStream );
+    printStream.println( "\ninvalid option: " + message );
+    printStream.println( "run with --help to show usage\n" );
 
     return false;
     }
 
   public boolean printInvalidOptionMessage( PrintStream printStream, Exception exception )
     {
-    printStream.println( "\ninvalid option: " + exception.getMessage() + "\n" );
-    printUsage( printStream );
+    printStream.println( "\ninvalid option: " + exception.getMessage() );
+    printStream.println( "run with --help to show usage\n" );
 
     return false;
     }
@@ -117,11 +117,6 @@ public class Options
   public boolean isHelp()
     {
     return optionSet.has( help );
-    }
-
-  public boolean isHasOptions()
-    {
-    return optionSet.hasOptions();
     }
 
   public boolean isVerbose()
