@@ -47,6 +47,7 @@ public class LingualStatement implements Statement
 
   private int maxRows;
   private int maxFieldSize;
+  private SQLWarning sqlWarning = null;
 
   public LingualStatement( Properties properties, Statement parent, LingualConnection lingualConnection )
     {
@@ -142,12 +143,15 @@ public class LingualStatement implements Statement
   @Override
   public SQLWarning getWarnings() throws SQLException
     {
+    if ( sqlWarning != null )
+      return sqlWarning;
     return parent.getWarnings();
     }
 
   @Override
   public void clearWarnings() throws SQLException
     {
+    sqlWarning = null;
     parent.clearWarnings();
     }
 
@@ -208,11 +212,16 @@ public class LingualStatement implements Statement
     if( throwable instanceof OutOfMemoryError )
       throw (OutOfMemoryError) throwable;
 
-    LOG.error( "failed with: {}", throwable.getMessage(), throwable );
+    if( throwable.getCause() != null )
+      LOG.error( "failed with: " + throwable.getMessage() + " ( " + throwable.getCause().getMessage() + ") ", throwable.getCause().getMessage() );
+    else
+      LOG.error( "failed with: {}", throwable.getMessage(), throwable );
 
     if( throwable instanceof SQLException )
+      {
+      sqlWarning = new SQLWarning( throwable.getMessage(), (( SQLException )throwable).getSQLState(), (( SQLException )throwable).getErrorCode(), throwable );
       throw (SQLException) throwable;
-
+      }
     if( throwable instanceof EigenbaseContextException )
       {
       String lineMessage = throwable.getMessage();
