@@ -46,6 +46,7 @@ import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
+import cascading.lingual.optiq.CascadingDataContext;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
 import cascading.lingual.optiq.meta.Ref;
@@ -58,7 +59,7 @@ import com.google.common.base.Throwables;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
-import net.hydromatic.linq4j.Linq4j;
+import net.hydromatic.optiq.DataContext;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
@@ -75,6 +76,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
   static final Map<Long, FlowHolder> holders = new HashMap<Long, FlowHolder>();
 
   protected final FlowHolder flowHolder;
+  protected final PlatformBroker platformBroker;
 
   public static synchronized long addHolder( FlowHolder flowHolder )
     {
@@ -90,9 +92,13 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     return holders.remove( index );
     }
 
-  public CascadingFlowRunnerEnumerable( long index )
+  public CascadingFlowRunnerEnumerable( long index, DataContext dataContext )
     {
     flowHolder = popHolder( index );
+    if( dataContext instanceof CascadingDataContext )
+      platformBroker = ( (CascadingDataContext) dataContext ).getPlatformBroker();
+    else
+      platformBroker = null;
     }
 
   public Branch getBranch()
@@ -102,7 +108,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
   public PlatformBroker getPlatformBroker()
     {
-    return flowHolder.branch.platformBroker;
+    if( flowHolder.branch == null )
+      return platformBroker;
+    return flowHolder.branch.platformBroker != null ? flowHolder.branch.platformBroker : platformBroker;
     }
 
   public VolcanoPlanner getVolcanoPlanner()
@@ -147,6 +155,8 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       }
 
     LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
+
+    platformBroker = flowFactory.getPlatformBroker();
 
     Optiq.writeSQLPlan( properties, flowFactory.getName(), getVolcanoPlanner() );
 
@@ -243,7 +253,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       {
       FlowStep flowStep = (FlowStep) flow.getFlowSteps().get( flow.getFlowSteps().size() - 1 );
       long rowCount = flowStep.getFlowStepStats().getCounterValue( StepCounters.Tuples_Written );
-      return new Linq4j().singletonEnumerable( rowCount ).enumerator();
+      return new CascadingBranchResultCountEnumerable( flow.getFlowProcess(), flow.getSink(), branch, rowCount );
       }
 
     int size = flow.getSink().getSinkFields().size();
@@ -256,9 +266,9 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     int maxRows = getMaxRows( properties );
 
     if( size == 1 )
-      return new TapObjectEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
+      return new TapObjectEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink(), branch );
     else
-      return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
+      return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink(), branch );
     }
 
   private ClassLoader getJarClassLoader( PlatformBroker platformBroker, LingualFlowFactory flowFactory )

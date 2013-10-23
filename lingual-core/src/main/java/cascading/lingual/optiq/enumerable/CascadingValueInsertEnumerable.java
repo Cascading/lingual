@@ -28,6 +28,7 @@ import java.util.Map;
 import cascading.flow.FlowProcess;
 import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
+import cascading.lingual.optiq.CascadingDataContext;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.ValuesHolder;
 import cascading.lingual.platform.PlatformBroker;
@@ -37,7 +38,7 @@ import cascading.tuple.TupleEntryCollector;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
-import net.hydromatic.linq4j.Linq4j;
+import net.hydromatic.optiq.DataContext;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
 import org.eigenbase.rex.RexLiteral;
 import org.slf4j.Logger;
@@ -57,6 +58,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
   static final Map<Long, ValuesHolder> holders = new HashMap<Long, ValuesHolder>();
 
   protected final ValuesHolder valuesHolder;
+  protected final PlatformBroker platformBroker;
 
   public static synchronized long addHolder( ValuesHolder flowHolder )
     {
@@ -72,9 +74,13 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     return holders.remove( index );
     }
 
-  public CascadingValueInsertEnumerable( long index )
+  public CascadingValueInsertEnumerable( long index, DataContext dataContext )
     {
     valuesHolder = popHolder( index );
+    if( dataContext instanceof CascadingDataContext )
+      platformBroker = ( (CascadingDataContext) dataContext ).getPlatformBroker();
+    else
+      platformBroker = null;
     }
 
   public Branch getBranch()
@@ -84,7 +90,9 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
 
   public PlatformBroker getPlatformBroker()
     {
-    return valuesHolder.branch.platformBroker;
+    if( valuesHolder.branch == null )
+      return platformBroker;
+    return valuesHolder.branch.platformBroker != null ? valuesHolder.branch.platformBroker : platformBroker;
     }
 
   public VolcanoPlanner getVolcanoPlanner()
@@ -121,8 +129,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
       }
 
     LOG.debug( "inserted {} rows", rowCount );
-
-    return new Linq4j().singletonEnumerable( rowCount ).enumerator();
+    return new CascadingBranchResultCountEnumerable( platformBroker.getFlowProcess(), null, branch, rowCount );
     }
 
   private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, TableDef tableDef )

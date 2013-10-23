@@ -26,8 +26,9 @@ import java.util.List;
 import cascading.flow.AssemblyPlanner;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
-import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
+import cascading.lingual.optiq.enumerable.TapEnumerator;
 import cascading.pipe.Pipe;
+import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
 import net.hydromatic.optiq.prepare.OptiqPrepareImpl;
 
@@ -106,11 +107,12 @@ public class SQLPlanner implements AssemblyPlanner
     Flow flow = context.getFlow();
     LingualContext lingualContext = new LingualContext( this, flow );
 
+    DataContext dataContext = lingualContext.createDataContext();
+
     OptiqPrepareImpl prepare = new OptiqPrepareImpl();
 
     OptiqPrepare.PrepareResult<Object> prepareResult = prepare.prepareSql( lingualContext, getSql(), null, Object[].class, -1 );
-
-    Pipe current = ( (CascadingFlowRunnerEnumerable) prepareResult.enumerator( null ) ).getBranch().current;
+    Pipe current = ( (TapEnumerator) prepareResult.enumerator( dataContext ) ).getBranch().current;
 
     String name;
 

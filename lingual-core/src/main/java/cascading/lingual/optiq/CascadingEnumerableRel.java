@@ -31,6 +31,7 @@ import cascading.lingual.optiq.meta.ValuesHolder;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockStatement;
 import net.hydromatic.linq4j.expressions.Expressions;
+import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import net.hydromatic.optiq.rules.java.EnumerableRel;
 import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
@@ -101,7 +102,7 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     Constructor<CascadingValueInsertEnumerable> constructor = getConstructorFor( CascadingValueInsertEnumerable.class );
 
-    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    return getBlockStatement( constructor, ordinal );
     }
 
   private BlockStatement handleFlow( Branch branch, PhysType physType, VolcanoPlanner planner )
@@ -112,7 +113,7 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     Constructor<CascadingFlowRunnerEnumerable> constructor = getConstructorFor( CascadingFlowRunnerEnumerable.class );
 
-    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    return getBlockStatement( constructor, ordinal );
     }
 
   static <T> Constructor<T> getConstructorFor( Class<T> type )
@@ -121,7 +122,7 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     try
       {
-      constructor = type.getConstructor( long.class );
+      constructor = type.getConstructor( long.class, DataContext.class );
       }
     catch( NoSuchMethodException exception )
       {
@@ -130,4 +131,10 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     return constructor;
     }
+
+  static <T> BlockStatement getBlockStatement( Constructor<T> constructor, long ordinal )
+    {
+    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ), Expressions.parameter( DataContext.class, "root" ) ) ).toBlock();
+    }
+
   }

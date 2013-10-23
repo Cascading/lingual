@@ -20,11 +20,13 @@
 
 package cascading.lingual.optiq.enumerable;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 
 import cascading.flow.FlowProcess;
+import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.Tap;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -36,23 +38,26 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-abstract class TapEnumerator<Result> implements Enumerator<Result>
+public abstract class TapEnumerator<Result> implements Enumerator<Result>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( TapObjectEnumerator.class );
+
   protected final static Tuple DUMMY = new Tuple();
 
-  private static final Logger LOG = LoggerFactory.getLogger( TapObjectEnumerator.class );
   final int maxRows;
   final Type[] types;
   final Tap tap;
   final FlowProcess flowProcess;
+  protected Branch branch;
   Iterator<TupleEntry> iterator;
   Tuple current;
 
-  protected TapEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap )
+  protected TapEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap, Branch branch )
     {
     this.maxRows = maxRows; // defaults Integer.MAX_VALUE
     this.types = types;
     this.flowProcess = flowProcess;
+    this.branch = branch;
     this.tap = tap;
     this.iterator = openIterator( this.flowProcess, this.tap );
     }
@@ -73,6 +78,11 @@ abstract class TapEnumerator<Result> implements Enumerator<Result>
       {
       throw new RuntimeException( exception );
       }
+    }
+
+  public Branch getBranch()
+    {
+    return branch;
     }
 
   public abstract Result current();
@@ -105,6 +115,16 @@ abstract class TapEnumerator<Result> implements Enumerator<Result>
 
   public void close()
     {
-    // REVIEW:
+    if( iterator instanceof Closeable )
+      {
+      try
+        {
+        ( (Closeable) iterator ).close();
+        }
+      catch( IOException exception )
+        {
+        // ignore
+        }
+      }
     }
   }

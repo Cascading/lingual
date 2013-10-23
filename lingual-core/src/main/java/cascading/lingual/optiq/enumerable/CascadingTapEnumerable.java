@@ -29,6 +29,7 @@ import cascading.flow.FlowProcess;
 import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.jdbc.Driver;
+import cascading.lingual.optiq.CascadingDataContext;
 import cascading.lingual.optiq.meta.TableHolder;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Misc;
@@ -38,20 +39,18 @@ import cascading.tap.Tap;
 import net.hydromatic.linq4j.AbstractEnumerable;
 import net.hydromatic.linq4j.Enumerable;
 import net.hydromatic.linq4j.Enumerator;
+import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.rules.java.PhysType;
 import org.eigenbase.relopt.volcano.VolcanoPlanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Enumerable that reads from a Cascading Tap. */
 public class CascadingTapEnumerable extends AbstractEnumerable implements Enumerable
   {
-  private static final Logger LOG = LoggerFactory.getLogger( CascadingTapEnumerable.class );
-
   static long holdersCount = 0;
   static final Map<Long, TableHolder> holders = new HashMap<Long, TableHolder>();
 
   protected final TableHolder tableHolder;
+  protected final PlatformBroker platformBroker;
 
   public static synchronized long addHolder( TableHolder tableHolder )
     {
@@ -67,9 +66,13 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     return holders.remove( index );
     }
 
-  public CascadingTapEnumerable( long index )
+  public CascadingTapEnumerable( long index, DataContext dataContext )
     {
     tableHolder = popHolder( index );
+    if( dataContext instanceof CascadingDataContext )
+      platformBroker = ( (CascadingDataContext) dataContext ).getPlatformBroker();
+    else
+      platformBroker = null;
     }
 
   public PhysType getPhysType()
@@ -84,7 +87,7 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
 
   public PlatformBroker getPlatformBroker()
     {
-    return tableHolder.platformBroker;
+    return tableHolder.platformBroker != null ? tableHolder.platformBroker : platformBroker;
     }
 
   public VolcanoPlanner getVolcanoPlanner()
@@ -113,9 +116,9 @@ public class CascadingTapEnumerable extends AbstractEnumerable implements Enumer
     int maxRows = getMaxRows( properties );
 
     if( size == 1 )
-      return new TapObjectEnumerator( maxRows, types, flowProcess, tap );
+      return new TapObjectEnumerator( maxRows, types, flowProcess, tap, null );
     else
-      return new TapArrayEnumerator( maxRows, types, flowProcess, tap );
+      return new TapArrayEnumerator( maxRows, types, flowProcess, tap, null );
     }
 
   private int getMaxRows( Properties properties )
