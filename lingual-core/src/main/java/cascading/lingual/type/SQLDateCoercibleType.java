@@ -21,15 +21,18 @@
 package cascading.lingual.type;
 
 import java.lang.reflect.Type;
+import java.util.Calendar;
 import java.util.Date;
 
-import cascading.CascadingException;
-import cascading.util.Util;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.eigenbase.sql.type.SqlTypeName;
 import org.eigenbase.util14.DateTimeUtil;
 import org.eigenbase.util14.ZonelessDate;
 import org.eigenbase.util14.ZonelessDatetime;
+
+import cascading.CascadingException;
+import cascading.util.Util;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  *
@@ -71,7 +74,15 @@ public class SQLDateCoercibleType extends SQLDateTimeCoercibleType
       return (int) ( parse( (String) value ).getDateValue() / MILLIS_PER_DAY );
 
     if( Date.class.isAssignableFrom( from ) )
-      return  (int) Math.ceil( (double)( (Date) value ).getTime() / MILLIS_PER_DAY ); // in UTC
+      {
+      Date fromDate = (Date) value;
+      Calendar cal = Calendar.getInstance();
+      int diff = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+      if (diff > 0)
+        return  (int) Math.ceil( (double) fromDate.getTime() / MILLIS_PER_DAY ); // in UTC
+      else
+        return (int) ( fromDate.getTime() / MILLIS_PER_DAY ); // in UTC
+      }
 
     if( from == Integer.class || from == int.class )
       return value;
