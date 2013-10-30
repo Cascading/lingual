@@ -71,7 +71,7 @@ public class SQLDateCoercibleType extends SQLDateTimeCoercibleType
       return (int) ( parse( (String) value ).getDateValue() / MILLIS_PER_DAY );
 
     if( Date.class.isAssignableFrom( from ) )
-      return (int) ( ( (Date) value ).getTime() / MILLIS_PER_DAY ); // in UTC
+      return  (int) Math.ceil( (double)( (Date) value ).getTime() / MILLIS_PER_DAY ); // in UTC
 
     if( from == Integer.class || from == int.class )
       return value;
@@ -103,7 +103,7 @@ public class SQLDateCoercibleType extends SQLDateTimeCoercibleType
     ZonelessDatetime date = createInstance();
 
     date.setZonelessTime( ( (Integer) value ).longValue() * MILLIS_PER_DAY );
-
+    
     if( to == String.class )
       return date.toString();
 
