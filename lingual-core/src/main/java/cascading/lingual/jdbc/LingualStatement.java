@@ -143,8 +143,9 @@ public class LingualStatement implements Statement
   @Override
   public SQLWarning getWarnings() throws SQLException
     {
-    if ( sqlWarning != null )
+    if( sqlWarning != null )
       return sqlWarning;
+
     return parent.getWarnings();
     }
 
@@ -219,7 +220,7 @@ public class LingualStatement implements Statement
 
     if( throwable instanceof SQLException )
       {
-      sqlWarning = new SQLWarning( throwable.getMessage(), (( SQLException )throwable).getSQLState(), (( SQLException )throwable).getErrorCode(), throwable );
+      sqlWarning = new SQLWarning( assembleCause( throwable ), ( (SQLException) throwable ).getSQLState(), ( (SQLException) throwable ).getErrorCode(), throwable );
       throw (SQLException) throwable;
       }
     if( throwable instanceof EigenbaseContextException )
@@ -237,6 +238,14 @@ public class LingualStatement implements Statement
       }
 
     throw Throwables.propagate( throwable );
+    }
+
+  private String assembleCause( Throwable throwable )
+    {
+    if( throwable.getCause() != null && throwable.getCause() != throwable ) // getCause has been known to return itself
+      return throwable.getMessage() + ": " + assembleCause( throwable.getCause() );
+
+    return throwable.getMessage();
     }
 
   @Override
@@ -411,5 +420,4 @@ public class LingualStatement implements Statement
     {
     return parent.isWrapperFor( iface );
     }
-
   }
