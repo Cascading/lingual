@@ -219,7 +219,7 @@ public class LingualStatement implements Statement
 
     if( throwable instanceof SQLException )
       {
-      sqlWarning = new SQLWarning( throwable.getMessage(), (( SQLException )throwable).getSQLState(), (( SQLException )throwable).getErrorCode(), throwable );
+      sqlWarning = new SQLWarning( assembleCause(throwable), (( SQLException )throwable).getSQLState(), (( SQLException )throwable).getErrorCode(), throwable );
       throw (SQLException) throwable;
       }
     if( throwable instanceof EigenbaseContextException )
@@ -239,7 +239,15 @@ public class LingualStatement implements Statement
     throw Throwables.propagate( throwable );
     }
 
-  @Override
+  private String assembleCause( Throwable throwable ) 
+    {
+    if ( throwable.getCause() != null )
+        return throwable.getMessage() + ": " + assembleCause( throwable.getCause() );
+
+    return throwable.getMessage();
+    }
+
+@Override
   public ResultSet getResultSet() throws SQLException
     {
     return parent.getResultSet();
