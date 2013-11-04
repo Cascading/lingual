@@ -23,9 +23,11 @@ package cascading.lingual.common;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import cascading.lingual.util.Eigenbase;
 import com.google.common.base.Throwables;
+import org.eigenbase.trace.EigenbaseTrace;
 
 import static cascading.lingual.util.Logging.setLogLevel;
 
@@ -134,6 +136,7 @@ public abstract class Main<O extends Options>
     if( getOptions().isVerbose() )
       {
       setLogLevel( Main.class.getClassLoader(), "", getOptions().getVerbose() );
+      EigenbaseTrace.getPlannerTracer().setLevel( Level.SEVERE );
       }
     if( getOptions().isShowStackTrace() )
       {
@@ -144,6 +147,7 @@ public abstract class Main<O extends Options>
       {
       setLogLevel( Main.class.getClassLoader(), "", "off" );
       Eigenbase.setLogLevel( "off" );
+      EigenbaseTrace.getPlannerTracer().setLevel( Level.SEVERE );
       }
     }
 

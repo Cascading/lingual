@@ -86,6 +86,7 @@ esac
 OPTIQ_JVM_ARGS=""
 for CUR_ARG in "${ARGS[@]}"; do [[ "$CUR_ARG" == "--showstacktrace" ]] && OPTIQ_JVM_ARGS="-Doptiq.debug"; done
 
+OPTIQ_JVM_ARGS="$OPTIQ_JVM_ARGS -Doptiq.container.rel=cascading"
 LINGUAL_BIN_DIR=$BIN_DIR
 LINGUAL_BASE_DIR=$BASE_DIR
 
