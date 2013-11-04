@@ -1,5 +1,3 @@
-#!/bin/sh
-
 if [ -z "${HADOOP_HOME}" ]; then
   echo "warning: HADOOP_HOME is not set. see your hadoop documents for details."
   BIN_PATH=`which hadoop`

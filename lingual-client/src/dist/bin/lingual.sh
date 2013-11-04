@@ -74,7 +74,6 @@ case $PLATFORM in
    local)
        ;;
    hadoop)
-       HADOOP_CLASSPATH=
        source $BIN_DIR/hadoop-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
        ;;
