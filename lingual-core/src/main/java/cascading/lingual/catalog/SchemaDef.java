@@ -648,6 +648,9 @@ public class SchemaDef extends Def
     if( !isRoot() )
       protocols.addAll( getParentSchema().getAllProtocols() );
 
+    if( defaultProtocol != null )
+      protocols.add( defaultProtocol );
+
     return protocols;
     }
 
@@ -669,6 +672,9 @@ public class SchemaDef extends Def
 
     if( !isRoot() )
       formats.addAll( getParentSchema().getAllFormats() );
+
+    if( defaultFormat != null )
+      formats.add( defaultFormat );
 
     return formats;
     }
