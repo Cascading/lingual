@@ -34,7 +34,6 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalogManager;
@@ -117,16 +116,8 @@ public class DDLParser
           catalogManager.getSchemaCatalog().removeStereotype( schemaName, name );
           break;
         case CREATE:
-          String stereotypeName = name;
           Fields fields = toFields( ddlColumns );
-          Stereotype stereotype = catalogManager.getSchemaCatalog().getStereoTypeFor( schemaName, fields );
-
-          if( stereotype != null )
-            stereotypeName = stereotype.getName();
-          else
-            catalogManager.getSchemaCatalog().createStereotype( schemaName, stereotypeName, fields );
-
-          catalogManager.createTableDefFor( schemaName, name, createTableIdentifier( name ), stereotypeName, protocol, format );
+          catalogManager.createTableDefFor( schemaName, name, createTableIdentifier( name ), fields, protocol.getName(), format.getName() );
           break;
         }
       }
