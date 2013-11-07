@@ -220,15 +220,19 @@ public class SchemaDef extends Def
       {
       LOG.info( "no provider set for protocol: " + protocol + ", in schema: " + getName() );
 
-      if( providerProperties.keySet().size() == 0 )
-        throw new IllegalStateException( "protocol: " + protocol + " not available from provider" );
+      if( !protocol.equals( defaultProtocol ) &&  providerProperties.keySet().size() == 0 )
+        throw new IllegalStateException( "non-default protocol: " + protocol + " not available from provider" );
 
       if( providerProperties.keySet().size() > 1 )
         throw new IllegalStateException( "for protocol: " + protocol + ", found multiple providers: [" + Joiner.on( ',' ).join( providerProperties.keySet() ) + "]" );
 
-      LOG.info( "using sole provider default properties: " + providerProperties.keySet().iterator().next() );
+      String providerPropertyString = providerProperties.keySet().iterator().hasNext() ?  providerProperties.keySet().iterator().next() : "[none]" ;
+      LOG.info( "using sole provider default properties: " + providerPropertyString );
 
-      allProperties.putAll( providerProperties.values().iterator().next() );
+      if( providerProperties.values().iterator().hasNext() )
+        allProperties.putAll( providerProperties.values().iterator().next() );
+      else
+        LOG.warn( "provider has no protocol properties for: " + protocol );
       }
     else
       {
@@ -355,15 +359,19 @@ public class SchemaDef extends Def
       {
       LOG.info( "no provider set for format: " + format + ", in schema: " + getName() );
 
-      if( providerProperties.keySet().size() == 0 )
-        throw new IllegalStateException( "format: " + format + " not available from provider" );
+      if( !format.equals( defaultFormat ) && providerProperties.keySet().size() == 0 )
+        throw new IllegalStateException( "non-default format: " + format + " not available from provider" );
 
-      if( providerProperties.keySet().size() > 1 )
+      if( !format.equals( defaultFormat ) && providerProperties.keySet().size() > 1 )
         throw new IllegalStateException( "for format: " + format + ", found multiple providers: [" + Joiner.on( ',' ).join( providerProperties.keySet() ) + "]" );
 
-      LOG.info( "using sole provider default properties: " + providerProperties.keySet().iterator().next() );
+      String providerPropertyString = providerProperties.keySet().iterator().hasNext() ? providerProperties.keySet().iterator().next() : "[none]";
+      LOG.info( "using sole provider default properties: " + providerPropertyString );
 
-      allProperties.putAll( providerProperties.values().iterator().next() );
+      if( providerProperties.values().iterator().hasNext() )
+        allProperties.putAll( providerProperties.values().iterator().next() );
+      else
+        LOG.warn( "provider has no format properties for: " + format );
       }
     else
       {
