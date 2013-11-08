@@ -45,7 +45,7 @@ import org.junit.Test;
  */
 public class DDLParserPlatformTest extends CLIPlatformTestCase
   {
-  static String file = "src/test/resources/ddl/foodmart-ddl.sql";
+  static String DDL_FILE = "../lingual-platform/src/test/resources/ddl/foodmart-ddl.sql";
 
   static Set<String> expectedTables = new HashSet<String>();
 
@@ -105,6 +105,8 @@ public class DDLParserPlatformTest extends CLIPlatformTestCase
     Properties platformProperties = getPlatformProperties();
     PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), platformProperties );
 
+    copyFromLocal( DDL_FILE );
+
     initCatalog();
 
     catalog( "--schema", DDL_TEST_SCHEMA, "--add", getSchemaPath( DDL_TEST_SCHEMA ) );
@@ -116,11 +118,11 @@ public class DDLParserPlatformTest extends CLIPlatformTestCase
 
     DDLParser parser = new DDLParser( schemaCatalogManager, DDL_TEST_SCHEMA, defaultProtocol.toString() , "csv" );
 
-    File testFile = new File( file );
+    File testFile = new File( DDL_FILE );
 
     assertTrue( "test file " + testFile + "not found in " + new File( "" ).getAbsolutePath() , testFile.exists() );
 
-    parser.apply( new File( file ) );
+    parser.apply( new File( DDL_FILE ) );
 
     Set<String> tables = new HashSet<String>( catalog.getTableNames( DDL_TEST_SCHEMA ) );
 
