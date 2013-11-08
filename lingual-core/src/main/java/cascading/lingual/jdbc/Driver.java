@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import cascading.lingual.optiq.Cascading;
 import cascading.lingual.optiq.EnumerableTapRule;
 import cascading.lingual.util.Logging;
 import cascading.lingual.util.Version;
@@ -244,6 +245,7 @@ public class Driver extends UnregisteredDriver
     protected RelOptPlanner createTapPlanner()
       {
       final VolcanoPlanner planner = new VolcanoPlanner();
+      planner.addRelTraitDef( Cascading.CONVENTION.getTraitDef() );
       planner.addRelTraitDef( ConventionTraitDef.instance );
       planner.addRule( TableAccessRule.instance );
       planner.addRule( JavaRules.ENUMERABLE_CALC_RULE );

@@ -31,6 +31,7 @@ import cascading.tap.type.FileType;
 import cascading.util.Util;
 import org.eigenbase.rel.TableAccessRelBase;
 import org.eigenbase.rel.rules.PushJoinThroughJoinRule;
+import org.eigenbase.relopt.ConventionTraitDef;
 import org.eigenbase.relopt.RelOptCluster;
 import org.eigenbase.relopt.RelOptPlanner;
 import org.eigenbase.relopt.RelOptTable;
@@ -66,6 +67,8 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public static void registerRules( RelOptPlanner planner )
     {
+    planner.addRelTraitDef( Cascading.CONVENTION.getTraitDef() );
+    planner.addRelTraitDef( ConventionTraitDef.instance );
     planner.addRule( PushJoinThroughJoinRule.INSTANCE );
 
     // handles actual flow planning
@@ -157,3 +160,4 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
     return super.getRows();
     }
   }
+  
