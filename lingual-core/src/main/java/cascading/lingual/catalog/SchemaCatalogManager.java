@@ -145,9 +145,7 @@ public class SchemaCatalogManager
 
     try
       {
-      // in theory should only be loading the provider definition from the jar supporting the current platform
-      // here we just grab the first definition for the given provider, in classpath order, compensating for multiple resources
-      // the caller discriminates on the platform
+      // load only providers relevant to the current platform, and only once.
       Enumeration<URL> resources = this.getClass().getClassLoader().getResources( ProviderDefinition.CASCADING_BIND_PROVIDER_PROPERTIES );
 
       while( resources.hasMoreElements() )
@@ -173,8 +171,9 @@ public class SchemaCatalogManager
             continue;
             }
 
-          LOG.debug( "provider definition found for: " + providerName + " at: " + url );
-          results.put( providerName, providerDefinition );
+          LOG.debug( "provider definition found for: " + providerName + ", platform: " + platformBroker.getName() + " in: " + url );
+          if (providerDefinition.getPlatforms().contains( platformBroker.getName() ))
+            results.put( providerName, providerDefinition );
           }
         }
       }
