@@ -505,7 +505,7 @@ public class JSONSchemaCatalog implements Serializable, SchemaCatalog
     {
     if( this == object )
       return true;
-    if( object == null || getClass() != object.getClass() )
+    if( object == null || !JSONSchemaCatalog.class.isAssignableFrom( object.getClass() ) )
       return false;
 
     JSONSchemaCatalog that = (JSONSchemaCatalog) object;

@@ -26,24 +26,30 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
-import cascading.lingual.catalog.Format;
+import cascading.lingual.catalog.CLIPlatformTestCase;
 import cascading.lingual.catalog.Protocol;
+import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.json.JSONFactory;
+import cascading.lingual.platform.PlatformBroker;
+import cascading.lingual.platform.PlatformBrokerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  *
  */
-public class DDLParserTest extends TestCase
+public class DDLParserPlatformTest extends CLIPlatformTestCase
   {
   static String file = "src/test/resources/ddl/foodmart-ddl.sql";
 
   static Set<String> expectedTables = new HashSet<String>();
+
+  public static final String DDL_TEST_SCHEMA = "ddlschema";
 
   {
   String[] tables = {"sales_fact_1997",
@@ -89,39 +95,44 @@ public class DDLParserTest extends TestCase
 
   ObjectMapper mapper = JSONFactory.getObjectMapper();
 
-  public DDLParserTest()
+  public DDLParserPlatformTest()
     {
     }
 
+  @Test
   public void testParseAndPersistDDL() throws IOException
     {
-    TestSchemaCatalog catalog = new TestSchemaCatalog( Protocol.getProtocol( "file" ), Format.getFormat( "csv" ) );
+    Properties platformProperties = getPlatformProperties();
+    PlatformBroker platformBroker = PlatformBrokerFactory.createPlatformBroker( getPlatformName(), platformProperties );
 
-    catalog.addSchemaDef( "test", Protocol.getProtocol( null ), Format.getFormat( null ), "test" );
+    initCatalog();
 
-    SchemaCatalogManager catalogManager = new SchemaCatalogManager( catalog );
+    catalog( "--schema", DDL_TEST_SCHEMA, "--add", getSchemaPath( DDL_TEST_SCHEMA ) );
 
-    catalogManager.initializeNew();
+    SchemaCatalog catalog = getSchemaCatalog();
+    SchemaCatalogManager schemaCatalogManager = platformBroker.getCatalogManager();
 
-    DDLParser parser = new DDLParser( catalogManager, "test", "test", "file", "csv" );
+    Protocol defaultProtocol = catalog.getSchemaDef( DDL_TEST_SCHEMA ).findDefaultProtocol();
+
+    DDLParser parser = new DDLParser( schemaCatalogManager, DDL_TEST_SCHEMA, defaultProtocol.toString() , "csv" );
+
+    File testFile = new File( file );
+
+    assertTrue( "test file " + testFile + "not found in " + new File( "" ).getAbsolutePath() , testFile.exists() );
 
     parser.apply( new File( file ) );
 
-    Set<String> tables = new HashSet<String>( catalog.getTableNames( "test" ) );
+    Set<String> tables = new HashSet<String>( catalog.getTableNames( DDL_TEST_SCHEMA ) );
 
     assertTrue( Sets.difference( tables, expectedTables ).size() == 0 );
 
     String jsonFirst = writeObject( catalog );
-
-//    System.out.println( jsonFirst );
 
     TestSchemaCatalog firstRead = readCatalog( jsonFirst );
 
     assertEquals( catalog, firstRead );
 
     String jsonSecond = writeObject( firstRead );
-
-//    System.out.println( jsonSecond );
 
     TestSchemaCatalog secondRead = readCatalog( jsonSecond );
 
@@ -134,7 +145,7 @@ public class DDLParserTest extends TestCase
     return mapper.readValue( reader, TestSchemaCatalog.class );
     }
 
-  private String writeObject( TestSchemaCatalog wroteCatalog ) throws IOException
+  private String writeObject( SchemaCatalog wroteCatalog ) throws IOException
     {
     StringWriter writer = new StringWriter();
     mapper.writer().withDefaultPrettyPrinter().writeValue( writer, wroteCatalog );

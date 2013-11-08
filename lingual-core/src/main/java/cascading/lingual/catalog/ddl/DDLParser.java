@@ -130,7 +130,7 @@ public class DDLParser
     if( schemaDef == null )
       throw new IllegalStateException( "schema does not exist: " + schemaName );
     else if( schemaDef.getIdentifier() != null && !schemaPath.equals( schemaDef.getIdentifier() ) )
-      throw new IllegalStateException( "schema already exists with identifier: " + schemaDef.getIdentifier() );
+      throw new IllegalStateException( "schema path: " + schemaPath + " does not match identifier: " + schemaDef.getIdentifier() );
     }
 
   private String createTableIdentifier( String name )
