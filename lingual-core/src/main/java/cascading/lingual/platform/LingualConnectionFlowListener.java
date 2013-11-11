@@ -56,22 +56,19 @@ public class LingualConnectionFlowListener implements FlowListener
   @Override
   public void onStarting( Flow flow )
     {
-    if( lingualConnection != null )
-      lingualConnection.trackFlow( flow );
+    lingualConnection.trackFlow( flow );
     }
 
   @Override
   public void onStopping( Flow flow )
     {
-    if( lingualConnection != null )
-      lingualConnection.unTrackFlow( flow );
+    lingualConnection.unTrackFlow( flow );
     }
 
   @Override
   public void onCompleted( Flow flow )
     {
-    if( lingualConnection != null )
-      lingualConnection.unTrackFlow( flow );
+    lingualConnection.unTrackFlow( flow );
     }
 
   @Override

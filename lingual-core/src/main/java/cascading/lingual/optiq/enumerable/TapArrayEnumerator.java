@@ -24,18 +24,17 @@ import java.lang.reflect.Type;
 import java.util.NoSuchElementException;
 
 import cascading.flow.FlowProcess;
-import cascading.lingual.optiq.meta.Branch;
 import cascading.tap.Tap;
 import cascading.tuple.Tuple;
 
 /**
  *
  */
-public class TapArrayEnumerator extends TapEnumerator<Object[]>
+class TapArrayEnumerator extends TapEnumerator<Object[]>
   {
-  public TapArrayEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap, Branch branch)
+  public TapArrayEnumerator( int maxRows, Type[] types, FlowProcess flowProcess, Tap tap )
     {
-    super( maxRows, types, flowProcess, tap, branch );
+    super( maxRows, types, flowProcess, tap );
     }
 
   @Override

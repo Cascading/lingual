@@ -20,6 +20,8 @@
 
 package cascading.lingual.flow;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,13 +30,9 @@ import java.util.Properties;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.flow.Flow;
-import cascading.lingual.catalog.SchemaCatalog;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
-import cascading.lingual.optiq.CascadingDataContext;
 import cascading.lingual.optiq.FieldTypeFactory;
-import cascading.lingual.platform.PlatformBroker;
-import cascading.lingual.platform.PlatformBrokerFactory;
 import cascading.lingual.tap.TapSchema;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -47,38 +45,29 @@ import net.hydromatic.optiq.jdbc.OptiqPrepare;
 /**
  *
  */
-public class LingualContext implements OptiqPrepare.Context
+class LingualContext implements OptiqPrepare.Context
   {
   private final SQLPlanner sqlPlanner;
   private final TapSchema rootMapSchema;
-  private final PlatformBroker platformBroker;
 
   LingualContext( SQLPlanner sqlPlanner, Flow flowDef )
     {
     this.sqlPlanner = sqlPlanner;
 
-    platformBroker = getPlatformBroker( flowDef );
-
     rootMapSchema = new TapSchema( new FlowQueryProvider(), new FieldTypeFactory() );
 
     initializeSchema( sqlPlanner, flowDef, rootMapSchema );
-
-    getTypeFactory();
     }
 
   private void initializeSchema( SQLPlanner sqlPlanner, Flow flowDef, TapSchema currentTapSchema )
     {
+    if( sqlPlanner.getDefaultSchema() != null )
+      currentTapSchema = createGetTapSchema( currentTapSchema, getDefaultSchema() );
 
-    SchemaCatalog schemaCatalog = platformBroker.getSchemeCatalog();
-    SchemaDef rootSchemaDef = platformBroker.getSchemeCatalog().getRootSchemaDef();
-    SchemaDef currentSchemaDef = rootSchemaDef;
+    SchemaDef currentSchemaDef = new SchemaDef();
 
     if( sqlPlanner.getDefaultSchema() != null )
-      {
-      schemaCatalog.addSchemaDef( sqlPlanner.getDefaultSchema(), rootSchemaDef.findDefaultProtocol(), rootSchemaDef.findDefaultFormat(), rootSchemaDef.getIdentifier() + sqlPlanner.getDefaultSchema() );
-      currentTapSchema = createGetTapSchema( currentTapSchema, getDefaultSchema() );
-      currentSchemaDef = schemaCatalog.getSchemaDef( sqlPlanner.getDefaultSchema() );
-      }
+      currentSchemaDef = createGetSchemaDef( currentSchemaDef, getDefaultSchema() );
 
     addTaps( currentSchemaDef, currentTapSchema, flowDef.getSources(), new Function<Tap, Fields>()
     {
@@ -109,11 +98,6 @@ public class LingualContext implements OptiqPrepare.Context
   public Schema getRootSchema()
     {
     return rootMapSchema;
-    }
-
-  public PlatformBroker getPlatformBroker()
-    {
-    return platformBroker;
     }
 
   private String getDefaultSchema()
@@ -153,9 +137,10 @@ public class LingualContext implements OptiqPrepare.Context
 
       name = split[ split.length - 1 ];
 
-      Stereotype stereotype = getPlatformBroker().getCatalogManager().findOrCreateStereotype( parentSchemaDef, function.apply( tap ), tap.getIdentifier() );
+      Stereotype stereotype = new Stereotype( name, function.apply( tap ) );
       TableDef tableDef = new TableDef( currentSchemaDef, name, tap.getIdentifier(), stereotype );
 
+      currentSchemaDef.addStereotype( stereotype );
       currentTapSchema.addTapTableFor( tableDef, getDefaultSchema() == null );
       }
     }
@@ -163,10 +148,7 @@ public class LingualContext implements OptiqPrepare.Context
   private SchemaDef createGetSchemaDef( SchemaDef parentSchemaDef, String schemaName )
     {
     if( parentSchemaDef.getSchema( schemaName ) == null )
-      {
-      SchemaDef rootSchemaDef = platformBroker.getSchemeCatalog().getRootSchemaDef();
-      parentSchemaDef.addSchema( schemaName, rootSchemaDef.findDefaultProtocol(), rootSchemaDef.findDefaultFormat(), schemaName );
-      }
+      parentSchemaDef.addSchema( schemaName, null, null, null );
 
     return parentSchemaDef.getSchema( schemaName );
     }
@@ -179,21 +161,4 @@ public class LingualContext implements OptiqPrepare.Context
     return (TapSchema) parentSchema.getSubSchema( schemaName );
     }
 
-  private PlatformBroker getPlatformBroker( Flow flow )
-    {
-    if( flow == null )
-      return null;
-
-    Map<String, String> flowProps = flow.getConfigAsProperties();
-    Properties properties = new Properties();
-    properties.putAll( flowProps );
-    PlatformBroker platformBroker = null;
-
-    if( flow.getClass().getName().equals( "cascading.flow.hadoop.HadoopFlow" ) )
-      platformBroker = PlatformBrokerFactory.createPlatformBroker( "hadoop", properties );
-    else if( flow.getClass().getName().equals( "cascading.flow.local.LocalFlow" ) )
-      platformBroker = PlatformBrokerFactory.createPlatformBroker( "local", properties );
-
-    return platformBroker;
-    }
   }

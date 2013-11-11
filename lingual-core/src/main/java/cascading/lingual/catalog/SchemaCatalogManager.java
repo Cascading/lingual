@@ -335,7 +335,7 @@ public class SchemaCatalogManager
     return platformBroker.getFullPath( identifier );
     }
 
-  public Stereotype<Protocol, Format> findOrCreateStereotype( SchemaDef schema, Fields fields, String identifier )
+  private Stereotype<Protocol, Format> findOrCreateStereotype( SchemaDef schema, Fields fields, String identifier )
     {
     Stereotype<Protocol, Format> stereotype = findStereotypeFor( identifier );
 

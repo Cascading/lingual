@@ -114,7 +114,7 @@ public abstract class PlatformBroker<Config>
 
   private Map<String, TupleEntryCollector> collectorCache;
 
-  private WeakReference<LingualConnection> nextConnection = new WeakReference<LingualConnection>( null ); // Only used to bind a CTRL-C listener in single-connection CLI usage.
+  private WeakReference<LingualConnection> nextConnection; // Only used to bind a CTRL-C listener in single-connection CLI usage.
 
   private String resultsSchemaName;
 
@@ -521,11 +521,11 @@ public abstract class PlatformBroker<Config>
 
   private void writeToFile( String fileName, String string ) throws Exception
     {
-    Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
+      Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
 
-    writer.write( string );
-    writer.flush();
-    writer.close();
+      writer.write( string );
+      writer.flush();
+      writer.close();
     }
 
   public String retrieveInstallProvider( String sourcePath )

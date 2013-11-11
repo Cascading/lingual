@@ -128,11 +128,6 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
     return lingualConnection;
     }
 
-  public PlatformBroker getPlatformBroker()
-    {
-    return platformBroker;
-    }
-
   @Override
   public Flow create()
     {

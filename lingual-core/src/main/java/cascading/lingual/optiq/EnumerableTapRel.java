@@ -28,7 +28,9 @@ import cascading.lingual.optiq.enumerable.CascadingTapEnumerable;
 import cascading.lingual.optiq.meta.TableHolder;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapTable;
+import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockStatement;
+import net.hydromatic.linq4j.expressions.Expressions;
 import net.hydromatic.optiq.rules.java.EnumerableConvention;
 import net.hydromatic.optiq.rules.java.EnumerableRel;
 import net.hydromatic.optiq.rules.java.EnumerableRelImplementor;
@@ -93,7 +95,7 @@ class EnumerableTapRel extends TableAccessRelBase implements EnumerableRel
     long ordinal = CascadingTapEnumerable.addHolder( tableHolder );
     Constructor<CascadingTapEnumerable> constructor = CascadingEnumerableRel.getConstructorFor( CascadingTapEnumerable.class );
 
-    BlockStatement block = CascadingEnumerableRel.getBlockStatement( constructor, ordinal );
+    BlockStatement block = new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     return implementor.result( physType, block );
     }
 
