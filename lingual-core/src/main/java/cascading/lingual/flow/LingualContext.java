@@ -39,7 +39,6 @@ import cascading.lingual.tap.TapSchema;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import com.google.common.base.Function;
-import net.hydromatic.optiq.DataContext;
 import net.hydromatic.optiq.Schema;
 import net.hydromatic.optiq.impl.java.JavaTypeFactory;
 import net.hydromatic.optiq.jdbc.ConnectionProperty;
@@ -141,12 +140,6 @@ public class LingualContext implements OptiqPrepare.Context
   public OptiqPrepare.SparkHandler spark()
     {
     return OptiqPrepare.Dummy.getSparkHandler();
-    }
-
-  @Override
-  public DataContext createDataContext()
-    {
-    return new CascadingDataContext( getRootSchema(), getTypeFactory(), platformBroker );
     }
 
   private void addTaps( SchemaDef parentSchemaDef, TapSchema parentTapSchema, Map<String, Tap> taps, Function<Tap, Fields> function )

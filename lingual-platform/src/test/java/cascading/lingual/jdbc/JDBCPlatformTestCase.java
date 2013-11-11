@@ -22,8 +22,14 @@ package cascading.lingual.jdbc;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.util.HashMap;
+import java.util.Map;
 
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.catalog.Format;
@@ -241,7 +247,6 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
 
   protected Table<Integer, Comparable, Object> createTable( TupleEntryIterator entryIterator, boolean useOrdinal )
     {
-    Calendar calendar = null;
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     JavaTypeFactory typeFactory = getTypeFactory();
@@ -267,13 +272,13 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
           switch( ( (BasicSqlType) type ).getSqlTypeName() )
             {
             case DATE:
-              value = new java.sql.Date( shift( calendar, ( (Integer) value ).longValue() * SQLDateTimeCoercibleType.MILLIS_PER_DAY ) );
+              value = new java.sql.Date( ( (Integer) value ).longValue() * SQLDateTimeCoercibleType.MILLIS_PER_DAY );
               break;
             case TIME:
-              value = new Time( shift( calendar, ( ( Integer ) value ).longValue()) );
+              value = new Time( ( (Integer) value ).longValue() );
               break;
             case TIMESTAMP:
-              value = new java.sql.Date( shift( calendar, ( ( Long ) value ).longValue()) );
+              value = new java.sql.Date( ( (Long) value ).longValue() );
               break;
             }
           }
@@ -287,13 +292,6 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
       }
 
     return table;
-    }
-
-  private long shift( Calendar calendar, long v )
-    {
-    if( calendar != null )
-      v -= calendar.getTimeZone().getOffset( v );
-    return v;
     }
 
   protected Table<Integer, Comparable, Object> createTable( ResultSet resultSet ) throws SQLException
@@ -317,28 +315,12 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     int row = 0;
-    final Calendar utcCalendar = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
 
     while( resultSet.next() )
       {
       for( int i = 0; i < columnCount; i++ )
         {
-        Object value;
-        switch( metaData.getColumnType( i + 1 ) )
-          {
-          case Types.TIME:
-            value = resultSet.getTime( i + 1, utcCalendar );
-            break;
-          case Types.DATE:
-            value = resultSet.getDate( i + 1, utcCalendar );
-            break;
-          case Types.TIMESTAMP:
-            value = resultSet.getTimestamp( i + 1, utcCalendar );
-            break;
-          default:
-            value = resultSet.getObject( i + 1 );
-            break;
-          }
+        Object value = resultSet.getObject( i + 1 );
 
         Comparable columnLabel = useOrdinal ? i : metaData.getColumnLabel( i + 1 );
 
