@@ -66,8 +66,7 @@ public class CascadingTableAccessRel extends TableAccessRelBase implements Casca
 
   public static void registerRules( RelOptPlanner planner )
     {
-    planner.addRule( PushJoinThroughJoinRule.LEFT );
-//    planner.addRule( PushJoinThroughJoinRule.RIGHT );
+    planner.addRule( PushJoinThroughJoinRule.INSTANCE );
 
     // handles actual flow planning
     planner.addRule( CascadingEnumerableConverterRule.INSTANCE );
