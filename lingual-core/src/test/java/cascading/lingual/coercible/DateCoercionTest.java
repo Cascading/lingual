@@ -20,23 +20,23 @@
 
 package cascading.lingual.coercible;
 
-import static org.junit.Assert.*;
-
 import java.sql.Date;
 
+import cascading.lingual.type.SQLDateCoercibleType;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import cascading.lingual.type.SQLDateCoercibleType;
-import cascading.lingual.type.SQLTimeCoercibleType;
+import static org.junit.Assert.assertEquals;
 
 public class DateCoercionTest
   {
 
   @Test
+  @Ignore
   public void testDateCoercion()
     {
     SQLDateCoercibleType sdct = new SQLDateCoercibleType();
-    Date input = new Date( 1383087600000L ); // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT 
+    Date input = new Date( 1383087600000L ); // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
 
     Object canonical = sdct.canonical( input );
     Object reconverted = sdct.coerce( canonical, java.sql.Date.class );
