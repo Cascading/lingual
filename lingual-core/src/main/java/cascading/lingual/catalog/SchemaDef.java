@@ -134,7 +134,10 @@ public class SchemaDef extends Def
     if( getDefaultProtocol() != null )
       return getDefaultProtocol();
 
-    return getParentSchema().findDefaultProtocol();
+    if( !isRoot() )
+      return getParentSchema().findDefaultProtocol();
+
+    return null;
     }
 
   public void setDefaultProtocol( Protocol defaultProtocol )
@@ -152,7 +155,10 @@ public class SchemaDef extends Def
     if( getDefaultFormat() != null )
       return getDefaultFormat();
 
-    return getParentSchema().findDefaultFormat();
+    if( !isRoot() )
+      return getParentSchema().findDefaultFormat();
+
+    return null;
     }
 
   public void setDefaultFormat( Format defaultFormat )
@@ -803,7 +809,7 @@ public class SchemaDef extends Def
     Map<Protocol, List<String>> map = findPropertyByProtocols( FormatProperties.PROVIDER );
     List<String> providers = map.get( protocol );
 
-    if( providers.isEmpty() )
+    if( providers == null || providers.isEmpty() )
       return null;
 
     String providerName = providers.get( 0 );
@@ -816,7 +822,7 @@ public class SchemaDef extends Def
     Map<Format, List<String>> map = findPropertyByFormats( FormatProperties.PROVIDER );
     List<String> providers = map.get( format );
 
-    if( providers.isEmpty() )
+    if( providers == null || providers.isEmpty() )
       return null;
 
     String providerName = providers.get( 0 );
