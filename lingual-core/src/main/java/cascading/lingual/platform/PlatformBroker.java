@@ -625,7 +625,7 @@ public abstract class PlatformBroker<Config>
 
   public String createSchemaNameFrom( String identifier )
     {
-    String path = URI.create( identifier ).getPath();
+    String path = toURI( identifier ).getPath();
     String schemaName = path.replaceAll( "^.*/([^/]+)/?$", "$1" );
 
     LOG.debug( "found schema name: {} at: {}", schemaName, path );
@@ -635,7 +635,7 @@ public abstract class PlatformBroker<Config>
 
   public String createTableNameFrom( String identifier )
     {
-    String path = URI.create( identifier ).getPath();
+    String path = toURI( identifier ).getPath();
     if( path == null )
       throw new IllegalArgumentException( "catalog does not know how to process tables specified by: " + identifier );
 

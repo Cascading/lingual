@@ -218,9 +218,9 @@ public class LocalPlatformBroker extends PlatformBroker<Properties>
     }
 
   @Override
-  protected URI toURI( String qualifiedPath )
+  protected URI toURI( String path )
     {
-    return new File( qualifiedPath ).toURI();
+    return new File( path ).toURI();
     }
 
   @Override
