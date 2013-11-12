@@ -23,7 +23,6 @@ package cascading.lingual.coercible;
 import java.sql.Date;
 
 import cascading.lingual.type.SQLDateCoercibleType;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -32,25 +31,28 @@ public class DateCoercionTest
   {
 
   @Test
-  @Ignore
   public void testDateCoercion()
     {
-    SQLDateCoercibleType sdct = new SQLDateCoercibleType();
-    Date input = new Date( 1383087600000L ); // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
+    SQLDateCoercibleType coercibleType = new SQLDateCoercibleType();
 
-    Object canonical = sdct.canonical( input );
-    Object reconverted = sdct.coerce( canonical, java.sql.Date.class );
-    
-    // due to a rounding bug the date would shift in each iteration.
-    int i = 0;
-    while( i < 10 )
+    // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
+    int timestampAsInt = 16007;
+    Date input = new Date( 1383087600000L );
+
+    Object canonical = coercibleType.canonical( input );
+    Date coerced = (Date) coercibleType.coerce( canonical, java.sql.Date.class );
+
+    // multiple coercions should preserve date. Run it 24 times to catch any timezone issue.
+    for( int i = 0; i < 24; i++ )
       {
-      i++;
-      canonical = sdct.canonical( reconverted );
-      reconverted = sdct.coerce( canonical, java.sql.Date.class );
+      canonical = coercibleType.canonical( coerced );
+      assertEquals( "Canonical value changed on iteration " + i, timestampAsInt, ( (Integer) canonical ).intValue() );
+
+      coerced = (Date) coercibleType.coerce( canonical, java.sql.Date.class );
+      assertEquals( "Day of month value changed on iteration " + i + " now: " + coerced.toString(), input.getDate(), coerced.getDate() );
+      assertEquals( "Month value changed on iteration " + i + " now: " + coerced.toString(), input.getMonth(), coerced.getMonth() );
+      assertEquals( "Year value changed on iteration " + i + " now: " + coerced.toString(), input.getYear(), coerced.getYear() );
       }
-    assertEquals(input.getDay(), ((Date)reconverted).getDay());
-    assertEquals(input.getMonth(), ((Date)reconverted).getMonth());
-    assertEquals(input.getYear(), ((Date)reconverted).getYear());
     }
+
   }
