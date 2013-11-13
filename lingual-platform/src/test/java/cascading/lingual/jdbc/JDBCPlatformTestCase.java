@@ -28,8 +28,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.sql.Types;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.catalog.Format;
@@ -315,12 +318,28 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     Table<Integer, Comparable, Object> table = createNullableTable();
 
     int row = 0;
+    final Calendar utcCalendar = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) );
 
     while( resultSet.next() )
       {
       for( int i = 0; i < columnCount; i++ )
         {
-        Object value = resultSet.getObject( i + 1 );
+        Object value;
+        switch( metaData.getColumnType( i + 1 ) )
+          {
+          case Types.TIME:
+            value = resultSet.getTime( i + 1, utcCalendar );
+            break;
+          case Types.DATE:
+            value = resultSet.getDate( i + 1, utcCalendar );
+            break;
+          case Types.TIMESTAMP:
+            value = resultSet.getTimestamp( i + 1, utcCalendar );
+            break;
+          default:
+            value = resultSet.getObject( i + 1 );
+            break;
+          }
 
         Comparable columnLabel = useOrdinal ? i : metaData.getColumnLabel( i + 1 );
 
