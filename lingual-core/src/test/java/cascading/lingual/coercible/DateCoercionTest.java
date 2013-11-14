@@ -21,6 +21,7 @@
 package cascading.lingual.coercible;
 
 import java.sql.Date;
+import java.util.Calendar;
 
 import cascading.lingual.type.SQLDateCoercibleType;
 import org.junit.Test;
@@ -30,29 +31,74 @@ import static org.junit.Assert.assertEquals;
 public class DateCoercionTest
   {
 
+  private static SQLDateCoercibleType sqlDateCoercibleType = new SQLDateCoercibleType();
+  private static Date inputDate = new Date( 1383087600000L );  // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
+
+
   @Test
-  public void testDateCoercion()
+  public void testFromCanonical()
     {
-    SQLDateCoercibleType coercibleType = new SQLDateCoercibleType();
+    Date coerced = (Date) sqlDateCoercibleType.coerce( getIntergerRepresentation().intValue(), java.sql.Date.class );
 
-    // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
-    int timestampAsInt = 16007;
-    Date input = new Date( 1383087600000L );
+    assertEquals( "wrong year", inputDate.getYear(), coerced.getYear() );
+    assertEquals( "wrong month", inputDate.getMonth(), coerced.getMonth() );
+    assertEquals( "wrong day of month", inputDate.getDate(), coerced.getDate() );
+    }
 
-    Object canonical = coercibleType.canonical( input );
-    Date coerced = (Date) coercibleType.coerce( canonical, java.sql.Date.class );
+  @Test
+  public void testToCanonical()
+    {
+    Integer canonical = (Integer) sqlDateCoercibleType.canonical( inputDate );
+
+    assertEquals( "not converted to proper canonical form", getIntergerRepresentation(), canonical );
+    }
+
+  @Test
+  public void testFromStringCoercion()
+    {
+    String dateAsString = "1996-08-03";
+
+    Integer canonical = (Integer) sqlDateCoercibleType.canonical( dateAsString );
+    Date coerced = (Date) sqlDateCoercibleType.coerce( canonical, java.sql.Date.class );
+    assertEquals( "String parsing got wrong day", 3, coerced.getDate() );
+    assertEquals( "String parsing got wrong month", 7, coerced.getMonth() );
+    assertEquals( "String parsing got wrong year", 96, coerced.getYear() );
+    }
+
+  @Test
+  public void testSymetricCoercion()
+    {
+    Object canonical = sqlDateCoercibleType.canonical( inputDate );
+    Date coerced = (Date) sqlDateCoercibleType.coerce( canonical, java.sql.Date.class );
 
     // multiple coercions should preserve date. Run it 24 times to catch any timezone issue.
     for( int i = 0; i < 24; i++ )
       {
-      canonical = coercibleType.canonical( coerced );
-      assertEquals( "Canonical value changed on iteration " + i, timestampAsInt, ( (Integer) canonical ).intValue() );
+      canonical = sqlDateCoercibleType.canonical( coerced );
+      assertEquals( "Canonical value changed on iteration " + i, getIntergerRepresentation().intValue(), ( (Integer) canonical ).intValue() );
 
-      coerced = (Date) coercibleType.coerce( canonical, java.sql.Date.class );
-      assertEquals( "Day of month value changed on iteration " + i + " now: " + coerced.toString(), input.getDate(), coerced.getDate() );
-      assertEquals( "Month value changed on iteration " + i + " now: " + coerced.toString(), input.getMonth(), coerced.getMonth() );
-      assertEquals( "Year value changed on iteration " + i + " now: " + coerced.toString(), input.getYear(), coerced.getYear() );
+      coerced = (Date) sqlDateCoercibleType.coerce( canonical, java.sql.Date.class );
+      assertEquals( "Coerced day changed on iteration " + i + " now: " + coerced.toString(), inputDate.getDate(), coerced.getDate() );
+      assertEquals( "Coerced month changed on iteration " + i + " now: " + coerced.toString(), inputDate.getMonth(), coerced.getMonth() );
+      assertEquals( "Coerced year changed on iteration " + i + " now: " + coerced.toString(), inputDate.getYear(), coerced.getYear() );
       }
+    }
+
+  protected Integer getIntergerRepresentation()
+    {
+    // depending on the rounding rules this may vary by timezone.
+    // in general it's around 16007 or 16008.
+    Calendar calendar = Calendar.getInstance();
+    calendar.set( Calendar.YEAR, inputDate.getYear() + 1900 );
+    calendar.set( Calendar.MONTH, inputDate.getMonth() );
+    calendar.set( Calendar.DATE, inputDate.getDate() );
+    calendar.set( Calendar.HOUR_OF_DAY, 0 );
+    calendar.set( Calendar.MINUTE, 0 );
+    calendar.set( Calendar.SECOND, 0 );
+    calendar.set( Calendar.MILLISECOND, 0 );
+    long calTime = calendar.getTimeInMillis();
+
+    return (int) Math.ceil( (double) calTime / SQLDateCoercibleType.MILLIS_PER_DAY );
     }
 
   }
