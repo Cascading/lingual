@@ -1,5 +1,6 @@
 [id="top"]
 # Lingual - SQL for Cascading (on Apache Hadoop)
+:asciidocdir: {projectdir}/src/asciidoc
 
 Lingual executes ANSI SQL queries as http://cascading.org[Cascading] applications on
 http://hadoop.apache.org[Apache Hadoop] clusters.
@@ -92,28 +93,33 @@ Learn more about how to create a Provider:
 
 <<top>>
 
-include::install.adoc[]
+include::{asciidocdir}/install.adoc[]
 
-include::getting-started.adoc[]
+include::{asciidocdir}/getting-started.adoc[]
 
-include::catalog.adoc[]
+include::{asciidocdir}/catalog.adoc[]
 
-include::shell.adoc[]
+include::{asciidocdir}/shell.adoc[]
 
 [id="jdbc"]
 ## Lingual JDBC
+
 :leveloffset: 1
-include::jdbc.adoc[]
-include::jdbc-java.adoc[]
-include::jdbc-r.adoc[]
-include::jdbc-squirrel.adoc[]
+
+include::{asciidocdir}/jdbc.adoc[]
+
+include::{asciidocdir}/jdbc-java.adoc[]
+
+include::{asciidocdir}/jdbc-r.adoc[]
+
+include::{asciidocdir}/jdbc-squirrel.adoc[]
 
 <<top>>
 
 :leveloffset: 0
 
-include::java.adoc[]
+include::{asciidocdir}/java.adoc[]
 
-include::provider.adoc[]
+include::{asciidocdir}/provider.adoc[]
 
-include::hadoop.adoc[]
+include::{asciidocdir}/hadoop.adoc[]
