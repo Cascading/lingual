@@ -451,4 +451,32 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     assertTablesEqual( "emps-depts-self-join-3", query );
     }
 
+  @Test
+  public void testSelectIn() throws Exception
+    {
+    assertTablesEqual( "emps-in", "select empno, name, deptno, gender, city, empid, age, slacker, manager, joinedat from sales.emps where empno in ( 100, 120 )" );
+    }
+
+  @Test
+  public void testSelectNot() throws Exception
+    {
+    assertTablesEqual( "emps-notin", "select empno, name, deptno, gender, city, empid, age, slacker, manager, joinedat from sales.emps where empno not in ( 110 ) " );
+    }
+
+  @Test
+  public void testSelectOr() throws Exception
+    {
+    assertTablesEqual( "emps-or", "select empno, name, deptno, gender, city, empid, age, slacker, manager, joinedat from sales.emps where empno=100 or name='Alice' " );
+    }
+
+  @Test
+  @Ignore("Planner Failure")
+  public void testSelectExists() throws Exception
+    {
+    assertTablesEqual( "emps-depts-exists-join", "select empno, p0.name, p0.deptno, gender, city, empid, age, slacker, manager, joinedat " +
+      "from sales.emps p0 " +
+      "where exists ( select * from sales.depts where p0.deptno = depts.deptno AND depts.deptno = 20 ) " );
+    }
+
+
   }
