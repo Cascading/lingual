@@ -41,6 +41,8 @@ Lingual supports `SELECT` and `INSERT INTO` statements, for example
 DDL statements like `CREATE TABLE` are supported only through the <<catalog,Lingual Catalog>> tool for defining
 Schemas and Tables from the command line.
 
+See <<sql-support,ANSI SQL Support>> for the full list of supported operations and functions.
+
 ### Command Line Tools
 
 Use the command line tools to publish files or resources as tables, or run queries from the console, against a local
