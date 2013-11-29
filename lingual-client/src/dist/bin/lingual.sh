@@ -74,8 +74,12 @@ case $PLATFORM in
    local)
        ;;
    hadoop)
-       source $BIN_DIR/hadoop-env
+       HADOOP_CLASSPATH=`hadoop classpath`
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
+       ;;
+   hadoop2-mr1)
+       YARN_CLASSPATH=`yarn classpath`
+       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
        ;;
    *)
        echo "ERROR: Unknown platform: $PLATFORM"
