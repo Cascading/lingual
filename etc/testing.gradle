@@ -20,7 +20,7 @@
 
 rootProject.ext.testRoots = []
 
-project.ext.setTestingProperties = {
+project.setTestingProperties = {
 
   if( !System.properties[ 'test.cluster.enabled' ] )
     System.properties[ 'test.cluster.enabled' ] = 'false'
@@ -56,9 +56,10 @@ task platformTest( type: Test, dependsOn: test ) {
 
   systemProperties = setTestingProperties()
 
+  outputs.upToDateWhen { false }
+
   // not called when disabled
   doFirst() {
-
     rootProject.ext.testRoots << systemProperties[ 'test.output.root' ]
 
     setTestClassesDir( file( project( ':lingual-platform' ).sourceSets.test.output.classesDir ) )

@@ -78,6 +78,11 @@ task fatJar( type: Jar, dependsOn: jar ) {
   }
 }
 
+test {
+  setTestClassesDir( file( "${projectDir}/../lingual-platform/src/test/java/" ) )
+  sourceSets.test.output.classesDir = file( "${projectDir}/../lingual-platform/build/classes/test" )
+}
+
 artifacts {
   archives fatJar
 }
