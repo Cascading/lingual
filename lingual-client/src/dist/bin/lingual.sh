@@ -46,7 +46,26 @@ done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )/../" && pwd )"
 BIN_DIR="$BASE_DIR/bin"
 JAVA_EXEC=`which java`
-PLATFORM=${LINGUAL_PLATFORM:-local}
+
+PLATFORM="local"
+
+
+CASCADING_CONFIG_FILE=$HOME/.cascading
+
+if [[ -z "$LINGUAL_PLATFORM" ]]; then
+  if [[ -z "$CASCADING_PLATFORM" ]]; then
+    if [[ -e $CASCADING_CONFIG_FILE ]]; then
+        . $CASCADING_CONFIG_FILE
+        PLATFORM="$CASCADING_PLATFORM"
+    fi
+  else
+    PLATFORM=$CASCADING_PLATFORM
+  fi
+else
+  PLATFORM=$LINGUAL_PLATFORM
+fi
+
+
 OPTIONS=
 
 ARGS=("$@")
@@ -68,17 +87,17 @@ while [ -n "$1" ]
      esac
  done
 
-LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/platform/$PLATFORM/*:$BASE_DIR/bin/*"
+LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/bin/*"
 
 case $PLATFORM in
    local)
        ;;
    hadoop)
-       HADOOP_CLASSPATH=`hadoop classpath`
+       source $BIN_DIR/hadoop-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
        ;;
    hadoop2-mr1)
-       YARN_CLASSPATH=`yarn classpath`
+       source $BIN_DIR/yarn-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
        ;;
    *)
@@ -86,6 +105,7 @@ case $PLATFORM in
        exit 1
        ;;
 esac
+export LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/platform/$PLATFORM/*"
 
 OPTIQ_JVM_ARGS=""
 for CUR_ARG in "${ARGS[@]}"; do [[ "$CUR_ARG" == "--showstacktrace" ]] && OPTIQ_JVM_ARGS="-Doptiq.debug"; done
@@ -96,4 +116,5 @@ LINGUAL_BASE_DIR=$BASE_DIR
 
 export LINGUAL_BIN_DIR
 export LINGUAL_BASE_DIR
-${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
+export LINGUAL_PLATFORM=$PLATFORM
+${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
