@@ -4,7 +4,7 @@ if [ -z "${HADOOP_HOME}" ]; then
     HADOOP_CLASSPATH=`hadoop classpath`
     return
   else
-    echo "Could not find HADOOP_HOME nor is hadoop in the PATH. exiting."
+    echo "Could not find HADOOP_HOME nor is 'hadoop' in the PATH. exiting."
     exit 1
   fi
 else
