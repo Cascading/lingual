@@ -5,12 +5,17 @@ Lingual Supports the following ANSI SQL features.
 
 ### Datatypes
 
-The following data types are supported by Lingual. The "Java Type" column indicates what the database type will get translated to
-as final output. For temporal types, internal representation will differ from final output. For example the DATE type is treated as
-an integer when doing internal serialization for Cascading processing and then converted to java.sql.Date. The usual cautions and
-best practices about SQL temporal types and timezones apply. For data types such as DATE that are defined as not having limited precision
-Lingual assumes a value of 0 in the default timezone of the JVM. For example, the DATE of "2013-04-02" is considered "2013-04-02 00:00:00"
-if converting to DATETIME.
+The following data types are supported by Lingual.
+
+Note that the "Java Type" column indicates what the database type will get translated to as final output.
+
+For temporal types, internal representation will differ from final output. For example the DATE type is treated as an
+integer when doing internal serialization for Cascading processing and then converted to java.sql.Date. The usual
+cautions and best practices about SQL temporal types and timezones apply.
+
+For data types such as DATE that are defined as not having limited precision, Lingual assumes a value of 0 in the
+default timezone of the JVM. For example, the DATE of "2013-04-02" is considered "2013-04-02 00:00:00" if converting
+to DATETIME.
 
 #### Character Types
 
@@ -50,9 +55,11 @@ if converting to DATETIME.
 
 ### Functions
 
-The following SQL functions are supported by Lingual. Internally the implementation of the function is a combination of Optiq and Cascading features.
- The particular internal function should not affect end users or developers but users running with log level set at DEBUG may want to be aware of this
- to help understand log output.
+The following SQL functions are supported by Lingual. Internally the implementation of the function is a combination of
+Optiq and Cascading features.
+
+The particular internal function should not affect end users or developers but users running with log level set at DEBUG
+may want to be aware of this to help understand log output.
 
 #### Operators and Logic Function
 
@@ -130,3 +137,4 @@ The following SQL functions are supported by Lingual. Internally the implementat
 |SYSTEM_USER          |
 |======================================
 
+<<top>>

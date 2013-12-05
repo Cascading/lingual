@@ -119,3 +119,5 @@ include::java.adoc[]
 include::provider.adoc[]
 
 include::hadoop.adoc[]
+
+include::sql-support.adoc[]
