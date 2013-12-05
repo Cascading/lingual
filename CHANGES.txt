@@ -2,6 +2,12 @@ Lingual Change Log
 
 1.0.1 [unreleased]
 
+  Update documentation to include supported SQL types and functions.
+
+  Fixed issues in build when using Gradle 1.9.
+
+  Added support for CDH4 jar layout in client.
+
 1.0.0
 
   First release.
