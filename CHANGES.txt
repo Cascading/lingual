@@ -1,5 +1,9 @@
 Lingual Change Log
 
+1.0.2 [unreleased]
+
+  Remove jgrapht from jarjar processing
+
 1.0.1 [unreleased]
 
   Update documentation to include supported SQL types and functions.
