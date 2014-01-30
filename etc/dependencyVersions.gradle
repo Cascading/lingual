@@ -100,6 +100,7 @@ ext.unshadeableDependencies = [
         "org.jets3t.**",
         "META**",
         "org.slf4j.**",
+        "org.jgrapht.**",
         "org.apache.log4j.**",
         "org.xml.sax.**",
         "org.apache.ivy.**"
