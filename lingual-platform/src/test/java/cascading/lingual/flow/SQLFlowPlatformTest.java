@@ -51,7 +51,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Tap empTap = getPlatform().getDelimitedFile( employeeFields, true, ",", "\"", employeeFields.getTypesClasses(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
     Tap salesTap = getPlatform().getDelimitedFile( salesFields, true, ",", "\"", salesFields.getTypesClasses(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
 
-    Tap resultsTap = getPlatform().getDelimitedFile( Fields.ALL, true, ",", "\"", null, getOutputPath( "static" ), SinkMode.REPLACE );
+    Tap resultsTap = getPlatform().getDelimitedFile( Fields.ALL, true, ",", "\"", null, getOutputPath( getTestName() ), SinkMode.REPLACE );
 
     FlowDef flowDef = FlowDef.flowDef()
       .setName( "sql flow" )
@@ -83,7 +83,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Tap empTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
     Tap salesTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
 
-    Tap resultsTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), getOutputPath( "dynamic" ), SinkMode.REPLACE );
+    Tap resultsTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), getOutputPath( getTestName() ), SinkMode.REPLACE );
 
     FlowDef flowDef = FlowDef.flowDef()
       .setName( "sql flow" )
@@ -115,7 +115,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Tap empTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
     Tap salesTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
 
-    Tap resultsTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), getOutputPath( "bindschema" ), SinkMode.REPLACE );
+    Tap resultsTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), getOutputPath( getTestName() ), SinkMode.REPLACE );
 
     FlowDef flowDef = FlowDef.flowDef()
       .setName( "sql flow" )
@@ -149,7 +149,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Comparable[] names = {"CUST_ID", "PROD_ID", "EMPID", "NAME"};
     Type[] types = {Integer.class, Integer.class, Integer.class, String.class};
     Fields sinkFields = new Fields( names, types );
-    Tap resultsTap = getPlatform().getDelimitedFile( sinkFields, true, ",", "\"", null, getOutputPath( "insert" ), SinkMode.REPLACE );
+    Tap resultsTap = getPlatform().getDelimitedFile( sinkFields, true, ",", "\"", null, getOutputPath( getTestName() ), SinkMode.REPLACE );
 
     FlowDef flowDef = FlowDef.flowDef()
       .setName( "sql flow" )
@@ -168,4 +168,74 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
 
     validateLength( flow, 2 );
     }
+
+  @Test
+  public void testNoExplicitSchemaInQuery() throws IOException
+    {
+    String statement = "insert into \"results\" select *\n"
+      + "from \"sales_fact_1997\" as s\n"
+      + "join \"employee\" as e\n"
+      + "on e.\"EMPID\" = s.\"CUST_ID\"";
+
+    Tap empTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
+    Tap salesTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
+
+    Comparable[] names = {"CUST_ID", "PROD_ID", "EMPID", "NAME"};
+    Type[] types = {Integer.class, Integer.class, Integer.class, String.class};
+    Fields sinkFields = new Fields( names, types );
+    Tap resultsTap = getPlatform().getDelimitedFile( sinkFields, true, ",", "\"", null, getOutputPath( getTestName() ), SinkMode.REPLACE );
+
+    FlowDef flowDef = FlowDef.flowDef()
+      .setName( "sql flow" )
+      .addSource( "employee", empTap )
+      .addSource( "sales_fact_1997", salesTap )
+      .addSink( "results", resultsTap );
+
+    SQLPlanner sqlPlanner = new SQLPlanner()
+      .setSql( statement );
+
+    flowDef.addAssemblyPlanner( sqlPlanner );
+
+    Flow flow = getPlatform().getFlowConnector().connect( flowDef );
+
+    flow.complete();
+
+    validateLength( flow, 2 );
+    }
+
+  @Test
+  public void testDefaultSchemaAndNoExplicitSchemaInQuery() throws IOException
+    {
+    String statement = "insert into \"results\" select *\n"
+      + "from \"sales_fact_1997\" as s\n"
+      + "join \"employee\" as e\n"
+      + "on e.\"EMPID\" = s.\"CUST_ID\"";
+
+    Tap empTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
+    Tap salesTap = getPlatform().getDelimitedFile( ",", "\"", new SQLTypeResolver(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
+
+    Comparable[] names = {"CUST_ID", "PROD_ID", "EMPID", "NAME"};
+    Type[] types = {Integer.class, Integer.class, Integer.class, String.class};
+    Fields sinkFields = new Fields( names, types );
+    Tap resultsTap = getPlatform().getDelimitedFile( sinkFields, true, ",", "\"", null, getOutputPath( getTestName() ), SinkMode.REPLACE );
+
+    FlowDef flowDef = FlowDef.flowDef()
+      .setName( "sql flow" )
+      .addSource( "employee", empTap )
+      .addSource( "sales_fact_1997", salesTap )
+      .addSink( "results", resultsTap );
+
+    SQLPlanner sqlPlanner = new SQLPlanner()
+      .setDefaultSchema( "example" )
+      .setSql( statement );
+
+    flowDef.addAssemblyPlanner( sqlPlanner );
+
+    Flow flow = getPlatform().getFlowConnector().connect( flowDef );
+
+    flow.complete();
+
+    validateLength( flow, 2 );
+    }
+
   }
