@@ -181,6 +181,11 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     ClassLoader jarLoader = getJarClassLoader( platformBroker, flowFactory );
 
+    // set ClassLoader _before_ creating the flow so that all classes can be loaded into the JobConf object (in case of
+    // hadoop platform).
+    if( jarLoader != null )
+      Thread.currentThread().setContextClassLoader( jarLoader );
+
     Flow flow;
 
     try
@@ -212,9 +217,6 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     try
       {
       LOG.debug( "starting flow: {}", flow.getName() );
-
-      if( jarLoader != null )
-        Thread.currentThread().setContextClassLoader( jarLoader );
 
       flow.complete(); // intentionally blocks
 
