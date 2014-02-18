@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import com.google.common.base.Joiner;
+import org.junit.Test;
 
 /**
  *
@@ -31,6 +32,7 @@ import com.google.common.base.Joiner;
 public class CatalogCLIErrorsPlatformTest extends CatalogCLIPlatformTest
   {
 
+  @Test
   public void noStereotypeForTable() throws IOException
     {
     initCatalog();
