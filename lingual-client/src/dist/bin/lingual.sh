@@ -87,9 +87,17 @@ OPTIQ_JVM_ARGS=""
 for CUR_ARG in "${ARGS[@]}"; do [[ "$CUR_ARG" == "--showstacktrace" ]] && OPTIQ_JVM_ARGS="-Doptiq.debug"; done
 
 OPTIQ_JVM_ARGS="$OPTIQ_JVM_ARGS -Doptiq.container.rel=cascading"
+SQLLINE_JVM_ARGS="$SQLLINE_JVM_ARGS -Dsqlline.system.exit=true"
 LINGUAL_BIN_DIR=$BIN_DIR
 LINGUAL_BASE_DIR=$BASE_DIR
 
 export LINGUAL_BIN_DIR
 export LINGUAL_BASE_DIR
-${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
+${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${SQLLINE_JVM_ARGS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
+result=$?
+
+# Convert sqlline's error handling back to unix standard
+if [ "$result" -eq "255" ] ; then
+   exit 1
+fi
+exit $result
