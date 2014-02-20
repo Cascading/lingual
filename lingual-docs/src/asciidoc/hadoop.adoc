@@ -14,6 +14,10 @@ To pass custom Hadoop properties to the Hadoop platform in Lingual, use:
 
     > export LINGUAL_CONFIG=property=value,property=value
 
+When using a YARN based Hadoop distribution like Apache Hadoop 2.x you, can also set the following environment variable.
+
+  * `HADOOP_YARN_HOME` - path to local YARN-based Hadoop installation
+
 ### Setting default properties
 
 By default, Lingual creates a base `JobConf` instance, which in turn is populated (per the Hadoop API) by

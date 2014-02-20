@@ -11,7 +11,7 @@ To install the Lingual command line tools, call:
 
 [subs="attributes"]
 ----
-> curl http://{artifactsurl}/lingual/1.0/lingual-client/install-lingual-client.sh | bash
+> curl http://{artifactsurl}/lingual/1.1/lingual-client/install-lingual-client.sh | bash
 ----
 
 This scripts downloads and installs the latest `lingual` shell script into `~/.lingual-client/` and updates any
@@ -43,7 +43,7 @@ You can optionally bypass the installation and just download the latest version 
 
 [subs="attributes"]
 ----
-> wget -i http://{artifactsurl}/lingual/1.0/lingual-client/latest.txt
+> wget -i http://{artifactsurl}/lingual/1.1/lingual-client/latest.txt
 ----
 
 ### Amazon ElasticMapReduce
@@ -56,7 +56,7 @@ elastic-mapreduce \
   --create \
   --instance-group master --instance-count 1 --instance-type $MASTER_INSTANCE_TYPE \
   --instance-group core --instance-count $1 --instance-type $SLAVE_INSTANCE_TYPE \
-  --bootstrap-action s3://{artifactsurl}/lingual/1.0/lingual-client/install-lingual-client.sh \
+  --bootstrap-action s3://{artifactsurl}/lingual/1.1/lingual-client/install-lingual-client.sh \
   --name "Cascading Cluster - $USER" \
   --key-pair $EMR_SSH_KEY_NAME \
   --alive
@@ -67,7 +67,7 @@ tools with the following bootstrap action:
 
 [subs="attributes"]
 ----
---bootstrap-action s3://{artifactsurl}/sdk/2.2/install-cascading-sdk.sh
+--bootstrap-action s3://{artifactsurl}/sdk/2.5/install-cascading-sdk.sh
 ----
 
 The assumption here is that you will be shelling into your remote Hadoop cluster to use Lingual or other SDK tools. See

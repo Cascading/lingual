@@ -46,7 +46,46 @@ done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )/../" && pwd )"
 BIN_DIR="$BASE_DIR/bin"
 JAVA_EXEC=`which java`
-PLATFORM=${LINGUAL_PLATFORM:-local}
+
+PLATFORM=""
+CONFIG=""
+CONFIG_FILE=""
+
+CASCADING_CONFIG_FILE=$HOME/.cascading/default.properties
+LOCAL_CASCADING_CONFIG_FILE=$PWD/.cascading/default.properties
+
+if [[ -e $LOCAL_CASCADING_CONFIG_FILE ]]; then
+  CONFIG_FILE=$LOCAL_CASCADING_CONFIG_FILE
+elif [[ -e $CASCADING_CONFIG_FILE ]]; then
+  CONFIG_FILE=$CASCADING_CONFIG_FILE
+fi
+
+if [[ -n $LINGUAL_PLATFORM ]]; then
+  PLATFORM=$LINGUAL_PLATFORM
+elif [[ -n $CASCADING_PLATFORM ]]; then
+  PLATFORM=$CASCADING_PLATFORM
+elif [[ -n $CONFIG_FILE ]]; then
+  PLATFORM=`grep '^lingual.platform.name' $CONFIG_FILE | cut -d\= -f2`
+  if [[ -z $PLATFORM ]]; then
+    PLATFORM=`grep '^cascading.platform.name' $CONFIG_FILE | cut -d\= -f2`
+  fi
+fi
+
+if [[ -z $PLATFORM ]]; then
+    PLATFORM=local
+fi
+
+if [[ -n $LINGUAL_CONFIG ]]; then
+  CONFIG=$LINGUAL_CONFIG
+elif [[ -n $CASCADING_CONFIG ]]; then
+  CONFIG=$CASCADING_CONFIG
+elif [[ -n $CONFIG_FILE ]]; then
+  CONFIG=`grep "^lingual.platform.$PLATFORM.config" $CONFIG_FILE | cut -d\= -f2-`
+  if [[ -z $CONFIG ]]; then
+    CONFIG=`grep "^cascading.platform.${PLATFORM}.config" $CONFIG_FILE | cut -d\= -f2-`
+  fi
+fi
+
 OPTIONS=
 
 ARGS=("$@")
@@ -68,7 +107,7 @@ while [ -n "$1" ]
      esac
  done
 
-LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/platform/$PLATFORM/*:$BASE_DIR/bin/*"
+LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/bin/*"
 
 case $PLATFORM in
    local)
@@ -77,11 +116,16 @@ case $PLATFORM in
        source $BIN_DIR/hadoop-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
        ;;
+   hadoop2-mr1)
+       source $BIN_DIR/yarn-env
+       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
+       ;;
    *)
        echo "ERROR: Unknown platform: $PLATFORM"
        exit 1
        ;;
 esac
+export LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/platform/$PLATFORM/*"
 
 OPTIQ_JVM_ARGS=""
 for CUR_ARG in "${ARGS[@]}"; do [[ "$CUR_ARG" == "--showstacktrace" ]] && OPTIQ_JVM_ARGS="-Doptiq.debug"; done
@@ -93,11 +137,15 @@ LINGUAL_BASE_DIR=$BASE_DIR
 
 export LINGUAL_BIN_DIR
 export LINGUAL_BASE_DIR
-${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${SQLLINE_JVM_ARGS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LIBS:$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
+export LINGUAL_PLATFORM=$PLATFORM
+if [[ -n $CONFIG ]]; then
+  export LINGUAL_CONFIG=$CONFIG
+fi
+${JAVA_EXEC} ${LINGUAL_JVM_OPTS} ${OPTIQ_JVM_ARGS} -Xmx512m ${OPTIONS} -cp "$LINGUAL_CLASSPATH" $MAIN "${ARGS[@]}"
 result=$?
 
 # Convert sqlline's error handling back to unix standard
 if [ "$result" -eq "255" ] ; then
-   exit 1
+  exit 1
 fi
 exit $result

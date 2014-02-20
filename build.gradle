@@ -60,9 +60,9 @@ subprojects {
   repositories {
     mavenLocal()
     mavenCentral()
-    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
-    mavenRepo name: 'pentaho', url: 'http://repo.pentaho.org/artifactory/repo/' // optiq deps
-    mavenRepo name: 'sonatype', url: 'https://oss.sonatype.org/content/repositories/releases/' // c3p0 deps
+    maven{ url 'http://conjars.org/repo/' }
+    maven{ url 'http://repo.pentaho.org/artifactory/repo/' } // optiq deps
+    maven{ url 'https://oss.sonatype.org/content/repositories/releases/' } // c3p0 deps
   }
 
   task sourcesJar( type: Jar, dependsOn: classes ) {

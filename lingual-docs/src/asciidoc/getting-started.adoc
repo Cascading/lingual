@@ -11,9 +11,10 @@ After <<install,installing Lingual>>, in a new working directory download sample
     > tar -xzf employees.tgz
 
 Next download a simple shell script to register the employee data with Lingual against the `platform` Lingual
-will be executing against, either `local` or `hadoop`. `local` means data is read from the local filesystem, and the
+will be executing against, either `local`, `hadoop` or `hadoop2-mr1`. `local` means data is read from the local filesystem, and the
 queries are run in local memory. `hadoop` means data is read from HDFS and MapReduce jobs are run on the cluster to
-execute the queries.
+execute the queries. `hadoop2-mr1` means HDFS and MapReduce as well, but for Hadoop distributions based on YARN, like
+Apache Hadoop 2.x.
 
 If `local` call:
 
@@ -22,6 +23,12 @@ If `local` call:
 Or if `hadoop`, call:
 
     > export LINGUAL_PLATFORM=hadoop
+    > export HADOOP_HOME=/path/to/hadoop
+    > hadoop fs -copyFromLocal employees employees
+
+Or if `hadoop2-mr1`, call:
+
+    > export LINGUAL_PLATFORM=hadoop2-mr1
     > export HADOOP_HOME=/path/to/hadoop
     > hadoop fs -copyFromLocal employees employees
 
