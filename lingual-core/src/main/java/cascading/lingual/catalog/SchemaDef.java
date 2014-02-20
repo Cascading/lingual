@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -226,13 +226,13 @@ public class SchemaDef extends Def
       {
       LOG.info( "no provider set for protocol: " + protocol + ", in schema: " + getName() );
 
-      if( !protocol.equals( defaultProtocol ) &&  providerProperties.keySet().size() == 0 )
+      if( !protocol.equals( defaultProtocol ) && providerProperties.keySet().size() == 0 )
         throw new IllegalStateException( "non-default protocol: " + protocol + " not available from provider" );
 
       if( providerProperties.keySet().size() > 1 )
         throw new IllegalStateException( "for protocol: " + protocol + ", found multiple providers: [" + Joiner.on( ',' ).join( providerProperties.keySet() ) + "]" );
 
-      String providerPropertyString = providerProperties.keySet().iterator().hasNext() ?  providerProperties.keySet().iterator().next() : "[none]" ;
+      String providerPropertyString = providerProperties.keySet().iterator().hasNext() ? providerProperties.keySet().iterator().next() : "[none]";
       LOG.info( "using sole provider default properties: " + providerPropertyString );
 
       if( providerProperties.values().iterator().hasNext() )

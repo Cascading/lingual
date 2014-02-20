@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -25,7 +25,7 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven{ url 'http://repository-monochromeroad.forge.cloudbees.com/release/' }
+    maven { url 'http://repository-monochromeroad.forge.cloudbees.com/release/' }
   }
   dependencies {
     classpath 'com.monochromeroad.gradle:gradle-aws-s3-sync:0.4'

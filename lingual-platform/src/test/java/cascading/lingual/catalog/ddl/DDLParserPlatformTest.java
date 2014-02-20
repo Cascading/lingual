@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -116,11 +116,11 @@ public class DDLParserPlatformTest extends CLIPlatformTestCase
 
     Protocol defaultProtocol = catalog.getSchemaDef( DDL_TEST_SCHEMA ).findDefaultProtocol();
 
-    DDLParser parser = new DDLParser( schemaCatalogManager, DDL_TEST_SCHEMA, defaultProtocol.toString() , "csv" );
+    DDLParser parser = new DDLParser( schemaCatalogManager, DDL_TEST_SCHEMA, defaultProtocol.toString(), "csv" );
 
     File testFile = new File( DDL_FILE );
 
-    assertTrue( "test file " + testFile + "not found in " + new File( "" ).getAbsolutePath() , testFile.exists() );
+    assertTrue( "test file " + testFile + "not found in " + new File( "" ).getAbsolutePath(), testFile.exists() );
 
     parser.apply( new File( DDL_FILE ) );
 

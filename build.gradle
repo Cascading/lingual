@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -60,9 +60,9 @@ subprojects {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven{ url 'http://conjars.org/repo/' }
-    maven{ url 'http://repo.pentaho.org/artifactory/repo/' } // optiq deps
-    maven{ url 'https://oss.sonatype.org/content/repositories/releases/' } // c3p0 deps
+    maven { url 'http://conjars.org/repo/' }
+    maven { url 'http://repo.pentaho.org/artifactory/repo/' } // optiq deps
+    maven { url 'https://oss.sonatype.org/content/repositories/releases/' } // c3p0 deps
   }
 
   task sourcesJar( type: Jar, dependsOn: classes ) {

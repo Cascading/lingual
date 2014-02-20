@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -172,7 +172,7 @@ public class SchemaCatalogManager
             }
 
           LOG.debug( "provider definition found for: " + providerName + ", platform: " + platformBroker.getName() + " in: " + url );
-          if (providerDefinition.getPlatforms().contains( platformBroker.getName() ))
+          if( providerDefinition.getPlatforms().contains( platformBroker.getName() ) )
             results.put( providerName, providerDefinition );
           }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -521,11 +521,11 @@ public abstract class PlatformBroker<Config>
 
   private void writeToFile( String fileName, String string ) throws Exception
     {
-      Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
+    Writer writer = new OutputStreamWriter( getOutputStream( fileName ) );
 
-      writer.write( string );
-      writer.flush();
-      writer.close();
+    writer.write( string );
+    writer.flush();
+    writer.close();
     }
 
   public String retrieveInstallProvider( String sourcePath )
