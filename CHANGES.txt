@@ -1,6 +1,10 @@
 Lingual Change Log
 
-1.0.3 [unreleased]
+1.0.3 
+ 
+  Fixed issue with jar load order
+
+  Fixed issue with shell return code when run from stdin
 
 1.0.2
 
