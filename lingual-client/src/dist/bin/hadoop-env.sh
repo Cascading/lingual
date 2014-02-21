@@ -1,9 +1,9 @@
 HADOOP_EXEC=`which hadoop`
 
 if [ -z ${HADOOP_EXEC} ]; then
-  if [ ! -z $HADOOP_CONF_DIR -a -f $HADOOP_CONF_DIR/../bin/hadoop ]; then
+  if [ ! -z "$HADOOP_CONF_DIR" -a -f $HADOOP_CONF_DIR/../bin/hadoop ]; then
     HADOOP_EXEC=$HADOOP_CONF_DIR/../bin/hadoop
-  elif [ ! -z $HADOOP_HOME -a -f $HADOOP_HOME/bin/hadoop ] ; then
+  elif [ ! -z "$HADOOP_HOME" -a -f $HADOOP_HOME/bin/hadoop ] ; then
     HADOOP_EXEC=$HADOOP_HOME/bin/hadoop
   fi
 fi

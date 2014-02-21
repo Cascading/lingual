@@ -43,7 +43,11 @@ public class TestProviderFactory implements ProviderFactory, Serializable
     factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.local.LocalDefaultFactory" ) );
 
     if( factory == null )
+      {
       factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.hadoop.HadoopDefaultFactory" ) );
+      if( factory == null )
+        factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.hadoop2.Hadoop2MR1DefaultFactory" ) );
+      }
     }
 
   @Override

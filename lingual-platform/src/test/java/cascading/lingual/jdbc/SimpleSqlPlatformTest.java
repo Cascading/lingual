@@ -139,14 +139,14 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testInnerJoin() throws Exception
     {
-    assertTablesEqual( "emps-depts-join-inner", "select * from sales.emps join sales.depts on emps.deptno = depts.deptno" );
+    assertTablesEqual( "emps-depts-join-inner", "select * from sales.emps join sales.depts on emps.deptno = depts.deptno order by empno" );
     }
 
   @Test
   public void testOuterJoin() throws Exception
     {
     // detps2 has Integer (a nullable value) in the deptno column.
-    assertTablesEqual( "emps-depts-join-outer", "select * from sales.emps2 full outer join sales.depts2 on emps2.deptno = depts2.deptno" );
+    assertTablesEqual( "emps-depts-join-outer", "select * from sales.emps2 full outer join sales.depts2 on emps2.deptno = depts2.deptno order by empno, name, name0" );
     }
 
   @Test
@@ -330,14 +330,14 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testInnerJoinInnerJoin() throws Exception
     {
     assertTablesEqual( "emps-depts-sales-join-inner", "select * from sales.emps, sales.depts, sales.sales " +
-      "where emps.deptno = depts.deptno and emps.empno = sales.empno" );
+      "where emps.deptno = depts.deptno and emps.empno = sales.empno order by item" );
     }
 
   @Test
   public void testInnerJoinInnerJoinIn() throws Exception
     {
     assertTablesEqual( "emps-depts-sales-join-inner-in", "select * from sales.emps, sales.depts, sales.sales " +
-      "where emps.deptno = depts.deptno and emps.empno = sales.empno and emps.city in ('Vancouver','San Francisco')" );
+      "where emps.deptno = depts.deptno and emps.empno = sales.empno and emps.city in ('Vancouver','San Francisco') order by item" );
     }
 
   @Test
@@ -382,7 +382,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testSelfJoin() throws Exception
     {
     String query = "SELECT n1.city FROM sales.emps AS t0 INNER JOIN sales.emps AS n1 ON (n1.gender = 'M' AND n1.empno = t0.empno)" +
-      "WHERE t0.gender = 'M' AND t0.city = 'Vancouver'";
+      "WHERE t0.gender = 'M' AND t0.city = 'Vancouver' order by city";
 
     assertTablesEqual( "emps-depts-self-join", query );
     }

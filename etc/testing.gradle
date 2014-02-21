@@ -29,6 +29,7 @@ project.setTestingProperties = {
   System.properties[ 'test.data.path' ] = new String( "${projectDir}/../lingual-platform/src/test/resources/data/" )
   System.properties[ 'test.providerjar.path' ] = new String( "${projectDir}/../lingual-platform/src/test/resources/provider/" )
   System.properties[ 'test.output.root' ] = new String( "${buildDir}/test/output/" )
+  System.properties[ 'ivy.home' ] = new String( "${buildDir}/test/ivy/" )
 
   System.properties
 }
@@ -50,7 +51,7 @@ task platformTest( type: Test, dependsOn: test ) {
   else
     include '**/*PlatformTest.class'
 
-  jvmArgs '-Xmx756m'
+  jvmArgs '-Xmx756m'//, "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
   enableAssertions = false
 

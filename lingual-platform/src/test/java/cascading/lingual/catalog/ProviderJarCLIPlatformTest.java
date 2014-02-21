@@ -266,8 +266,10 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     String keyName;
     if( getPlatform().getName().equals( "local" ) )
       keyName = "cascading.bind.provider.pipe-local.format.tpsv.delimiter";
-    else
+    else if (getPlatform().getName().equals( "hadoop" ))
       keyName = "cascading.bind.provider.pipe-hadoop.format.tpsv.delimiter";
+    else
+      keyName = "cascading.bind.provider.pipe-hadoop2-mr1.format.tpsv.delimiter";
     assertTrue( "renamed provider did not retain properties in " + providerProps.toString(), providerProps.containsKey( keyName ) );
     assertEquals( "renamed provider did not retain value in " + providerProps.toString(), "|", providerProps.get( keyName ) );
     }
@@ -288,7 +290,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     ProviderDef providerDef = schemaCatalog.findProviderDefFor( null, format );
     assertNotNull( "provider not registered to format", providerDef );
 
-    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
+    Protocol protocol = Protocol.getProtocol( getPlatformName().startsWith( "hadoop" ) ? "hdfs" : "file" );
     schemaCatalog = getSchemaCatalog();
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
@@ -353,7 +355,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     assertNotNull( "provider not registered to format", providerDef );
     assertEquals( "lingual.test.ProviderFactory", providerDef.getFactoryClassName() );
 
-    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
+    Protocol protocol = Protocol.getProtocol( getPlatformName().startsWith( "hadoop" ) ? "hdfs" : "file" );
     schemaCatalog = getSchemaCatalog();
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
@@ -393,7 +395,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
     assertNotNull( "provider not registered to format", providerDef );
     assertEquals( "lingual.test.ProviderFactory", providerDef.getFactoryClassName() );
 
-    Protocol protocol = Protocol.getProtocol( getPlatformName().equals( "hadoop" ) ? "hdfs" : "file" );
+    Protocol protocol = Protocol.getProtocol( getPlatformName().startsWith( "hadoop" ) ? "hdfs" : "file" );
     schemaCatalog = getSchemaCatalog();
     providerDef = schemaCatalog.findProviderDefFor( null, protocol );
     assertNotNull( "provider not registered to protocol", providerDef );
