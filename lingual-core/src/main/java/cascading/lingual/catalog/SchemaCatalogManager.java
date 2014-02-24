@@ -487,15 +487,30 @@ public class SchemaCatalogManager
 
       if( !( tap instanceof FileType ) )
         return true;
-
-      return ( (FileType) tap ).getSize( configCopy ) != 0;
+      return resourceNotEmpty((FileType) tap,configCopy);
       }
     catch( IOException exception )
       {
-      return false;
+    	return false;
       }
     }
+  
+  private boolean resourceNotEmpty(FileType tap, Object configCopy) throws IOException
+  	{
+	  if (!tap.isDirectory(configCopy)) {
+		  // resource is a file
+		  return ( (FileType) tap ).getSize( configCopy ) != 0;
+	  } else {
+		  // resource is a directory
+		  String[] childIdentifiers = tap.getChildIdentifiers(configCopy);
+		  
+		  if (childIdentifiers.length == 0)
+			  return false;
 
+		  return true;
+	  }
+  	}
+  
   public Tap createTapFor( TableDef tableDef, SinkMode sinkMode )
     {
     Protocol protocol = tableDef.getActualProtocol();
