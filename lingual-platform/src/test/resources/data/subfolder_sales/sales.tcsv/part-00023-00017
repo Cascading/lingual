@@ -1,0 +1,2 @@
+EMPNO:int,ITEM:string,SALE_DATE:date,SALE_TIME:time
+100,"Anvil","1996-08-03","06:33:12"
