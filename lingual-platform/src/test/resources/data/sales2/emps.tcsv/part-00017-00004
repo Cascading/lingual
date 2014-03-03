@@ -1,0 +1,3 @@
+EMPNO:int,NAME:string,DEPTNO:Integer,GENDER:string,CITY:string,EMPID:int,AGE:int,SLACKER:boolean,MANAGER:boolean,JOINEDAT:date
+100,"Fred",10,,,30,25,true,false,"1996-08-03"
+110,"Eric",20,"M","San Francisco",3,80,,false,"2001-01-01"

@@ -454,13 +454,9 @@ public class SchemaCatalogManager
     if( nameFieldsMap.containsKey( name ) )
       return nameFieldsMap.get( name );
 
-    Point<Protocol, Format> point = getPointFor( identifier, schemaDef.getName(), null, null );
+    Tap tap = createTapFor( schemaDef, identifier );
 
-    Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( schemaDef.getName(), identifier, point.protocol, point.format, SinkMode.KEEP );
-
-    Tap tap = createTapFor( schemaDef, schemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
-
-    if( !resourceExistsAndNotEmpty( tap ) )
+    if( !resourceExistsAndNotEmpty( schemaDef, tap ) )
       {
       LOG.debug( "not loading fields for: {}, tap does not exist or is empty", tap );
       return null;
@@ -473,7 +469,16 @@ public class SchemaCatalogManager
     return fields;
     }
 
-  private boolean resourceExistsAndNotEmpty( Tap tap )
+  private Tap createTapFor( SchemaDef schemaDef, String identifier )
+    {
+    Point<Protocol, Format> point = getPointFor( identifier, schemaDef.getName(), null, null );
+
+    Resource<Protocol, Format, SinkMode> resource = new Resource<Protocol, Format, SinkMode>( schemaDef.getName(), identifier, point.protocol, point.format, SinkMode.KEEP );
+
+    return createTapFor( schemaDef, schemaDef.findStereotypeFor( Fields.UNKNOWN ), resource );
+    }
+
+  private boolean resourceExistsAndNotEmpty( SchemaDef schemaDef, Tap tap )
     {
     if( tap == null )
       return false;
@@ -488,12 +493,37 @@ public class SchemaCatalogManager
       if( !( tap instanceof FileType ) )
         return true;
 
-      return ( (FileType) tap ).getSize( configCopy ) != 0;
+      // is file not empty, or if directory, is any file not empty
+      // just a safeguard against all files being empty
+      return resourceNotEmpty( schemaDef, (FileType) tap, configCopy );
       }
     catch( IOException exception )
       {
       return false;
       }
+    }
+
+  private boolean resourceNotEmpty( SchemaDef schemaDef, FileType fileTap, Object config ) throws IOException
+    {
+    if( !fileTap.isDirectory( config ) )
+      return fileTap.getSize( config ) != 0;
+
+    // resource is a directory
+    String[] childIdentifiers = fileTap.getChildIdentifiers( config );
+
+    if( childIdentifiers.length == 0 )
+      return false;
+
+    boolean isNotEmpty = false;
+
+    for( String childIdentifier : childIdentifiers )
+      {
+      FileType childTap = (FileType) createTapFor( schemaDef, childIdentifier );
+
+      isNotEmpty |= childTap.getSize( config ) != 0;
+      }
+
+    return isNotEmpty;
     }
 
   public Tap createTapFor( TableDef tableDef, SinkMode sinkMode )

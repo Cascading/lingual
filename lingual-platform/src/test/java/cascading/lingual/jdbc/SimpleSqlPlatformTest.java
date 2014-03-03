@@ -477,6 +477,4 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
       "from sales.emps p0 " +
       "where exists ( select * from sales.depts where p0.deptno = depts.deptno AND depts.deptno = 20 ) " );
     }
-
-
   }

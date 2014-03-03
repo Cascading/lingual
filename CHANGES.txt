@@ -2,14 +2,16 @@ Lingual Change Log
 
 1.1.1 [unreleased]
 
+  Fixed issue where directories with part files where not honored.
+
 1.1.0
 
   Support for Hadoop 2 and Cascading 2.5.x
 
   Update to optiq 0.4.12.3
 
-1.0.3 
- 
+1.0.3
+
   Fixed issue with jar load order
 
   Fixed issue with shell return code when run from stdin
