@@ -4,6 +4,8 @@ Lingual Change Log
 
   Fixed issue where directories with part files where not honored.
 
+  Fixed issue where transient dependencies required additional repo spec
+
 1.1.0
 
   Support for Hadoop 2 and Cascading 2.5.x

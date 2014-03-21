@@ -61,7 +61,6 @@ subprojects {
     mavenLocal()
     mavenCentral()
     maven { url 'http://conjars.org/repo/' }
-    maven { url 'http://repo.pentaho.org/artifactory/repo/' } // optiq deps
     maven { url 'https://oss.sonatype.org/content/repositories/releases/' } // c3p0 deps
   }
 
