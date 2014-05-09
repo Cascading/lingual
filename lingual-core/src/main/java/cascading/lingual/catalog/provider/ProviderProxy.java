@@ -95,6 +95,10 @@ public class ProviderProxy
 
   public Tap createTapProxy( Tap parentTap )
     {
+    // Tap and Scheme can come from different providers having different classloaders. E.g. in a format only provider,
+    // we load the Scheme from one jar with one classloader, but the tap from a different jar with a different
+    // classloader. The DelegatingClassLoader
+    classLoader = new DelegatingClassLoader( parentTap.getScheme().getClass().getClassLoader(), classLoader );
     if( parentTap instanceof FileType )
       return createProxy( parentTap, Tap.class, FileType.class );
 
@@ -114,7 +118,6 @@ public class ProviderProxy
 
     if( interfaces.length != 0 )
       proxyFactory.setInterfaces( interfaces );
-
     try
       {
       return (T) proxyFactory.create( new Class[]{}, new Object[]{}, getClassLoaderMethodHandler( parentTap ) );
@@ -127,6 +130,7 @@ public class ProviderProxy
 
   private MethodHandler getClassLoaderMethodHandler( Object parent )
     {
+
     return new ProxyClassLoaderHandler( classLoader, parent );
     }
 
