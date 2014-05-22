@@ -289,6 +289,16 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
 
     assertTablesEqual( "emps-select-twice", "select * from test.results" );
     }
+      
+  @Test
+  public void testIntoSelectOrderBy() throws Exception
+  {
+      setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
+
+      assertUpdate(5, "insert into test.results select empno, name from sales.emps order by name");
+
+      assertTablesEqual("emps-select-ordered", "select * from test.results");
+  }
 
   @Test
   public void testSelectDate() throws Exception
