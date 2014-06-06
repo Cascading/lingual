@@ -21,6 +21,7 @@
 package cascading.lingual.type;
 
 import java.lang.reflect.Type;
+import java.util.Calendar;
 import java.util.Date;
 
 import cascading.CascadingException;
@@ -60,7 +61,7 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
     Class from = value.getClass();
 
     if( from == String.class )
-      return parse( (String) value ).getDateValue();
+      return parse( (String) value ).getJdbcTimestamp( DateTimeUtil.defaultZone );
 
     if( Date.class.isAssignableFrom( from ) )
       return ( (Date) value ).getTime(); // in UTC
@@ -81,6 +82,11 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
 
     if( from != Long.class )
       throw new IllegalStateException( "was not normalized" );
+
+    // TIMESTAMP has no timezone precision so set this for the current timezone
+    Calendar calendar = Calendar.getInstance();
+    long timezoneOffset = calendar.get( Calendar.ZONE_OFFSET ) + calendar.get( Calendar.DST_OFFSET );
+    value = ( (Long) value ) + timezoneOffset;
 
     // no coercion, or already in canonical form
     if( to == Long.class || to == long.class || to == Object.class )
