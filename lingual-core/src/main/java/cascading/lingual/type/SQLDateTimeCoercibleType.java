@@ -21,8 +21,8 @@
 package cascading.lingual.type;
 
 import java.lang.reflect.Type;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import cascading.CascadingException;
 import cascading.tuple.type.CoercibleType;
@@ -84,8 +84,7 @@ public abstract class SQLDateTimeCoercibleType extends BasicSqlType implements C
       throw new IllegalStateException( "was not normalized" );
 
     // TIMESTAMP has no timezone precision so set this for the current timezone
-    Calendar calendar = Calendar.getInstance();
-    long timezoneOffset = calendar.get( Calendar.ZONE_OFFSET ) + calendar.get( Calendar.DST_OFFSET );
+    long timezoneOffset =  TimeZone.getDefault().getOffset( (Long) value );
     value = ( (Long) value ) + timezoneOffset;
 
     // no coercion, or already in canonical form

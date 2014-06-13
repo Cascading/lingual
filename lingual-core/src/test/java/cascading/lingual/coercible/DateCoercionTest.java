@@ -22,28 +22,64 @@ package cascading.lingual.coercible;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 
 import cascading.lingual.type.SQLDateCoercibleType;
 import cascading.lingual.type.SQLTimestampCoercibleType;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(value = Parameterized.class)
 public class DateCoercionTest
   {
+
+  private static final String TZ = System.getProperty( "user.timezone" );
 
   private static SQLDateCoercibleType sqlDateCoercibleType = new SQLDateCoercibleType();
   private static SQLTimestampCoercibleType sqlTimestampCoercibleType = new SQLTimestampCoercibleType();
   private static long timeAsLong = 1383087600000L;
   private static Date inputDate = new Date( timeAsLong );  // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
   private static Timestamp inputTimestamp = new Timestamp( timeAsLong );  // 2013-10-30 00:00:00 CET == 2013-10-29 23:00:00 GMT
+  private final String timeZoneString;
+
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> data()
+    {
+    Object[][] data = new Object[][]{{"Europe/Berlin"}, {"UTC"}, {"Pacific/Fiji"}, {"America/Los_Angeles"}, {"Indian/Reunion"}};
+    return Arrays.asList( data );
+    }
+
+  public DateCoercionTest( String timeZone )
+    {
+    this.timeZoneString = timeZone;
+    }
+
+  @Before
+  public void setUp()
+    {
+    System.setProperty( "user.timezone", timeZoneString );
+    }
+
+  @After
+  public void tearDown()
+    {
+    System.setProperty( "user.timezone", TZ );
+    }
+
 
 
   @Test
   public void testFromCanonical()
     {
-    Date coerced = (Date) sqlDateCoercibleType.coerce( getIntergerRepresentation().intValue(), java.sql.Date.class );
+    Date coerced = (Date) sqlDateCoercibleType.coerce( getIntegerRepresentation().intValue(), java.sql.Date.class );
 
     assertEquals( "wrong year", inputDate.getYear(), coerced.getYear() );
     assertEquals( "wrong month", inputDate.getMonth(), coerced.getMonth() );
@@ -55,7 +91,7 @@ public class DateCoercionTest
     {
     Integer canonical = (Integer) sqlDateCoercibleType.canonical( inputDate );
 
-    assertEquals( "not converted to proper canonical form", getIntergerRepresentation(), canonical );
+    assertEquals( "not converted to proper canonical form", getIntegerRepresentation(), canonical );
     }
 
   @Test
@@ -88,7 +124,7 @@ public class DateCoercionTest
     }
 
   @Test
-  public void testSymetricDateCoercion()
+  public void testSymmetricDateCoercion()
     {
     Object canonical = sqlDateCoercibleType.canonical( inputDate );
     Date coerced = (Date) sqlDateCoercibleType.coerce( canonical, java.sql.Date.class );
@@ -97,7 +133,7 @@ public class DateCoercionTest
     for( int i = 0; i < 24; i++ )
       {
       canonical = sqlDateCoercibleType.canonical( coerced );
-      assertEquals( "Canonical value changed on iteration " + i, getIntergerRepresentation().intValue(), ( (Integer) canonical ).intValue() );
+      assertEquals( "Canonical value changed on iteration " + i, getIntegerRepresentation().intValue(), ( (Integer) canonical ).intValue() );
 
       coerced = (Date) sqlDateCoercibleType.coerce( canonical, java.sql.Date.class );
       assertEquals( "Coerced day changed on iteration " + i + " now: " + coerced.toString(), inputDate.getDate(), coerced.getDate() );
@@ -107,7 +143,7 @@ public class DateCoercionTest
     }
 
   @Test
-  public void testSymetricTimestampCoercion()
+  public void testSymmetricTimestampCoercion()
     {
     Object canonical = sqlTimestampCoercibleType.canonical( inputTimestamp );
     Timestamp coerced = (Timestamp) sqlTimestampCoercibleType.coerce( canonical, java.sql.Timestamp.class );
@@ -126,7 +162,7 @@ public class DateCoercionTest
       }
     }
 
-  protected Integer getIntergerRepresentation()
+  protected Integer getIntegerRepresentation()
     {
     // depending on the rounding rules this may vary by timezone.
     // in general it's around 16007 or 16008.

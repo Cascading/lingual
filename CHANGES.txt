@@ -2,6 +2,8 @@ Lingual Change Log
 
 1.1.1 [unreleased]
 
+  Fixed issue where the time would drift during DateCoercion due to wrong timezone offset calculation.
+
   Fixed multiple Classloader related problems with providers that only contain a format, not a protocol.
 
   Fixed issue where directories with part files where not honored.
