@@ -97,8 +97,11 @@ public class ProviderProxy
     {
     // Tap and Scheme can come from different providers having different classloaders. E.g. in a format only provider,
     // we load the Scheme from one jar with one classloader, but the tap from a different jar with a different
-    // classloader. The DelegatingClassLoader
-    classLoader = new DelegatingClassLoader( parentTap.getScheme().getClass().getClassLoader(), classLoader );
+    // classloader. The DelegatingClassLoader combines both classloaders and tries them in order. This is only relevant for
+    // queries that are not running as a flow, but locally like 'select * from table' or 'insert into table values('foo', 42').
+    ClassLoader schemeClassLoader = parentTap.getScheme().getClass().getClassLoader();
+    if ( !schemeClassLoader.equals( classLoader ) )
+      classLoader = new DelegatingClassLoader( schemeClassLoader, classLoader );
     if( parentTap instanceof FileType )
       return createProxy( parentTap, Tap.class, FileType.class );
 

@@ -714,8 +714,13 @@ public abstract class PlatformBroker<Config>
       TableDef tableDef = head.tableDef;
 
       if( tableDef == null )
+        {
         stereotypeFor = catalogManager.findStereotypeFor( head.fields ); // do not use head name
-      else
+        // local insert case
+        if ( stereotypeFor == null )
+          stereotypeFor = branch.tailTableDef.getStereotype();
+        }
+       else
         stereotypeFor = tableDef.getStereotype();
 
       lingualFlowFactory.setSourceStereotype( head.name, stereotypeFor );

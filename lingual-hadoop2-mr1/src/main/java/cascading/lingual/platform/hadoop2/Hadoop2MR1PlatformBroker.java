@@ -34,9 +34,9 @@ import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.jdbc.LingualConnection;
@@ -187,7 +187,7 @@ public class Hadoop2MR1PlatformBroker extends PlatformBroker<JobConf>
   public synchronized JobConf getPlannerConfig()
     {
     if( plannerJobConf != null )
-      return plannerJobConf;
+      return applyClassLoader( plannerJobConf );
 
     // may consider providing aliases for these properties on Driver
     // mapred.job.tracker
@@ -226,7 +226,15 @@ public class Hadoop2MR1PlatformBroker extends PlatformBroker<JobConf>
     if( LOG.isDebugEnabled() )
       LOG.debug( "using job config properties: {}", HadoopUtil.createProperties( plannerJobConf ) );
 
-    return plannerJobConf;
+    return applyClassLoader( plannerJobConf );
+    }
+
+  private JobConf applyClassLoader( JobConf jobConf )
+    {
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    if ( classLoader != null && !classLoader.equals( jobConf.getClassLoader() ) )
+      jobConf.setClassLoader( classLoader );
+    return jobConf;
     }
 
   private void setUserName( JobConf jobConf )
@@ -333,7 +341,7 @@ public class Hadoop2MR1PlatformBroker extends PlatformBroker<JobConf>
   @Override
   public FlowConnector getFlowConnector()
     {
-    return new HadoopFlowConnector( HadoopUtil.createProperties( getPlannerConfig() ) );
+    return new Hadoop2MR1FlowConnector( HadoopUtil.createProperties( getPlannerConfig() ) );
     }
 
   @Override

@@ -25,11 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cascading.bind.process.FlowFactory;
 import cascading.flow.FlowProcess;
 import cascading.lingual.catalog.SchemaCatalogManager;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.ValuesHolder;
+import cascading.lingual.platform.LingualFlowFactory;
 import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.util.Optiq;
 import cascading.tap.SinkMode;
@@ -99,7 +101,7 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     Optiq.writeSQLPlan( platformBroker.getProperties(), createUniqueName(), getVolcanoPlanner() );
 
     Branch branch = getBranch();
-    TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch.tailTableDef );
+    TupleEntryCollector collector = getTupleEntryCollector( platformBroker, branch );
 
     long rowCount;
 
@@ -125,8 +127,18 @@ public class CascadingValueInsertEnumerable extends AbstractEnumerable implement
     return new Linq4j().singletonEnumerable( rowCount ).enumerator();
     }
 
-  private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, TableDef tableDef )
+  private TupleEntryCollector getTupleEntryCollector( PlatformBroker platformBroker, Branch branch )
     {
+    LingualFlowFactory flowFactory = platformBroker.getFlowFactory( branch );
+    TableDef tableDef = branch.tailTableDef;
+    String[] jarPath = ClassLoaderUtil.getJarPaths( getPlatformBroker(), tableDef );
+
+    flowFactory.addSink( tableDef.getName(), tableDef, jarPath );
+    ClassLoader jarLoader = ClassLoaderUtil.getJarClassLoader( platformBroker, flowFactory );
+
+    if( jarLoader != null )
+      Thread.currentThread().setContextClassLoader( jarLoader );
+
     FlowProcess flowProcess = platformBroker.getFlowProcess();
     SchemaCatalogManager schemaCatalog = platformBroker.getCatalogManager();
     Map<String, TupleEntryCollector> cache = platformBroker.getCollectorCache();

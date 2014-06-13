@@ -2,6 +2,8 @@ Lingual Change Log
 
 1.1.1 [unreleased]
 
+  Fixed multiple Classloader related problems with providers that only contain a format, not a protocol.
+
   Fixed issue where directories with part files where not honored.
 
   Fixed issue where transient dependencies required additional repo spec

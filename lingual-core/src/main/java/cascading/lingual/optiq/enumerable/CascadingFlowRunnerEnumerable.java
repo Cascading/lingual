@@ -153,7 +153,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     for( Ref head : branch.heads.keySet() )
       {
       TableDef tableDefFor = getTableDefFor( platformBroker, head );
-      String[] jarPath = getJarPaths( tableDefFor );
+      String[] jarPath = ClassLoaderUtil.getJarPaths( getPlatformBroker(), tableDefFor );
 
       flowFactory.addSource( head.name, tableDefFor, jarPath );
       }
@@ -163,7 +163,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     if( branch.tailTableDef != null )
       {
       TableDef tableDef = branch.tailTableDef;
-      String[] jarPath = getJarPaths( tableDef );
+      String[] jarPath = ClassLoaderUtil.getJarPaths( getPlatformBroker(), tableDef );
 
       flowFactory.addSink( tableDef.getName(), tableDef, jarPath );
       }
@@ -179,7 +179,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
 
     String flowPlanPath = setFlowPlanPath( properties, flowFactory.getName() );
 
-    ClassLoader jarLoader = getJarClassLoader( platformBroker, flowFactory );
+    ClassLoader jarLoader = ClassLoaderUtil.getJarClassLoader( platformBroker, flowFactory );
 
     // set ClassLoader _before_ creating the flow so that all classes can be loaded into the JobConf object (in case of
     // hadoop platform).
@@ -263,17 +263,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
       return new TapArrayEnumerator( maxRows, types, flow.getFlowProcess(), flow.getSink() );
     }
 
-  private ClassLoader getJarClassLoader( PlatformBroker platformBroker, LingualFlowFactory flowFactory )
-    {
-    if( flowFactory.getJars().isEmpty() ) // will retrieve remote jars and make them local
-      return null;
 
-    String[] jarsArray = flowFactory.getJarsArray();
-
-    LOG.debug( "creating context loader for: {}", Arrays.toString( jarsArray ) );
-
-    return platformBroker.getUrlClassLoader( jarsArray );
-    }
 
   private Resource<Protocol, Format, SinkMode> createResultResource( PlatformBroker platformBroker, LingualFlowFactory flowFactory )
     {
@@ -296,23 +286,7 @@ public class CascadingFlowRunnerEnumerable extends AbstractEnumerable implements
     return new Resource<Protocol, Format, SinkMode>( resultPath, protocol, format, SinkMode.REPLACE );
     }
 
-  private String[] getJarPaths( TableDef tableDef )
-    {
-    Set<String> jars = new HashSet<String>();
-    String rootPath = getPlatformBroker().getFullProviderPath();
 
-    ProviderDef protocolProvider = tableDef.getProtocolProvider();
-
-    if( protocolProvider != null && protocolProvider.getIdentifier() != null )
-      jars.add( getPlatformBroker().makePath( rootPath, protocolProvider.getIdentifier() ) );
-
-    ProviderDef formatProvider = tableDef.getFormatProvider();
-
-    if( formatProvider != null && formatProvider.getIdentifier() != null )
-      jars.add( getPlatformBroker().makePath( rootPath, formatProvider.getIdentifier() ) );
-
-    return jars.toArray( new String[ jars.size() ] );
-    }
 
   private String getIdentifierFor( PlatformBroker platformBroker, Ref head )
     {

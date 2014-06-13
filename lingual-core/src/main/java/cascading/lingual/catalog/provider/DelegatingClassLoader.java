@@ -21,6 +21,7 @@
 package cascading.lingual.catalog.provider;
 
 import java.security.SecureClassLoader;
+import java.util.Arrays;
 
 /**
  * ClassLoader that delegates to a collection of child ClassLoaders.
@@ -55,5 +56,13 @@ class DelegatingClassLoader extends SecureClassLoader
         }
       }
     throw new ClassNotFoundException( name );
+    }
+
+  @Override
+  public String toString()
+    {
+    return "DelegatingClassLoader{" +
+      "delegates=" + Arrays.toString( delegates ) +
+      '}';
     }
   }

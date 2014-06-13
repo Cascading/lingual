@@ -187,7 +187,7 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
   public synchronized JobConf getPlannerConfig()
     {
     if( plannerJobConf != null )
-      return plannerJobConf;
+      return applyClassLoader( plannerJobConf );
 
     // may consider providing aliases for these properties on Driver
     // mapred.job.tracker
@@ -226,7 +226,15 @@ public class HadoopPlatformBroker extends PlatformBroker<JobConf>
     if( LOG.isDebugEnabled() )
       LOG.debug( "using job config properties: {}", HadoopUtil.createProperties( plannerJobConf ) );
 
-    return plannerJobConf;
+    return applyClassLoader( plannerJobConf );
+    }
+
+  private JobConf applyClassLoader( JobConf jobConf )
+    {
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    if ( classLoader != null && !classLoader.equals( jobConf.getClassLoader() ) )
+      jobConf.setClassLoader( classLoader );
+    return jobConf;
     }
 
   private void setUserName( JobConf jobConf )
