@@ -21,9 +21,12 @@
 package cascading.lingual.flow;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import cascading.flow.AssemblyPlanner;
+import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
@@ -124,5 +127,13 @@ public class SQLPlanner implements AssemblyPlanner
     current = new Pipe( name, current ); // bind the tail to the sink name
 
     return Arrays.asList( current );
+    }
+
+  @Override
+  public Map<String, String> getFlowDescriptor()
+    {
+    Map<String, String> flowDescriptor = new LinkedHashMap<String, String>();
+    flowDescriptor.put( FLowDescriptors.STATEMENTS, getSql() );
+    return flowDescriptor;
     }
   }

@@ -22,7 +22,9 @@ package cascading.lingual.flow;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Map;
 
+import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.lingual.LingualPlatformTestCase;
@@ -67,6 +69,8 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
 
+    validateFlowDescriptor( flow, statement );
+
     flow.complete();
 
     validateLength( flow, 2 );
@@ -99,6 +103,8 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
 
+    validateFlowDescriptor( flow, statement );
+
     flow.complete();
 
     validateLength( flow, 2 );
@@ -129,6 +135,8 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     flowDef.addAssemblyPlanner( sqlPlanner );
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
+
+    validateFlowDescriptor( flow, statement );
 
     flow.complete();
 
@@ -164,6 +172,8 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
 
+    validateFlowDescriptor( flow, statement );
+
     flow.complete();
 
     validateLength( flow, 2 );
@@ -197,6 +207,8 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     flowDef.addAssemblyPlanner( sqlPlanner );
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
+
+    validateFlowDescriptor( flow, statement );
 
     flow.complete();
 
@@ -233,9 +245,19 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
 
     Flow flow = getPlatform().getFlowConnector().connect( flowDef );
 
+    validateFlowDescriptor( flow, statement );
+
     flow.complete();
 
     validateLength( flow, 2 );
+    }
+
+  private void validateFlowDescriptor( Flow flow, String statement )
+    {
+    Map<String, String> flowDescriptor = flow.getFlowDescriptor();
+    assertNotNull( flowDescriptor );
+    assertEquals( 1, flowDescriptor.size() );
+    assertEquals( statement, flowDescriptor.get( FLowDescriptors.STATEMENTS ) );
     }
 
   }

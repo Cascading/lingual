@@ -48,16 +48,21 @@ import java.util.Properties;
 class LingualPreparedStatement extends LingualStatement implements PreparedStatement
   {
   private final PreparedStatement parent;
+  private final String sql;
+  private final LingualConnection lingualConnection;
 
-  public LingualPreparedStatement( Properties properties, PreparedStatement parent, LingualConnection lingualConnection )
+  public LingualPreparedStatement( Properties properties, PreparedStatement parent, LingualConnection lingualConnection, String sql )
     {
     super( properties, parent, lingualConnection );
     this.parent = parent;
+    this.sql = sql;
+    this.lingualConnection = lingualConnection;
     }
 
   @Override
   public ResultSet executeQuery() throws SQLException
     {
+    lingualConnection.setCurrentSQL( sql );
     return parent.executeQuery();
     }
 
@@ -191,6 +196,7 @@ class LingualPreparedStatement extends LingualStatement implements PreparedState
   @Override
   public boolean execute() throws SQLException
     {
+    lingualConnection.setCurrentSQL( sql );
     return parent.execute();
     }
 

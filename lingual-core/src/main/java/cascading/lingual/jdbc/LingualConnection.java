@@ -69,6 +69,8 @@ public abstract class LingualConnection implements Connection
   // see JavaDoc on LingualConnectionFlowListener for why this is a Collection.
   private Set<Flow> trackedFlows = new HashSet<Flow>();
 
+  private String currentSQL;
+
   protected LingualConnection( Connection parent, Properties properties ) throws SQLException
     {
     this.parent = parent.unwrap( OptiqConnection.class );
@@ -204,12 +206,13 @@ public abstract class LingualConnection implements Connection
   @Override
   public PreparedStatement prepareStatement( String sql ) throws SQLException
     {
-    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ), this );
+    return new LingualPreparedStatement( properties, parent.prepareStatement( sql ), this, sql );
     }
 
   @Override
   public CallableStatement prepareCall( String sql ) throws SQLException
     {
+    // TODO shouldn't this throw an UnsupportedOperationException or something like that?
     return parent.prepareCall( sql );
     }
 
@@ -337,13 +340,13 @@ public abstract class LingualConnection implements Connection
   @Override
   public Statement createStatement( int resultSetType, int resultSetConcurrency ) throws SQLException
     {
-    return parent.createStatement( resultSetType, resultSetConcurrency );
+    return new LingualStatement( properties, parent.createStatement( resultSetType, resultSetConcurrency ), this );
     }
 
   @Override
   public PreparedStatement prepareStatement( String sql, int resultSetType, int resultSetConcurrency ) throws SQLException
     {
-    return parent.prepareStatement( sql, resultSetType, resultSetConcurrency );
+    return new LingualPreparedStatement( properties, parent.prepareStatement( sql, resultSetType, resultSetConcurrency ), this, sql );
     }
 
   @Override
@@ -521,5 +524,17 @@ public abstract class LingualConnection implements Connection
     {
     return iface.isInstance( this ) || iface.isInstance( parent );
     }
+
+  public String getCurrentSQL()
+    {
+    return currentSQL;
+    }
+
+  void setCurrentSQL( String currentSQL )
+    {
+    this.currentSQL = currentSQL;
+    }
+
+
 
   }

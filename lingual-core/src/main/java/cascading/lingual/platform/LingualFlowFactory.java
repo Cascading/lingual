@@ -27,6 +27,7 @@ import java.util.Set;
 
 import cascading.bind.catalog.Resource;
 import cascading.bind.process.FlowFactory;
+import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowDef;
@@ -143,6 +144,8 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       LOG.debug( "adding jar to classpath: {}", jar );
       flowDef.addToClassPath( jar );
       }
+
+    flowDef.addDescription( FLowDescriptors.STATEMENTS, lingualConnection.getCurrentSQL() );
 
     Flow flow = createFlowFrom( flowDef, tail );
 
