@@ -136,7 +136,10 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     try
       {
       if( connection != null )
+        {
         connection.close();
+        connection = null; // helping GC in long running test suites. The connection objects are rather expensive.
+        }
       }
     finally
       {
