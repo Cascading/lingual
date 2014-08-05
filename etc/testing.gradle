@@ -20,7 +20,7 @@
 
 rootProject.ext.testRoots = []
 
-project.setTestingProperties = {
+project.ext.setTestingProperties = {
 
   if( !System.properties[ 'test.cluster.enabled' ] )
     System.properties[ 'test.cluster.enabled' ] = 'false'

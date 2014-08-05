@@ -133,7 +133,6 @@ public class ProviderProxy
 
   private MethodHandler getClassLoaderMethodHandler( Object parent )
     {
-
     return new ProxyClassLoaderHandler( classLoader, parent );
     }
 
