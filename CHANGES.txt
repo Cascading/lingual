@@ -2,6 +2,9 @@ Lingual Change Log
 
 1.2 [unreleased]
 
+  Fixed issue in shell wrapper where a previously set LINGUAL_CLASSPATH would be lost and therefore the
+  cascading-service.properties file could not be loaded by setting LINGUAL_CLASSPATH before running lingual shell.
+
   Several changes to reduce memory footprint and help GC in long running processes with many flows.
 
   Update to Cascading 2.6.

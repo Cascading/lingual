@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2011-2013 Concurrent, Inc.
+# Copyright 2011-2014 Concurrent, Inc.
 # if no args specified, show usage
 
 function show_usage {
@@ -107,7 +107,7 @@ while [ -n "$1" ]
      esac
  done
 
-LINGUAL_CLASSPATH="$BASE_DIR/lib/*:$BASE_DIR/bin/*"
+LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/lib/*:$BASE_DIR/bin/*"
 
 case $PLATFORM in
    local)
