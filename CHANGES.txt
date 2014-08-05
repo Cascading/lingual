@@ -2,6 +2,8 @@ Lingual Change Log
 
 1.2 [unreleased]
 
+  Several changes to reduce memory footprint and help GC in long running processes with many flows.
+
   Update to Cascading 2.6.
 
   Support for c.f.FlowDescriptor to report SQL statement back to a c.m.DocumentService like driven.

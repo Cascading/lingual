@@ -38,6 +38,9 @@ import org.codehaus.janino.Scanner;
 /** Implements {@link Factory} by generating a non-abstract derived class. */
 class JaninoFactory implements Factory
   {
+
+  private static Class cachedTargetType;
+
   public Connection createConnection( Connection connection, Properties connectionProperties ) throws SQLException
     {
     try
@@ -69,13 +72,15 @@ class JaninoFactory implements Factory
   static <T> T create( Class<T> abstractClass, Class[] constructorParamTypes, Object[] constructorArgs )
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IOException, CompileException
     {
-    Class targetType;
+    Class targetType = null;
 
     if( !isAbstract( abstractClass.getModifiers() ) )
       {
       targetType = abstractClass;
       }
-    else
+    // we don't have to re-create the class every time. This eases the pressure on the PermGen with many open
+    // connections.
+    else if ( cachedTargetType == null )
       {
       final StringBuilder buf = new StringBuilder();
 
@@ -139,8 +144,11 @@ class JaninoFactory implements Factory
       ClassLoader classLoader = JaninoFactory.class.getClassLoader();
       ClassBodyEvaluator evaluator = new ClassBodyEvaluator( new Scanner( null, stringReader ), abstractClass, new Class[ 0 ], classLoader );
 
-      targetType = evaluator.getClazz();
+      cachedTargetType = evaluator.getClazz();
+      targetType = cachedTargetType;
       }
+    else
+      targetType = cachedTargetType;
 
     Constructor constructor = targetType.getConstructor( constructorParamTypes );
 
