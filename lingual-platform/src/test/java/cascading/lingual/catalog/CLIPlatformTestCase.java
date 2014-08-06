@@ -231,6 +231,9 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     properties.setProperty( PlatformBroker.CATALOG_FILE_NAME_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
 
+    for ( String key: properties.stringPropertyNames() )
+      properties.setProperty( key, properties.getProperty( key ).trim() );
+
     String join = on( ";" ).withKeyValueSeparator( "=" ).join( fromProperties( properties ) );
 
     properties.setProperty( "urlProperties", join );
