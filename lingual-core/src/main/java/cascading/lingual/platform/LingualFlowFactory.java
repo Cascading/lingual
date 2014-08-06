@@ -27,10 +27,10 @@ import java.util.Set;
 
 import cascading.bind.catalog.Resource;
 import cascading.bind.process.FlowFactory;
-import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowDef;
+import cascading.flow.FlowDescriptors;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
 import cascading.lingual.catalog.SchemaCatalogManager;
@@ -145,7 +145,7 @@ public class LingualFlowFactory extends FlowFactory<Protocol, Format>
       flowDef.addToClassPath( jar );
       }
 
-    flowDef.addDescription( FLowDescriptors.STATEMENTS, lingualConnection.getCurrentSQL() );
+    flowDef.addDescription( FlowDescriptors.STATEMENTS, lingualConnection.getCurrentSQL() );
 
     Flow flow = createFlowFrom( flowDef, tail );
 

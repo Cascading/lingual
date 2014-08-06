@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import cascading.flow.AssemblyPlanner;
-import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
+import cascading.flow.FlowDescriptors;
 import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
 import cascading.pipe.Pipe;
 import net.hydromatic.optiq.jdbc.OptiqPrepare;
@@ -133,7 +133,7 @@ public class SQLPlanner implements AssemblyPlanner
   public Map<String, String> getFlowDescriptor()
     {
     Map<String, String> flowDescriptor = new LinkedHashMap<String, String>();
-    flowDescriptor.put( FLowDescriptors.STATEMENTS, getSql() );
+    flowDescriptor.put( FlowDescriptors.STATEMENTS, getSql() );
     return flowDescriptor;
     }
   }

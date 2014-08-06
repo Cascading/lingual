@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import cascading.flow.FLowDescriptors;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
+import cascading.flow.FlowDescriptors;
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.type.SQLTypeResolver;
 import cascading.tap.SinkMode;
@@ -257,7 +257,7 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     Map<String, String> flowDescriptor = flow.getFlowDescriptor();
     assertNotNull( flowDescriptor );
     assertEquals( 1, flowDescriptor.size() );
-    assertEquals( statement, flowDescriptor.get( FLowDescriptors.STATEMENTS ) );
+    assertEquals( statement, flowDescriptor.get( FlowDescriptors.STATEMENTS ) );
     }
 
   }
