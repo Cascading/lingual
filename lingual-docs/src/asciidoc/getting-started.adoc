@@ -163,7 +163,7 @@ https://github.com/Cascading/cascading.memcached[`cascading-memcached`] provider
 
 To register the memcached provider, run:
 
-    > lingual catalog --provider -add cascading:cascading-memcached:0.3.0:provider
+    > lingual catalog --provider -add cascading:cascading-memcached:2.6.0:provider
 
 This will retrieve the http://conjars.org/search?q=memcached[`cascading-memcached-0.3.0-provider.jar`]
 from http://conjars.org[Conjars] (if not on Conjars, then from Maven Central).
