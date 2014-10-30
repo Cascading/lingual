@@ -29,9 +29,8 @@ import cascading.flow.AssemblyPlanner;
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.flow.FlowDescriptors;
-import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
+import cascading.lingual.platform.PlannerPlatformBroker;
 import cascading.pipe.Pipe;
-import net.hydromatic.optiq.jdbc.OptiqPrepare;
 import net.hydromatic.optiq.prepare.OptiqPrepareImpl;
 
 /**
@@ -107,13 +106,18 @@ public class SQLPlanner implements AssemblyPlanner
       throw new IllegalStateException( "a sql statement must be provided" );
 
     Flow flow = context.getFlow();
-    LingualContext lingualContext = new LingualContext( this, flow );
+
+    flow.getSink().getSinkFields();
+
+    PlannerPlatformBroker platformBroker = new PlannerPlatformBroker();
+
+    LingualContext lingualContext = new LingualContext( this, flow, platformBroker );
 
     OptiqPrepareImpl prepare = new OptiqPrepareImpl();
 
-    OptiqPrepare.PrepareResult<Object> prepareResult = prepare.prepareSql( lingualContext, getSql(), null, Object[].class, -1 );
+    prepare.prepareSql( lingualContext, getSql(), null, Object[].class, -1 );
 
-    Pipe current = ( (CascadingFlowRunnerEnumerable) prepareResult.getExecutable() ).getBranch().current;
+    Pipe current = platformBroker.getTail();
 
     String name;
 

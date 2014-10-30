@@ -77,6 +77,44 @@ public class SQLFlowPlatformTest extends LingualPlatformTestCase
     }
 
   @Test
+  public void testOrderBy() throws IOException
+    {
+    String statement = "select *\n"
+      + "from \"example\".\"sales_fact_1997\" as s\n"
+      + "join \"example\".\"employee\" as e\n"
+      + "on e.\"EMPID\" = s.\"CUST_ID\""
+      + " ORDER BY s.CUST_ID";
+
+    Fields employeeFields = new Fields( "EMPID", "NAME" ).applyTypes( Integer.TYPE, String.class );
+    Fields salesFields = new Fields( "CUST_ID", "PROD_ID" ).applyTypes( Integer.TYPE, Integer.TYPE );
+
+    Tap empTap = getPlatform().getDelimitedFile( employeeFields, true, ",", "\"", employeeFields.getTypesClasses(), SIMPLE_EMPLOYEE_TABLE, SinkMode.KEEP );
+    Tap salesTap = getPlatform().getDelimitedFile( salesFields, true, ",", "\"", salesFields.getTypesClasses(), SIMPLE_SALES_FACT_TABLE, SinkMode.KEEP );
+
+    Tap resultsTap = getPlatform().getDelimitedFile( Fields.ALL, true, ",", "\"", null, getOutputPath( getTestName() ), SinkMode.REPLACE );
+
+    FlowDef flowDef = FlowDef.flowDef()
+      .setName( "sql flow" )
+      .addSource( "employee", empTap )
+      .addSource( "sales_fact_1997", salesTap )
+      .addSink( "results", resultsTap );
+
+    SQLPlanner sqlPlanner = new SQLPlanner()
+      .setDefaultSchema( "example" )
+      .setSql( statement );
+
+    flowDef.addAssemblyPlanner( sqlPlanner );
+
+    Flow flow = getPlatform().getFlowConnector().connect( flowDef );
+
+    validateFlowDescriptor( flow, statement );
+
+    flow.complete();
+
+    validateLength( flow, 2 );
+    }
+
+  @Test
   public void testDynamic() throws IOException
     {
     String statement = "select *\n"

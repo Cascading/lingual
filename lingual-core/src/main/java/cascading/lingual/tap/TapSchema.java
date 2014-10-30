@@ -40,7 +40,6 @@ public class TapSchema extends MapSchema
   {
   private static final Logger LOG = LoggerFactory.getLogger( TapSchema.class );
 
-  private LingualConnection connection;
   private PlatformBroker platformBroker;
   private MapSchema parent;
   private String name;
@@ -51,9 +50,10 @@ public class TapSchema extends MapSchema
     return rootSchema.getSubSchemaExpression( name, Object.class );
     }
 
-  public TapSchema( QueryProvider queryProvider, JavaTypeFactory typeFactory )
+  public TapSchema( QueryProvider queryProvider, JavaTypeFactory typeFactory, final PlatformBroker platformBroker )
     {
     super( null, queryProvider, typeFactory, "root", Expressions.parameter( Object.class, "root" ) );
+    this.platformBroker = platformBroker;
     }
 
   public TapSchema( TapSchema parent, String name )
@@ -61,6 +61,7 @@ public class TapSchema extends MapSchema
     super( parent, name, makeExpression( name, parent ) );
     this.parent = parent;
     this.name = name;
+    this.platformBroker = parent.platformBroker;
     }
 
   public TapSchema( MapSchema parent, LingualConnection connection, SchemaDef schemaDef )
@@ -72,7 +73,6 @@ public class TapSchema extends MapSchema
     {
     super( parent, name, makeExpression( name, connection.getRootSchema() ) );
     this.parent = parent;
-    this.connection = connection;
     this.platformBroker = connection.getPlatformBroker();
     this.name = name;
     this.identifier = identifier;

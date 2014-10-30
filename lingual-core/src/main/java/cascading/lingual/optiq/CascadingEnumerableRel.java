@@ -24,10 +24,12 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import cascading.lingual.optiq.enumerable.CascadingFlowRunnerEnumerable;
+import cascading.lingual.optiq.enumerable.CascadingPlannerEnumerable;
 import cascading.lingual.optiq.enumerable.CascadingValueInsertEnumerable;
 import cascading.lingual.optiq.meta.Branch;
 import cascading.lingual.optiq.meta.FlowHolder;
 import cascading.lingual.optiq.meta.ValuesHolder;
+import cascading.lingual.platform.PlannerPlatformBroker;
 import net.hydromatic.linq4j.expressions.BlockBuilder;
 import net.hydromatic.linq4j.expressions.BlockStatement;
 import net.hydromatic.linq4j.expressions.Expressions;
@@ -86,10 +88,15 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
 
     PhysType physType = PhysTypeImpl.of( implementor.getTypeFactory(), input.getRowType(), JavaRowFormat.ARRAY );
 
-    BlockStatement block =
-      branch.tuples != null
-        ? handleInsert( branch, planner )
-        : handleFlow( branch, physType, planner );
+    BlockStatement block;
+
+    if( branch.tuples != null )
+      block = handleInsert( branch, planner );
+    else if( branch.platformBroker instanceof PlannerPlatformBroker )  // used by the SQLPlanner
+      block = handlePrepare( branch, physType, planner );
+    else
+      block = handleFlow( branch, physType, planner );
+
     return implementor.result( physType, block );
     }
 
@@ -111,6 +118,17 @@ class CascadingEnumerableRel extends SingleRel implements EnumerableRel
     long ordinal = CascadingFlowRunnerEnumerable.addHolder( flowHolder );
 
     Constructor<CascadingFlowRunnerEnumerable> constructor = getConstructorFor( CascadingFlowRunnerEnumerable.class );
+
+    return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
+    }
+
+  private BlockStatement handlePrepare( Branch branch, PhysType physType, VolcanoPlanner planner )
+    {
+    FlowHolder flowHolder = new FlowHolder( physType, branch, planner );
+
+    long ordinal = CascadingPlannerEnumerable.addHolder( flowHolder );
+
+    Constructor<CascadingPlannerEnumerable> constructor = getConstructorFor( CascadingPlannerEnumerable.class );
 
     return new BlockBuilder().append( Expressions.new_( constructor, Expressions.constant( ordinal ) ) ).toBlock();
     }

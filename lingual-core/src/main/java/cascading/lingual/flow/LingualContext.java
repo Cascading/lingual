@@ -31,6 +31,7 @@ import cascading.flow.Flow;
 import cascading.lingual.catalog.SchemaDef;
 import cascading.lingual.catalog.TableDef;
 import cascading.lingual.optiq.FieldTypeFactory;
+import cascading.lingual.platform.PlatformBroker;
 import cascading.lingual.tap.TapSchema;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -48,11 +49,10 @@ class LingualContext implements OptiqPrepare.Context
   private final SQLPlanner sqlPlanner;
   private final TapSchema rootMapSchema;
 
-  LingualContext( SQLPlanner sqlPlanner, Flow flowDef )
+  LingualContext( SQLPlanner sqlPlanner, Flow flowDef, PlatformBroker platformBroker )
     {
     this.sqlPlanner = sqlPlanner;
-
-    rootMapSchema = new TapSchema( new FlowQueryProvider(), new FieldTypeFactory() );
+    this.rootMapSchema = new TapSchema( new FlowQueryProvider(), new FieldTypeFactory(), platformBroker );
 
     initializeSchema( sqlPlanner, flowDef, rootMapSchema );
     }
@@ -107,7 +107,7 @@ class LingualContext implements OptiqPrepare.Context
   public List<String> getDefaultSchemaPath()
     {
     if( getDefaultSchema() == null )
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
 
     return Arrays.asList( getDefaultSchema().split( "\\." ) );
     }

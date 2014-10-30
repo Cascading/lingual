@@ -23,6 +23,7 @@ package cascading.lingual.examples.foodmart;
 import java.io.IOException;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowConnector;
 import cascading.flow.FlowDef;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.lingual.flow.SQLPlanner;
@@ -45,7 +46,8 @@ public class FlowExample
     String statement = "select *\n"
       + "from \"example\".\"sales_fact_1997\" as s\n"
       + "join \"example\".\"employee\" as e\n"
-      + "on e.\"EMPID\" = s.\"CUST_ID\"";
+      + "on e.\"EMPID\" = s.\"CUST_ID\""
+      + "\n order by e.\"EMPID\"";
 
     Tap empTap = new FileTap( new SQLTypedTextDelimited( ",", "\"" ),
       "src/main/resources/data/example/employee.tcsv", SinkMode.KEEP );
@@ -61,12 +63,14 @@ public class FlowExample
       .addSource( "example.sales_fact_1997", salesTap )
       .addSink( "results", resultsTap );
 
+    FlowConnector flowConnector = new LocalFlowConnector();
+
     SQLPlanner sqlPlanner = new SQLPlanner()
       .setSql( statement );
 
     flowDef.addAssemblyPlanner( sqlPlanner );
 
-    Flow flow = new LocalFlowConnector().connect( flowDef );
+    Flow flow = flowConnector.connect( flowDef );
 
     flow.complete();
 
