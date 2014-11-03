@@ -4,7 +4,7 @@
 
 Lingual includes JDBC Drivers, SQL command shell, and a catalog manager for creating schemas and tables.
 
-Lingual is under active development on the wip-1.1 branch. All wip releases are made available
+Lingual is under active development on the wip-1.2 branch. All wip releases are made available
 from `files.concurrentinc.com`. Final releases can be found under
 `files.cascading.org`.
 

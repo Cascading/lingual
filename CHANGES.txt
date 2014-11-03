@@ -1,6 +1,6 @@
 Lingual Change Log
 
-1.2.0 [unreleased]
+1.2.0 
 
   Fixed issue where c.l.f.SQLPlanner could execute a flow instead of just planning it.
 
