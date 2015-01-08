@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
@@ -34,7 +35,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
-import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static java.util.Arrays.asList;
 
 /**
@@ -123,7 +123,7 @@ public class ProviderDefinition
     if( platforms == null )
       return Collections.EMPTY_LIST;
 
-    return newCopyOnWriteArrayList( asList( platforms.split( "," ) ) );
+    return new CopyOnWriteArrayList<String>( asList( platforms.split( "," ) ) );
     }
 
   public String getFactoryClassName()
@@ -151,7 +151,7 @@ public class ProviderDefinition
       if( providerName == null )
         providerName = getProviderName();
 
-      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( providerName ) ) );
+      properties.put( SchemaProperties.PROVIDER, new CopyOnWriteArrayList( asList( providerName ) ) );
       map.put( Protocol.getProtocol( protocol ), properties );
       }
 
@@ -173,7 +173,7 @@ public class ProviderDefinition
       if( providerName == null )
         providerName = getProviderName();
 
-      properties.put( SchemaProperties.PROVIDER, newCopyOnWriteArrayList( asList( providerName ) ) );
+      properties.put( SchemaProperties.PROVIDER, new CopyOnWriteArrayList( asList( providerName ) ) );
       map.put( Format.getFormat( formatName ), properties );
       }
 
@@ -195,9 +195,9 @@ public class ProviderDefinition
       if( Strings.isNullOrEmpty( value ) )
         result.put( entry.getKey().substring( length ), new ArrayList<String>() );
       else if( value.equals( "," ) )
-        result.put( entry.getKey().substring( length ), newCopyOnWriteArrayList( asList( value ) ) );
+        result.put( entry.getKey().substring( length ), new CopyOnWriteArrayList( asList( value ) ) );
       else
-        result.put( entry.getKey().substring( length ), newCopyOnWriteArrayList( asList( value.split( "," ) ) ) );
+        result.put( entry.getKey().substring( length ), new CopyOnWriteArrayList<String>( asList( value.split( "," ) ) ) );
       }
 
     return result;

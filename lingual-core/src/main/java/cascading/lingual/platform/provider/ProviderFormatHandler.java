@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import cascading.bind.catalog.Stereotype;
 import cascading.lingual.catalog.Format;
@@ -39,7 +40,6 @@ import cascading.scheme.Scheme;
 
 import static cascading.lingual.catalog.Protocol.resolveProtocols;
 import static cascading.lingual.util.MiscCollection.asProperties;
-import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 
 /**
  *
@@ -76,7 +76,7 @@ public class ProviderFormatHandler extends LingualFormatHandler
 
       // if no protocols are specified, use those declared in the provider.properties
       if( protocols.isEmpty() )
-        result.put( format, newCopyOnWriteArrayList( defaultProtocols ) );
+        result.put( format, new CopyOnWriteArrayList( defaultProtocols ) );
       else
         result.put( format, protocols );
       }
