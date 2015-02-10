@@ -44,14 +44,16 @@ public class Optiq
 
     try
       {
-      File file = new File( path );
+      File file = new File( path ).getAbsoluteFile();
 
-      file.getParentFile().mkdirs();
+      File parentDir = file.getParentFile();
+
+      parentDir.mkdirs();
       writer = new PrintWriter( file );
       }
     catch( IOException exception )
       {
-      throw new RuntimeException( "unable to write sql plan to: " + path );
+      throw new RuntimeException( "unable to write sql plan to: " + path, exception );
       }
 
     planner.dump( writer );

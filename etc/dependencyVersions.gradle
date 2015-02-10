@@ -21,7 +21,7 @@
 /*
  * Dependencies directly related to cascading get versions defined here
  */
-ext.cascadingVersion = '2.6.0'
+ext.cascadingVersion = '3.0.0-wip-+'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars
@@ -59,6 +59,8 @@ ext.cascadingBindVersion = "1.0.0-${bindVersion}"
 ext.hadoopVersion = '1.1.2'
 
 ext.hadoop2Version = '2.4.1'
+
+ext.tezVersion = '0.5.3'
 
 ext.apacheCommonsVersion = '3.1'
 ext.c3p0Version = '0.9.2.1'

@@ -20,6 +20,8 @@
 
 package cascading.lingual;
 
+import java.io.File;
+
 import cascading.PlatformTestCase;
 import org.apache.log4j.Level;
 
@@ -86,23 +88,41 @@ public abstract class LingualPlatformTestCase extends PlatformTestCase
   protected String getResultPath()
     {
     if( resultPath == null )
-      resultPath = getOutputPath( "results/" + getTestName() );
+      resultPath = getOutputPath() + "/results/" + getTestName();
 
     return resultPath;
     }
 
+  @Override
+  protected String getOutputPath()
+    {
+    return new File( super.getOutputPath() ).getAbsolutePath() + "/";
+    }
+
+  @Override
+  public String getOutputPath( String path )
+    {
+    return new File( super.getOutputPath( path ) ).getAbsolutePath() + "/";
+    }
+
   protected String getCatalogPath()
     {
-    return getRootPath() + "/catalog/" + getTestName();
+    return getOutputPath() + "/catalog/" + getTestName();
     }
 
   protected String getFlowPlanPath()
     {
-    return getRootPath() + "/dot/" + getTestName();
+    return getOutputPath() + "/dot/" + getTestName();
     }
 
   protected String getSQLPlanPath()
     {
-    return getRootPath() + "/optiq/" + getTestName();
+    return getOutputPath( "/" + getTestName() + "/optiq" );
     }
+
+  protected String getTracePlanPath()
+    {
+    return getOutputPath() + "/" + getTestName() + "/traceplan/";
+    }
+
   }

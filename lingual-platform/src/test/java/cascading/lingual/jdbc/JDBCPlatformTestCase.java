@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import cascading.flow.planner.FlowPlanner;
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.catalog.Format;
 import cascading.lingual.catalog.Protocol;
@@ -99,6 +100,10 @@ public abstract class JDBCPlatformTestCase extends LingualPlatformTestCase
     values.put( Driver.FLOW_PLAN_PATH, getFlowPlanPath() );
     values.put( Driver.SQL_PLAN_PATH_PROP, getSQLPlanPath() );
     values.put( Driver.PLANNER_DEBUG, getPlannerDebug() );
+    values.put( FlowPlanner.TRACE_PLAN_PATH, getTracePlanPath() );
+    values.put( FlowPlanner.TRACE_PLAN_TRANSFORM_PATH, getTracePlanPath() + "/" + getTestName() + "/transform" );
+    values.put( FlowPlanner.TRACE_STATS_PATH,  getTracePlanPath() + "/" + getTestName() + "/stats" );
+
 
     String properties = Joiner.on( ';' ).withKeyValueSeparator( "=" ).join( values );
 

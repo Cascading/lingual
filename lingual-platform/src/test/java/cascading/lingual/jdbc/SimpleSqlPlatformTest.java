@@ -127,7 +127,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testSelectDistinct() throws Exception
     {
-    assertTablesEqual( "emps-distinct", "select distinct gender from sales.emps" );
+    assertTablesEqual( "emps-distinct", "select distinct gender from sales.emps order by gender" );
     }
 
   @Test
@@ -176,7 +176,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testCountDistinctCityGroupBy() throws Exception
     {
-    assertTablesEqual( "emps-deptno-city-count-distinct", "select deptno, count( distinct city ) from sales.emps group by deptno" );
+    assertTablesEqual( "emps-deptno-city-count-distinct", "select deptno, count( distinct city ) from sales.emps group by deptno order by 1" );
     }
 
   @Test
@@ -218,19 +218,20 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testGroupByCount() throws Exception
     {
-    assertTablesEqual( "emps-groupby-count", "select deptno, count(*) from sales.emps group by deptno" );
+    assertTablesEqual( "emps-groupby-count", "select deptno, count(*) from sales.emps group by deptno order by 1" );
     }
 
   @Test
   public void testAnonGroupBySum() throws Exception
     {
-    assertTablesEqual( "emps-anon-groupby-sum", "select sum(age) from sales.emps group by deptno" );
+    assertTablesEqual( "emps-anon-groupby-sum", "select sum(age) from sales.emps group by deptno order by deptno" );
     }
 
   @Test
   public void testMultiGroupBy() throws Exception
     {
-    assertTablesEqual( "emps-multi-groupby", "select deptno, gender, min(age), max(age) from sales.emps group by deptno, gender" );
+    assertTablesEqual( "emps-multi-groupby",
+      "select deptno, gender, min(age), max(age) from sales.emps group by deptno, gender order by deptno, gender" );
     }
 
   @Test
@@ -344,7 +345,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   public void testSumCountDistinctCityJoinGroupBy() throws Exception
     {
     assertTablesEqual( "emps-depts-sum-count-groupby",
-      "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno" );
+      "select emps.deptno, sum( emps.age ) as s1, count( distinct emps.city ) as c1 from sales.emps, sales.depts where emps.deptno = depts.deptno group by emps.deptno order by 1" );
     }
 
   @Test
@@ -392,7 +393,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     String query = "select name, empno, emps.deptno from sales.emps, " +
       "( select deptno, min( JOINEDAT ) as min_date from sales.emps group by deptno ) min_dept_date " +
-      "where joinedat = min_dept_date.min_date";
+      "where joinedat = min_dept_date.min_date order by empno, emps.deptno";
 
     assertTablesEqual( "emps-joined-subquery", query );
     }
@@ -441,12 +442,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
   @Test
   public void testSelfLeftJoin3() throws Exception
     {
-    String query = "SELECT q1.empno AS x, p0.empno FROM sales.emps AS p0 " +
+    String query = "SELECT q1.empno AS x, p0.empno as y FROM sales.emps AS p0 " +
       "LEFT JOIN sales.emps AS q1 ON (q1.gender =  'M' " +
       "AND CASE " +
       "WHEN p0.city = 'Vancouver' AND p0.deptno = 40 " +
       "THEN  1=1  END) " +
-      "WHERE p0.gender = 'M' ";
+      "WHERE p0.gender = 'M' order by 1, 2";
 
     assertTablesEqual( "emps-depts-self-join-3", query );
     }

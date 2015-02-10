@@ -28,14 +28,18 @@ import java.util.logging.Level;
 import cascading.lingual.util.Eigenbase;
 import com.google.common.base.Throwables;
 import org.eigenbase.trace.EigenbaseTrace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static cascading.lingual.util.Logging.setLogLevel;
 
 /**
- *
+ * Super class of all commandline tools in Lingual.
  */
 public abstract class Main<O extends Options>
   {
+  private static final Logger LOG = LoggerFactory.getLogger( Main.class );
+
   protected final PrintStream outPrintStream;
   protected final PrintStream errPrintStream;
   protected final Properties properties;
@@ -46,30 +50,39 @@ public abstract class Main<O extends Options>
 
   protected Main()
     {
-    this.outPrintStream = System.out;
-    this.errPrintStream = System.err;
-    this.properties = new Properties();
+    this( System.out, System.err, new Properties() );
     }
 
   public Main( Properties properties )
     {
-    this.outPrintStream = System.out;
-    this.errPrintStream = System.err;
-    this.properties = properties;
+    this( System.out, System.err, properties );
     }
 
   protected Main( PrintStream outPrintStream, PrintStream errPrintStream )
     {
-    this.outPrintStream = outPrintStream;
-    this.errPrintStream = errPrintStream;
-    this.properties = new Properties();
+    this( outPrintStream, errPrintStream, new Properties(  ) );
     }
 
   protected Main( PrintStream outPrintStream, PrintStream errPrintStream, Properties properties )
     {
     this.outPrintStream = outPrintStream;
     this.errPrintStream = errPrintStream;
-    this.properties = properties;
+    this.properties = sanitize( properties );
+    }
+
+  private Properties sanitize( Properties properties )
+    {
+    for ( String key: properties.stringPropertyNames() )
+      {
+      String value = properties.getProperty( key );
+      if( value.contains( " " ) )
+        {
+        LOG.warn( "Removing spaces from value '{}' for key '{}'.", key, value );
+        properties.setProperty( key, value.replaceAll( " ", "" ) );
+        }
+
+      }
+    return properties;
     }
 
   public O getOptions()

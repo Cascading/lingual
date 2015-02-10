@@ -263,13 +263,7 @@ public class ProviderJarCLIPlatformTest extends CLIPlatformTestCase
 
     ProviderDef providerDef = getSchemaCatalog().findProviderFor( EXAMPLE_SCHEMA, "renamed-spec" );
     Map<String, String> providerProps = providerDef.getProperties();
-    String keyName;
-    if( getPlatform().getName().equals( "local" ) )
-      keyName = "cascading.bind.provider.pipe-local.format.tpsv.delimiter";
-    else if (getPlatform().getName().equals( "hadoop" ))
-      keyName = "cascading.bind.provider.pipe-hadoop.format.tpsv.delimiter";
-    else
-      keyName = "cascading.bind.provider.pipe-hadoop2-mr1.format.tpsv.delimiter";
+    String keyName = "cascading.bind.provider.pipe-" + getPlatform().getName() + ".format.tpsv.delimiter";
     assertTrue( "renamed provider did not retain properties in " + providerProps.toString(), providerProps.containsKey( keyName ) );
     assertEquals( "renamed provider did not retain value in " + providerProps.toString(), "|", providerProps.get( keyName ) );
     }

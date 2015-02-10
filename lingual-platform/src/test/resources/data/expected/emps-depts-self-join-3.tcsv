@@ -1,4 +1,4 @@
-EMPNO:int,X:int
+X:int,Y:int
 110,110
 110,110
-110,null
+null,110

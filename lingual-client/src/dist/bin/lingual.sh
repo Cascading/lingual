@@ -120,6 +120,10 @@ case $PLATFORM in
        source $BIN_DIR/yarn-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
        ;;
+   hadoop2-tez)
+       source $BIN_DIR/yarn-env
+       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
+       ;;
    *)
        echo "ERROR: Unknown platform: $PLATFORM"
        exit 1

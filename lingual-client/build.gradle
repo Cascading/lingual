@@ -25,6 +25,7 @@ apply plugin: 'application'
 evaluationDependsOn( ':lingual-local' )
 evaluationDependsOn( ':lingual-hadoop' )
 evaluationDependsOn( ':lingual-hadoop2-mr1' )
+evaluationDependsOn( ':lingual-hadoop2-tez' )
 
 dependencies {
 
@@ -72,6 +73,8 @@ task assembleDist( dependsOn: jar ) {
   dependsOn << project( ":lingual-hadoop" ).tasks[ "fatJar" ]
   dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "hadoopJar" ]
   dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "fatJar" ]
+  dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "hadoopJar" ]
+  dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "fatJar" ]
 
   ext.distDir = file( "${buildDir}/dist" )
 }
@@ -102,6 +105,11 @@ assembleDist << {
     from project( ":lingual-hadoop2-mr1" ).fatJar
   }
 
+  copy {
+    into "${distDir}/platform/hadoop2-tez"
+    from project( ":lingual-hadoop2-tez" ).fatJar
+  }
+  
   copy {
     into distDir
     from( 'src/dist/etc/' ) {

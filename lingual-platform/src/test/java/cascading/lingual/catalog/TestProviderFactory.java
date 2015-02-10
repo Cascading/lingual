@@ -40,14 +40,21 @@ public class TestProviderFactory implements ProviderFactory, Serializable
 
   public TestProviderFactory()
     {
-    factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.local.LocalDefaultFactory" ) );
+    String [] classNames = { "cascading.lingual.platform.local.LocalDefaultFactory",
+                             "cascading.lingual.platform.hadoop.HadoopDefaultFactory",
+                             "cascading.lingual.platform.hadoop2.Hadoop2MR1DefaultFactory",
+                             "cascading.lingual.platform.tez.TezDefaultFactory" };
+
+    for( String className: classNames)
+      {
+      factory = (DefaultFactory) newInstanceSafe( loadClassSafe( className ) );
+      if( factory != null )
+        break;
+      }
 
     if( factory == null )
-      {
-      factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.hadoop.HadoopDefaultFactory" ) );
-      if( factory == null )
-        factory = (DefaultFactory) newInstanceSafe( loadClassSafe( "cascading.lingual.platform.hadoop2.Hadoop2MR1DefaultFactory" ) );
-      }
+      throw new IllegalStateException( "unable to load factory from known classes" );
+
     }
 
   @Override

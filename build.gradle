@@ -167,3 +167,4 @@ task javadocDist( type: Copy, dependsOn: javadocAll ) {
 
   s3UploadDocs.dependsOn javadocDist
 }
+

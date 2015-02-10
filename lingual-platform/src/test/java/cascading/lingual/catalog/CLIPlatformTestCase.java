@@ -35,6 +35,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import cascading.flow.planner.FlowPlanner;
 import cascading.lingual.LingualPlatformTestCase;
 import cascading.lingual.jdbc.Driver;
 import cascading.lingual.platform.PlatformBroker;
@@ -85,22 +86,22 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
 
   protected String getProviderPath( String testProviderJarName )
     {
-    return getRootPath() + "/provider/" + getTestName() + "/" + testProviderJarName;
+    return getOutputPath() + "/provider/" + getTestName() + "/" + testProviderJarName;
     }
 
   protected String getTablePath()
     {
-    return getRootPath() + "/table/" + getTestName() + "/result.tcsv";
+    return getOutputPath() + "/table/" + getTestName() + "/result.tcsv";
     }
 
   protected String getSchemaPath( String schemaName )
     {
-    return getRootPath() + "/table/" + getTestName() + "/" + schemaName;
+    return getOutputPath() + "/table/" + getTestName() + "/" + schemaName;
     }
 
   protected String getFactoryPath()
     {
-    return getRootPath() + "/factory/" + getTestName() + "/";
+    return getOutputPath() + "/factory/" + getTestName() + "/";
     }
 
   protected String createProviderJar( String propertiesPath, Collection<File> classPath, String providerPath ) throws IOException
@@ -230,6 +231,9 @@ public abstract class CLIPlatformTestCase extends LingualPlatformTestCase
     properties.setProperty( PlatformBroker.META_DATA_DIR_NAME_PROP, TEST_META_DATA_PATH_PROP );
     properties.setProperty( PlatformBroker.CATALOG_FILE_NAME_PROP, "catalog.json" );
     properties.setProperty( PlatformBrokerFactory.PLATFORM_NAME, getPlatformName() );
+    properties.setProperty( FlowPlanner.TRACE_PLAN_PATH, getTracePlanPath() );
+    properties.setProperty( FlowPlanner.TRACE_PLAN_TRANSFORM_PATH, getTracePlanPath() + "/" + getTestName() + "/transform" );
+    properties.setProperty( FlowPlanner.TRACE_STATS_PATH,  getTracePlanPath() + "/" + getTestName() + "/stats" );
 
     for ( String key: properties.stringPropertyNames() )
       properties.setProperty( key, properties.getProperty( key ).trim() );
