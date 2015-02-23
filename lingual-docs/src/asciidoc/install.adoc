@@ -3,15 +3,14 @@
 
 ### With an existing Hadoop cluster
 
-If you already have an installed and running version of a
-http://www.cascading.org/support/compatibility/[supported Apache Hadoop distribution], you can
-simply install the Lingual tools from the command line locally.
+If you already have an installed and running version of a http://www.cascading.org/support/compatibility/[supported
+Apache Hadoop distribution], you can simply install the Lingual tools from the command line locally.
 
 To install the Lingual command line tools, call:
 
 [subs="attributes"]
 ----
-> curl http://{artifactsurl}/lingual/1.2/lingual-client/install-lingual-client.sh | bash
+> curl http://{artifactsurl}/lingual/{lingualVersion}/lingual-client/install-lingual-client.sh | bash
 ----
 
 This scripts downloads and installs the latest `lingual` shell script into `~/.lingual-client/` and updates any
@@ -25,8 +24,8 @@ can find your cluster setup. For more details, see:
 ### With a local demo Hadoop cluster
 
 If you want your own local Apache Hadoop 4 node cluster to test out Lingual's features, clone the
-http://www.vagrantup.com[Vagrant] based cluster hosted on the
-https://github.com/organizations/Cascading[Cascading GitHub site].
+http://www.vagrantup.com[Vagrant] based cluster hosted on the https://github.com/organizations/Cascading[Cascading
+GitHub site].
 
   * https://github.com/Cascading/vagrant-cascading-hadoop-cluster
 
@@ -43,7 +42,7 @@ You can optionally bypass the installation and just download the latest version 
 
 [subs="attributes"]
 ----
-> wget -i http://{artifactsurl}/lingual/1.2/lingual-client/latest.txt
+> wget -i http://{artifactsurl}/lingual/{lingualVersion}/lingual-client/latest.txt
 ----
 
 ### Amazon ElasticMapReduce
@@ -56,7 +55,7 @@ elastic-mapreduce \
   --create \
   --instance-group master --instance-count 1 --instance-type $MASTER_INSTANCE_TYPE \
   --instance-group core --instance-count $1 --instance-type $SLAVE_INSTANCE_TYPE \
-  --bootstrap-action s3://{artifactsurl}/lingual/1.2/lingual-client/install-lingual-client.sh \
+  --bootstrap-action s3://{artifactsurl}/lingual/{lingualVersion}/lingual-client/install-lingual-client.sh \
   --name "Cascading Cluster - $USER" \
   --key-pair $EMR_SSH_KEY_NAME \
   --alive
@@ -67,7 +66,7 @@ tools with the following bootstrap action:
 
 [subs="attributes"]
 ----
---bootstrap-action s3://{artifactsurl}/sdk/2.6/install-cascading-sdk.sh
+--bootstrap-action s3://{artifactsurl}/sdk/3.0/install-cascading-sdk.sh
 ----
 
 The assumption here is that you will be shelling into your remote Hadoop cluster to use Lingual or other SDK tools. See

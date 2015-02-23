@@ -19,11 +19,11 @@ Where the property keys are, in part:
   * `flowPlanPath=[path]` - for debugging, print the corresponding Flow dot file here
   * `sqlPlanPath=[path]` - for debugging, print the corresponding SQL plan file here
 
-`platform` is required to help the driver distinguish between either backend when more than one JDBC Driver is in
-the CLASSPATH.
+`platform` is required to help the driver distinguish between either backend when more than one JDBC Driver is in the
+CLASSPATH.
 
-Any other properties will be passed down to the underlying platform. In the case of Apache Hadoop, specific
-connection properties can be passed. See the <<hadoop,Notes on Hadoop>> documentation for more details.
+Any other properties will be passed down to the underlying platform. In the case of Apache Hadoop, specific connection
+properties can be passed. See the <<hadoop,Notes on Hadoop>> documentation for more details.
 
 ### Using the JDBC Driver In Your Project
 
@@ -48,5 +48,23 @@ For the `hadoop` mode platform:
       <classifier>jdbc</classifier>
     </dependency>
 
-Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as
-would be expected.
+For the `hadoop2-mr1` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-hadoop2-mr1</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+For the `hadoop2-tez` mode platform:
+
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>lingual-hadoop2-tez</artifactId>
+      <version>x.y.z</version>
+      <classifier>jdbc</classifier>
+    </dependency>
+
+Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as would
+be expected.

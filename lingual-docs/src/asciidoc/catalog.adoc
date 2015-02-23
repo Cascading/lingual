@@ -66,7 +66,7 @@ To add new table to an existing schema:
 | context              | action                       | description
 | --uri [uri]          |                              | optional path to the catalog meta-data, defaults to current directory relative to the current platform
 |                      |                              |
-| --platform           |                              | lists all known platforms (currently local, hadoop and hadoop2-mr1)
+| --platform           |                              | lists all known platforms (currently local, hadoop, hadoop2-mr1, hadop2-tez)
 | --platform [name]    |                              | use the named platform (relative uri will be resolved for given platform)
 | --default*           |                              | make the current relevant options the default environment
 |                      |                              |
