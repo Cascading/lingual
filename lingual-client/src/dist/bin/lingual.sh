@@ -122,6 +122,7 @@ case $PLATFORM in
        ;;
    hadoop2-tez)
        source $BIN_DIR/yarn-env
+       source $BIN_DIR/tez-env
        LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
        ;;
    *)
