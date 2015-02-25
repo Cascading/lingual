@@ -76,7 +76,7 @@ ext.joptVersion = '4.4'
 ext.jsrVersion = '1.1.1'
 ext.junitVersion = '4.11'
 ext.log4jVersion = '1.2.17'
-ext.slf4jVersion = '1.6.1'
+ext.slf4jVersion = '1.7.5'
 ext.sqllineVersion = '1.1.6'
 
 if( System.properties[ 'hadoop.release.final' ] )
