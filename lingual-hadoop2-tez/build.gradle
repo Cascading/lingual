@@ -34,8 +34,8 @@ dependencies {
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
   compile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version )
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2Version )
+  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2TezVersion )
+  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2TezVersion )
 
   providedCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
   providedCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
@@ -52,7 +52,7 @@ dependencies {
   testCompile( group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests' )
   testCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
   testCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
-  testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version )
+  testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2TezVersion )
 
 //  testRuntime group: 'javax.ws.rs', name: 'jsr311-api', version: jsrVersion // missed dep in hadoop, go figure
 //  testRuntime 'org.codehaus.jackson:jackson-mapper-asl:1.0.1'  // workaround for HADOOP-7461.
