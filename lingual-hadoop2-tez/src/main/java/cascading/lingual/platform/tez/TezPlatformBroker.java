@@ -76,7 +76,6 @@ public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
 
   public TezPlatformBroker()
     {
-    LOG.info( "hello world" );
     }
 
   @Override
@@ -121,7 +120,7 @@ public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
         }
       catch( Exception exception )
         {
-        throw new SQLException( "unable to connect to Hadoop at " + connection.getMetaData().getURL(), exception );
+        throw new SQLException( "unable to connect to HDFS at " + connection.getMetaData().getURL(), exception );
         }
 
       super.startConnection( connection );
