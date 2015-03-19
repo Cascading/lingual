@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Platform broker for the tez platform.
  */
 public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
   {
@@ -185,6 +185,11 @@ public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
 
     plannerTezConf = TezUtil.createTezConf( configProperties, getDefaultConfig() );
 
+    String appJar = findAppJar();
+
+    if( plannerTezConf.get( "mapred.jar" ) == null && appJar != null )
+      plannerTezConf.set( "mapred.jar", appJar );
+
     URL url = getResource( TEZ_OVERRIDE_RESOURCE );
 
     if( url != null )
@@ -212,6 +217,33 @@ public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
     {
     return Thread.currentThread().getContextClassLoader().getResource( resourceName );
     }
+
+  private String findAppJar()
+    {
+    URL url = getResource( TEZ_APP_JAR_FLAG_RESOURCE );
+
+    if( url == null || !url.toString().startsWith( "jar" ) )
+      return null;
+
+    String jarPath;
+
+    if( !"jar".equals( url.getProtocol() ) )
+      throw new RuntimeException( "invalid url: " + url.toString() );
+
+    jarPath = url.getPath();
+
+    if( jarPath.startsWith( "file:" ) )
+      jarPath = jarPath.substring( "file:".length() );
+
+    jarPath = decode( jarPath );
+
+    jarPath = jarPath.replaceAll( "!.*$", "" );
+
+    LOG.info( "using hadoop job jar: {}", jarPath );
+
+    return jarPath;
+    }
+
 
   private boolean classExists( String classname )
     {
@@ -431,6 +463,18 @@ public class TezPlatformBroker extends PlatformBroker<TezConfiguration>
     catch( IOException exception )
       {
       throw new RuntimeException( "unable to get handle to underlying filesystem: " + exception.getMessage(), exception );
+      }
+    }
+
+  private String decode( String jarPath )
+    {
+    try
+      {
+      return URLDecoder.decode( jarPath, "UTF-8" );
+      }
+    catch( UnsupportedEncodingException exception )
+      {
+      throw new RuntimeException( exception.getMessage(), exception );
       }
     }
 
