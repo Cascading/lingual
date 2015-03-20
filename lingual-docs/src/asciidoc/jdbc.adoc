@@ -27,44 +27,38 @@ properties can be passed. See the <<hadoop,Notes on Hadoop>> documentation for m
 
 ### Using the JDBC Driver In Your Project
 
-To pull either of these jars, the `jdbc` Maven classifier must be used if you want the self contained `jar` file with
-all its _shaded_ dependencies.
+Each driver ships as a self-cotained _shaded_ jar file. One jar for each platform:
 
 For the `local` mode platform:
 
     <dependency>
       <groupId>cascading</groupId>
-      <artifactId>lingual-local</artifactId>
+      <artifactId>lingual-local-jdbc</artifactId>
       <version>x.y.z</version>
-      <classifier>jdbc</classifier>
     </dependency>
 
 For the `hadoop` mode platform:
 
     <dependency>
       <groupId>cascading</groupId>
-      <artifactId>lingual-hadoop</artifactId>
+      <artifactId>lingual-hadoop-jdbc</artifactId>
       <version>x.y.z</version>
-      <classifier>jdbc</classifier>
     </dependency>
 
 For the `hadoop2-mr1` mode platform:
 
     <dependency>
       <groupId>cascading</groupId>
-      <artifactId>lingual-hadoop2-mr1</artifactId>
+      <artifactId>lingual-hadoop2-mr1-jdbc</artifactId>
       <version>x.y.z</version>
-      <classifier>jdbc</classifier>
     </dependency>
 
 For the `hadoop2-tez` mode platform:
 
     <dependency>
       <groupId>cascading</groupId>
-      <artifactId>lingual-hadoop2-tez</artifactId>
+      <artifactId>lingual-hadoop2-tez-jdbc</artifactId>
       <version>x.y.z</version>
-      <classifier>jdbc</classifier>
     </dependency>
 
-Alternatively, pulling the default artifacts (without the classifier) will also pull any relevant dependencies as would
-be expected.
+Alternatively, pulling the default artifacts will also pull any relevant dependencies as would be expected.

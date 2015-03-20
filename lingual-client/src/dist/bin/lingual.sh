@@ -109,28 +109,30 @@ while [ -n "$1" ]
 
 LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/lib/*:$BASE_DIR/bin/*"
 
+PLATFORM_CLASSPATH=""
+
 case $PLATFORM in
    local)
        ;;
    hadoop)
        source $BIN_DIR/hadoop-env
-       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$HADOOP_CLASSPATH"
+       PLATFORM_CLASSPATH="$HADOOP_CLASSPATH"
        ;;
    hadoop2-mr1)
        source $BIN_DIR/yarn-env
-       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
+       PLATFORM_CLASSPATH="$YARN_CLASSPATH"
        ;;
    hadoop2-tez)
        source $BIN_DIR/yarn-env
        source $BIN_DIR/tez-env
-       LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$YARN_CLASSPATH"
+       PLATFORM_CLASSPATH="$YARN_CLASSPATH"
        ;;
    *)
        echo "ERROR: Unknown platform: $PLATFORM"
        exit 1
        ;;
 esac
-export LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/platform/$PLATFORM/*"
+export LINGUAL_CLASSPATH="$LINGUAL_CLASSPATH:$BASE_DIR/platform/$PLATFORM/*:$PLATFORM_CLASSPATH"
 
 OPTIQ_JVM_ARGS=""
 for CUR_ARG in "${ARGS[@]}"; do [[ "$CUR_ARG" == "--showstacktrace" ]] && OPTIQ_JVM_ARGS="-Doptiq.debug"; done

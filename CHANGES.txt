@@ -1,6 +1,9 @@
 Lingual Change Log
 
 2.0.0 [unreleased]
+  
+  The JDBC driver jars have their own artifactId lingual-<platform>-jdbc with no dependencies listed in the pom.
+
   Moved to Cascading 3
 
   Added new subproject 'lingual-hadoop2-tez' which adds support for running lingual on Apache Tez

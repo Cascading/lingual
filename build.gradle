@@ -28,10 +28,10 @@ apply plugin: 'eclipse'
 buildscript {
   repositories {
     mavenCentral()
+    jcenter()
   }
-
   dependencies {
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
   }
 }
 
@@ -41,6 +41,7 @@ subprojects {
   apply plugin: 'maven'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
+  apply plugin: 'com.github.johnrengelman.shadow'
 
   // lingual is a sub-project of cascading
   // project name is set in settings.gradle

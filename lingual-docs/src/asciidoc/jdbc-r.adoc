@@ -15,7 +15,7 @@ has been used as described on the <<jdbc_java,Java Example>> page.
 library(RJDBC)
 
 # set up the driver
-drv <- JDBC("cascading.lingual.jdbc.Driver", "~/src/concur/lingual/lingual-local/build/libs/lingual-local-1.0.0-wip-dev-jdbc.jar")
+drv <- JDBC("cascading.lingual.jdbc.Driver", "~/src/concur/lingual/lingual-local/build/libs/lingual-local-jdbc-2.0.0-wip-dev.jar")
 
 # set up a database connection to a local repository
 connection <- dbConnect(drv, "jdbc:lingual:local;catalog=~/src/concur/lingual/lingual-examples/tables;schema=EMPLOYEES")

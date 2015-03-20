@@ -1,7 +1,7 @@
 Build Instructions
 ==================
 
-    gradle clean fatJar
+    gradle clean shadowJar
     hadoop jar build/libs/lingual-examples-1.2.0-wip-dev-fatjar.jar cascading.lingual.examples.foodmart.JdbcExample
     hadoop jar build/libs/lingual-examples-1.2.0-wip-dev-fatjar.jar cascading.lingual.examples.foodmart.FlowExample
 

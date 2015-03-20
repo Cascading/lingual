@@ -20,12 +20,12 @@
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply plugin: 'application'
-
 evaluationDependsOn( ':lingual-local' )
 evaluationDependsOn( ':lingual-hadoop' )
 evaluationDependsOn( ':lingual-hadoop2-mr1' )
 evaluationDependsOn( ':lingual-hadoop2-tez' )
+
+apply from: "../etc/shadow.gradle"
 
 dependencies {
 
@@ -39,42 +39,19 @@ dependencies {
 
   providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
+  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+
   testCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
 }
 
-jar {
-  ext.finalName = jar.archivePath
-  classifier = 'unshaded'
-}
-
-jar << {
-  project.ant {
-    taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
-
-    jarjar( jarfile: finalName ) {
-      zipfileset( src: jar.archivePath )
-
-      neverIncludePackages.each { omitClass ->
-        zap pattern: omitClass
-      }
-      unshadeableDependencies.each { retainClass ->
-        rule pattern: retainClass, result: "@0"
-      }
-      shadeableDependencies.each { shadeClass ->
-        rule pattern: shadeClass, result: "${shadePackagePrefix}@0"
-      }
-    }
-  }
-}
-
-task assembleDist( dependsOn: jar ) {
-  dependsOn << project( ":lingual-local" ).tasks[ "fatJar" ]
+task assembleDist( dependsOn: shadowJar ) {
+  dependsOn << project( ":lingual-local" ).tasks[ "shadowJar" ]
   dependsOn << project( ":lingual-hadoop" ).tasks[ "hadoopJar" ]
-  dependsOn << project( ":lingual-hadoop" ).tasks[ "fatJar" ]
+  dependsOn << project( ":lingual-hadoop" ).tasks[ "shadowJar" ]
   dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "hadoopJar" ]
-  dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "fatJar" ]
+  dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "shadowJar" ]
   dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "hadoopJar" ]
-  dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "fatJar" ]
+  dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "shadowJar" ]
 
   ext.distDir = file( "${buildDir}/dist" )
 }
@@ -87,27 +64,27 @@ assembleDist << {
   copy {
     into "${distDir}/lib"
     from configurations.runtime
-    from jar.finalName
+    from jar
   }
 
   copy {
     into "${distDir}/platform/local"
-    from project( ":lingual-local" ).fatJar
+    from project( ":lingual-local" ).shadowJar
   }
 
   copy {
     into "${distDir}/platform/hadoop"
-    from project( ":lingual-hadoop" ).fatJar
+    from project( ":lingual-hadoop" ).shadowJar
   }
 
   copy {
     into "${distDir}/platform/hadoop2-mr1"
-    from project( ":lingual-hadoop2-mr1" ).fatJar
+    from project( ":lingual-hadoop2-mr1" ).shadowJar
   }
 
   copy {
     into "${distDir}/platform/hadoop2-tez"
-    from project( ":lingual-hadoop2-tez" ).fatJar
+    from project( ":lingual-hadoop2-tez" ).shadowJar
   }
   
   copy {
@@ -164,3 +141,9 @@ uploadArchives.enabled = false
 
 platformTest.enabled = false
 
+uploadShadow.enabled = false
+installShadowArchives.enabled = false
+
+shadowJar {
+  baseName = "${project.name}"
+}

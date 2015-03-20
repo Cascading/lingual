@@ -18,6 +18,8 @@
  * limitations under the License.
  */
 
+apply from: "../etc/shadow.gradle"
+
 configurations {
   hadoopArtifacts {
     extendsFrom runtime
@@ -92,48 +94,8 @@ artifacts {
   hadoopArtifacts hadoopJar
 }
 
-// builds a maven-shade type jar. Ant's JarJar task is an independent jar build so rather than re-write the entire file
-// collection in ant terms, this code builds a gradle-style jar and uses that as the source. This also retains the
-// previous Gradle FatJar-based behavior of producing a merged META-INF directory.
-task fatJar( type: Jar, dependsOn: [jar, createProps] ) {
+shadowJar.dependsOn( createProps )
 
-  description = "Assembles a shaded jar file"
-  classifier = 'jdbc'
-
-  // the lingual-client is only in runtime scope for IDE use so avoid including the lingual-client jar when building a JDBC jar
-  // because the :lingual-client.jar task isn't called when building this, we can't simply use jar.archiveName since that includes
-  // the internally-specified "classifier" value
-  ext.clientFile = "${project( ':lingual-client' ).jar.baseName}-${project( ':lingual-client' ).jar.version}"
-
-  doLast {
-    project.ant {
-      taskdef( name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.jarjar.asPath )
-      jarjar( jarfile: archivePath ) {
-        configurations.runtime.files.findAll { file ->
-          ["${clientFile}"].every { !file.name.startsWith( it ) }
-        }.each { jarjarFile ->
-          zipfileset( src: jarjarFile ) {
-            exclude( name: 'META-INF/*.DSA' )
-            exclude( name: 'META-INF/LICENSE*' )
-          }
-        }
-        zipfileset( src: jar.archivePath )
-        zipfileset( file: createProps.jobProps, fullpath: 'hadoop.job.properties' )
-
-        neverIncludePackages.each { omitClass ->
-          zap pattern: omitClass
-        }
-        unshadeableDependencies.each { retainClass ->
-          rule pattern: retainClass, result: "@0"
-        }
-        shadeableDependencies.each { shadeClass ->
-          rule pattern: shadeClass, result: "${shadePackagePrefix}@0"
-        }
-      }
-    }
-  }
-}
-
-artifacts {
-  archives fatJar
+shadowJar {
+  from createProps.jobProps
 }

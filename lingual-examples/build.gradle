@@ -18,14 +18,14 @@
  * limitations under the License.
  */
 
-apply plugin: 'fatjar'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
   compile project( ':lingual-local' )
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
 }
 
-fatJar {
+shadowJar {
   classifier = 'fatjar'
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
