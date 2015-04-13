@@ -18,13 +18,6 @@
  * limitations under the License.
  */
 
-apply from: 'etc/version.gradle'
-apply from: 'etc/s3Upload.gradle'
-apply from: 'etc/dependencyVersions.gradle'
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-
 buildscript {
   repositories {
     mavenCentral()
@@ -32,8 +25,16 @@ buildscript {
   }
   dependencies {
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+    classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
   }
 }
+
+apply from: 'etc/version.gradle'
+apply from: 'etc/s3Upload.gradle'
+apply from: 'etc/dependencyVersions.gradle'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
 
 subprojects {
 
@@ -41,6 +42,7 @@ subprojects {
   apply plugin: 'maven'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
+  apply plugin: 'provided-base'
   apply plugin: 'com.github.johnrengelman.shadow'
 
   // lingual is a sub-project of cascading

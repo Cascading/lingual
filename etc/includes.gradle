@@ -18,6 +18,5 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/etc/providedCompile.gradle"
 apply from: "${rootDir}/etc/testing.gradle"
 apply from: "${rootDir}/etc/s3Upload.gradle"

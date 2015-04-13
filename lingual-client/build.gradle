@@ -29,7 +29,7 @@ apply from: "../etc/shadow.gradle"
 
 dependencies {
 
-  providedCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
+  provided project( ':lingual-core' ) // provided by platform/jdbc drivers
 
   compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: joptVersion
   compile group: 'sqlline', name: 'sqlline', version: sqllineVersion
@@ -37,9 +37,9 @@ dependencies {
 
   runtime group: 'jline', name: 'jline', version: jlineVersion
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  provided group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  provided group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
   testCompile project( ':lingual-core' ) // provided by platform/jdbc drivers
 }

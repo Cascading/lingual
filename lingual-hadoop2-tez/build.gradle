@@ -36,14 +36,14 @@ dependencies {
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
   compile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2TezVersion )
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2TezVersion )
+  provided( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2TezVersion )
+  provided( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2TezVersion )
 
-  providedCompile( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
-  providedCompile( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
-  providedCompile( group: 'org.apache.tez', name: 'tez-mapreduce', version: tezVersion )
+  provided( group: 'org.apache.tez', name: 'tez-api', version: tezVersion )
+  provided( group: 'org.apache.tez', name: 'tez-dag', version: tezVersion )
+  provided( group: 'org.apache.tez', name: 'tez-mapreduce', version: tezVersion )
 
-  providedCompile( group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion )
+  provided( group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion )
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, classifier: 'tests', changing: true

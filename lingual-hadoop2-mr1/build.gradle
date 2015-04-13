@@ -36,12 +36,12 @@ dependencies {
   testCompile project( path: ':lingual-platform', configuration: 'testArtifacts' )
 
   compile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version )
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2Version )
+  provided( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version )
+  provided( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2Version )
   testCompile( group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version )
   testCompile( group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version )
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  provided group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, classifier: 'tests', changing: true

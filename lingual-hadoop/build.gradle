@@ -37,14 +37,14 @@ dependencies {
 
   compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
 
-  providedCompile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+  provided group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
   // hadoop deps
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
+  provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
     exclude group: 'ant'
     exclude group: 'junit'
     exclude group: 'oro' // causes transient build maven failures, ftw
