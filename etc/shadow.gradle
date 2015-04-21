@@ -32,19 +32,20 @@ shadowJar {
   exclude 'LICENSE'
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
-  relocate( 'com.', 'cascading.thirdparty.' ) {
+  relocate( 'com.', 'cascading.thirdparty.com.' ) {
     exclude( 'com.google.**' )
   }
-  relocate( 'net.', 'cascading.thirdparty.' ) {
+  relocate( 'net.', 'cascading.thirdparty.net.' ) {
     exclude( 'net.hydromatic.**' )
   }
-  relocate( 'org.', 'cascading.thirdparty.' ) {
+  relocate( 'org.', 'cascading.thirdparty.org' ) {
     exclude('org.apache.**')
     exclude('org.slf4j.**')
     exclude('org.jgrapht.**')
     exclude('org.xml.**')
     exclude('org.eigenbase.**')
     exclude('org.jets3t.**')
+    exclude('org.w3c.**')
   }
 }
 
