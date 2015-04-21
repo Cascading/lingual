@@ -29,6 +29,10 @@ shadowJar {
   baseName = "${project.name}-jdbc"
   classifier = ''
   mergeServiceFiles()
+  configurations = []
+  from {
+    project.configurations.runtime.minus( [ project.configurations.provided ] )
+  }
   exclude 'LICENSE'
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
@@ -38,7 +42,7 @@ shadowJar {
   relocate( 'net.', 'cascading.thirdparty.net.' ) {
     exclude( 'net.hydromatic.**' )
   }
-  relocate( 'org.', 'cascading.thirdparty.org' ) {
+  relocate( 'org.', 'cascading.thirdparty.org.' ) {
     exclude('org.apache.**')
     exclude('org.slf4j.**')
     exclude('org.jgrapht.**')
