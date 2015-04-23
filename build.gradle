@@ -57,7 +57,6 @@ subprojects {
     testArtifacts {
       extendsFrom testRuntime
     }
-    jarjar
   }
 
   repositories {
@@ -99,9 +98,6 @@ subprojects {
 
   dependencies {
     testCompile group: 'junit', name: 'junit', version: junitVersion
-    jarjar group: 'org.ow2.asm', name: 'asm', version: asmVersion
-    jarjar group: 'org.ow2.asm', name: 'asm-commons', version: asmVersion
-    jarjar group: 'com.googlecode.jarjar', name: 'jarjar', version: jarjarVersion
   }
 
   uploadArchives {

@@ -56,7 +56,7 @@ ext.cascadingBindVersion = "1.0.0-${bindVersion}"
 /*
  * Dependencies not directly related to cascading get versions defined here
  */
-ext.hadoopVersion = '1.1.2'
+ext.hadoopVersion = '1.2.1'
 
 ext.hadoop2Version = '2.4.1'
 
@@ -78,7 +78,7 @@ ext.joptVersion = '4.4'
 ext.jsrVersion = '1.1.1'
 ext.junitVersion = '4.11'
 ext.log4jVersion = '1.2.17'
-ext.slf4jVersion = '1.7.5'
+ext.slf4jVersion = '1.7.6'
 ext.sqllineVersion = '1.1.6'
 
 if( System.properties[ 'hadoop.release.final' ] )
@@ -88,7 +88,6 @@ if( System.properties[ 'hadoop.release.final' ] )
  * Build tool dependencies
  */
 ext.asmVersion = '4.1'
-ext.jarjarVersion = '1.3'
 
 /*
  * Control over rules for shading with jarjar.
