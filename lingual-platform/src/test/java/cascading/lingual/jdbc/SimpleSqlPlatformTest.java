@@ -434,7 +434,7 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     {
     String query = "SELECT p0.empno as y, q1.empno as x FROM sales.emps AS p0 " +
       "LEFT JOIN sales.emps AS q1 ON (q1.gender =  'M' AND p0.city = 'Vancouver' AND p0.deptno = 40) " +
-      "WHERE p0.gender = 'M' ";
+      "WHERE p0.gender = 'M' order by 1, 2";
 
     assertTablesEqual( "emps-depts-self-join-2", query );
     }
