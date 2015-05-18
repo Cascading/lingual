@@ -152,7 +152,8 @@ public class ProviderDefinition
       if( providerName == null )
         providerName = getProviderName();
 
-      properties.put( SchemaProperties.PROVIDER, new CopyOnWriteArrayList<String>( asList( providerName ) ) );
+      properties.put( SchemaProperties.PROVIDER, new CopyOnWriteArrayList( asList( providerName ) ) );
+
       map.put( Protocol.getProtocol( protocol ), properties );
       }
 

@@ -8,6 +8,10 @@ Lingual Change Log
 
   Added new subproject 'lingual-hadoop2-tez' which adds support for running lingual on Apache Tez
 
+1.2.1
+ 
+  Update to Cascading 2.7.0
+
 1.2.0 
 
   Fixed issue where c.l.f.SQLPlanner could execute a flow instead of just planning it.
