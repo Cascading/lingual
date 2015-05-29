@@ -62,7 +62,7 @@ ext.hadoop2Version = '2.4.1'
 
 ext.hadoop2TezVersion = '2.6.0'
 
-ext.tezVersion = '0.6.0'
+ext.tezVersion = '0.7.0'
 
 ext.apacheCommonsVersion = '3.1'
 ext.c3p0Version = '0.9.2.1'
