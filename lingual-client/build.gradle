@@ -27,6 +27,8 @@ evaluationDependsOn( ':lingual-hadoop2-tez' )
 
 apply from: "../etc/shadow.gradle"
 
+apply plugin: 'os-package-base'
+
 dependencies {
 
   provided project( ':lingual-core' ) // provided by platform/jdbc drivers
@@ -94,30 +96,75 @@ assembleDist << {
       ] )
     }
   }
-
   copy {
-    fileMode = 0755
-    into "${distDir}/bin/"
-    from( 'src/dist/bin/' ) {
-      rename '\\.sh', ''
+    into "${distDir}/env/"
+    from( 'src/dist/env' ) {
       filter( ReplaceTokens, tokens: [
               'location': project.s3Bucket.toString(),
               'majorVersion': majorVersion.toString()
       ] )
     }
   }
+  copy {
+    fileMode = 0755
+    into "${distDir}/bin/"
+    from( 'src/dist/bin/lingual.sh' ) {
+      rename( '\\.sh', '' )  
+      filter( ReplaceTokens, tokens: [
+              'location': project.s3Bucket.toString(),
+              'majorVersion': majorVersion.toString()
+      ] )
+    }
+  }
+  copy {
+    fileMode = 0755
+    into "${distDir}/bin/"
+    from( 'src/dist/bin/lingual.sh' ) {
+      rename( '\\.sh', '-packaged' )  
+      filter { line -> line.contains( '__standalone__' ) ? '' : line }
+    }
+  }
 }
 
-task packageDist( type: Tar, dependsOn: assembleDist ) {
+ospackage {
+  os = LINUX // only applied to RPM
+  version = "${rootProject.majorVersion}.${rootProject.minorVersion}"
+  prefix '/' // also only applied to RPM
+  vendor 'Concurrent Inc.'
+  url 'http://www.cascading.org/projects/lingual/'
+  description 'Lingual is true SQL for Cascading and Apache Hadoop.'
+  license 'ASL 2.0'
+  into '/usr/share/lingual-client'
+  link( '/usr/bin/lingual', '/usr/share/lingual-client/bin/lingual-packaged')
+  from ( assembleDist.distDir ) {
+    exclude 'bin/lingual'
+    user 'root'
+  }
+  requires( 'hadoop-client' )
+}
+
+task lingualRpm( type: Rpm, dependsOn: assembleDist) {
+  arch = NOARCH
+  release = "${rootProject.buildNumber}".replaceAll( "-", "_") // - is not allowed in rpm versions
+  group 'Applications/Databases'
+}
+
+task lingualDeb( type: Deb, dependsOn: assembleDist ) {
+  arch = 'all'
+  release = "${rootProject.buildNumber}".replaceAll( "-", "") 
+}
+
+task packageDist( type: Tar, dependsOn: [ assembleDist, lingualRpm, lingualDeb ] ) {
   description = "package current build, does not run tests"
 
   destinationDir = file( s3UploadArtifacts.source )
   compression = "GZIP"
 
   into( baseName ) {
-    from assembleDist.distDir
+    from( assembleDist.distDir) {
+      exclude "bin/lingual-packaged"
+    }
   }
-
   s3UploadArtifacts.dependsOn packageDist
 }
 
@@ -134,6 +181,13 @@ packageDist << {
   }
 
   file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${archiveName}" )
+
+  copy {
+    from( "build/distributions" )
+    into s3UploadArtifacts.source
+  }
+  file( "${s3UploadArtifacts.source}/latest-rpm.txt" ).write( "http://${s3UploadArtifacts.destination}${lingualRpm.archiveName}" )
+  file( "${s3UploadArtifacts.source}/latest-deb.txt" ).write( "http://${s3UploadArtifacts.destination}${lingualDeb.archiveName}" )
 }
 
 uploadArchives.enabled = false

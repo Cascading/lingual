@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2011-2014 Concurrent, Inc.
+# Copyright 2011-2015 Concurrent, Inc.
 # if no args specified, show usage
 
 function show_usage {
@@ -7,7 +7,7 @@ function show_usage {
   echo "where COMMAND is one of:"
   echo "  shell                execute interactive SQL queries"
   echo "  catalog              manage table and schema catalog"
-  echo "  selfupdate           fetch the latest version of lingual"
+  echo "  selfupdate           fetch the latest version of lingual" # __standalone__
   echo ""
   echo "Most commands print help when invoked w/o parameters."
   echo ""
@@ -27,9 +27,9 @@ if [ "$COMMAND" = "shell" ] ; then
   MAIN=cascading.lingual.shell.Shell
 elif [ "$COMMAND" = "catalog" ] ; then
   MAIN=cascading.lingual.catalog.Catalog
-elif [ "$COMMAND" = "selfupdate" ] ; then
-  curl http://@location@/lingual/@majorVersion@/lingual-client/install-lingual-client.sh | bash
-  exit $?
+elif [ "$COMMAND" = "selfupdate" ] ; then # __standalone__
+  curl http://@location@/lingual/@majorVersion@/lingual-client/install-lingual-client.sh | bash # __standalone__
+  exit $? #__standalone__
 else
   echo "ERROR: unknown command: $COMMAND"
   show_usage
@@ -44,6 +44,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   [[ $SOURCE != /* ]] && SOURCE="BASE_DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )/../" && pwd )"
+ENV_DIR="$BASE_DIR/env"
 BIN_DIR="$BASE_DIR/bin"
 JAVA_EXEC=`which java`
 
@@ -115,16 +116,16 @@ case $PLATFORM in
    local)
        ;;
    hadoop)
-       source $BIN_DIR/hadoop-env
+       source $ENV_DIR/hadoop-env
        PLATFORM_CLASSPATH="$HADOOP_CLASSPATH"
        ;;
    hadoop2-mr1)
-       source $BIN_DIR/yarn-env
+       source $ENV_DIR/yarn-env
        PLATFORM_CLASSPATH="$YARN_CLASSPATH"
        ;;
    hadoop2-tez)
-       source $BIN_DIR/yarn-env
-       source $BIN_DIR/tez-env
+       source $ENV_DIR/yarn-env
+       source $ENV_DIR/tez-env
        PLATFORM_CLASSPATH="$YARN_CLASSPATH"
        ;;
    *)

@@ -26,6 +26,7 @@ buildscript {
   dependencies {
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
     classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
+    classpath 'com.netflix.nebula:gradle-ospackage-plugin:2.2.6'
   }
 }
 

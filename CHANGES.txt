@@ -1,6 +1,8 @@
 Lingual Change Log
 
 2.0.0 [unreleased]
+
+  The build produced rpm and debian packages by default.
   
   The JDBC driver jars have their own artifactId lingual-<platform>-jdbc with no dependencies listed in the pom.
 
