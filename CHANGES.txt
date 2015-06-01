@@ -1,6 +1,8 @@
 Lingual Change Log
 
 2.0.0 [unreleased]
+  
+  Updated sqlline to 1.1.9
 
   The build produced rpm and debian packages by default.
   

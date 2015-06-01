@@ -172,10 +172,10 @@ public class Shell extends Main<ShellOptions>
 
     String sql = getOptions().getSqlFile();
 
-    boolean result = false;
+    SqlLine.Status result = SqlLine.Status.OTHER;
     if( sql == null )
       {
-      result = true; // interactive use assumes interactive validation.
+      result = SqlLine.Status.OK; // interactive use assumes interactive validation.
       LOG.info( "starting shell" );
       SqlLine.main( sqlLineArgs );
       }
@@ -199,6 +199,6 @@ public class Shell extends Main<ShellOptions>
         }
       }
 
-    return result;
+    return result == SqlLine.Status.OK;
     }
   }
