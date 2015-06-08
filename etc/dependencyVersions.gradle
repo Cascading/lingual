@@ -21,7 +21,7 @@
 /*
  * Dependencies directly related to cascading get versions defined here
  */
-ext.cascadingVersion = '3.0.0-wip-+'
+ext.cascadingVersion = '3.0.0'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars
