@@ -21,12 +21,12 @@
 /*
  * Dependencies directly related to cascading get versions defined here
  */
-ext.cascadingVersion = '3.0.2-wip-+'
+ext.cascadingVersion = '3.0.2'
 
 // set property to use locally installed cascading builds
 // otherwise wip releases will be pulled from conjars
 if( System.properties[ 'lingual.release.local' ] )
-  ext.cascadingVersion = '3.0.0-wip-dev'
+  ext.cascadingVersion = '3.0.2-wip-dev'
 
 ext.bindVersion = "wip-106"
 ext.bindChanging = false
