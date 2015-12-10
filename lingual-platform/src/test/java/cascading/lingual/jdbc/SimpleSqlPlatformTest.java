@@ -241,7 +241,8 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
-  public void testIntoSelect2() throws Exception
+  @Ignore
+  public void testIntoSelect() throws Exception
     {
     setResultsTo( "TEST", "RESULTS", new Fields( "EMPNO", "NAME" ).applyTypes( int.class, String.class ) );
 
