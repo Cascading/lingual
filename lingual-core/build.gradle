@@ -20,6 +20,7 @@
 
 dependencies {
   compile group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: true
+  compile group: 'cascading', name: 'cascading-expression', version: cascadingVersion, changing: true
   compile( group: 'cascading', name: 'cascading-bind', version: cascadingBindVersion, changing: bindChanging ) {
     exclude group: 'org.slf4j'
     exclude group: 'cascading' // prevents losing the current `cascadingVersion`
