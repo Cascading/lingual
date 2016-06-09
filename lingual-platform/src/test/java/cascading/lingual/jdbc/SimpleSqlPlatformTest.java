@@ -472,6 +472,12 @@ public class SimpleSqlPlatformTest extends JDBCPlatformTestCase
     }
 
   @Test
+  public void testSelectDateBiggerThan() throws Exception
+    {
+    assertTablesEqual( "emps-select-date-bigger-than", "select item from sales.sales where sale_date > date '2016-06-09'" );
+    }
+
+  @Test
   @Ignore("Planner Failure")
   public void testSelectExists() throws Exception
     {
