@@ -44,6 +44,9 @@ public class SQLTimeCoercibleType extends SQLDateTimeCoercibleType
 
   protected ZonelessDatetime parse( String value )
     {
+    if( value != null && value.endsWith( "+00" ) )
+      value = value.substring( 0, value.length() - 3 );
+
     return ZonelessTime.parse( value );
     }
 
