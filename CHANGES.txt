@@ -1,11 +1,19 @@
 Lingual Change Log
 
+3.0.0 [unreleased]
+
+  Update sqlline to 1.3.0
+
+  Removed lingual-hadoop sub-project.
+
+  Updated to Cascading 4.0 wip.
+
 2.0.0 [unreleased]
-  
+
   Updated sqlline to 1.1.9
 
   The build produced rpm and debian packages by default.
-  
+
   The JDBC driver jars have their own artifactId lingual-<platform>-jdbc with no dependencies listed in the pom.
 
   Moved to Cascading 3
@@ -13,10 +21,10 @@ Lingual Change Log
   Added new subproject 'lingual-hadoop2-tez' which adds support for running lingual on Apache Tez
 
 1.2.1
- 
+
   Update to Cascading 2.7.0
 
-1.2.0 
+1.2.0
 
   Fixed issue where c.l.f.SQLPlanner could execute a flow instead of just planning it.
 

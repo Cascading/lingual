@@ -21,7 +21,6 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 evaluationDependsOn( ':lingual-local' )
-evaluationDependsOn( ':lingual-hadoop' )
 evaluationDependsOn( ':lingual-hadoop2-mr1' )
 evaluationDependsOn( ':lingual-hadoop2-tez' )
 
@@ -48,8 +47,6 @@ dependencies {
 
 task assembleDist( dependsOn: shadowJar ) {
   dependsOn << project( ":lingual-local" ).tasks[ "shadowJar" ]
-  dependsOn << project( ":lingual-hadoop" ).tasks[ "hadoopJar" ]
-  dependsOn << project( ":lingual-hadoop" ).tasks[ "shadowJar" ]
   dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "hadoopJar" ]
   dependsOn << project( ":lingual-hadoop2-mr1" ).tasks[ "shadowJar" ]
   dependsOn << project( ":lingual-hadoop2-tez" ).tasks[ "hadoopJar" ]
@@ -74,11 +71,6 @@ assembleDist << {
   }
 
   copy {
-    into "${distDir}/platform/hadoop"
-    from project( ":lingual-hadoop" ).shadowJar
-  }
-
-  copy {
     into "${distDir}/platform/hadoop2-mr1"
     from project( ":lingual-hadoop2-mr1" ).shadowJar
   }
@@ -87,7 +79,7 @@ assembleDist << {
     into "${distDir}/platform/hadoop2-tez"
     from project( ":lingual-hadoop2-tez" ).shadowJar
   }
-  
+
   copy {
     into distDir
     from( 'src/dist/etc/' ) {
@@ -109,7 +101,7 @@ assembleDist << {
     fileMode = 0755
     into "${distDir}/bin/"
     from( 'src/dist/bin/lingual.sh' ) {
-      rename( '\\.sh', '' )  
+      rename( '\\.sh', '' )
       filter( ReplaceTokens, tokens: [
               'location': project.s3Bucket.toString(),
               'majorVersion': majorVersion.toString()
@@ -120,7 +112,7 @@ assembleDist << {
     fileMode = 0755
     into "${distDir}/bin/"
     from( 'src/dist/bin/lingual.sh' ) {
-      rename( '\\.sh', '-packaged' )  
+      rename( '\\.sh', '-packaged' )
       filter { line -> line.contains( '__standalone__' ) ? '' : line }
     }
   }
@@ -151,7 +143,7 @@ task lingualRpm( type: Rpm, dependsOn: assembleDist) {
 
 task lingualDeb( type: Deb, dependsOn: assembleDist ) {
   arch = 'all'
-  release = "${rootProject.buildNumber}".replaceAll( "-", "") 
+  release = "${rootProject.buildNumber}".replaceAll( "-", "")
 }
 
 task packageDist( type: Tar, dependsOn: [ assembleDist, lingualRpm, lingualDeb ] ) {

@@ -75,12 +75,8 @@ task hadoopJar( type: Jar, dependsOn: [jar, createProps] ) {
   from sourceSets.main.output
   from createProps.jobProps
 
-  doFirst {
-
-    into( 'lib' ) {
-      from( configurations.runtime )
-    }
-
+  into( 'lib' ) {
+    from( configurations.runtime )
   }
 }
 

@@ -20,7 +20,6 @@
 
 include 'lingual-core'
 include 'lingual-local'
-include 'lingual-hadoop'
 include 'lingual-hadoop2-mr1'
 include 'lingual-hadoop2-tez'
 include 'lingual-platform'

@@ -37,14 +37,6 @@ For the `local` mode platform:
       <version>x.y.z</version>
     </dependency>
 
-For the `hadoop` mode platform:
-
-    <dependency>
-      <groupId>cascading</groupId>
-      <artifactId>lingual-hadoop-jdbc</artifactId>
-      <version>x.y.z</version>
-    </dependency>
-
 For the `hadoop2-mr1` mode platform:
 
     <dependency>

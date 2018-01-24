@@ -80,16 +80,14 @@ task hadoopJar( type: Jar, dependsOn: [jar, createProps] ) {
   from sourceSets.main.output
   from createProps.jobProps
 
-  doFirst {
-    into( 'lib' ) {
-      from( configurations.runtime )
-    }
+  into( 'lib' ) {
+    from( configurations.runtime )
   }
 }
 
 test {
-    setTestClassesDir( file( "${projectDir}/../lingual-platform/src/test/java/" ) )
-    sourceSets.test.output.classesDir = file( "${projectDir}/../lingual-platform/build/classes/test" )
+  setTestClassesDir( file( "${projectDir}/../lingual-platform/src/test/java/" ) )
+  sourceSets.test.output.classesDir = file( "${projectDir}/../lingual-platform/build/classes/test" )
 }
 
 artifacts {
